@@ -1,6 +1,17 @@
 #include <sstream>
 
+#include "FileReader.h"
 #include "JsEngine.h"
+
+namespace
+{
+  std::string Slurp(const std::istream& stream)
+  {
+    std::stringstream content;
+    content << stream.rdbuf();
+    return content.str();
+  }
+}
 
 AdblockPlus::JsEngine::JsEngine() : context(v8::Context::New())
 {
@@ -15,6 +26,12 @@ void AdblockPlus::JsEngine::Evaluate(const std::string& source)
   script->Run();
 }
 
+void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
+{
+  const std::auto_ptr<std::istream> file = fileReader->Read(scriptPath);
+  Evaluate(Slurp(*file));
+}
+
 std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
 {
   v8::HandleScope handleScope;
@@ -26,3 +43,4 @@ std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
   v8::String::AsciiValue ascii(result);
   return *ascii;
 }
+
