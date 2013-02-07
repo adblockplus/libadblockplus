@@ -6,6 +6,7 @@
     'include_dirs': ['third_party/v8/include'],
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
+      'src/FileReader.cpp',
       'src/JsEngine.cpp'
     ],
     'direct_dependent_settings': {
