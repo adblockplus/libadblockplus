@@ -8,7 +8,8 @@
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
       'src/FileReader.cpp',
-      'src/JsEngine.cpp'
+      'src/JsEngine.cpp',
+      'src/JsError.cpp'
     ],
     'direct_dependent_settings': {
       'include_dirs': ['src']
