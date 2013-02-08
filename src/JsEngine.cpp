@@ -1,4 +1,5 @@
 #include <sstream>
+#include <stdexcept>
 
 #include "FileReader.h"
 #include "JsEngine.h"
@@ -29,6 +30,8 @@ void AdblockPlus::JsEngine::Evaluate(const std::string& source)
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 {
   const std::auto_ptr<std::istream> file = fileReader->Read(scriptPath);
+  if (!*file)
+    throw std::runtime_error("Unable to load script " + scriptPath);
   Evaluate(Slurp(*file));
 }
 
