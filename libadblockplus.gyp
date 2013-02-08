@@ -1,5 +1,6 @@
 {
-  'includes': ['third_party/v8/build/common.gypi'],
+  'includes': ['third_party/v8/build/common.gypi',
+               'shell/shell.gyp'],
   'targets': [{
     'target_name': 'libadblockplus',
     'type': '<(library)',
