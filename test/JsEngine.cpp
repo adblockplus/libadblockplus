@@ -4,7 +4,7 @@
 #include <JsEngine.h>
 #include <sstream>
 
-class StubFileReader : public AdblockPlus::FileReader
+struct StubFileReader : public AdblockPlus::FileReader
 {
   std::auto_ptr<std::istream> Read(const std::string& path) const
   {
@@ -14,7 +14,7 @@ class StubFileReader : public AdblockPlus::FileReader
   }
 };
 
-class BadFileReader : public AdblockPlus::FileReader
+struct BadFileReader : public AdblockPlus::FileReader
 {
   std::auto_ptr<std::istream> Read(const std::string& path) const
   {
