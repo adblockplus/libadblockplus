@@ -8,7 +8,9 @@
     'sources': [
       'src/Main.cpp',
       'src/Command.cpp',
-      'src/HelpCommand.cpp'
+      'src/HelpCommand.cpp',
+      'src/MatchesCommand.cpp',
+      'src/SubscriptionsCommand.cpp'
     ]
   }]
 }

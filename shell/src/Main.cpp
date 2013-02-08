@@ -2,8 +2,8 @@
 #include <sstream>
 
 #include "HelpCommand.h"
-
-// TODO: Implement commands for subscription handling and URL matching
+#include "SubscriptionsCommand.h"
+#include "MatchesCommand.h"
 
 namespace
 {
@@ -34,6 +34,8 @@ int main()
 {
   CommandMap commands;
   Add(commands, new HelpCommand(commands));
+  Add(commands, new SubscriptionsCommand());
+  Add(commands, new MatchesCommand());
   std::string commandLine;
   while (ReadCommandLine(commandLine))
   {
