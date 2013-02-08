@@ -30,7 +30,7 @@ TEST(JsEngineTest, EvaluateAndCall)
   const std::string source = "function hello() { return 'Hello'; }";
   jsEngine.Evaluate(source);
   const std::string result = jsEngine.Call("hello");
-  EXPECT_EQ("Hello", result);
+  ASSERT_EQ("Hello", result);
 }
 
 TEST(JsEngineTest, LoadAndCall)
@@ -40,7 +40,7 @@ TEST(JsEngineTest, LoadAndCall)
   jsEngine.fileReader = &fileReader;
   jsEngine.Load("hello.js");
   const std::string result = jsEngine.Call("hello");
-  EXPECT_EQ("Hello", result);
+  ASSERT_EQ("Hello", result);
 }
 
 TEST(JsEngineTest, LoadBadStreamFails)
@@ -48,5 +48,5 @@ TEST(JsEngineTest, LoadBadStreamFails)
   BadFileReader fileReader;
   AdblockPlus::JsEngine jsEngine;
   jsEngine.fileReader = &fileReader;
-  EXPECT_ANY_THROW(jsEngine.Load("hello.js"));
+  ASSERT_ANY_THROW(jsEngine.Load("hello.js"));
 }
