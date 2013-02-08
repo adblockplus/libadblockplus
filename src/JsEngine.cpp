@@ -46,4 +46,3 @@ std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
   v8::String::AsciiValue ascii(result);
   return *ascii;
 }
-
