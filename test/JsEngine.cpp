@@ -2,6 +2,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <JsEngine.h>
+#include <JsError.h>
 #include <sstream>
 
 struct StubFileReader : public AdblockPlus::FileReader
@@ -49,4 +50,10 @@ TEST(JsEngineTest, LoadBadStreamFails)
   AdblockPlus::JsEngine jsEngine;
   jsEngine.fileReader = &fileReader;
   ASSERT_ANY_THROW(jsEngine.Load("hello.js"));
+}
+
+TEST(JsEngineTest, JsExceptionIsThrown)
+{
+  AdblockPlus::JsEngine jsEngine;
+  ASSERT_THROW(jsEngine.Evaluate("doesnotexist()"), AdblockPlus::JsError);
 }
