@@ -7,6 +7,7 @@
     'include_dirs': ['third_party/v8/include'],
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
+      'src/ErrorCallback.cpp',
       'src/FileReader.cpp',
       'src/JsEngine.cpp',
       'src/JsError.cpp'
