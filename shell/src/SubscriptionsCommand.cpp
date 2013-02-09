@@ -3,7 +3,8 @@
 
 #include "SubscriptionsCommand.h"
 
-SubscriptionsCommand::SubscriptionsCommand() : Command("subscriptions")
+SubscriptionsCommand::SubscriptionsCommand(AdblockPlus::JsEngine& jsEngine)
+  : Command("subscriptions"), jsEngine(jsEngine)
 {
 }
 
