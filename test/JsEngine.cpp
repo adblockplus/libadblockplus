@@ -29,7 +29,7 @@ class StubFileReader : public AdblockPlus::FileReader
 public:
   std::auto_ptr<std::istream> Read(const std::string& path) const
   {
-    std::stringstream* source = new std::stringstream;
+    std::stringstream* const source = new std::stringstream;
     *source << "function hello() { return 'Hello'; }";
     return std::auto_ptr<std::istream>(source);
   }
@@ -40,7 +40,7 @@ class BadFileReader : public AdblockPlus::FileReader
 public:
   std::auto_ptr<std::istream> Read(const std::string& path) const
   {
-    std::ifstream* file = new std::ifstream;
+    std::ifstream* const file = new std::ifstream;
     file->open("");
     return std::auto_ptr<std::istream>(file);
   }
