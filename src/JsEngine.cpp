@@ -1,11 +1,39 @@
 #include <sstream>
 
+#include "ErrorCallback.h"
 #include "FileReader.h"
 #include "JsEngine.h"
 #include "JsError.h"
 
 namespace
 {
+  v8::Handle<v8::Value> ReportErrorCallback(const v8::Arguments& arguments)
+  {
+    if (arguments.Length() < 1)
+      return v8::Undefined();
+    v8::HandleScope handleScope;
+    v8::Handle<v8::Value> argument = arguments[0];
+    v8::String::Utf8Value value(argument);
+    v8::Handle<v8::External> external =
+      v8::Handle<v8::External>::Cast(arguments.Data());
+    AdblockPlus::ErrorCallback* const errorCallback =
+      static_cast<AdblockPlus::ErrorCallback*>(external->Value());
+    (*errorCallback)(*value);
+    return v8::Undefined();
+  }
+
+  v8::Handle<v8::Context> CreateContext(AdblockPlus::ErrorCallback* const errorCallback)
+  {
+    v8::HandleScope handleScope;
+    v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
+    v8::Handle<v8::FunctionTemplate> reportErrorTemplate =
+      v8::FunctionTemplate::New(ReportErrorCallback,
+                                v8::External::New(errorCallback));
+    global->Set(v8::String::New("reportError"), reportErrorTemplate);
+    v8::Persistent<v8::Context> context = v8::Context::New(0, global);
+    return context;
+  }
+
   std::string Slurp(const std::istream& stream)
   {
     std::stringstream content;
@@ -14,7 +42,9 @@ namespace
   }
 }
 
-AdblockPlus::JsEngine::JsEngine() : context(v8::Context::New())
+AdblockPlus::JsEngine::JsEngine(FileReader* const fileReader,
+                                ErrorCallback* const errorCallback)
+  : fileReader(fileReader), context(CreateContext(errorCallback))
 {
 }
 
