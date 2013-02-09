@@ -6,24 +6,27 @@
 #include <JsError.h>
 #include <sstream>
 
-struct ThrowingFileReader : public AdblockPlus::FileReader
+class ThrowingFileReader : public AdblockPlus::FileReader
 {
+public:
   std::auto_ptr<std::istream> Read(const std::string& path) const
   {
     throw std::runtime_error("Unexpected read of file: " + path);
   }
 };
 
-struct ThrowingErrorCallback : public AdblockPlus::ErrorCallback
+class ThrowingErrorCallback : public AdblockPlus::ErrorCallback
 {
+public:
   void operator()(const std::string& message)
   {
     throw std::runtime_error("Unexpected error: " + message);
   }
 };
 
-struct StubFileReader : public AdblockPlus::FileReader
+class StubFileReader : public AdblockPlus::FileReader
 {
+public:
   std::auto_ptr<std::istream> Read(const std::string& path) const
   {
     std::stringstream* source = new std::stringstream;
@@ -32,8 +35,9 @@ struct StubFileReader : public AdblockPlus::FileReader
   }
 };
 
-struct BadFileReader : public AdblockPlus::FileReader
+class BadFileReader : public AdblockPlus::FileReader
 {
+public:
   std::auto_ptr<std::istream> Read(const std::string& path) const
   {
     std::ifstream* file = new std::ifstream;
@@ -42,8 +46,9 @@ struct BadFileReader : public AdblockPlus::FileReader
   }
 };
 
-struct StubErrorCallback : public AdblockPlus::ErrorCallback
+class StubErrorCallback : public AdblockPlus::ErrorCallback
 {
+public:
   std::string lastMessage;
 
   void operator()(const std::string& message)

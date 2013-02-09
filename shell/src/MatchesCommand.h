@@ -3,8 +3,9 @@
 
 #include "Command.h"
 
-struct MatchesCommand : public Command
+class MatchesCommand : public Command
 {
+public:
   MatchesCommand();
   void operator()(const std::string& arguments);
   std::string GetDescription() const;

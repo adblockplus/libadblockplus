@@ -5,8 +5,9 @@
 #include <stdexcept>
 #include <string>
 
-struct Command
+class Command
 {
+public:
   const std::string name;
 
   Command(const std::string& name);
