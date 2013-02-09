@@ -11,8 +11,9 @@
 
 namespace
 {
-  struct LibFileReader : public AdblockPlus::FileReader
+  class LibFileReader : public AdblockPlus::FileReader
   {
+  public:
     std::auto_ptr<std::istream> Read(const std::string& path) const
     {
       std::ifstream* file = new std::ifstream;
@@ -21,8 +22,9 @@ namespace
     }
   };
 
-  struct CerrErrorCallback : public AdblockPlus::ErrorCallback
+  class CerrErrorCallback : public AdblockPlus::ErrorCallback
   {
+  public:
     void operator()(const std::string& message)
     {
       std::cerr << "Error: " << message << std::endl;
