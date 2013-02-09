@@ -4,16 +4,18 @@
   'targets': [{
     'target_name': 'libadblockplus',
     'type': '<(library)',
-    'include_dirs': ['third_party/v8/include'],
+    'include_dirs': [
+      'include',
+      'third_party/v8/include'
+    ],
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
       'src/ErrorCallback.cpp',
       'src/FileReader.cpp',
-      'src/JsEngine.cpp',
-      'src/JsError.cpp'
+      'src/JsEngine.cpp'
     ],
     'direct_dependent_settings': {
-      'include_dirs': ['src']
+      'include_dirs': ['include']
     },
     'export_dependent_settings': ['third_party/v8/tools/gyp/v8.gyp:v8']
   },

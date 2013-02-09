@@ -1,9 +1,6 @@
-#include <ErrorCallback.h>
-#include <FileReader.h>
+#include <AdblockPlus.h>
 #include <fstream>
 #include <gtest/gtest.h>
-#include <JsEngine.h>
-#include <JsError.h>
 #include <sstream>
 
 class ThrowingFileReader : public AdblockPlus::FileReader

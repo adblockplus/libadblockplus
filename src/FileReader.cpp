@@ -1,4 +1,4 @@
-#include "FileReader.h"
+#include <AdblockPlus/FileReader.h>
 
 AdblockPlus::FileReader::~FileReader()
 {

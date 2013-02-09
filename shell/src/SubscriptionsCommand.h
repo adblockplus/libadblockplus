@@ -1,7 +1,7 @@
 #ifndef SUBSCRIPTIONS_COMMAND_H
 #define SUBSCRIPTIONS_COMMAND_H
 
-#include <JsEngine.h>
+#include <AdblockPlus.h>
 #include <string>
 
 #include "Command.h"

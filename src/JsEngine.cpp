@@ -1,9 +1,5 @@
+#include <AdblockPlus.h>
 #include <sstream>
-
-#include "ErrorCallback.h"
-#include "FileReader.h"
-#include "JsEngine.h"
-#include "JsError.h"
 
 namespace
 {
@@ -41,6 +37,11 @@ namespace
     content << stream.rdbuf();
     return content.str();
   }
+}
+
+AdblockPlus::JsError::JsError(const std::string& message)
+  : std::runtime_error(message)
+{
 }
 
 AdblockPlus::JsEngine::JsEngine(const FileReader* const fileReader,

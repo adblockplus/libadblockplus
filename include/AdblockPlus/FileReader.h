@@ -1,5 +1,5 @@
-#ifndef ADBLOCK_PLUS_FILE_READER_H
-#define ADBLOCK_PLUS_FILE_READER_H
+#ifndef ADBLOCKPLUS_FILE_READER_H
+#define ADBLOCKPLUS_FILE_READER_H
 
 #include <istream>
 #include <string>
