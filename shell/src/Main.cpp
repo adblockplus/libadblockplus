@@ -39,7 +39,7 @@ namespace
   bool ReadCommandLine(std::string& commandLine)
   {
     std::cout << "> ";
-    bool success = std::getline(std::cin, commandLine);
+    const bool success = std::getline(std::cin, commandLine);
     if (!success)
       std::cout << std::endl;
     return success;
@@ -74,7 +74,7 @@ int main()
         std::string commandName;
         std::string arguments;
         ParseCommandLine(commandLine, commandName, arguments);
-        CommandMap::const_iterator it = commands.find(commandName);
+        const CommandMap::const_iterator it = commands.find(commandName);
         try
           {
             if (it != commands.end())

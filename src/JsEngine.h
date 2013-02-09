@@ -12,15 +12,17 @@ namespace AdblockPlus
   class JsEngine
   {
   public:
-    JsEngine(FileReader* const fileReader, ErrorCallback* const errorCallback);
+    JsEngine(const FileReader* const fileReader,
+             ErrorCallback* const errorCallback);
     void Evaluate(const std::string& source);
     void Load(const std::string& scriptPath);
     std::string Call(const std::string& functionName);
 
   private:
-    FileReader* const fileReader;
+    const FileReader* const fileReader;
     v8::Persistent<v8::Context> context;
   };
 }
 
 #endif
+

@@ -31,7 +31,7 @@ std::string HelpCommand::GetUsage() const
 
 void HelpCommand::ShowCommandHelp(const std::string& commandName) const
 {
-  CommandMap::const_iterator it = commands.find(commandName);
+  const CommandMap::const_iterator it = commands.find(commandName);
   if (it == commands.end())
     throw NoSuchCommandError(commandName);
 
