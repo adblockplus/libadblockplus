@@ -1,6 +1,7 @@
-#ifndef ADBLOCK_PLUS_JS_ENGINE_H
-#define ADBLOCK_PLUS_JS_ENGINE_H
+#ifndef ADBLOCKPLUS_JS_ENGINE_H
+#define ADBLOCKPLUS_JS_ENGINE_H
 
+#include <stdexcept>
 #include <string>
 #include <v8.h>
 
@@ -9,6 +10,12 @@ class FileReader;
 
 namespace AdblockPlus
 {
+  class JsError : public std::runtime_error
+  {
+  public:
+    JsError(const std::string& message);
+  };
+
   class JsEngine
   {
   public:
@@ -25,4 +32,3 @@ namespace AdblockPlus
 }
 
 #endif
-

@@ -1,8 +1,6 @@
-#include <ErrorCallback.h>
-#include <FileReader.h>
+#include <AdblockPlus.h>
 #include <fstream>
 #include <iostream>
-#include <JsEngine.h>
 #include <sstream>
 
 #include "HelpCommand.h"
