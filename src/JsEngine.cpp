@@ -22,7 +22,8 @@ namespace
     return v8::Undefined();
   }
 
-  v8::Handle<v8::Context> CreateContext(AdblockPlus::ErrorCallback* const errorCallback)
+  v8::Handle<v8::Context> CreateContext(
+    AdblockPlus::ErrorCallback* const errorCallback)
   {
     v8::HandleScope handleScope;
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
