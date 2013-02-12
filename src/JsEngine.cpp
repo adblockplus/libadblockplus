@@ -39,8 +39,8 @@ namespace
   }
 }
 
-AdblockPlus::JsError::JsError(const std::string& message)
-  : std::runtime_error(message)
+AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception)
+  : std::runtime_error(*v8::String::AsciiValue(exception))
 {
 }
 
@@ -58,11 +58,8 @@ void AdblockPlus::JsEngine::Evaluate(const std::string& source)
   const v8::Handle<v8::Script> script = v8::Script::Compile(v8Source);
   const v8::TryCatch tryCatch;
   const v8::Handle<v8::Value> result = script->Run();
-  if (result.IsEmpty()) {
-    const v8::Handle<v8::Value> exception = tryCatch.Exception();
-    const v8::String::AsciiValue message(exception);
-    throw JsError(*message);
-  }
+  if (result.IsEmpty())
+    throw JsError(tryCatch.Exception());
 }
 
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
@@ -82,11 +79,8 @@ std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
     global->Get(v8::String::New(functionName.c_str())));
   const v8::TryCatch tryCatch;
   const v8::Local<v8::Value> result = function->Call(function, 0, 0);
-  if (result.IsEmpty()) {
-    const v8::Handle<v8::Value> exception = tryCatch.Exception();
-    const v8::String::AsciiValue message(exception);
-    throw JsError(*message);
-  }
+  if (result.IsEmpty())
+    throw JsError(tryCatch.Exception());
   const v8::String::AsciiValue ascii(result);
   return *ascii;
 }

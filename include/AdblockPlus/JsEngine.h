@@ -13,7 +13,7 @@ namespace AdblockPlus
   class JsError : public std::runtime_error
   {
   public:
-    JsError(const std::string& message);
+    JsError(const v8::Handle<v8::Value> exception);
   };
 
   class JsEngine
