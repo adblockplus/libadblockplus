@@ -12,6 +12,7 @@
     'sources': [
       'src/ErrorCallback.cpp',
       'src/FileReader.cpp',
+      'src/JsConsole.cpp',
       'src/JsEngine.cpp'
     ],
     'direct_dependent_settings': {
@@ -27,6 +28,7 @@
       'libadblockplus'
     ],
     'sources': [
+      'test/JsConsole.cpp',
       'test/JsEngine.cpp'
     ]
   }]
