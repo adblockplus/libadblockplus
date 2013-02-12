@@ -50,12 +50,12 @@ namespace
   {
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
+    const v8::Handle<v8::ObjectTemplate> libAdblockPlus =
+      v8::ObjectTemplate::New();
     const v8::Handle<v8::FunctionTemplate> reportError =
       v8::FunctionTemplate::New(ReportErrorCallback,
                                 v8::External::New(errorCallback));
-    global->Set(v8::String::New("reportError"), reportError);
-    const v8::Handle<v8::ObjectTemplate> libAdblockPlus =
-      v8::ObjectTemplate::New();
+    libAdblockPlus->Set(v8::String::New("reportError"), reportError);
     const v8::Handle<v8::FunctionTemplate> load =
       v8::FunctionTemplate::New(LoadCallback, v8::External::New(
         const_cast<AdblockPlus::FileReader*>(fileReader)));

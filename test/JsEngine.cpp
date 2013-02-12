@@ -43,17 +43,6 @@ public:
   }
 };
 
-class StubErrorCallback : public AdblockPlus::ErrorCallback
-{
-public:
-  std::string lastMessage;
-
-  void operator()(const std::string& message)
-  {
-    lastMessage = message;
-  }
-};
-
 TEST(JsEngineTest, EvaluateAndCall)
 {
   ThrowingFileReader fileReader;
@@ -89,13 +78,4 @@ TEST(JsEngineTest, JsExceptionIsThrown)
   ThrowingErrorCallback errorCallback;
   AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
   ASSERT_THROW(jsEngine.Evaluate("doesnotexist()"), AdblockPlus::JsError);
-}
-
-TEST(JsEngineTest, ReportError)
-{
-  ThrowingFileReader fileReader;
-  StubErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
-  jsEngine.Evaluate("reportError('fail')");
-  ASSERT_EQ("fail", errorCallback.lastMessage);
 }
