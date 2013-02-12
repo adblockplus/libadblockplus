@@ -59,7 +59,8 @@ int main()
     LibFileReader fileReader;
     CerrErrorCallback errorCallback;
     AdblockPlus::JsEngine jsEngine(&fileReader, 0);
-    jsEngine.Load("start.js");
+    jsEngine.Load("adblockplus_compat.js");
+    jsEngine.Load("adblockplus.js");
 
     CommandMap commands;
     Add(commands, new HelpCommand(commands));
