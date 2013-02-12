@@ -22,6 +22,15 @@ public:
   }
 };
 
+class ThrowingErrorCallback : public AdblockPlus::ErrorCallback
+{
+public:
+  void operator()(const std::string& message)
+  {
+    throw std::runtime_error("Unexpected error: " + message);
+  }
+};
+
 TEST(JsConsoleTest, ErrorInvokesErrorCallback)
 {
   ThrowingFileReader fileReader;
@@ -29,4 +38,12 @@ TEST(JsConsoleTest, ErrorInvokesErrorCallback)
   AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
   jsEngine.Evaluate("console.error('foo')");
   ASSERT_EQ("foo", errorCallback.lastMessage);
+}
+
+TEST(JsConsoleTest, TraceDoesNothing)
+{
+  ThrowingFileReader fileReader;
+  ThrowingErrorCallback errorCallback;
+  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
+  jsEngine.Evaluate("console.trace()");
 }
