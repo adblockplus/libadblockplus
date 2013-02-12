@@ -3,66 +3,19 @@
 
 namespace
 {
-  v8::Handle<v8::Value> ReportErrorCallback(const v8::Arguments& arguments)
-  {
-    if (arguments.Length() < 1)
-      return v8::Undefined();
-    const v8::HandleScope handleScope;
-    const v8::Handle<v8::Value> argument = arguments[0];
-    const v8::String::Utf8Value message(argument);
-    const v8::Handle<v8::External> external =
-      v8::Handle<v8::External>::Cast(arguments.Data());
-    AdblockPlus::ErrorCallback* const errorCallback =
-      static_cast<AdblockPlus::ErrorCallback*>(external->Value());
-    (*errorCallback)(*message);
-    return v8::Undefined();
-  }
-
-  std::string Slurp(const AdblockPlus::FileReader& fileReader,
-                    const std::string& path)
-  {
-    const std::auto_ptr<std::istream> file = fileReader.Read(path);
-    if (!*file)
-      throw std::runtime_error("Unable to load file " + path);
-    std::stringstream content;
-    content << file->rdbuf();
-    return content.str();
-  }
-
-  v8::Handle<v8::Value> LoadCallback(const v8::Arguments& arguments)
-  {
-    if (arguments.Length() < 1)
-      return v8::Undefined();
-    const v8::HandleScope handleScope;
-    const v8::Handle<v8::Value> argument = arguments[0];
-    const v8::String::Utf8Value path(argument);
-    const v8::Handle<v8::External> external =
-      v8::Handle<v8::External>::Cast(arguments.Data());
-    AdblockPlus::FileReader* const fileReader =
-      static_cast<AdblockPlus::FileReader*>(external->Value());
-    Slurp(*fileReader, *path);
-    return v8::Undefined();
-  }
-
-  v8::Handle<v8::Context> CreateContext(
-    const AdblockPlus::FileReader* const fileReader,
-    AdblockPlus::ErrorCallback* const errorCallback)
+  v8::Handle<v8::Context> CreateContext()
   {
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-    const v8::Handle<v8::ObjectTemplate> libAdblockPlus =
-      v8::ObjectTemplate::New();
-    const v8::Handle<v8::FunctionTemplate> reportError =
-      v8::FunctionTemplate::New(ReportErrorCallback,
-                                v8::External::New(errorCallback));
-    libAdblockPlus->Set(v8::String::New("reportError"), reportError);
-    const v8::Handle<v8::FunctionTemplate> load =
-      v8::FunctionTemplate::New(LoadCallback, v8::External::New(
-        const_cast<AdblockPlus::FileReader*>(fileReader)));
-    libAdblockPlus->Set(v8::String::New("load"), load);
-    global->Set(v8::String::New("LibAdblockPlus"), libAdblockPlus);
     const v8::Persistent<v8::Context> context = v8::Context::New(0, global);
     return context;
+  }
+
+  std::string Slurp(std::istream& stream)
+  {
+    std::stringstream content;
+    content << stream.rdbuf();
+    return content.str();
   }
 }
 
@@ -73,7 +26,7 @@ AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception)
 
 AdblockPlus::JsEngine::JsEngine(const FileReader* const fileReader,
                                 ErrorCallback* const errorCallback)
-  : fileReader(fileReader), context(CreateContext(fileReader, errorCallback))
+  : fileReader(fileReader), context(CreateContext())
 {
 }
 
@@ -91,7 +44,10 @@ void AdblockPlus::JsEngine::Evaluate(const std::string& source)
 
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 {
-  Evaluate(Slurp(*fileReader, scriptPath));
+  const std::auto_ptr<std::istream> file = fileReader->Read(scriptPath);
+  if (!*file)
+    throw std::runtime_error("Unable to load script " + scriptPath);
+  Evaluate(Slurp(*file));
 }
 
 std::string AdblockPlus::JsEngine::Call(const std::string& functionName)

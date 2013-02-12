@@ -27,8 +27,7 @@
       'libadblockplus'
     ],
     'sources': [
-      'test/JsEngine.cpp',
-      'test/LibAdblockPlus.cpp'
+      'test/JsEngine.cpp'
     ]
   }]
 }
