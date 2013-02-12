@@ -11,8 +11,7 @@ namespace
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
     global->Set(v8::String::New("console"), JsConsole::Create(errorCallback));
-    const v8::Persistent<v8::Context> context = v8::Context::New(0, global);
-    return context;
+    return v8::Context::New(0, global);
   }
 
   std::string Slurp(std::istream& stream)
