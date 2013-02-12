@@ -40,7 +40,7 @@ void AdblockPlus::JsEngine::Evaluate(const std::string& source)
   const v8::Handle<v8::String> v8Source = v8::String::New(source.c_str());
   const v8::Handle<v8::Script> script = v8::Script::Compile(v8Source);
   const v8::TryCatch tryCatch;
-  const v8::Handle<v8::Value> result = script->Run();
+  const v8::Handle<const v8::Value> result = script->Run();
   if (result.IsEmpty())
     throw JsError(tryCatch.Exception());
 }
