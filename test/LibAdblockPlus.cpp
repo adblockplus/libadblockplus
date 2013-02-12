@@ -2,6 +2,26 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
+class ThrowingFileReader : public AdblockPlus::FileReader
+{
+public:
+  std::auto_ptr<std::istream> Read(const std::string& path) const
+  {
+    throw std::runtime_error("Unexpected read of file: " + path);
+  }
+};
+
+class MockErrorCallback : public AdblockPlus::ErrorCallback
+{
+public:
+  std::string lastMessage;
+
+  void operator()(const std::string& message)
+  {
+    lastMessage = message;
+  }
+};
+
 class MockFileReader : public AdblockPlus::FileReader
 {
 public:
@@ -22,6 +42,15 @@ public:
     throw std::runtime_error("Unexpected error: " + message);
   }
 };
+
+TEST(JsEngineTest, ReportError)
+{
+  ThrowingFileReader fileReader;
+  MockErrorCallback errorCallback;
+  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
+  jsEngine.Evaluate("LibAdblockPlus.reportError('fail')");
+  ASSERT_EQ("fail", errorCallback.lastMessage);
+}
 
 TEST(LibAdblockPlusTest, Load)
 {
