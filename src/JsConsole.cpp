@@ -14,8 +14,8 @@ namespace
       const v8::String::Utf8Value value(argument);
       message << *value;
     }
-    const v8::Handle<v8::External> external =
-      v8::Handle<v8::External>::Cast(arguments.Data());
+    const v8::Handle<const v8::External> external =
+      v8::Handle<const v8::External>::Cast(arguments.Data());
     AdblockPlus::ErrorCallback* const errorCallback =
       static_cast<AdblockPlus::ErrorCallback*>(external->Value());
     (*errorCallback)(message.str());
