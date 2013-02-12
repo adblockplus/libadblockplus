@@ -21,6 +21,11 @@ namespace
     (*errorCallback)(message.str());
     return v8::Undefined();
   }
+
+  v8::Handle<v8::Value> TraceCallback(const v8::Arguments& arguments)
+  {
+    return v8::Undefined();
+  }
 }
 
 v8::Handle<v8::ObjectTemplate> JsConsole::Create(
@@ -31,5 +36,8 @@ v8::Handle<v8::ObjectTemplate> JsConsole::Create(
   const v8::Handle<v8::FunctionTemplate> errorFunction =
     v8::FunctionTemplate::New(ErrorCallback, v8::External::New(&errorCallback));
   console->Set(v8::String::New("error"), errorFunction);
+  const v8::Handle<v8::FunctionTemplate> traceFunction =
+    v8::FunctionTemplate::New(TraceCallback);
+  console->Set(v8::String::New("trace"), traceFunction);
   return handleScope.Close(console);
 }
