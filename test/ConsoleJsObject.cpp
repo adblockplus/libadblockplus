@@ -31,7 +31,7 @@ public:
   }
 };
 
-TEST(JsConsoleTest, ErrorInvokesErrorCallback)
+TEST(ConsoleJsObjectTest, ErrorInvokesErrorCallback)
 {
   ThrowingFileReader fileReader;
   MockErrorCallback errorCallback;
@@ -40,7 +40,7 @@ TEST(JsConsoleTest, ErrorInvokesErrorCallback)
   ASSERT_EQ("foo", errorCallback.lastMessage);
 }
 
-TEST(JsConsoleTest, TraceDoesNothing)
+TEST(ConsoleJsObjectTest, TraceDoesNothing)
 {
   ThrowingFileReader fileReader;
   ThrowingErrorCallback errorCallback;

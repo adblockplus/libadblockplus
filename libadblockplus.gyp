@@ -10,9 +10,9 @@
     ],
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
+      'src/ConsoleJsObject.cpp',
       'src/ErrorCallback.cpp',
       'src/FileReader.cpp',
-      'src/JsConsole.cpp',
       'src/JsEngine.cpp'
     ],
     'direct_dependent_settings': {
@@ -28,7 +28,7 @@
       'libadblockplus'
     ],
     'sources': [
-      'test/JsConsole.cpp',
+      'test/ConsoleJsObject.cpp',
       'test/JsEngine.cpp'
     ]
   }]

@@ -1,7 +1,7 @@
 #include <AdblockPlus.h>
 #include <sstream>
 
-#include "JsConsole.h"
+#include "ConsoleJsObject.h"
 
 namespace
 {
@@ -10,7 +10,8 @@ namespace
   {
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-    global->Set(v8::String::New("console"), JsConsole::Create(errorCallback));
+    global->Set(v8::String::New("console"),
+                AdblockPlus::ConsoleJsObject::Create(errorCallback));
     return v8::Context::New(0, global);
   }
 
