@@ -14,9 +14,17 @@ All you need is Python 2.6 and Make:
 
     make
 
+The default target architecture is x64. On a 32 bit system, run:
+
+    make ARCH=ia32
+
 To build and run the tests:
 
     make test
+
+Likewise, use the following on a 32 bit system:
+
+    make test ARCH=ia32
 
 ### Windows
 
