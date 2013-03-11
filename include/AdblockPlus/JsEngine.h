@@ -24,6 +24,7 @@ namespace AdblockPlus
     void Evaluate(const std::string& source);
     void Load(const std::string& scriptPath);
     std::string Call(const std::string& functionName);
+    void Gc();
 
   private:
     const FileReader* const fileReader;
