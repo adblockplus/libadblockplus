@@ -15,6 +15,12 @@ namespace
     return v8::Context::New(0, global);
   }
 
+  void CheckTryCatch(const v8::TryCatch& tryCatch)
+  {
+    if (tryCatch.HasCaught())
+      throw AdblockPlus::JsError(tryCatch.Exception());
+  }
+
   std::string Slurp(std::istream& stream)
   {
     std::stringstream content;
@@ -39,11 +45,11 @@ void AdblockPlus::JsEngine::Evaluate(const std::string& source)
   const v8::HandleScope handleScope;
   const v8::Context::Scope contextScope(context);
   const v8::Handle<v8::String> v8Source = v8::String::New(source.c_str());
-  const v8::Handle<v8::Script> script = v8::Script::Compile(v8Source);
   const v8::TryCatch tryCatch;
+  const v8::Handle<v8::Script> script = v8::Script::Compile(v8Source);
+  CheckTryCatch(tryCatch);
   const v8::Handle<const v8::Value> result = script->Run();
-  if (result.IsEmpty())
-    throw JsError(tryCatch.Exception());
+  CheckTryCatch(tryCatch);
 }
 
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
@@ -63,8 +69,7 @@ std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
     global->Get(v8::String::New(functionName.c_str())));
   const v8::TryCatch tryCatch;
   const v8::Local<v8::Value> result = function->Call(function, 0, 0);
-  if (result.IsEmpty())
-    throw JsError(tryCatch.Exception());
+  CheckTryCatch(tryCatch);
   const v8::String::AsciiValue ascii(result);
   return *ascii;
 }
