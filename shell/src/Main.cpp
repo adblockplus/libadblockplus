@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "GcCommand.h"
 #include "HelpCommand.h"
 #include "SubscriptionsCommand.h"
 #include "MatchesCommand.h"
@@ -63,6 +64,7 @@ int main()
     jsEngine.Load("adblockplus.js");
 
     CommandMap commands;
+    Add(commands, new GcCommand(jsEngine));
     Add(commands, new HelpCommand(commands));
     Add(commands, new SubscriptionsCommand(jsEngine));
     Add(commands, new MatchesCommand());

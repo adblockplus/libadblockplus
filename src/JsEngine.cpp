@@ -73,3 +73,8 @@ std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
   const v8::String::AsciiValue ascii(result);
   return *ascii;
 }
+
+void AdblockPlus::JsEngine::Gc()
+{
+  while (!v8::V8::IdleNotification());
+}
