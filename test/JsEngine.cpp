@@ -72,10 +72,18 @@ TEST(JsEngineTest, LoadBadStreamFails)
   ASSERT_ANY_THROW(jsEngine.Load("hello.js"));
 }
 
-TEST(JsEngineTest, JsExceptionIsThrown)
+TEST(JsEngineTest, RuntimeExceptionIsThrown)
 {
   ThrowingFileReader fileReader;
   ThrowingErrorCallback errorCallback;
   AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
   ASSERT_THROW(jsEngine.Evaluate("doesnotexist()"), AdblockPlus::JsError);
+}
+
+TEST(JsEngineTest, CompileTimeExceptionIsThrown)
+{
+  ThrowingFileReader fileReader;
+  ThrowingErrorCallback errorCallback;
+  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
+  ASSERT_THROW(jsEngine.Evaluate("'foo'bar'"), AdblockPlus::JsError);
 }
