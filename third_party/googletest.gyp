@@ -1,12 +1,4 @@
 {
-  'conditions': [
-    ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
-       or OS=="netbsd"', {
-      'target_defaults': {
-        'cflags!': ['-Werror']
-      }
-    }]
-  ],
   'targets': [{
     'target_name': 'googletest',
     'type': '<(library)',
@@ -30,7 +22,7 @@
     'target_name': 'googletest_main',
     'type': '<(library)',
     'sources': ['googletest/src/gtest_main.cc'],
-    'dependencies': [':googletest'],
-    'export_dependent_settings': [':googletest']
+    'dependencies': ['googletest'],
+    'export_dependent_settings': ['googletest']
   }]
 }

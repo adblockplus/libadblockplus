@@ -1,14 +1,6 @@
 {
   'includes': ['third_party/v8/build/common.gypi',
                'shell/shell.gyp'],
-  'conditions': [
-    ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
-       or OS=="netbsd"', {
-      'target_defaults': {
-        'cflags!': ['-fno-exceptions']
-      }
-    }]
-  ],
   'targets': [{
     'target_name': 'libadblockplus',
     'type': '<(library)',
