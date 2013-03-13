@@ -1,4 +1,12 @@
 {
+  'conditions': [
+    ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
+       or OS=="netbsd"', {
+      'target_defaults': {
+        'cflags!': ['-Werror']
+      }
+    }]
+  ],
   'targets': [{
     'target_name': 'googletest',
     'type': '<(library)',
