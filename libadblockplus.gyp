@@ -24,7 +24,7 @@
     'target_name': 'tests',
     'type': 'executable',
     'dependencies': [
-      'third_party/gtest/googletest.gyp:gtest_main',
+      'third_party/googletest.gyp:googletest_main',
       'libadblockplus'
     ],
     'sources': [
