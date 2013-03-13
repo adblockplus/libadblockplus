@@ -1,0 +1,1 @@
+build\debug\mksnapshot.exe" "--log-snapshot-positions" "--logfile" "build\debug\obj\v8_snapshot\snapshot.log" "build\debug\obj\v8_snapshot\snapshot.cc"
