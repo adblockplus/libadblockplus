@@ -12,8 +12,10 @@
       'target_defaults': {
         'cflags': [ '-Wall', '-W', '-Wno-unused-parameter',
                     '-Wnon-virtual-dtor', '-pthread', '-fno-rtti',
-                    '-pedantic' ],
-        'cflags!': [ '-Werror' ],
+                    '-pedantic',
+                    # Ignore some warnings for googletest
+                    '-Wno-error=long-long', '-Wno-error=variadic-macros',
+                    '-Wno-error=missing-field-initializers' ],
         'ldflags': [ '-pthread', ],
       },
     }],
