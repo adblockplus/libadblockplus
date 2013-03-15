@@ -33,7 +33,7 @@ namespace
   void CheckTryCatch(const v8::TryCatch& tryCatch)
   {
     if (tryCatch.HasCaught())
-      throw AdblockPlus::JsError(tryCatch.Exception());
+      throw AdblockPlus::JsError(tryCatch.Exception(), tryCatch.Message());
   }
 
   std::string Slurp(std::istream& stream)
@@ -42,10 +42,26 @@ namespace
     content << stream.rdbuf();
     return content.str();
   }
+
+  std::string ExceptionToString(const v8::Handle<v8::Value> exception,
+      const v8::Handle<v8::Message> message)
+  {
+    std::stringstream error;
+    error << *v8::String::Utf8Value(exception);
+    if (!message.IsEmpty())
+    {
+      error << " at ";
+      error << *v8::String::Utf8Value(message->GetScriptResourceName());
+      error << ":";
+      error << message->GetLineNumber();
+    }
+    return error.str();
+  }
 }
 
-AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception)
-  : std::runtime_error(*v8::String::AsciiValue(exception))
+AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
+    const v8::Handle<v8::Message> message)
+  : std::runtime_error(ExceptionToString(exception, message))
 {
 }
 
