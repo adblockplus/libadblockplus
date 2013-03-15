@@ -48,7 +48,7 @@ void AdblockPlus::JsEngine::Evaluate(const std::string& source)
   const v8::TryCatch tryCatch;
   const v8::Handle<v8::Script> script = v8::Script::Compile(v8Source);
   CheckTryCatch(tryCatch);
-  const v8::Handle<const v8::Value> result = script->Run();
+  script->Run();
   CheckTryCatch(tryCatch);
 }
 
