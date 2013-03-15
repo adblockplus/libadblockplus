@@ -6,25 +6,16 @@
     'want_separate_host_toolset': 0,
   },
 
-  'target_defaults': {
-    'default_configuration': 'Debug',
-    'configurations': {
-      'Debug': {
-        'cflags': [ '-g', '-O0' ],
-      },
-      'Release': {
-        # Xcode insists on this empty entry.
-      },
-    },
-  },
-
   'conditions': [
     ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
        or OS=="netbsd"', {
       'target_defaults': {
         'cflags': [ '-Wall', '-W', '-Wno-unused-parameter',
                     '-Wnon-virtual-dtor', '-pthread', '-fno-rtti',
-                    '-pedantic' ],
+                    '-pedantic',
+                    # Ignore some warnings for googletest
+                    '-Wno-error=long-long', '-Wno-error=variadic-macros',
+                    '-Wno-error=missing-field-initializers' ],
         'ldflags': [ '-pthread', ],
       },
     }],
