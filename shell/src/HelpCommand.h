@@ -6,7 +6,7 @@
 class HelpCommand : public Command
 {
 public:
-  HelpCommand(const CommandMap& commands);
+  explicit HelpCommand(const CommandMap& commands);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;
