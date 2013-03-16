@@ -9,7 +9,7 @@
 class SubscriptionsCommand : public Command
 {
 public:
-  SubscriptionsCommand(AdblockPlus::JsEngine& jsEngine);
+  explicit SubscriptionsCommand(AdblockPlus::JsEngine& jsEngine);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;
