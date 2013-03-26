@@ -8,8 +8,7 @@ namespace AdblockPlus
 {
   namespace ConsoleJsObject
   {
-    v8::Handle<v8::ObjectTemplate> Create(
-      AdblockPlus::ErrorCallback& errorCallback);
+    v8::Handle<v8::ObjectTemplate> Create(ErrorCallback& errorCallback);
   }
 }
 
