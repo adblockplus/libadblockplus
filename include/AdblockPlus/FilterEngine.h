@@ -1,3 +1,6 @@
+#ifndef ADBLOCKPLUS_FILTER_ENGINE_H
+#define ADBLOCKPLUS_FILTER_ENGINE_H
+
 #include <vector>
 #include <string>
 
@@ -32,3 +35,5 @@ namespace AdblockPlus
         std::vector<Subscription> subscriptions;
     };
 }
+
+#endif
