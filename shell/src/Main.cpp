@@ -71,23 +71,23 @@ int main()
 
     std::string commandLine;
     while (ReadCommandLine(commandLine))
+    {
+      std::string commandName;
+      std::string arguments;
+      ParseCommandLine(commandLine, commandName, arguments);
+      const CommandMap::const_iterator it = commands.find(commandName);
+      try
       {
-        std::string commandName;
-        std::string arguments;
-        ParseCommandLine(commandLine, commandName, arguments);
-        const CommandMap::const_iterator it = commands.find(commandName);
-        try
-          {
-            if (it != commands.end())
-              (*it->second)(arguments);
-            else
-              throw NoSuchCommandError(commandName);
-          }
-        catch (NoSuchCommandError error)
-          {
-            std::cout << error.what() << std::endl;
-          }
+        if (it != commands.end())
+          (*it->second)(arguments);
+        else
+          throw NoSuchCommandError(commandName);
       }
+      catch (NoSuchCommandError error)
+      {
+        std::cout << error.what() << std::endl;
+      }
+    }
   }
   catch (const std::exception& e)
   {
