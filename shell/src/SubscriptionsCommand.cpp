@@ -10,9 +10,9 @@ SubscriptionsCommand::SubscriptionsCommand(AdblockPlus::JsEngine& jsEngine)
 
 void SubscriptionsCommand::operator()(const std::string& arguments)
 {
-  std::istringstream argumentsStream(arguments);
+  std::istringstream argumentStream(arguments);
   std::string action;
-  argumentsStream >> action;
+  argumentStream >> action;
   if (!action.size())
   {
     ShowSubscriptions();
@@ -26,7 +26,7 @@ void SubscriptionsCommand::operator()(const std::string& arguments)
   }
 
   std::string url;
-  argumentsStream >> url;
+  argumentStream >> url;
 
   if (action == "add")
   {
