@@ -13,6 +13,7 @@
       'src/ConsoleJsObject.cpp',
       'src/ErrorCallback.cpp',
       'src/FileReader.cpp',
+      'src/FilterEngine.cpp',
       'src/JsEngine.cpp'
     ],
     'direct_dependent_settings': {
@@ -29,6 +30,7 @@
     ],
     'sources': [
       'test/ConsoleJsObject.cpp',
+      'test/FilterEngineStubs.cpp',
       'test/JsEngine.cpp'
     ]
   }]

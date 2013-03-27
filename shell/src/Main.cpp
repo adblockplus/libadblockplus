@@ -60,14 +60,13 @@ int main()
     LibFileReader fileReader;
     CerrErrorCallback errorCallback;
     AdblockPlus::JsEngine jsEngine(&fileReader, 0);
-    jsEngine.Load("adblockplus_compat.js");
-    jsEngine.Load("adblockplus.js");
+    AdblockPlus::FilterEngine filterEngine(jsEngine);
 
     CommandMap commands;
     Add(commands, new GcCommand(jsEngine));
     Add(commands, new HelpCommand(commands));
-    Add(commands, new SubscriptionsCommand(jsEngine));
-    Add(commands, new MatchesCommand());
+    Add(commands, new SubscriptionsCommand(filterEngine));
+    Add(commands, new MatchesCommand(filterEngine));
 
     std::string commandLine;
     while (ReadCommandLine(commandLine))

@@ -15,6 +15,9 @@ public:
   virtual void operator()(const std::string& arguments) = 0;
   virtual std::string GetDescription() const = 0;
   virtual std::string GetUsage() const = 0;
+
+protected:
+  void ShowUsage() const;
 };
 
 typedef std::map<const std::string, Command*> CommandMap;
