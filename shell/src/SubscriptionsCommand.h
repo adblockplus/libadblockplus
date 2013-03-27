@@ -9,18 +9,19 @@
 class SubscriptionsCommand : public Command
 {
 public:
-  explicit SubscriptionsCommand(AdblockPlus::JsEngine& jsEngine);
+  explicit SubscriptionsCommand(AdblockPlus::FilterEngine& filterEngine);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;
 
 private:
-  AdblockPlus::JsEngine& jsEngine;
+  AdblockPlus::FilterEngine& filterEngine;
 
   void ShowSubscriptions();
-  void AddSubscription(const std::string& url);
+  void AddSubscription(const std::string& url, const std::string& title);
   void RemoveSubscription(const std::string& url);
   void UpdateSubscriptions();
+  void FetchSubscriptions();
 };
 
 #endif

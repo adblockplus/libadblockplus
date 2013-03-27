@@ -3,8 +3,21 @@
 
 #include "SubscriptionsCommand.h"
 
-SubscriptionsCommand::SubscriptionsCommand(AdblockPlus::JsEngine& jsEngine)
-  : Command("subscriptions"), jsEngine(jsEngine)
+namespace
+{
+  typedef std::vector<AdblockPlus::Subscription> SubscriptionList;
+
+  void ShowSubscriptionList(const SubscriptionList& subscriptions)
+  {
+    for (SubscriptionList::const_iterator it = subscriptions.begin();
+         it != subscriptions.end(); it++)
+      std::cout << it->title << " - " << it->url << std::endl;
+  }
+}
+
+SubscriptionsCommand::SubscriptionsCommand(
+  AdblockPlus::FilterEngine& filterEngine)
+  : Command("subscriptions"), filterEngine(filterEngine)
 {
 }
 
@@ -19,28 +32,32 @@ void SubscriptionsCommand::operator()(const std::string& arguments)
     return;
   }
 
-  if (action == "update")
-  {
-    UpdateSubscriptions();
-    return;
-  }
-
-  std::string url;
-  argumentStream >> url;
-
   if (action == "add")
   {
-    AddSubscription(url);
-    return;
+    std::string url;
+    argumentStream >> url;
+    std::string title;
+    std::getline(argumentStream, title);
+    if (url.size() || title.size())
+      AddSubscription(url, title);
+    else
+      ShowUsage();
   }
-
-  if (action == "remove")
+  else if (action == "remove")
   {
-    RemoveSubscription(url);
-    return;
+    std::string url;
+    argumentStream >> url;
+    if (url.size())
+      RemoveSubscription(url);
+    else
+      ShowUsage();
   }
-
-  throw NoSuchCommandError(name + " " + action);
+  else if (action == "update")
+    UpdateSubscriptions();
+  else if (action == "fetch")
+    FetchSubscriptions();
+  else
+    throw NoSuchCommandError(name + " " + action);
 }
 
 std::string SubscriptionsCommand::GetDescription() const
@@ -50,25 +67,41 @@ std::string SubscriptionsCommand::GetDescription() const
 
 std::string SubscriptionsCommand::GetUsage() const
 {
-  return name + " [add URL|remove URL|update]";
+  return name + " [add URL TITLE|remove URL|update|fetch]";
 }
 
 void SubscriptionsCommand::ShowSubscriptions()
 {
-  // TODO: List all subscriptions
+  ShowSubscriptionList(filterEngine.GetSubscriptions());
 }
 
-void SubscriptionsCommand::AddSubscription(const std::string& url)
+void SubscriptionsCommand::AddSubscription(const std::string& url,
+                                           const std::string& title)
 {
-  // TODO: Add a subscriptions
+  filterEngine.AddSubscription(AdblockPlus::Subscription(url, title));
 }
 
 void SubscriptionsCommand::RemoveSubscription(const std::string& url)
 {
-  // TODO: Remove a subscription
+  const AdblockPlus::Subscription* const subscription =
+    filterEngine.FindSubscription(url);
+  if (!subscription)
+  {
+    std::cout << "No subscription with URL '" << url << "'" << std::endl;
+    return;
+  }
+  filterEngine.RemoveSubscription(*subscription);
 }
 
 void SubscriptionsCommand::UpdateSubscriptions()
 {
-  // TODO: Update all subscriptions
+  const SubscriptionList& subscriptions = filterEngine.GetSubscriptions();
+  for (SubscriptionList::const_iterator it = subscriptions.begin();
+       it != subscriptions.end(); it++)
+    filterEngine.UpdateSubscriptionFilters(*it);
+}
+
+void SubscriptionsCommand::FetchSubscriptions()
+{
+  ShowSubscriptionList(filterEngine.FetchAvailableSubscriptions());
 }
