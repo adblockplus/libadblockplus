@@ -1,5 +1,5 @@
-#ifndef ADBLOCKPLUS_H
-#define ADBLOCKPLUS_H
+#ifndef ADBLOCKPLUS_ADBLOCKPLUS_H
+#define ADBLOCKPLUS_ADBLOCKPLUS_H
 
 #include <AdblockPlus/FileReader.h>
 #include <AdblockPlus/FilterEngine.h>
