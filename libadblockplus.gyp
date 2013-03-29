@@ -14,7 +14,8 @@
       'src/ErrorCallback.cpp',
       'src/FileReader.cpp',
       'src/FilterEngine.cpp',
-      'src/JsEngine.cpp'
+      'src/JsEngine.cpp',
+      'src/Thread.cpp'
     ],
     'direct_dependent_settings': {
       'include_dirs': ['include']
@@ -31,7 +32,8 @@
     'sources': [
       'test/ConsoleJsObject.cpp',
       'test/FilterEngineStubs.cpp',
-      'test/JsEngine.cpp'
+      'test/JsEngine.cpp',
+      'test/Thread.cpp'
     ]
   }]
 }
