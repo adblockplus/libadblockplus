@@ -89,7 +89,7 @@ Thread::~Thread()
 void Thread::Start()
 {
 #ifdef WIN32
-  CreateThread(0, 0, &CallRun, 0, this, &thread);
+  thread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&CallRun, this, NULL, NULL);
 #else
   pthread_create(&thread, 0, (void *(*)(void*)) &CallRun, this);
 #endif

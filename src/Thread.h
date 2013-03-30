@@ -37,6 +37,7 @@ namespace AdblockPlus
 
     private:
 #ifdef WIN32
+      CONDITION_VARIABLE nativeCondition;
 #else
       pthread_cond_t nativeCondition;
 #endif
