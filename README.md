@@ -26,6 +26,12 @@ Likewise, use the following on a 32 bit system:
 
     make test ARCH=ia32
 
+This will build a version of libdabblockplus that uses stubs instead
+of the actual Adblock Plus code, because the latter does not work
+yet. To build it anyway:
+
+    make test CXXFLAGS="-DFILTER_ENGINE_STUBS=0"
+
 ### Windows
 
 You need Microsoft Visual C++ (Express is sufficient) 2010 or later
