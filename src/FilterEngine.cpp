@@ -58,7 +58,9 @@ std::vector<Subscription> FilterEngine::FetchAvailableSubscriptions()
 bool FilterEngine::Matches(const std::string& url,
                            const std::string& contentType) const
 {
-  return subscriptions.size() && url.length() % 2;
+  //For test on http://simple-adblock.com/faq/testing-your-adblocker/
+  return url.find("adbanner.gif") != std::string::npos;
+//  return subscriptions.size() && url.length() % 2;
 }
 
 std::vector<std::string> FilterEngine::GetElementHidingRules() const
@@ -66,5 +68,7 @@ std::vector<std::string> FilterEngine::GetElementHidingRules() const
   std::vector<std::string> hidingRules;
   hidingRules.push_back("###ad");
   hidingRules.push_back("##.ad");
+  //For test on http://simple-adblock.com/faq/testing-your-adblocker/
+  hidingRules.push_back("##.ad_300x250");
   return hidingRules;
 }
