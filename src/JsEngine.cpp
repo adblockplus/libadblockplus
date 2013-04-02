@@ -3,8 +3,6 @@
 
 #include "ConsoleJsObject.h"
 
-extern const char* jsSources[];
-
 namespace
 {
   v8::Handle<v8::Context> CreateContext(
@@ -69,8 +67,6 @@ AdblockPlus::JsEngine::JsEngine(const FileReader* const fileReader,
                                 ErrorCallback* const errorCallback)
   : fileReader(fileReader), context(CreateContext(*errorCallback))
 {
-  for (int i = 0; jsSources[i] && jsSources[i + 1]; i += 2)
-    Evaluate(jsSources[i + 1], jsSources[i]);
 }
 
 void AdblockPlus::JsEngine::Evaluate(const char* source, const char* filename)
