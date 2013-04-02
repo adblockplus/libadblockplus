@@ -15,12 +15,52 @@
       'src/FileReader.cpp',
       'src/FilterEngine.cpp',
       'src/JsEngine.cpp',
-      'src/Thread.cpp'
+      'src/Thread.cpp',
+      '<(INTERMEDIATE_DIR)/adblockplus.js.cc'
     ],
     'direct_dependent_settings': {
       'include_dirs': ['include']
     },
-    'export_dependent_settings': ['third_party/v8/tools/gyp/v8.gyp:v8']
+    'export_dependent_settings': ['third_party/v8/tools/gyp/v8.gyp:v8'],
+    'actions': [{
+      'action_name': 'convert_js',
+      'variables': {
+        'core_library_files': [
+          'lib/info.js',
+          'lib/io.js',
+          'lib/prefs.js',
+          'lib/utils.js',
+          'lib/elemHideHitRegistration.js',
+          'adblockplus/lib/filterNotifier.js',
+          'adblockplus/lib/filterClasses.js',
+          'adblockplus/lib/subscriptionClasses.js',
+          'adblockplus/lib/filterStorage.js',
+          'adblockplus/lib/elemHide.js',
+          'adblockplus/lib/matcher.js',
+          'adblockplus/lib/filterListener.js',
+          'adblockplus/lib/synchronizer.js',
+        ],
+        'additional_library_files': [
+          'lib/compat.js'
+        ],
+      },
+      'inputs': [
+        'convert_js.py',
+        '<@(core_library_files)',
+        '<@(additional_library_files)',
+      ],
+      'outputs': [
+        '<(INTERMEDIATE_DIR)/adblockplus.js.cpp'
+      ],
+      'action': [
+        'python',
+        'convert_js.py',
+        '<@(core_library_files)',
+        '--',
+        '<@(additional_library_files)',
+        '<@(_outputs)',
+      ]
+    }]
   },
   {
     'target_name': 'tests',

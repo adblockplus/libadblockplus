@@ -13,7 +13,8 @@ namespace AdblockPlus
   class JsError : public std::runtime_error
   {
   public:
-    explicit JsError(const v8::Handle<v8::Value> exception);
+    explicit JsError(const v8::Handle<v8::Value> exception,
+        const v8::Handle<v8::Message> message);
   };
 
   class JsEngine
@@ -21,7 +22,9 @@ namespace AdblockPlus
   public:
     JsEngine(const FileReader* const fileReader,
              ErrorCallback* const errorCallback);
-    void Evaluate(const std::string& source);
+    void Evaluate(const char* source, const char* filename = NULL);
+    void Evaluate(const std::string& source,
+        const std::string& filename = "");
     void Load(const std::string& scriptPath);
     std::string Call(const std::string& functionName);
     void Gc();

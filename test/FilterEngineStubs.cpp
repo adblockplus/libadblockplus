@@ -7,12 +7,12 @@ TEST(FilterEngineStubsTest, AddRemove)
 {
   AdblockPlus::JsEngine jsEngine(0, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
-  ASSERT_EQ(filterEngine.GetSubscriptions().size(), 0);
+  ASSERT_EQ(filterEngine.GetSubscriptions().size(), 0u);
   AdblockPlus::Subscription subscription("foo", "bar");
   filterEngine.AddSubscription(subscription);
-  ASSERT_EQ(filterEngine.GetSubscriptions().size(), 1);
+  ASSERT_EQ(filterEngine.GetSubscriptions().size(), 1u);
   filterEngine.RemoveSubscription(subscription);
-  ASSERT_EQ(filterEngine.GetSubscriptions().size(), 0);
+  ASSERT_EQ(filterEngine.GetSubscriptions().size(), 0u);
 }
 
 TEST(FilterEngineStubsTest, Matches)
