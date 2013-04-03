@@ -15,6 +15,7 @@
       'src/ErrorCallback.cpp',
       'src/FileReader.cpp',
       'src/FilterEngine.cpp',
+      'src/GlobalJsObject.cpp',
       'src/JsEngine.cpp',
       'src/Thread.cpp',
       '<(INTERMEDIATE_DIR)/adblockplus.js.cc'
