@@ -50,9 +50,9 @@ namespace AdblockPlus
 
   private:
 #ifdef WIN32
-    HANDLE thread;
+    HANDLE nativeThread;
 #else
-    pthread_t thread;
+    pthread_t nativeThread;
 #endif
   };
 }
