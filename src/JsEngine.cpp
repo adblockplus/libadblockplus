@@ -86,7 +86,6 @@ void AdblockPlus::JsEngine::Evaluate(const std::string& source,
   Evaluate(source.c_str(), filename.c_str());
 }
 
-
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 {
   const std::auto_ptr<std::istream> file = fileReader->Read(scriptPath);
