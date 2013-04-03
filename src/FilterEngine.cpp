@@ -65,7 +65,6 @@ bool FilterEngine::Matches(const std::string& url,
 {
   //For test on http://simple-adblock.com/faq/testing-your-adblocker/
   return url.find("adbanner.gif") != std::string::npos;
-//  return subscriptions.size() && url.length() % 2;
 }
 
 std::vector<std::string> FilterEngine::GetElementHidingRules() const

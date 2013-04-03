@@ -20,6 +20,6 @@ TEST(FilterEngineStubsTest, Matches)
   AdblockPlus::JsEngine jsEngine(0, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
   filterEngine.AddSubscription(AdblockPlus::Subscription("foo", "bar"));
-  ASSERT_FALSE(filterEngine.Matches("http://example.org/a", ""));
-  ASSERT_TRUE(filterEngine.Matches("http://example.org/ad", ""));
+  ASSERT_FALSE(filterEngine.Matches("http://example.org", ""));
+  ASSERT_TRUE(filterEngine.Matches("http://example.org/adbanner.gif", ""));
 }
