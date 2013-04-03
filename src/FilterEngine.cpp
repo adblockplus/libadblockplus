@@ -2,6 +2,10 @@
 
 using namespace AdblockPlus;
 
+#if !FILTER_ENGINE_STUBS
+extern const char* jsSources[];
+#endif
+
 Subscription::Subscription(const std::string& url, const std::string& title)
   : url(url), title(title)
 {
@@ -9,9 +13,10 @@ Subscription::Subscription(const std::string& url, const std::string& title)
 
 FilterEngine::FilterEngine(JsEngine& jsEngine) : jsEngine(jsEngine)
 {
-  // TODO: Load ABP:
-  // jsEngine.Load("adblockplus_compat.js");
-  // jsEngine.Load("adblockplus.js");
+#if !FILTER_ENGINE_STUBS
+  for (int i = 0; jsSources[i] && jsSources[i + 1]; i += 2)
+    jsEngine.Evaluate(jsSources[i + 1], jsSources[i]);
+#endif
 }
 
 void FilterEngine::AddSubscription(Subscription subscription)

@@ -8,6 +8,7 @@
       'include',
       'third_party/v8/include'
     ],
+    'defines': ['FILTER_ENGINE_STUBS=1'],
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
       'src/ConsoleJsObject.cpp',
