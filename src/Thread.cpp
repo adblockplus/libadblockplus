@@ -89,17 +89,17 @@ Thread::~Thread()
 void Thread::Start()
 {
 #ifdef WIN32
-  thread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&CallRun, this, 0, 0);
+  nativeThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&CallRun, this, 0, 0);
 #else
-  pthread_create(&thread, 0, (void *(*)(void*)) &CallRun, this);
+  pthread_create(&nativeThread, 0, (void *(*)(void*)) &CallRun, this);
 #endif
 }
 
 void Thread::Join()
 {
 #ifdef WIN32
-  WaitForSingleObject(thread, INFINITE);
+  WaitForSingleObject(nativeThread, INFINITE);
 #else
-  pthread_join(thread, 0);
+  pthread_join(nativeThread, 0);
 #endif
 }
