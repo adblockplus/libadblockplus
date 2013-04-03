@@ -27,7 +27,6 @@ namespace
       return v8::Script::Compile(v8Source);
   }
 
-
   void CheckTryCatch(const v8::TryCatch& tryCatch)
   {
     if (tryCatch.HasCaught())
