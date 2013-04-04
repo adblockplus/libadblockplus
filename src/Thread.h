@@ -9,6 +9,8 @@
 
 namespace AdblockPlus
 {
+  void Sleep(const int millis);
+
   class Mutex
   {
   public:
@@ -22,6 +24,16 @@ namespace AdblockPlus
     ~Mutex();
     void Lock();
     void Unlock();
+  };
+
+  class Lock
+  {
+  public:
+    Lock(Mutex& mutex);
+    ~Lock();
+
+  private:
+    Mutex& mutex;
   };
 
   class ConditionVariable
