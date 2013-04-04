@@ -21,7 +21,6 @@ Thread::Mutex::Mutex()
 
 Thread::Mutex::~Mutex()
 {
-  Unlock();
 #ifdef WIN32
   DeleteCriticalSection(&nativeMutex);
 #else
@@ -59,7 +58,6 @@ Thread::Condition::Condition()
 Thread::Condition::~Condition()
 {
 #ifndef WIN32
-  Signal();
   pthread_cond_destroy(&nativeCondition);
 #endif
 }
