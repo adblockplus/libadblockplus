@@ -15,13 +15,15 @@ void MatchesCommand::operator()(const std::string& arguments)
   argumentStream >> url;
   std::string contentType;
   argumentStream >> contentType;
-  if (!url.size() || !contentType.size())
+  std::string documentUrl;
+  argumentStream >> documentUrl;
+  if (!url.size() || !contentType.size() || !documentUrl.size())
   {
     ShowUsage();
     return;
   }
 
-  if (filterEngine.Matches(url, contentType))
+  if (filterEngine.Matches(url, contentType, documentUrl))
     std::cout << "Match" << std::endl;
   else
     std::cout << "No match" << std::endl;
@@ -34,5 +36,5 @@ std::string MatchesCommand::GetDescription() const
 
 std::string MatchesCommand::GetUsage() const
 {
-  return name + " URL CONTENT_TYPE";
+  return name + " URL CONTENT_TYPE DOCUMENT_URL";
 }
