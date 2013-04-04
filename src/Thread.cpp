@@ -10,7 +10,7 @@ namespace
   }
 }
 
-Thread::Mutex::Mutex()
+Mutex::Mutex()
 {
 #ifdef WIN32
   InitializeCriticalSection(&nativeMutex);
@@ -19,7 +19,7 @@ Thread::Mutex::Mutex()
 #endif
 }
 
-Thread::Mutex::~Mutex()
+Mutex::~Mutex()
 {
 #ifdef WIN32
   DeleteCriticalSection(&nativeMutex);
@@ -28,7 +28,7 @@ Thread::Mutex::~Mutex()
 #endif
 }
 
-void Thread::Mutex::Lock()
+void Mutex::Lock()
 {
 #ifdef WIN32
   EnterCriticalSection(&nativeMutex);
@@ -37,7 +37,7 @@ void Thread::Mutex::Lock()
 #endif
 }
 
-void Thread::Mutex::Unlock()
+void Mutex::Unlock()
 {
 #ifdef WIN32
   LeaveCriticalSection(&nativeMutex);
@@ -46,7 +46,7 @@ void Thread::Mutex::Unlock()
 #endif
 }
 
-Thread::Condition::Condition()
+ConditionVariable::ConditionVariable()
 {
 #ifdef WIN32
   InitializeConditionVariable(&nativeCondition);
@@ -55,14 +55,14 @@ Thread::Condition::Condition()
 #endif
 }
 
-Thread::Condition::~Condition()
+ConditionVariable::~ConditionVariable()
 {
 #ifndef WIN32
   pthread_cond_destroy(&nativeCondition);
 #endif
 }
 
-void Thread::Condition::Wait(Thread::Mutex& mutex)
+void ConditionVariable::Wait(Mutex& mutex)
 {
 #ifdef WIN32
   SleepConditionVariableCS(&nativeCondition, &mutex.nativeMutex, INFINITE);
@@ -71,7 +71,7 @@ void Thread::Condition::Wait(Thread::Mutex& mutex)
 #endif
 }
 
-void Thread::Condition::Signal()
+void ConditionVariable::Signal()
 {
 #ifdef WIN32
   WakeConditionVariable(&nativeCondition);

@@ -17,7 +17,7 @@ namespace
   {
   public:
     int timesCalled;
-    AdblockPlus::Thread::Mutex mutex;
+    AdblockPlus::Mutex mutex;
 
     Mock() : timesCalled(0)
     {
@@ -38,7 +38,7 @@ namespace
     bool working;
 
     LockingMock(const std::string& name, std::vector<std::string>& log,
-                AdblockPlus::Thread::Mutex& logMutex)
+                AdblockPlus::Mutex& logMutex)
       : name(name), log(log), logMutex(logMutex)
     {
     }
@@ -53,14 +53,14 @@ namespace
   private:
     const std::string name;
     std::vector<std::string>& log;
-    AdblockPlus::Thread::Mutex& logMutex;
+    AdblockPlus::Mutex& logMutex;
   };
 
   class Enqueuer : public AdblockPlus::Thread
   {
   public:
-    Enqueuer(std::queue<int>& queue, AdblockPlus::Thread::Mutex& queueMutex,
-             AdblockPlus::Thread::Condition& notEmpty)
+    Enqueuer(std::queue<int>& queue, AdblockPlus::Mutex& queueMutex,
+             AdblockPlus::ConditionVariable& notEmpty)
       : queue(queue), queueMutex(queueMutex), notEmpty(notEmpty)
     {
     }
@@ -75,15 +75,15 @@ namespace
 
   private:
     std::queue<int>& queue;
-    AdblockPlus::Thread::Mutex& queueMutex;
-    AdblockPlus::Thread::Condition& notEmpty;
+    AdblockPlus::Mutex& queueMutex;
+    AdblockPlus::ConditionVariable& notEmpty;
   };
 
   class Dequeuer : public AdblockPlus::Thread
   {
   public:
-    Dequeuer(std::queue<int>& queue, AdblockPlus::Thread::Mutex& queueMutex,
-             AdblockPlus::Thread::Condition& notEmpty)
+    Dequeuer(std::queue<int>& queue, AdblockPlus::Mutex& queueMutex,
+             AdblockPlus::ConditionVariable& notEmpty)
       : queue(queue), queueMutex(queueMutex), notEmpty(notEmpty)
     {
     }
@@ -99,8 +99,8 @@ namespace
 
   private:
     std::queue<int>& queue;
-    AdblockPlus::Thread::Mutex& queueMutex;
-    AdblockPlus::Thread::Condition& notEmpty;
+    AdblockPlus::Mutex& queueMutex;
+    AdblockPlus::ConditionVariable& notEmpty;
   };
 }
 
@@ -119,7 +119,7 @@ TEST(ThreadTest, Run)
 TEST(ThreadTest, Mutex)
 {
   std::vector<std::string> log;
-  AdblockPlus::Thread::Mutex logMutex;
+  AdblockPlus::Mutex logMutex;
   LockingMock mock1("mock1", log, logMutex);
   LockingMock mock2("mock2", log, logMutex);
   mock1.Start();
@@ -134,8 +134,8 @@ TEST(ThreadTest, Mutex)
 TEST(ThreadTest, ConditionVariable)
 {
   std::queue<int> queue;
-  AdblockPlus::Thread::Mutex queueMutex;
-  AdblockPlus::Thread::Condition notEmpty;
+  AdblockPlus::Mutex queueMutex;
+  AdblockPlus::ConditionVariable notEmpty;
   Dequeuer dequeuer(queue, queueMutex, notEmpty);
   Enqueuer enqueuer(queue, queueMutex, notEmpty);
   dequeuer.Start();
