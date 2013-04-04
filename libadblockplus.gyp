@@ -67,6 +67,7 @@
   {
     'target_name': 'tests',
     'type': 'executable',
+    'defines': ['FILTER_ENGINE_STUBS=1'],
     'dependencies': [
       'third_party/googletest.gyp:googletest_main',
       'libadblockplus'

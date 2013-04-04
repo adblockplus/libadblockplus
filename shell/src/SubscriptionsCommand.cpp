@@ -5,13 +5,13 @@
 
 namespace
 {
-  typedef std::vector<AdblockPlus::Subscription> SubscriptionList;
+  typedef std::vector<AdblockPlus::Subscription*> SubscriptionList;
 
   void ShowSubscriptionList(const SubscriptionList& subscriptions)
   {
     for (SubscriptionList::const_iterator it = subscriptions.begin();
          it != subscriptions.end(); it++)
-      std::cout << it->title << " - " << it->url << std::endl;
+      std::cout << (*it)->GetProperty("title") << " - " << (*it)->GetProperty("url") << std::endl;
   }
 }
 
@@ -38,7 +38,7 @@ void SubscriptionsCommand::operator()(const std::string& arguments)
     argumentStream >> url;
     std::string title;
     std::getline(argumentStream, title);
-    if (url.size() || title.size())
+    if (url.size())
       AddSubscription(url, title);
     else
       ShowUsage();
@@ -67,41 +67,43 @@ std::string SubscriptionsCommand::GetDescription() const
 
 std::string SubscriptionsCommand::GetUsage() const
 {
-  return name + " [add URL TITLE|remove URL|update|fetch]";
+  return name + " [add URL [TITLE]|remove URL|update|fetch]";
 }
 
 void SubscriptionsCommand::ShowSubscriptions()
 {
-  ShowSubscriptionList(filterEngine.GetSubscriptions());
+  ShowSubscriptionList(filterEngine.GetListedSubscriptions());
 }
 
 void SubscriptionsCommand::AddSubscription(const std::string& url,
                                            const std::string& title)
 {
-  filterEngine.AddSubscription(AdblockPlus::Subscription(url, title));
+  AdblockPlus::Subscription& subscription = filterEngine.GetSubscription(url);
+  if (title.size())
+    subscription.SetProperty("title", title);
+  subscription.AddToList();
 }
 
 void SubscriptionsCommand::RemoveSubscription(const std::string& url)
 {
-  const AdblockPlus::Subscription* const subscription =
-    filterEngine.FindSubscription(url);
-  if (!subscription)
+  AdblockPlus::Subscription& subscription = filterEngine.GetSubscription(url);
+  if (!subscription.IsListed())
   {
     std::cout << "No subscription with URL '" << url << "'" << std::endl;
     return;
   }
-  filterEngine.RemoveSubscription(*subscription);
+  subscription.RemoveFromList();
 }
 
 void SubscriptionsCommand::UpdateSubscriptions()
 {
-  const SubscriptionList& subscriptions = filterEngine.GetSubscriptions();
+  const SubscriptionList& subscriptions = filterEngine.GetListedSubscriptions();
   for (SubscriptionList::const_iterator it = subscriptions.begin();
        it != subscriptions.end(); it++)
-    filterEngine.UpdateSubscriptionFilters(*it);
+    (*it)->UpdateFilters();
 }
 
 void SubscriptionsCommand::FetchSubscriptions()
 {
-  ShowSubscriptionList(filterEngine.FetchAvailableSubscriptions());
+  filterEngine.FetchAvailableSubscriptions(&ShowSubscriptionList);
 }
