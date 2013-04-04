@@ -1,7 +1,5 @@
 #include <AdblockPlus.h>
-#include <fstream>
 #include <gtest/gtest.h>
-#include <sstream>
 
 TEST(FilterEngineStubsTest, AddRemove)
 {
