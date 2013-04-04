@@ -6,13 +6,6 @@
 
 namespace
 {
-#ifndef WIN32
-  void Sleep(const int millis)
-  {
-      usleep(millis * 1000);
-  }
-#endif
-
   class Mock : public AdblockPlus::Thread
   {
   public:
@@ -25,10 +18,9 @@ namespace
 
     void Run()
     {
-      Sleep(5);
-      mutex.Lock();
+      AdblockPlus::Sleep(5);
+      AdblockPlus::Lock lock(mutex);
       timesCalled++;
-      mutex.Unlock();
     }
   };
 
@@ -45,9 +37,8 @@ namespace
 
     void Run()
     {
-      logMutex.Lock();
+      AdblockPlus::Lock lock(logMutex);
       log.push_back(name);
-      logMutex.Unlock();
     }
 
   private:
@@ -67,10 +58,9 @@ namespace
 
     void Run()
     {
-      queueMutex.Lock();
+      AdblockPlus::Lock lock(queueMutex);
       queue.push(1);
       notEmpty.Signal();
-      queueMutex.Unlock();
     }
 
   private:
@@ -90,11 +80,10 @@ namespace
 
     void Run()
     {
-      queueMutex.Lock();
+      AdblockPlus::Lock lock(queueMutex);
       if (!queue.size())
         notEmpty.Wait(queueMutex);
       queue.pop();
-      queueMutex.Unlock();
     }
 
   private:
@@ -123,7 +112,7 @@ TEST(ThreadTest, Mutex)
   LockingMock mock1("mock1", log, logMutex);
   LockingMock mock2("mock2", log, logMutex);
   mock1.Start();
-  Sleep(5);
+  AdblockPlus::Sleep(5);
   mock2.Start();
   mock1.Join();
   mock2.Join();
@@ -139,7 +128,7 @@ TEST(ThreadTest, ConditionVariable)
   Dequeuer dequeuer(queue, queueMutex, notEmpty);
   Enqueuer enqueuer(queue, queueMutex, notEmpty);
   dequeuer.Start();
-  Sleep(5);
+  AdblockPlus::Sleep(5);
   enqueuer.Start();
   enqueuer.Join();
   dequeuer.Join();

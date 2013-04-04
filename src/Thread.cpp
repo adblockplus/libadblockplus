@@ -1,3 +1,7 @@
+#ifndef WIN32
+#include <unistd.h>
+#endif
+
 #include "Thread.h"
 
 using namespace AdblockPlus;
@@ -8,6 +12,15 @@ namespace
   {
     thread->Run();
   }
+}
+
+void AdblockPlus::Sleep(const int millis)
+{
+#ifdef WIN32
+  ::Sleep(millis);
+#else
+  usleep(millis * 1000);
+#endif
 }
 
 Mutex::Mutex()
@@ -44,6 +57,16 @@ void Mutex::Unlock()
 #else
   pthread_mutex_unlock(&nativeMutex);
 #endif
+}
+
+Lock::Lock(Mutex& mutex) : mutex(mutex)
+{
+  mutex.Lock();
+}
+
+Lock::~Lock()
+{
+  mutex.Unlock();
 }
 
 ConditionVariable::ConditionVariable()
