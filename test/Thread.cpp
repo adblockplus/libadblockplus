@@ -29,16 +29,17 @@ namespace
   public:
     bool working;
 
-    LockingMock(const std::string& name, std::vector<std::string>& log,
-                AdblockPlus::Mutex& logMutex)
-      : name(name), log(log), logMutex(logMutex)
+    LockingMock(std::vector<std::string>& log, AdblockPlus::Mutex& logMutex)
+      : log(log), logMutex(logMutex)
     {
     }
 
     void Run()
     {
       AdblockPlus::Lock lock(logMutex);
-      log.push_back(name);
+      log.push_back("started");
+      AdblockPlus::Sleep(5);
+      log.push_back("ended");
     }
 
   private:
@@ -109,15 +110,16 @@ TEST(ThreadTest, Mutex)
 {
   std::vector<std::string> log;
   AdblockPlus::Mutex logMutex;
-  LockingMock mock1("mock1", log, logMutex);
-  LockingMock mock2("mock2", log, logMutex);
+  LockingMock mock1(log, logMutex);
+  LockingMock mock2(log, logMutex);
   mock1.Start();
-  AdblockPlus::Sleep(5);
   mock2.Start();
   mock1.Join();
   mock2.Join();
-  ASSERT_EQ("mock1", log[0]);
-  ASSERT_EQ("mock2", log[1]);
+  ASSERT_EQ("started", log[0]);
+  ASSERT_EQ("ended", log[1]);
+  ASSERT_EQ("started", log[2]);
+  ASSERT_EQ("ended", log[3]);
 }
 
 TEST(ThreadTest, ConditionVariable)
