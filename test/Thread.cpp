@@ -134,5 +134,5 @@ TEST(ThreadTest, ConditionVariable)
   enqueuer.Start();
   enqueuer.Join();
   dequeuer.Join();
-  ASSERT_EQ(0, queue.size());
+  ASSERT_EQ(0u, queue.size());
 }
