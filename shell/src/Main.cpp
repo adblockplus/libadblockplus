@@ -5,6 +5,7 @@
 
 #include "GcCommand.h"
 #include "HelpCommand.h"
+#include "FiltersCommand.h"
 #include "SubscriptionsCommand.h"
 #include "MatchesCommand.h"
 
@@ -65,6 +66,7 @@ int main()
     CommandMap commands;
     Add(commands, new GcCommand(jsEngine));
     Add(commands, new HelpCommand(commands));
+    Add(commands, new FiltersCommand(filterEngine));
     Add(commands, new SubscriptionsCommand(filterEngine));
     Add(commands, new MatchesCommand(filterEngine));
 
