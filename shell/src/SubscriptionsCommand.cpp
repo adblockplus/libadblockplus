@@ -11,7 +11,7 @@ namespace
   {
     for (SubscriptionList::const_iterator it = subscriptions.begin();
          it != subscriptions.end(); it++)
-      std::cout << (*it)->GetProperty("title") << " - " << (*it)->GetProperty("url") << std::endl;
+      std::cout << (*it)->GetProperty("title", "(no title)") << " - " << (*it)->GetProperty("url", "") << std::endl;
   }
 }
 

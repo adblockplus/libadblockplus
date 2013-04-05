@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <AdblockPlus.h>
 
 using namespace AdblockPlus;
@@ -7,52 +8,136 @@ extern const char* jsSources[];
 #endif
 
 #if FILTER_ENGINE_STUBS
-Subscription::Subscription(FilterEngine& filterEngine, const std::string& url)
+JSObject::JSObject(FilterEngine& filterEngine)
     : filterEngine(filterEngine)
 {
-  properties["url"] = url;
+}
+#else
+JSObject::JSObject()
+{
+}
+#endif
+
+std::string JSObject::GetProperty(const std::string& name, const std::string& defaultValue) const
+{
+#if FILTER_ENGINE_STUBS
+  std::map<std::string, std::string>::const_iterator it = stringProperties.find(name);
+  if (it == stringProperties.end())
+    return defaultValue;
+  else
+    return it->second;
+#endif
+}
+
+int JSObject::GetProperty(const std::string& name, int defaultValue) const
+{
+#if FILTER_ENGINE_STUBS
+  std::map<std::string, int>::const_iterator it = intProperties.find(name);
+  if (it == intProperties.end())
+    return defaultValue;
+  else
+    return it->second;
+#endif
+}
+
+bool JSObject::GetProperty(const std::string& name, bool defaultValue) const
+{
+#if FILTER_ENGINE_STUBS
+  std::map<std::string, bool>::const_iterator it = boolProperties.find(name);
+  if (it == boolProperties.end())
+    return defaultValue;
+  else
+    return it->second;
+#endif
+}
+
+void JSObject::SetProperty(const std::string& name, const std::string& value)
+{
+#if FILTER_ENGINE_STUBS
+  stringProperties[name] = value;
+#endif
+}
+
+void JSObject::SetProperty(const std::string& name, int value)
+{
+#if FILTER_ENGINE_STUBS
+  intProperties[name] = value;
+#endif
+}
+
+void JSObject::SetProperty(const std::string& name, bool value)
+{
+#if FILTER_ENGINE_STUBS
+  boolProperties[name] = value;
+#endif
+}
+
+#if FILTER_ENGINE_STUBS
+Filter::Filter(FilterEngine& filterEngine, const std::string& text)
+    : JSObject(filterEngine)
+{
+  SetProperty("text", text);
+  if (text.find("!") == 0)
+    SetProperty("type", "comment");
+  else if (text.find("@@") == 0)
+    SetProperty("type", "exception");
+  else if (text.find("#@") != std::string::npos)
+    SetProperty("type", "elemhideexception");
+  else if (text.find("#") != std::string::npos)
+    SetProperty("type", "elemhide");
+  else
+    SetProperty("type", "blocking");
+}
+#else
+Filter::Filter()
+{
+}
+#endif
+
+bool Filter::IsListed() const
+{
+#if FILTER_ENGINE_STUBS
+  for (std::vector<Filter*>::iterator it = filterEngine.listedFilters.begin();
+       it != filterEngine.listedFilters.end(); ++it)
+  {
+    if (*it == this)
+      return true;
+  }
+  return false;
+#endif
+}
+
+void Filter::AddToList()
+{
+#if FILTER_ENGINE_STUBS
+  if (!IsListed())
+    filterEngine.listedFilters.push_back(this);
+#endif
+}
+
+void Filter::RemoveFromList()
+{
+  for (std::vector<Filter*>::iterator it = filterEngine.listedFilters.begin();
+       it != filterEngine.listedFilters.end();)
+  {
+    if (*it == this)
+      it = filterEngine.listedFilters.erase(it);
+    else
+      it++;
+  }
+}
+
+#if FILTER_ENGINE_STUBS
+Subscription::Subscription(FilterEngine& filterEngine, const std::string& url)
+    : JSObject(filterEngine)
+{
+  SetProperty("url", url);
 }
 #else
 Subscription::Subscription()
 {
 }
 #endif
-
-const std::string Subscription::GetProperty(const std::string& name) const
-{
-#if FILTER_ENGINE_STUBS
-  std::map<std::string,std::string>::const_iterator it = properties.find(name);
-  if (it == properties.end())
-    return "";
-  else
-    return it->second;
-#endif
-}
-
-int Subscription::GetIntProperty(const std::string& name) const
-{
-#if FILTER_ENGINE_STUBS
-  std::map<std::string,int>::const_iterator it = intProperties.find(name);
-  if (it == intProperties.end())
-    return 0;
-  else
-    return it->second;
-#endif
-}
-
-void Subscription::SetProperty(const std::string& name, const std::string& value)
-{
-#if FILTER_ENGINE_STUBS
-  properties[name] = value;
-#endif
-}
-
-void Subscription::SetIntProperty(const std::string& name, int value)
-{
-#if FILTER_ENGINE_STUBS
-  intProperties[name] = value;
-#endif
-}
 
 bool Subscription::IsListed() const
 {
@@ -99,16 +184,41 @@ FilterEngine::FilterEngine(JsEngine& jsEngine) : jsEngine(jsEngine)
 #endif
 }
 
+Filter& FilterEngine::GetFilter(const std::string& text)
+{
+#if FILTER_ENGINE_STUBS
+  // Via http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+  std::string trimmed(text);
+  trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+  trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), trimmed.end());
+
+  std::map<std::string, Filter*>::const_iterator it = knownFilters.find(trimmed);
+  if (it != knownFilters.end())
+    return *it->second;
+
+  Filter* result = new Filter(*this, trimmed);
+  knownFilters[trimmed] = result;
+  return *result;
+#endif
+}
+
 Subscription& FilterEngine::GetSubscription(const std::string& url)
 {
 #if FILTER_ENGINE_STUBS
-  std::map<std::string,Subscription*>::const_iterator it = knownSubscriptions.find(url);
+  std::map<std::string, Subscription*>::const_iterator it = knownSubscriptions.find(url);
   if (it != knownSubscriptions.end())
     return *it->second;
 
   Subscription* result = new Subscription(*this, url);
   knownSubscriptions[url] = result;
   return *result;
+#endif
+}
+
+const std::vector<Filter*>& FilterEngine::GetListedFilters() const
+{
+#if FILTER_ENGINE_STUBS
+  return listedFilters;
 #endif
 }
 
@@ -136,13 +246,18 @@ void FilterEngine::FetchAvailableSubscriptions(SubscriptionsCallback callback)
 #endif
 }
 
-bool FilterEngine::Matches(const std::string& url,
-                           const std::string& contentType,
-                           const std::string& documentUrl) const
+Filter* FilterEngine::Matches(const std::string& url,
+                              const std::string& contentType,
+                              const std::string& documentUrl)
 {
 #if FILTER_ENGINE_STUBS
   //For test on http://simple-adblock.com/faq/testing-your-adblocker/
-  return url.find("adbanner.gif") != std::string::npos;
+  if (url.find("adbanner.gif") != std::string::npos)
+    return &GetFilter("adbanner.gif");
+  else if (url.find("notbanner.gif") != std::string::npos)
+    return &GetFilter("@@notbanner.gif");
+  else
+    return 0;
 #endif
 }
 

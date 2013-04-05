@@ -23,10 +23,13 @@ void MatchesCommand::operator()(const std::string& arguments)
     return;
   }
 
-  if (filterEngine.Matches(url, contentType, documentUrl))
-    std::cout << "Match" << std::endl;
-  else
+  AdblockPlus::Filter* match = filterEngine.Matches(url, contentType, documentUrl);
+  if (!match)
     std::cout << "No match" << std::endl;
+  else if (match->GetProperty("type", "") == "exception")
+    std::cout << "Whitelisted" << std::endl;
+  else
+    std::cout << "Blocked" << std::endl;
 }
 
 std::string MatchesCommand::GetDescription() const
