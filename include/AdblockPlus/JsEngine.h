@@ -5,11 +5,11 @@
 #include <string>
 #include <v8.h>
 
-class ErrorCallback;
-class FileReader;
-
 namespace AdblockPlus
 {
+  class ErrorCallback;
+  class FileReader;
+
   class JsError : public std::runtime_error
   {
   public:
@@ -27,6 +27,7 @@ namespace AdblockPlus
         const std::string& filename = "");
     void Load(const std::string& scriptPath);
     std::string Call(const std::string& functionName);
+    std::string GetVariable(const std::string& name);
     void Gc();
 
   private:

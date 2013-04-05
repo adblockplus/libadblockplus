@@ -109,6 +109,19 @@ std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
   return *ascii;
 }
 
+std::string AdblockPlus::JsEngine::GetVariable(const std::string& name)
+{
+  const v8::Locker locker(v8::Isolate::GetCurrent());
+  const v8::HandleScope handleScope;
+  const v8::Context::Scope contextScope(context);
+  const v8::Local<v8::Object> global = context->Global();
+  const v8::Local<v8::Value> value = global->Get(v8::String::New(name.c_str()));
+  if (value->IsUndefined())
+    return "";
+  const v8::String::AsciiValue ascii(value);
+  return *ascii;
+}
+
 void AdblockPlus::JsEngine::Gc()
 {
   while (!v8::V8::IdleNotification());
