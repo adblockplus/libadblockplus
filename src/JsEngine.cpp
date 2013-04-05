@@ -8,6 +8,7 @@ namespace
   v8::Handle<v8::Context> CreateContext(
     AdblockPlus::ErrorCallback& errorCallback)
   {
+    const v8::Locker locker(v8::Isolate::GetCurrent());
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global =
       AdblockPlus::GlobalJsObject::Create(errorCallback);
@@ -69,6 +70,7 @@ AdblockPlus::JsEngine::JsEngine(const FileReader* const fileReader,
 
 void AdblockPlus::JsEngine::Evaluate(const char* source, const char* filename)
 {
+  const v8::Locker locker(v8::Isolate::GetCurrent());
   const v8::HandleScope handleScope;
   const v8::Context::Scope contextScope(context);
   const v8::TryCatch tryCatch;
@@ -94,6 +96,7 @@ void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 
 std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
 {
+  const v8::Locker locker(v8::Isolate::GetCurrent());
   const v8::HandleScope handleScope;
   const v8::Context::Scope contextScope(context);
   const v8::Local<v8::Object> global = context->Global();
