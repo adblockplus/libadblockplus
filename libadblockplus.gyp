@@ -75,6 +75,7 @@
     'sources': [
       'test/ConsoleJsObject.cpp',
       'test/FilterEngineStubs.cpp',
+      'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
       'test/Thread.cpp'
     ]
