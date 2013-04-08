@@ -78,15 +78,15 @@ Filter::Filter(FilterEngine& filterEngine, const std::string& text)
 {
   SetProperty("text", text);
   if (text.find("!") == 0)
-    SetProperty("type", "comment");
+    SetProperty("type", COMMENT_RULE);
   else if (text.find("@@") == 0)
-    SetProperty("type", "exception");
+    SetProperty("type", EXCEPTION_RULE);
   else if (text.find("#@") != std::string::npos)
-    SetProperty("type", "elemhideexception");
+    SetProperty("type", ELEMHIDE_EXCEPTION_RULE);
   else if (text.find("#") != std::string::npos)
-    SetProperty("type", "elemhide");
+    SetProperty("type", ELEMHIDE_RULE);
   else
-    SetProperty("type", "blocking");
+    SetProperty("type", BLOCKING_RULE);
 }
 #else
 Filter::Filter()
