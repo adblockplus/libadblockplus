@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <tr1/memory>
 
 namespace AdblockPlus
 {
@@ -42,7 +43,8 @@ namespace AdblockPlus
 #endif
   };
 
-  class Filter : public JSObject
+  class Filter : public JSObject,
+                 public std::tr1::enable_shared_from_this<Filter>
   {
     friend class FilterEngine;
 
@@ -59,7 +61,8 @@ namespace AdblockPlus
 #endif
   };
 
-  class Subscription : public JSObject
+  class Subscription : public JSObject,
+                       public std::tr1::enable_shared_from_this<Subscription>
   {
     friend class FilterEngine;
 
@@ -77,7 +80,9 @@ namespace AdblockPlus
 #endif
   };
 
-  typedef void (*SubscriptionsCallback)(const std::vector<Subscription*>&);
+  typedef std::tr1::shared_ptr<Filter> FilterPtr;
+  typedef std::tr1::shared_ptr<Subscription> SubscriptionPtr;
+  typedef void (*SubscriptionsCallback)(const std::vector<SubscriptionPtr>&);
 
   class FilterEngine
   {
@@ -87,21 +92,21 @@ namespace AdblockPlus
     explicit FilterEngine(JsEngine& jsEngine);
     Filter& GetFilter(const std::string& text);
     Subscription& GetSubscription(const std::string& url);
-    const std::vector<Filter*>& GetListedFilters() const;
-    const std::vector<Subscription*>& GetListedSubscriptions() const;
+    const std::vector<FilterPtr>& GetListedFilters() const;
+    const std::vector<SubscriptionPtr>& GetListedSubscriptions() const;
     void FetchAvailableSubscriptions(SubscriptionsCallback callback);
-    Filter* Matches(const std::string& url,
-                    const std::string& contentType,
-                    const std::string& documentUrl);
+    FilterPtr Matches(const std::string& url,
+        const std::string& contentType,
+        const std::string& documentUrl);
     std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
 
   private:
     JsEngine& jsEngine;
 #if FILTER_ENGINE_STUBS
-    std::map<std::string, Filter*> knownFilters;
-    std::vector<Filter*> listedFilters;
-    std::map<std::string, Subscription*> knownSubscriptions;
-    std::vector<Subscription*> listedSubscriptions;
+    std::map<std::string, FilterPtr> knownFilters;
+    std::vector<FilterPtr> listedFilters;
+    std::map<std::string, SubscriptionPtr> knownSubscriptions;
+    std::vector<SubscriptionPtr> listedSubscriptions;
 #endif
   };
 }

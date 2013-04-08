@@ -97,10 +97,10 @@ Filter::Filter()
 bool Filter::IsListed() const
 {
 #if FILTER_ENGINE_STUBS
-  for (std::vector<Filter*>::iterator it = filterEngine.listedFilters.begin();
+  for (std::vector<FilterPtr>::iterator it = filterEngine.listedFilters.begin();
        it != filterEngine.listedFilters.end(); ++it)
   {
-    if (*it == this)
+    if (it->get() == this)
       return true;
   }
   return false;
@@ -111,16 +111,16 @@ void Filter::AddToList()
 {
 #if FILTER_ENGINE_STUBS
   if (!IsListed())
-    filterEngine.listedFilters.push_back(this);
+    filterEngine.listedFilters.push_back(shared_from_this());
 #endif
 }
 
 void Filter::RemoveFromList()
 {
-  for (std::vector<Filter*>::iterator it = filterEngine.listedFilters.begin();
+  for (std::vector<FilterPtr>::iterator it = filterEngine.listedFilters.begin();
        it != filterEngine.listedFilters.end();)
   {
-    if (*it == this)
+    if (it->get() == this)
       it = filterEngine.listedFilters.erase(it);
     else
       it++;
@@ -142,10 +142,10 @@ Subscription::Subscription()
 bool Subscription::IsListed() const
 {
 #if FILTER_ENGINE_STUBS
-  for (std::vector<Subscription*>::iterator it = filterEngine.listedSubscriptions.begin();
+  for (std::vector<SubscriptionPtr>::iterator it = filterEngine.listedSubscriptions.begin();
        it != filterEngine.listedSubscriptions.end(); ++it)
   {
-    if (*it == this)
+    if (it->get() == this)
       return true;
   }
   return false;
@@ -156,16 +156,16 @@ void Subscription::AddToList()
 {
 #if FILTER_ENGINE_STUBS
   if (!IsListed())
-    filterEngine.listedSubscriptions.push_back(this);
+    filterEngine.listedSubscriptions.push_back(shared_from_this());
 #endif
 }
 
 void Subscription::RemoveFromList()
 {
-  for (std::vector<Subscription*>::iterator it = filterEngine.listedSubscriptions.begin();
+  for (std::vector<SubscriptionPtr>::iterator it = filterEngine.listedSubscriptions.begin();
        it != filterEngine.listedSubscriptions.end();)
   {
-    if (*it == this)
+    if (it->get() == this)
       it = filterEngine.listedSubscriptions.erase(it);
     else
       it++;
@@ -192,12 +192,12 @@ Filter& FilterEngine::GetFilter(const std::string& text)
   trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
   trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), trimmed.end());
 
-  std::map<std::string, Filter*>::const_iterator it = knownFilters.find(trimmed);
+  std::map<std::string, FilterPtr>::const_iterator it = knownFilters.find(trimmed);
   if (it != knownFilters.end())
     return *it->second;
 
-  Filter* result = new Filter(*this, trimmed);
-  knownFilters[trimmed] = result;
+  FilterPtr result(new Filter(*this, trimmed));
+  knownFilters[trimmed] = result->shared_from_this();
   return *result;
 #endif
 }
@@ -205,24 +205,24 @@ Filter& FilterEngine::GetFilter(const std::string& text)
 Subscription& FilterEngine::GetSubscription(const std::string& url)
 {
 #if FILTER_ENGINE_STUBS
-  std::map<std::string, Subscription*>::const_iterator it = knownSubscriptions.find(url);
+  std::map<std::string, SubscriptionPtr>::const_iterator it = knownSubscriptions.find(url);
   if (it != knownSubscriptions.end())
     return *it->second;
 
-  Subscription* result = new Subscription(*this, url);
-  knownSubscriptions[url] = result;
+  SubscriptionPtr result(new Subscription(*this, url));
+  knownSubscriptions[url] = result->shared_from_this();
   return *result;
 #endif
 }
 
-const std::vector<Filter*>& FilterEngine::GetListedFilters() const
+const std::vector<FilterPtr>& FilterEngine::GetListedFilters() const
 {
 #if FILTER_ENGINE_STUBS
   return listedFilters;
 #endif
 }
 
-const std::vector<Subscription*>& FilterEngine::GetListedSubscriptions() const
+const std::vector<SubscriptionPtr>& FilterEngine::GetListedSubscriptions() const
 {
 #if FILTER_ENGINE_STUBS
   return listedSubscriptions;
@@ -232,32 +232,32 @@ const std::vector<Subscription*>& FilterEngine::GetListedSubscriptions() const
 void FilterEngine::FetchAvailableSubscriptions(SubscriptionsCallback callback)
 {
 #if FILTER_ENGINE_STUBS
-  std::vector<Subscription*> availableSubscriptions;
+  std::vector<SubscriptionPtr> availableSubscriptions;
 
   Subscription& subscription1 = GetSubscription("https://easylist-downloads.adblockplus.org/easylist.txt");
   subscription1.SetProperty("title", "EasyList");
-  availableSubscriptions.push_back(&subscription1);
+  availableSubscriptions.push_back(subscription1.shared_from_this());
 
   Subscription& subscription2 = GetSubscription("https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt");
   subscription2.SetProperty("title", "EasyList Germany+EasyList");
-  availableSubscriptions.push_back(&subscription2);
+  availableSubscriptions.push_back(subscription2.shared_from_this());
 
   callback(availableSubscriptions);
 #endif
 }
 
-Filter* FilterEngine::Matches(const std::string& url,
-                              const std::string& contentType,
-                              const std::string& documentUrl)
+AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
+    const std::string& contentType,
+    const std::string& documentUrl)
 {
 #if FILTER_ENGINE_STUBS
   //For test on http://simple-adblock.com/faq/testing-your-adblocker/
   if (url.find("adbanner.gif") != std::string::npos)
-    return &GetFilter("adbanner.gif");
+    return GetFilter("adbanner.gif").shared_from_this();
   else if (url.find("notbanner.gif") != std::string::npos)
-    return &GetFilter("@@notbanner.gif");
+    return GetFilter("@@notbanner.gif").shared_from_this();
   else
-    return 0;
+    return AdblockPlus::FilterPtr();
 #endif
 }
 

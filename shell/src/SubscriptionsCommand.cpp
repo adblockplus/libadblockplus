@@ -5,7 +5,7 @@
 
 namespace
 {
-  typedef std::vector<AdblockPlus::Subscription*> SubscriptionList;
+  typedef std::vector<AdblockPlus::SubscriptionPtr> SubscriptionList;
 
   void ShowSubscriptionList(const SubscriptionList& subscriptions)
   {
