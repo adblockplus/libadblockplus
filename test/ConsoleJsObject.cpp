@@ -15,13 +15,13 @@ public:
 TEST(ConsoleJsObjectTest, ErrorInvokesErrorCallback)
 {
   MockErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
   jsEngine.Evaluate("console.error('foo')");
   ASSERT_EQ("foo", errorCallback.lastMessage);
 }
 
 TEST(ConsoleJsObjectTest, TraceDoesNothing)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   jsEngine.Evaluate("console.trace()");
 }

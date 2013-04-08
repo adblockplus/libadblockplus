@@ -6,12 +6,13 @@
 namespace
 {
   v8::Handle<v8::Context> CreateContext(
-    AdblockPlus::ErrorCallback& errorCallback)
+    AdblockPlus::ErrorCallback& errorCallback,
+    AdblockPlus::WebRequest& webRequest)
   {
     const v8::Locker locker(v8::Isolate::GetCurrent());
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global =
-      AdblockPlus::GlobalJsObject::Create(errorCallback);
+      AdblockPlus::GlobalJsObject::Create(errorCallback, webRequest);
     return v8::Context::New(0, global);
   }
 
@@ -63,12 +64,13 @@ AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
 }
 
 AdblockPlus::JsEngine::JsEngine(const FileReader* const fileReader,
+                                WebRequest* const webRequest,
                                 ErrorCallback* const errorCallback)
-  : fileReader(fileReader), context(CreateContext(*errorCallback))
+  : fileReader(fileReader), context(CreateContext(*errorCallback, *webRequest))
 {
 }
 
-void AdblockPlus::JsEngine::Evaluate(const char* source, const char* filename)
+std::string AdblockPlus::JsEngine::Evaluate(const char* source, const char* filename)
 {
   const v8::Locker locker(v8::Isolate::GetCurrent());
   const v8::HandleScope handleScope;
@@ -76,14 +78,16 @@ void AdblockPlus::JsEngine::Evaluate(const char* source, const char* filename)
   const v8::TryCatch tryCatch;
   const v8::Handle<v8::Script> script = CompileScript(source, filename);
   CheckTryCatch(tryCatch);
-  script->Run();
+  v8::Local<v8::Value> result = script->Run();
   CheckTryCatch(tryCatch);
+  v8::String::Utf8Value resultString(result);
+  return std::string(*resultString);
 }
 
-void AdblockPlus::JsEngine::Evaluate(const std::string& source,
+std::string AdblockPlus::JsEngine::Evaluate(const std::string& source,
     const std::string& filename)
 {
-  Evaluate(source.c_str(), filename.c_str());
+  return Evaluate(source.c_str(), filename.c_str());
 }
 
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
