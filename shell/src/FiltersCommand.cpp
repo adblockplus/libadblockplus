@@ -18,8 +18,7 @@ namespace
   }
 }
 
-FiltersCommand::FiltersCommand(
-  AdblockPlus::FilterEngine& filterEngine)
+FiltersCommand::FiltersCommand(AdblockPlus::FilterEngine& filterEngine)
   : Command("filters"), filterEngine(filterEngine)
 {
 }
