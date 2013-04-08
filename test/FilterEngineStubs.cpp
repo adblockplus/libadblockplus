@@ -45,10 +45,10 @@ TEST(FilterEngineStubsTest, AddRemoveFilters)
   ASSERT_EQ(filterEngine.GetListedFilters().size(), 0u);
   filter.AddToList();
   ASSERT_EQ(filterEngine.GetListedFilters().size(), 1u);
-  ASSERT_EQ(filterEngine.GetListedFilters()[0], &filter);
+  ASSERT_EQ(filterEngine.GetListedFilters()[0].get(), &filter);
   filter.AddToList();
   ASSERT_EQ(filterEngine.GetListedFilters().size(), 1u);
-  ASSERT_EQ(filterEngine.GetListedFilters()[0], &filter);
+  ASSERT_EQ(filterEngine.GetListedFilters()[0].get(), &filter);
   filter.RemoveFromList();
   ASSERT_EQ(filterEngine.GetListedFilters().size(), 0u);
   filter.RemoveFromList();
@@ -82,10 +82,10 @@ TEST(FilterEngineStubsTest, AddRemoveSubscriptions)
   ASSERT_EQ(filterEngine.GetListedSubscriptions().size(), 0u);
   subscription.AddToList();
   ASSERT_EQ(filterEngine.GetListedSubscriptions().size(), 1u);
-  ASSERT_EQ(filterEngine.GetListedSubscriptions()[0], &subscription);
+  ASSERT_EQ(filterEngine.GetListedSubscriptions()[0].get(), &subscription);
   subscription.AddToList();
   ASSERT_EQ(filterEngine.GetListedSubscriptions().size(), 1u);
-  ASSERT_EQ(filterEngine.GetListedSubscriptions()[0], &subscription);
+  ASSERT_EQ(filterEngine.GetListedSubscriptions()[0].get(), &subscription);
   subscription.RemoveFromList();
   ASSERT_EQ(filterEngine.GetListedSubscriptions().size(), 0u);
   subscription.RemoveFromList();
@@ -99,14 +99,18 @@ TEST(FilterEngineStubsTest, Matches)
   AdblockPlus::Subscription& subscription = filterEngine.GetSubscription("foo");
   subscription.AddToList();
 
-  AdblockPlus::Filter* match1 = filterEngine.Matches("http://example.org", "", "");
+  AdblockPlus::FilterPtr match1 = filterEngine.Matches("http://example.org", "", "");
   ASSERT_FALSE(match1);
 
-  AdblockPlus::Filter* match2 = filterEngine.Matches("http://example.org/adbanner.gif", "", "");
+  AdblockPlus::FilterPtr match2 = filterEngine.Matches("http://example.org/adbanner.gif", "", "");
   ASSERT_TRUE(match2);
   ASSERT_EQ(match2->GetProperty("type", ""), "blocking");
 
-  AdblockPlus::Filter* match3 = filterEngine.Matches("http://example.org/notbanner.gif", "", "");
+  AdblockPlus::FilterPtr match3 = filterEngine.Matches("http://example.org/notbanner.gif", "", "");
   ASSERT_TRUE(match3);
   ASSERT_EQ(match3->GetProperty("type", ""), "exception");
+
+  AdblockPlus::FilterPtr match4 = filterEngine.Matches("http://example.org/notbanner.gif", "", "");
+  ASSERT_TRUE(match4);
+  ASSERT_EQ(match4->GetProperty("type", ""), "exception");
 }

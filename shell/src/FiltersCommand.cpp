@@ -5,7 +5,7 @@
 
 namespace
 {
-  typedef std::vector<AdblockPlus::Filter*> FilterList;
+  typedef std::vector<AdblockPlus::FilterPtr> FilterList;
 
   void ShowFilterList(const FilterList& filters)
   {

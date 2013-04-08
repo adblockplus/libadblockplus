@@ -23,7 +23,7 @@ void MatchesCommand::operator()(const std::string& arguments)
     return;
   }
 
-  AdblockPlus::Filter* match = filterEngine.Matches(url, contentType, documentUrl);
+  AdblockPlus::FilterPtr match = filterEngine.Matches(url, contentType, documentUrl);
   if (!match)
     std::cout << "No match" << std::endl;
   else if (match->GetProperty("type", "") == "exception")
