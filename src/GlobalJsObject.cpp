@@ -2,6 +2,8 @@
 #include <stdexcept>
 
 #include "GlobalJsObject.h"
+#include "ConsoleJsObject.h"
+#include "WebRequestJsObject.h"
 #include "Thread.h"
 
 using namespace AdblockPlus;
@@ -86,7 +88,7 @@ namespace
 }
 
 v8::Handle<v8::ObjectTemplate> GlobalJsObject::Create(
-  ErrorCallback& errorCallback)
+  ErrorCallback& errorCallback, WebRequest& webRequest)
 {
   const v8::Locker locker(v8::Isolate::GetCurrent());
   v8::HandleScope handleScope;
@@ -97,5 +99,8 @@ v8::Handle<v8::ObjectTemplate> GlobalJsObject::Create(
   const v8::Handle<v8::FunctionTemplate> setTimeoutFunction =
     v8::FunctionTemplate::New(SetTimeoutCallback);
   global->Set(v8::String::New("setTimeout"), setTimeoutFunction);
+  const v8::Handle<v8::ObjectTemplate> request =
+    AdblockPlus::WebRequestJsObject::Create(webRequest);
+  global->Set(v8::String::New("_webRequest"), request);
   return handleScope.Close(global);
 }

@@ -3,7 +3,7 @@
 
 TEST(FilterEngineStubsTest, FilterCreation)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
 
   AdblockPlus::FilterPtr filter1 = filterEngine.GetFilter("foo");
@@ -20,7 +20,7 @@ TEST(FilterEngineStubsTest, FilterCreation)
 
 TEST(FilterEngineStubsTest, FilterProperties)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
   AdblockPlus::FilterPtr filter = filterEngine.GetFilter("foo");
 
@@ -38,7 +38,7 @@ TEST(FilterEngineStubsTest, FilterProperties)
 
 TEST(FilterEngineStubsTest, AddRemoveFilters)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
   ASSERT_EQ(filterEngine.GetListedFilters().size(), 0u);
   AdblockPlus::FilterPtr filter = filterEngine.GetFilter("foo");
@@ -57,7 +57,7 @@ TEST(FilterEngineStubsTest, AddRemoveFilters)
 
 TEST(FilterEngineStubsTest, SubscriptionProperties)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
   AdblockPlus::SubscriptionPtr subscription = filterEngine.GetSubscription("foo");
 
@@ -75,7 +75,7 @@ TEST(FilterEngineStubsTest, SubscriptionProperties)
 
 TEST(FilterEngineStubsTest, AddRemoveSubscriptions)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
   ASSERT_EQ(filterEngine.GetListedSubscriptions().size(), 0u);
   AdblockPlus::SubscriptionPtr subscription = filterEngine.GetSubscription("foo");
@@ -94,7 +94,7 @@ TEST(FilterEngineStubsTest, AddRemoveSubscriptions)
 
 TEST(FilterEngineStubsTest, Matches)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
   AdblockPlus::SubscriptionPtr subscription = filterEngine.GetSubscription("foo");
   subscription->AddToList();

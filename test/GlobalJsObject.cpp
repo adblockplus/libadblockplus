@@ -5,7 +5,7 @@
 
 TEST(GlobalJsObjectTest, SetTimeout)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   jsEngine.Evaluate("setTimeout(function() {foo = 'bar';}, 100)");
   ASSERT_EQ("", jsEngine.GetVariable("foo"));
   AdblockPlus::Sleep(200);
@@ -14,7 +14,7 @@ TEST(GlobalJsObjectTest, SetTimeout)
 
 TEST(GlobalJsObjectTest, SetTimeoutWithArgs)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   jsEngine.Evaluate("setTimeout(function(s) {foo = s;}, 100, 'foobar')");
   ASSERT_EQ("", jsEngine.GetVariable("foo"));
   AdblockPlus::Sleep(200);
@@ -23,7 +23,7 @@ TEST(GlobalJsObjectTest, SetTimeoutWithArgs)
 
 TEST(GlobalJsObjectTest, SetTimeoutWithInvalidArgs)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   ASSERT_ANY_THROW(jsEngine.Evaluate("setTimeout()"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("setTimeout('', 1)"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("setTimeout(function(){}, '')"));
@@ -31,7 +31,7 @@ TEST(GlobalJsObjectTest, SetTimeoutWithInvalidArgs)
 
 TEST(GlobalJsObjectTest, SetMultipleTimeouts)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0);
+  AdblockPlus::JsEngine jsEngine(0, 0, 0);
   jsEngine.Evaluate("foo = []");
   jsEngine.Evaluate("setTimeout(function(s) {foo.push('1');}, 100)");
   jsEngine.Evaluate("setTimeout(function(s) {foo.push('2');}, 150)");

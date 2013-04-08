@@ -60,7 +60,7 @@ int main()
   {
     LibFileReader fileReader;
     CerrErrorCallback errorCallback;
-    AdblockPlus::JsEngine jsEngine(&fileReader, 0);
+    AdblockPlus::JsEngine jsEngine(&fileReader, 0, 0);
     AdblockPlus::FilterEngine filterEngine(jsEngine);
 
     CommandMap commands;

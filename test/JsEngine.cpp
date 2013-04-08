@@ -47,7 +47,7 @@ TEST(JsEngineTest, EvaluateAndCall)
 {
   ThrowingFileReader fileReader;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
   const std::string source = "function hello() { return 'Hello'; }";
   jsEngine.Evaluate(source);
   const std::string result = jsEngine.Call("hello");
@@ -58,7 +58,7 @@ TEST(JsEngineTest, LoadAndCall)
 {
   StubFileReader fileReader;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
   jsEngine.Load("hello.js");
   const std::string result = jsEngine.Call("hello");
   ASSERT_EQ("Hello", result);
@@ -68,7 +68,7 @@ TEST(JsEngineTest, LoadBadStreamFails)
 {
   BadFileReader fileReader;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
   ASSERT_ANY_THROW(jsEngine.Load("hello.js"));
 }
 
@@ -76,7 +76,7 @@ TEST(JsEngineTest, RuntimeExceptionIsThrown)
 {
   ThrowingFileReader fileReader;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
   ASSERT_THROW(jsEngine.Evaluate("doesnotexist()"), AdblockPlus::JsError);
 }
 
@@ -84,6 +84,6 @@ TEST(JsEngineTest, CompileTimeExceptionIsThrown)
 {
   ThrowingFileReader fileReader;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
   ASSERT_THROW(jsEngine.Evaluate("'foo'bar'"), AdblockPlus::JsError);
 }

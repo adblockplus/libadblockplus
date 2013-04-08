@@ -5,5 +5,6 @@
 #include <AdblockPlus/FilterEngine.h>
 #include <AdblockPlus/ErrorCallback.h>
 #include <AdblockPlus/JsEngine.h>
+#include <AdblockPlus/WebRequest.h>
 
 #endif

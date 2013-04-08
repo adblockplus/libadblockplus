@@ -21,6 +21,8 @@
       'src/GlobalJsObject.cpp',
       'src/JsEngine.cpp',
       'src/Thread.cpp',
+      'src/WebRequest.cpp',
+      'src/WebRequestJsObject.cpp',
       '<(INTERMEDIATE_DIR)/adblockplus.js.cc'
     ],
     'direct_dependent_settings': {
@@ -79,7 +81,8 @@
       'test/FilterEngineStubs.cpp',
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
-      'test/Thread.cpp'
+      'test/Thread.cpp',
+      'test/WebRequest.cpp'
     ]
   }]
 }
