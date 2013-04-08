@@ -261,14 +261,15 @@ Filter* FilterEngine::Matches(const std::string& url,
 #endif
 }
 
-std::vector<std::string> FilterEngine::GetElementHidingRules() const
+std::vector<std::string> FilterEngine::GetElementHidingSelectors(const std::string& domain) const
 {
 #if FILTER_ENGINE_STUBS
-  std::vector<std::string> hidingRules;
-  hidingRules.push_back("###ad");
-  hidingRules.push_back("##.ad");
+  std::vector<std::string> selectors;
+  selectors.push_back("#ad");
+  selectors.push_back(".ad");
   //For test on http://simple-adblock.com/faq/testing-your-adblocker/
-  hidingRules.push_back("##.ad_300x250");
-  return hidingRules;
+  if (domain == "simple-adblock.com")
+    selectors.push_back(".ad_300x250");
+  return selectors;
 #endif
 }

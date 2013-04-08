@@ -93,7 +93,7 @@ namespace AdblockPlus
     Filter* Matches(const std::string& url,
                     const std::string& contentType,
                     const std::string& documentUrl);
-    std::vector<std::string> GetElementHidingRules() const;
+    std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
 
   private:
     JsEngine& jsEngine;
