@@ -11,7 +11,7 @@ namespace AdblockPlus
   class JsEngine;
   class FilterEngine;
 
-  class JSObject
+  class JsObject
   {
   public:
     std::string GetProperty(const std::string& name, const std::string& defaultValue) const;
@@ -32,18 +32,18 @@ namespace AdblockPlus
 
   protected:
 #if FILTER_ENGINE_STUBS
-    JSObject(FilterEngine& filterEngine);
+    JsObject(FilterEngine& filterEngine);
 
     FilterEngine& filterEngine;
     std::map<std::string, std::string> stringProperties;
     std::map<std::string, int> intProperties;
     std::map<std::string, bool> boolProperties;
 #else
-    JSObject();
+    JsObject();
 #endif
   };
 
-  class Filter : public JSObject,
+  class Filter : public JsObject,
                  public std::tr1::enable_shared_from_this<Filter>
   {
     friend class FilterEngine;
@@ -61,7 +61,7 @@ namespace AdblockPlus
 #endif
   };
 
-  class Subscription : public JSObject,
+  class Subscription : public JsObject,
                        public std::tr1::enable_shared_from_this<Subscription>
   {
     friend class FilterEngine;

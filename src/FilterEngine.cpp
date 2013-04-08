@@ -8,17 +8,17 @@ extern const char* jsSources[];
 #endif
 
 #if FILTER_ENGINE_STUBS
-JSObject::JSObject(FilterEngine& filterEngine)
+JsObject::JsObject(FilterEngine& filterEngine)
     : filterEngine(filterEngine)
 {
 }
 #else
-JSObject::JSObject()
+JsObject::JsObject()
 {
 }
 #endif
 
-std::string JSObject::GetProperty(const std::string& name, const std::string& defaultValue) const
+std::string JsObject::GetProperty(const std::string& name, const std::string& defaultValue) const
 {
 #if FILTER_ENGINE_STUBS
   std::map<std::string, std::string>::const_iterator it = stringProperties.find(name);
@@ -29,7 +29,7 @@ std::string JSObject::GetProperty(const std::string& name, const std::string& de
 #endif
 }
 
-int JSObject::GetProperty(const std::string& name, int defaultValue) const
+int JsObject::GetProperty(const std::string& name, int defaultValue) const
 {
 #if FILTER_ENGINE_STUBS
   std::map<std::string, int>::const_iterator it = intProperties.find(name);
@@ -40,7 +40,7 @@ int JSObject::GetProperty(const std::string& name, int defaultValue) const
 #endif
 }
 
-bool JSObject::GetProperty(const std::string& name, bool defaultValue) const
+bool JsObject::GetProperty(const std::string& name, bool defaultValue) const
 {
 #if FILTER_ENGINE_STUBS
   std::map<std::string, bool>::const_iterator it = boolProperties.find(name);
@@ -51,21 +51,21 @@ bool JSObject::GetProperty(const std::string& name, bool defaultValue) const
 #endif
 }
 
-void JSObject::SetProperty(const std::string& name, const std::string& value)
+void JsObject::SetProperty(const std::string& name, const std::string& value)
 {
 #if FILTER_ENGINE_STUBS
   stringProperties[name] = value;
 #endif
 }
 
-void JSObject::SetProperty(const std::string& name, int value)
+void JsObject::SetProperty(const std::string& name, int value)
 {
 #if FILTER_ENGINE_STUBS
   intProperties[name] = value;
 #endif
 }
 
-void JSObject::SetProperty(const std::string& name, bool value)
+void JsObject::SetProperty(const std::string& name, bool value)
 {
 #if FILTER_ENGINE_STUBS
   boolProperties[name] = value;
@@ -74,7 +74,7 @@ void JSObject::SetProperty(const std::string& name, bool value)
 
 #if FILTER_ENGINE_STUBS
 Filter::Filter(FilterEngine& filterEngine, const std::string& text)
-    : JSObject(filterEngine)
+    : JsObject(filterEngine)
 {
   SetProperty("text", text);
   if (text.find("!") == 0)
@@ -129,7 +129,7 @@ void Filter::RemoveFromList()
 
 #if FILTER_ENGINE_STUBS
 Subscription::Subscription(FilterEngine& filterEngine, const std::string& url)
-    : JSObject(filterEngine)
+    : JsObject(filterEngine)
 {
   SetProperty("url", url);
 }
