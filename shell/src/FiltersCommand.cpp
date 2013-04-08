@@ -12,8 +12,33 @@ namespace
     for (FilterList::const_iterator it = filters.begin();
          it != filters.end(); it++)
     {
+      std::string type;
+      switch ((*it)->GetProperty("type", -1))
+      {
+        case AdblockPlus::BLOCKING_RULE:
+          type = "blocking";
+          break;
+        case AdblockPlus::EXCEPTION_RULE:
+          type = "exception";
+          break;
+        case AdblockPlus::ELEMHIDE_RULE:
+          type = "elemhide";
+          break;
+        case AdblockPlus::ELEMHIDE_EXCEPTION_RULE:
+          type = "elemhideexception";
+          break;
+        case AdblockPlus::COMMENT_RULE:
+          type = "comment";
+          break;
+        case AdblockPlus::INVALID_RULE:
+          type = "invalid";
+          break;
+        default:
+          type = "(unknown type)";
+          break;
+      }
       std::cout << (*it)->GetProperty("text", "(no text)") << " - " <<
-          (*it)->GetProperty("type", "(no type)") << std::endl;
+          type << std::endl;
     }
   }
 }

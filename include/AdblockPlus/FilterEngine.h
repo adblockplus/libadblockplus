@@ -43,6 +43,10 @@ namespace AdblockPlus
 #endif
   };
 
+  enum FilterType {BLOCKING_RULE, EXCEPTION_RULE,
+                   ELEMHIDE_RULE, ELEMHIDE_EXCEPTION_RULE,
+                   COMMENT_RULE, INVALID_RULE};
+
   class Filter : public JsObject,
                  public std::tr1::enable_shared_from_this<Filter>
   {
