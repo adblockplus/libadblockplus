@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="$(IntDir)">
+      <UniqueIdentifier>{2385D4EB-CAEB-D33E-59EB-C687F571392E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..">
+      <UniqueIdentifier>{739DB09A-CC57-A953-A6CF-F64FA08E4FA7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\_excluded_files">
+      <UniqueIdentifier>{158E591E-B6EA-0C85-8F5A-18EAFA09B4CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\src">
+      <UniqueIdentifier>{8CDEE807-BC53-E450-C8B8-4DEBB66742D4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\lib">
+      <UniqueIdentifier>{2739B19F-16DF-601C-060A-FF86F6A40045}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\lib\_excluded_files">
+      <UniqueIdentifier>{158E591E-B6EA-0C85-8F5A-18EAFA09B4CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\adblockplus">
+      <UniqueIdentifier>{DB69204E-FDBD-98D8-5252-6B91DB87CAD0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\adblockplus\lib">
+      <UniqueIdentifier>{2739B19F-16DF-601C-060A-FF86F6A40045}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\adblockplus\lib\_excluded_files">
+      <UniqueIdentifier>{158E591E-B6EA-0C85-8F5A-18EAFA09B4CE}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(IntDir)\adblockplus.js.cc">
+      <Filter>$(IntDir)</Filter>
+    </ClCompile>
+    <None Include="..\libadblockplus.gyp">
+      <Filter>..</Filter>
+    </None>
+    <ClCompile Include="..\src\FilterEngine.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FileReader.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\JsEngine.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ConsoleJsObject.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ErrorCallback.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Thread.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <None Include="..\lib\utils.js">
+      <Filter>..\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\lib\io.js">
+      <Filter>..\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\lib\prefs.js">
+      <Filter>..\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\lib\info.js">
+      <Filter>..\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\lib\compat.js">
+      <Filter>..\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\lib\elemHideHitRegistration.js">
+      <Filter>..\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\adblockplus\lib\synchronizer.js">
+      <Filter>..\adblockplus\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\adblockplus\lib\filterStorage.js">
+      <Filter>..\adblockplus\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\adblockplus\lib\filterListener.js">
+      <Filter>..\adblockplus\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\adblockplus\lib\subscriptionClasses.js">
+      <Filter>..\adblockplus\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\adblockplus\lib\filterNotifier.js">
+      <Filter>..\adblockplus\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\adblockplus\lib\elemHide.js">
+      <Filter>..\adblockplus\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\adblockplus\lib\matcher.js">
+      <Filter>..\adblockplus\lib\_excluded_files</Filter>
+    </None>
+    <None Include="..\adblockplus\lib\filterClasses.js">
+      <Filter>..\adblockplus\lib\_excluded_files</Filter>
+    </None>
+    <ClCompile Include="..\src\GlobalJsObject.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
