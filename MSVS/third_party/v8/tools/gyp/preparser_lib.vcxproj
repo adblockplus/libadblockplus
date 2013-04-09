@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A4618A4D-4E48-D7BC-9728-DC7DD509169D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>preparser_lib</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <CharacterSet>Unicode</CharacterSet>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <ExecutablePath>$(ExecutablePath);$(MSBuildProjectDirectory)\..\..\..\..\..\third_party\v8\tools\gyp\bin\;$(MSBuildProjectDirectory)\..\..\..\..\..\third_party\v8\tools\gyp\bin\</ExecutablePath>
+    <OutDir>..\..\..\..\..\build\$(Configuration)\</OutDir>
+    <IntDir>$(OutDir)obj\$(ProjectName)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <TargetName>$(ProjectName)</TargetName>
+    <TargetPath>$(OutDir)lib\$(ProjectName)$(TargetExt)</TargetPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\..\..\..\third_party\v8\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)lib\$(ProjectName)$(TargetExt)</OutputFile>
+    </Lib>
+    <Link>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\..\..\..\third_party\v8\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\..\..\..\third_party\v8\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)lib\$(ProjectName)$(TargetExt)</OutputFile>
+    </Lib>
+    <Link>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\..\..\..\third_party\v8\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;%(PreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\..\third_party\v8\tools\gyp\v8.gyp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\atomicops.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\bignum.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\list-inl.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\once.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\globals.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\hashmap.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\preparser.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\dtoa.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\checks.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\list.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\fixed-dtoa.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\utils-inl.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\strtod.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\allocation.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\utils.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\unicode-inl.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\char-predicates-inl.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\unicode.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\preparse-data-format.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\char-predicates.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\win32-math.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\cached-powers.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\scanner.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\diy-fp.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\conversions.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\fast-dtoa.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\conversions-inl.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\double.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\bignum-dtoa.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\preparse-data.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\src\token.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\include\v8-preparser.h" />
+    <ClInclude Include="..\..\..\..\..\third_party\v8\include\v8stdint.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\allocation.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\preparser.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\conversions.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\fast-dtoa.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\unicode.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\atomicops_internals_x86_gcc.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\cached-powers.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\preparser-api.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\token.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\diy-fp.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\fixed-dtoa.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\strtod.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\scanner.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\preparse-data.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\win32-math.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\utils.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\bignum.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\once.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\dtoa.cc" />
+    <ClCompile Include="..\..\..\..\..\third_party\v8\src\bignum-dtoa.cc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
