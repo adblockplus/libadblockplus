@@ -1,4 +1,8 @@
 #include <algorithm>
+#include <memory>
+#include <cctype>
+#include <functional>
+
 #include <AdblockPlus.h>
 
 using namespace AdblockPlus;
