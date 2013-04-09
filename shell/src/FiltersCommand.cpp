@@ -15,22 +15,22 @@ namespace
       std::string type;
       switch ((*it)->GetProperty("type", -1))
       {
-        case AdblockPlus::BLOCKING_RULE:
+        case AdblockPlus::Filter::TYPE_BLOCKING:
           type = "blocking";
           break;
-        case AdblockPlus::EXCEPTION_RULE:
+        case AdblockPlus::Filter::TYPE_EXCEPTION:
           type = "exception";
           break;
-        case AdblockPlus::ELEMHIDE_RULE:
+        case AdblockPlus::Filter::TYPE_ELEMHIDE:
           type = "elemhide";
           break;
-        case AdblockPlus::ELEMHIDE_EXCEPTION_RULE:
+        case AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION:
           type = "elemhideexception";
           break;
-        case AdblockPlus::COMMENT_RULE:
+        case AdblockPlus::Filter::TYPE_COMMENT:
           type = "comment";
           break;
-        case AdblockPlus::INVALID_RULE:
+        case AdblockPlus::Filter::TYPE_INVALID:
           type = "invalid";
           break;
         default:
