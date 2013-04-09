@@ -4,7 +4,13 @@
 #include <vector>
 #include <map>
 #include <string>
+#ifdef _WIN32 || _WIN64
+#include <memory>
+#include <cctype>
+#include <functional>
+#else
 #include <tr1/memory>
+#endif
 
 namespace AdblockPlus
 {
