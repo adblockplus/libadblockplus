@@ -7,13 +7,13 @@ TEST(FilterEngineStubsTest, FilterCreation)
   AdblockPlus::FilterEngine filterEngine(jsEngine);
 
   AdblockPlus::Filter& filter1 = filterEngine.GetFilter("foo");
-  ASSERT_EQ(filter1.GetProperty("type", -1), AdblockPlus::BLOCKING_RULE);
+  ASSERT_EQ(filter1.GetProperty("type", -1), AdblockPlus::Filter::TYPE_BLOCKING);
   AdblockPlus::Filter& filter2 = filterEngine.GetFilter("@@foo");
-  ASSERT_EQ(filter2.GetProperty("type", -1), AdblockPlus::EXCEPTION_RULE);
+  ASSERT_EQ(filter2.GetProperty("type", -1), AdblockPlus::Filter::TYPE_EXCEPTION);
   AdblockPlus::Filter& filter3 = filterEngine.GetFilter("example.com##foo");
-  ASSERT_EQ(filter3.GetProperty("type", -1), AdblockPlus::ELEMHIDE_RULE);
+  ASSERT_EQ(filter3.GetProperty("type", -1), AdblockPlus::Filter::TYPE_ELEMHIDE);
   AdblockPlus::Filter& filter4 = filterEngine.GetFilter("example.com#@#foo");
-  ASSERT_EQ(filter4.GetProperty("type", -1), AdblockPlus::ELEMHIDE_EXCEPTION_RULE);
+  ASSERT_EQ(filter4.GetProperty("type", -1), AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION);
   AdblockPlus::Filter& filter5 = filterEngine.GetFilter("  foo  ");
   ASSERT_EQ(&filter5, &filter1);
 }
@@ -104,13 +104,13 @@ TEST(FilterEngineStubsTest, Matches)
 
   AdblockPlus::FilterPtr match2 = filterEngine.Matches("http://example.org/adbanner.gif", "", "");
   ASSERT_TRUE(match2);
-  ASSERT_EQ(match2->GetProperty("type", -1), AdblockPlus::BLOCKING_RULE);
+  ASSERT_EQ(match2->GetProperty("type", -1), AdblockPlus::Filter::TYPE_BLOCKING);
 
   AdblockPlus::FilterPtr match3 = filterEngine.Matches("http://example.org/notbanner.gif", "", "");
   ASSERT_TRUE(match3);
-  ASSERT_EQ(match3->GetProperty("type", -1), AdblockPlus::EXCEPTION_RULE);
+  ASSERT_EQ(match3->GetProperty("type", -1), AdblockPlus::Filter::TYPE_EXCEPTION);
 
   AdblockPlus::FilterPtr match4 = filterEngine.Matches("http://example.org/notbanner.gif", "", "");
   ASSERT_TRUE(match4);
-  ASSERT_EQ(match4->GetProperty("type", -1), AdblockPlus::EXCEPTION_RULE);
+  ASSERT_EQ(match4->GetProperty("type", -1), AdblockPlus::Filter::TYPE_EXCEPTION);
 }
