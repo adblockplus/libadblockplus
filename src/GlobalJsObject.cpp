@@ -50,7 +50,8 @@ namespace
       Sleep(delay);
       const v8::Locker locker(isolate);
       const v8::HandleScope handleScope;
-      function->Call(function, functionArguments.size(), &functionArguments[0]);
+      v8::Handle<v8::Value> argv = functionArguments.size() > 0 ? functionArguments[0] : v8::Handle<v8::Value>();
+      function->Call(function, functionArguments.size(), &argv);
       delete this;
     }
 
