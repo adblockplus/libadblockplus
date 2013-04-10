@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
-#ifdef _MSC_VER
+#ifdef WIN32
 #include <memory>
 #else
 #include <tr1/memory>
