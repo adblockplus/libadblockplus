@@ -34,22 +34,10 @@ yet. To build it anyway:
 
 ### Windows
 
-You need Microsoft Visual C++ (Express is sufficient) 2010 or later
+You need Microsoft Visual C++ (Express is sufficient) 2012
 and Python 2.6.
 
-1. Execute *buildmsvs.bat*
-2. Open the solution *MSVS\libadblockplus.sln*
-3. Unload the following projects:
- - tests
- - third\_party/googletest
- - third\_party/googletest/gtest_main
-4. Disable custom build tools for the following files (right click,
-   properties, set *Excluded from Build* to *Yes*):
- - third\_party/v8/tools/gyp/js2c/js2c.py
- - third\_party/v8/tools/gyp/v8\_snapshot/mksnapshot.exe
-5. Build the solution (it will fail)
-6. Execute *msvs_makesnapshot.bat*
-7. Rebuild the solution
+- Execute *buildmsvs.bat* from Visual Studio command line (with VS environment variables defined, ie msbuild can be run from)
 
 Shell
 -----

@@ -57,6 +57,10 @@
     <TargetName>$(ProjectName)</TargetName>
     <TargetPath>$(OutDir)lib\$(ProjectName)$(TargetExt)</TargetPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>..\include;..\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -75,6 +79,16 @@
       <AdditionalIncludeDirectories>..\include;..\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;FILTER_ENGINE_STUBS=1;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions);%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <PreBuildEvent>
+      <Command>python ..\convert_js.py "..\lib/info.js" "..\lib/io.js" "..\lib/prefs.js" "..\lib/utils.js" "..\lib/elemHideHitRegistration.js" "..\adblockplus/lib/filterNotifier.js" "..\adblockplus/lib/filterClasses.js" "..\adblockplus/lib/subscriptionClasses.js" "..\adblockplus/lib/filterStorage.js" "..\adblockplus/lib/elemHide.js" "..\adblockplus/lib/matcher.js" "..\adblockplus/lib/filterListener.js" "..\adblockplus/lib/synchronizer.js" ..\build\Debug\obj\libadblockplus\adblockplus.js.cc</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Generating adblockplus.js.cc</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
