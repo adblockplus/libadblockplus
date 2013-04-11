@@ -97,8 +97,8 @@ namespace AdblockPlus
     friend class Subscription;
   public:
     explicit FilterEngine(JsEngine& jsEngine);
-    Filter& GetFilter(const std::string& text);
-    Subscription& GetSubscription(const std::string& url);
+    FilterPtr GetFilter(const std::string& text);
+    SubscriptionPtr GetSubscription(const std::string& url);
     const std::vector<FilterPtr>& GetListedFilters() const;
     const std::vector<SubscriptionPtr>& GetListedSubscriptions() const;
     void FetchAvailableSubscriptions(SubscriptionsCallback callback);
