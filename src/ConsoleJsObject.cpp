@@ -1,3 +1,4 @@
+#include <AdblockPlus/ErrorCallback.h>
 #include <sstream>
 
 #include "ConsoleJsObject.h"
@@ -10,7 +11,7 @@ namespace
     const v8::HandleScope handleScope;
     for (int i = 0; i < arguments.Length(); i++)
     {
-      const v8::Handle<v8::Value> argument = arguments[0];
+      const v8::Handle<v8::Value> argument = arguments[i];
       const v8::String::Utf8Value value(argument);
       message << *value;
     }
