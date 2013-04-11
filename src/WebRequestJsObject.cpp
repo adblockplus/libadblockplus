@@ -76,6 +76,7 @@ namespace
       const v8::HandleScope handleScope;
       const v8::Context::Scope contextScope(context);
       v8::Local<v8::Object> resultObject = v8::Object::New();
+      resultObject->Set(v8::String::New("status"), v8::Number::New(result.status));
       resultObject->Set(v8::String::New("responseStatus"), v8::Integer::New(result.responseStatus));
       resultObject->Set(v8::String::New("responseText"), toV8String(result.responseText));
 

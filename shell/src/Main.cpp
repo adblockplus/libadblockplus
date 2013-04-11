@@ -59,8 +59,9 @@ int main()
   try
   {
     LibFileReader fileReader;
+    AdblockPlus::DefaultWebRequest webRequest;
     CerrErrorCallback errorCallback;
-    AdblockPlus::JsEngine jsEngine(&fileReader, 0, 0);
+    AdblockPlus::JsEngine jsEngine(&fileReader, &webRequest, &errorCallback);
     AdblockPlus::FilterEngine filterEngine(jsEngine);
 
     CommandMap commands;

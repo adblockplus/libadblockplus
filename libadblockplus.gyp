@@ -1,4 +1,7 @@
 {
+  'variables': {
+    'have_curl': '<!(python check_curl.py)'
+  },
   'includes': ['third_party/v8/build/common.gypi',
                'shell/shell.gyp'],
   'targets': [{
@@ -29,6 +32,17 @@
       'include_dirs': ['include']
     },
     'export_dependent_settings': ['third_party/v8/tools/gyp/v8.gyp:v8'],
+    'conditions': [
+      ['have_curl==1',
+        {
+          'defines': ['HAVE_CURL'],
+          'all_dependent_settings': {
+            'defines': ['HAVE_CURL'],
+            'libraries': ['-lcurl']
+          }
+        }
+      ]
+    ],
     'actions': [{
       'action_name': 'convert_js',
       'variables': {
