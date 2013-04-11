@@ -78,21 +78,21 @@ void SubscriptionsCommand::ShowSubscriptions()
 void SubscriptionsCommand::AddSubscription(const std::string& url,
                                            const std::string& title)
 {
-  AdblockPlus::Subscription& subscription = filterEngine.GetSubscription(url);
+  AdblockPlus::SubscriptionPtr subscription = filterEngine.GetSubscription(url);
   if (title.size())
-    subscription.SetProperty("title", title);
-  subscription.AddToList();
+    subscription->SetProperty("title", title);
+  subscription->AddToList();
 }
 
 void SubscriptionsCommand::RemoveSubscription(const std::string& url)
 {
-  AdblockPlus::Subscription& subscription = filterEngine.GetSubscription(url);
-  if (!subscription.IsListed())
+  AdblockPlus::SubscriptionPtr subscription = filterEngine.GetSubscription(url);
+  if (!subscription->IsListed())
   {
     std::cout << "No subscription with URL '" << url << "'" << std::endl;
     return;
   }
-  subscription.RemoveFromList();
+  subscription->RemoveFromList();
 }
 
 void SubscriptionsCommand::UpdateSubscriptions()

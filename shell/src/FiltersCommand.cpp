@@ -98,17 +98,17 @@ void FiltersCommand::ShowFilters()
 
 void FiltersCommand::AddFilter(const std::string& text)
 {
-  AdblockPlus::Filter& filter = filterEngine.GetFilter(text);
-  filter.AddToList();
+  AdblockPlus::FilterPtr filter = filterEngine.GetFilter(text);
+  filter->AddToList();
 }
 
 void FiltersCommand::RemoveFilter(const std::string& text)
 {
-  AdblockPlus::Filter& filter = filterEngine.GetFilter(text);
-  if (!filter.IsListed())
+  AdblockPlus::FilterPtr filter = filterEngine.GetFilter(text);
+  if (!filter->IsListed())
   {
     std::cout << "No such filter '" << text << "'" << std::endl;
     return;
   }
-  filter.RemoveFromList();
+  filter->RemoveFromList();
 }

@@ -187,7 +187,7 @@ FilterEngine::FilterEngine(JsEngine& jsEngine) : jsEngine(jsEngine)
 #endif
 }
 
-Filter& FilterEngine::GetFilter(const std::string& text)
+FilterPtr FilterEngine::GetFilter(const std::string& text)
 {
 #if FILTER_ENGINE_STUBS
   // Via http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
@@ -197,24 +197,24 @@ Filter& FilterEngine::GetFilter(const std::string& text)
 
   std::map<std::string, FilterPtr>::const_iterator it = knownFilters.find(trimmed);
   if (it != knownFilters.end())
-    return *it->second;
+    return it->second;
 
   FilterPtr result(new Filter(*this, trimmed));
-  knownFilters[trimmed] = result->shared_from_this();
-  return *result;
+  knownFilters[trimmed] = result;
+  return result;
 #endif
 }
 
-Subscription& FilterEngine::GetSubscription(const std::string& url)
+SubscriptionPtr FilterEngine::GetSubscription(const std::string& url)
 {
 #if FILTER_ENGINE_STUBS
   std::map<std::string, SubscriptionPtr>::const_iterator it = knownSubscriptions.find(url);
   if (it != knownSubscriptions.end())
-    return *it->second;
+    return it->second;
 
   SubscriptionPtr result(new Subscription(*this, url));
-  knownSubscriptions[url] = result->shared_from_this();
-  return *result;
+  knownSubscriptions[url] = result;
+  return result;
 #endif
 }
 
@@ -237,13 +237,13 @@ void FilterEngine::FetchAvailableSubscriptions(SubscriptionsCallback callback)
 #if FILTER_ENGINE_STUBS
   std::vector<SubscriptionPtr> availableSubscriptions;
 
-  Subscription& subscription1 = GetSubscription("https://easylist-downloads.adblockplus.org/easylist.txt");
-  subscription1.SetProperty("title", "EasyList");
-  availableSubscriptions.push_back(subscription1.shared_from_this());
+  SubscriptionPtr subscription1 = GetSubscription("https://easylist-downloads.adblockplus.org/easylist.txt");
+  subscription1->SetProperty("title", "EasyList");
+  availableSubscriptions.push_back(subscription1);
 
-  Subscription& subscription2 = GetSubscription("https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt");
-  subscription2.SetProperty("title", "EasyList Germany+EasyList");
-  availableSubscriptions.push_back(subscription2.shared_from_this());
+  SubscriptionPtr subscription2 = GetSubscription("https://easylist-downloads.adblockplus.org/easylistgermany+easylist.txt");
+  subscription2->SetProperty("title", "EasyList Germany+EasyList");
+  availableSubscriptions.push_back(subscription2);
 
   callback(availableSubscriptions);
 #endif
@@ -256,9 +256,9 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
 #if FILTER_ENGINE_STUBS
   //For test on http://simple-adblock.com/faq/testing-your-adblocker/
   if (url.find("adbanner.gif") != std::string::npos)
-    return GetFilter("adbanner.gif").shared_from_this();
+    return GetFilter("adbanner.gif");
   else if (url.find("notbanner.gif") != std::string::npos)
-    return GetFilter("@@notbanner.gif").shared_from_this();
+    return GetFilter("@@notbanner.gif");
   else
     return AdblockPlus::FilterPtr();
 #endif
