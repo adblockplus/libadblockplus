@@ -50,7 +50,7 @@ TEST(JsEngineTest, EvaluateAndCall)
   AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
   const std::string source = "function hello() { return 'Hello'; }";
   jsEngine.Evaluate(source);
-  const std::string result = jsEngine.Call("hello");
+  const std::string result = jsEngine.Evaluate("hello()");
   ASSERT_EQ("Hello", result);
 }
 
@@ -60,7 +60,7 @@ TEST(JsEngineTest, LoadAndCall)
   ThrowingErrorCallback errorCallback;
   AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
   jsEngine.Load("hello.js");
-  const std::string result = jsEngine.Call("hello");
+  const std::string result = jsEngine.Evaluate("hello()");
   ASSERT_EQ("Hello", result);
 }
 

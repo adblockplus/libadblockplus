@@ -24,12 +24,9 @@ namespace AdblockPlus
     JsEngine(const FileReader* const fileReader,
              WebRequest* const webRequest,
              ErrorCallback* const errorCallback);
-    std::string Evaluate(const char* source, const char* filename = NULL);
     std::string Evaluate(const std::string& source,
         const std::string& filename = "");
     void Load(const std::string& scriptPath);
-    std::string Call(const std::string& functionName);
-    std::string GetVariable(const std::string& name);
     void Gc();
 
   private:
