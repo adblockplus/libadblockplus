@@ -16,12 +16,12 @@ namespace
     return v8::Context::New(0, global);
   }
 
-  v8::Handle<v8::Script> CompileScript(const char* source, const char* filename)
+  v8::Handle<v8::Script> CompileScript(const std::string& source, const std::string& filename)
   {
-    const v8::Handle<v8::String> v8Source = v8::String::New(source);
-    if (filename && filename[0])
+    const v8::Handle<v8::String> v8Source = v8::String::New(source.c_str());
+    if (filename.length())
     {
-      const v8::Handle<v8::String> v8Filename = v8::String::New(filename);
+      const v8::Handle<v8::String> v8Filename = v8::String::New(filename.c_str());
       return v8::Script::Compile(v8Source, v8Filename);
     }
     else
@@ -70,7 +70,8 @@ AdblockPlus::JsEngine::JsEngine(const FileReader* const fileReader,
 {
 }
 
-std::string AdblockPlus::JsEngine::Evaluate(const char* source, const char* filename)
+std::string AdblockPlus::JsEngine::Evaluate(const std::string& source,
+    const std::string& filename)
 {
   const v8::Locker locker(v8::Isolate::GetCurrent());
   const v8::HandleScope handleScope;
@@ -84,46 +85,12 @@ std::string AdblockPlus::JsEngine::Evaluate(const char* source, const char* file
   return std::string(*resultString);
 }
 
-std::string AdblockPlus::JsEngine::Evaluate(const std::string& source,
-    const std::string& filename)
-{
-  return Evaluate(source.c_str(), filename.c_str());
-}
-
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 {
   const std::auto_ptr<std::istream> file = fileReader->Read(scriptPath);
   if (!*file)
     throw std::runtime_error("Unable to load script " + scriptPath);
   Evaluate(Slurp(*file));
-}
-
-std::string AdblockPlus::JsEngine::Call(const std::string& functionName)
-{
-  const v8::Locker locker(v8::Isolate::GetCurrent());
-  const v8::HandleScope handleScope;
-  const v8::Context::Scope contextScope(context);
-  const v8::Local<v8::Object> global = context->Global();
-  const v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(
-    global->Get(v8::String::New(functionName.c_str())));
-  const v8::TryCatch tryCatch;
-  const v8::Local<v8::Value> result = function->Call(function, 0, 0);
-  CheckTryCatch(tryCatch);
-  const v8::String::AsciiValue ascii(result);
-  return *ascii;
-}
-
-std::string AdblockPlus::JsEngine::GetVariable(const std::string& name)
-{
-  const v8::Locker locker(v8::Isolate::GetCurrent());
-  const v8::HandleScope handleScope;
-  const v8::Context::Scope contextScope(context);
-  const v8::Local<v8::Object> global = context->Global();
-  const v8::Local<v8::Value> value = global->Get(v8::String::New(name.c_str()));
-  if (value->IsUndefined())
-    return "";
-  const v8::String::AsciiValue ascii(value);
-  return *ascii;
 }
 
 void AdblockPlus::JsEngine::Gc()
