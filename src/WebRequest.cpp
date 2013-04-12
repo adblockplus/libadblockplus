@@ -135,7 +135,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
     for (HeaderList::const_iterator it = requestHeaders.begin();
       it != requestHeaders.end(); ++it)
     {
-      curl_slist_append(headerList, (it->first + ": " + it->second).c_str());
+      headerList = curl_slist_append(headerList, (it->first + ": " + it->second).c_str());
     }
     if (headerList)
       curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
