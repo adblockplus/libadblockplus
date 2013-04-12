@@ -99,5 +99,28 @@
     <ClCompile Include="..\src\GlobalJsObject.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\WebRequest.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WebRequestJsObject.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\convert_js.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\WebRequestJsObject.h">
+      <Filter>..\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ConsoleJsObject.h">
+      <Filter>..\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\GlobalJsObject.h">
+      <Filter>..\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Thread.h">
+      <Filter>..\src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

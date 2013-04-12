@@ -45,7 +45,9 @@
   <ImportGroup Label="PropertySheets">
     <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <Python Condition=" '$(Python)' == '' ">python</Python>
+  </PropertyGroup>
   <PropertyGroup>
     <ExecutablePath>$(ExecutablePath);$(MSBuildProjectDirectory)\..\bin\;$(MSBuildProjectDirectory)\..\bin\</ExecutablePath>
     <OutDir>..\build\$(Configuration)\</OutDir>
@@ -84,10 +86,12 @@
       </Command>
     </CustomBuildStep>
     <PreBuildEvent>
-      <Command>python ..\convert_js.py "..\lib/info.js" "..\lib/io.js" "..\lib/prefs.js" "..\lib/utils.js" "..\lib/elemHideHitRegistration.js" "..\adblockplus/lib/filterNotifier.js" "..\adblockplus/lib/filterClasses.js" "..\adblockplus/lib/subscriptionClasses.js" "..\adblockplus/lib/filterStorage.js" "..\adblockplus/lib/elemHide.js" "..\adblockplus/lib/matcher.js" "..\adblockplus/lib/filterListener.js" "..\adblockplus/lib/synchronizer.js" ..\build\Debug\obj\libadblockplus\adblockplus.js.cc</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
-      <Message>Generating adblockplus.js.cc</Message>
+      <Message>
+      </Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -160,6 +164,13 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CustomBuild Include="..\convert_js.py">
+      <FileType>Document</FileType>
+      <Command>$(PYTHON) %(Identity) "..\lib/info.js"  "..\lib/io.js" "..\lib/prefs.js" "..\lib/utils.js" "..\lib/elemHideHitRegistration.js" "..\adblockplus/lib/filterNotifier.js" "..\adblockplus/lib/filterClasses.js" "..\adblockplus/lib/subscriptionClasses.js" "..\adblockplus/lib/filterStorage.js" "..\adblockplus/lib/elemHide.js" "..\adblockplus/lib/matcher.js" "..\adblockplus/lib/filterListener.js" "..\adblockplus/lib/synchronizer.js" $(IntDir)adblockplus.js.cc</Command>
+      <Outputs>%(IntDir)adblockplus.js.cc</Outputs>
+      <AdditionalInputs>..\lib\info.js;..\lib\io.js;..\lib\prefs.js;..\lib\utils.js;..\lib\elemHideHitRegistration.js;..\adblockplus\lib\filterNotifier.js;..\adblockplus\lib\filterClasses.js;..\adblockplus\lib\subscriptionClasses.js;..\adblockplus\lib\filterStorage.js;..\adblockplus\lib\elemHide.js;..\adblockplus\lib\matcher.js;..\adblockplus\lib\filterListener.js;..\adblockplus\lib\synchronizer.js</AdditionalInputs>
+      <LinkObjects>false</LinkObjects>
+    </CustomBuild>
     <None Include="..\libadblockplus.gyp" />
     <None Include="..\lib\utils.js">
       <ExcludedFromBuild>true</ExcludedFromBuild>
@@ -213,12 +224,20 @@
     <ClCompile Include="..\src\ConsoleJsObject.cpp" />
     <ClCompile Include="..\src\ErrorCallback.cpp" />
     <ClCompile Include="..\src\Thread.cpp" />
+    <ClCompile Include="..\src\WebRequest.cpp" />
+    <ClCompile Include="..\src\WebRequestJsObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="third_party\v8\tools\gyp\v8.vcxproj">
       <Project>{FBB6CB62-DDEE-671E-D69F-37E0F0A1B214}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\ConsoleJsObject.h" />
+    <ClInclude Include="..\src\GlobalJsObject.h" />
+    <ClInclude Include="..\src\Thread.h" />
+    <ClInclude Include="..\src\WebRequestJsObject.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
