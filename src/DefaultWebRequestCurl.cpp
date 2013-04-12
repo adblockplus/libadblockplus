@@ -1,11 +1,8 @@
-#include <AdblockPlus/WebRequest.h>
-
-#if defined(HAVE_CURL)
-
 #include <sstream>
 #include <cctype>
 #include <algorithm>
 #include <curl/curl.h>
+#include <AdblockPlus/WebRequest.h>
 
 namespace
 {
@@ -174,13 +171,3 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   }
   return result;
 }
-#else
-AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
-    const std::string& url, const HeaderList& requestHeaders) const
-{
-  AdblockPlus::ServerResponse result;
-  result.status = NS_ERROR_FAILURE;
-  result.responseStatus = 0;
-  return result;
-}
-#endif
