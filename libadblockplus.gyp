@@ -24,7 +24,6 @@
       'src/GlobalJsObject.cpp',
       'src/JsEngine.cpp',
       'src/Thread.cpp',
-      'src/WebRequest.cpp',
       'src/WebRequestJsObject.cpp',
       '<(INTERMEDIATE_DIR)/adblockplus.js.cc'
     ],
@@ -35,11 +34,20 @@
     'conditions': [
       ['have_curl==1',
         {
-          'defines': ['HAVE_CURL'],
+          'sources': [
+            'src/DefaultWebRequestCurl.cpp',
+          ],
           'all_dependent_settings': {
             'defines': ['HAVE_CURL'],
             'libraries': ['-lcurl']
           }
+        }
+      ],
+      ['have_curl!=1',
+        {
+          'sources': [
+            'src/DefaultWebRequestDummy.cpp',
+          ]
         }
       ]
     ],
