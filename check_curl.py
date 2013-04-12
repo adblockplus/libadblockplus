@@ -5,7 +5,10 @@ import os, sys, subprocess, tempfile;
 baseDir = os.path.abspath(os.path.dirname(__file__))
 
 def check_curl():
-  (fd, name) = tempfile.mkstemp(dir=os.path.join(baseDir, 'build'), suffix='.h')
+  buildDir = os.path.join(baseDir, 'build')
+  if not os.path.exists(buildDir):
+    os.makedirs(buildDir);
+  (fd, name) = tempfile.mkstemp(dir=buildDir, suffix='.h')
   try:
     handle = os.fdopen(fd, 'wb');
     handle.write('#include <curl/curl.h>')
