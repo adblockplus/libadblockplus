@@ -37,7 +37,7 @@ namespace AdblockPlus
       NS_CUSTOM_ERROR_BASE = 0x80850000
     };
 
-    virtual ~WebRequest();
+    virtual inline ~WebRequest() {};
     virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
   };
 
