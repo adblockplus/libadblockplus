@@ -1,9 +1,5 @@
 #include <AdblockPlus/WebRequest.h>
 
-AdblockPlus::WebRequest::~WebRequest()
-{
-}
-
 #if defined(HAVE_CURL)
 
 #include <sstream>
