@@ -31,33 +31,33 @@ namespace
     switch (code)
     {
       case CURLE_OK:
-        return NS_OK;
+        return AdblockPlus::WebRequest::NS_OK;
       case CURLE_FAILED_INIT:
-        return NS_ERROR_NOT_INITIALIZED;
+        return AdblockPlus::WebRequest::NS_ERROR_NOT_INITIALIZED;
       case CURLE_UNSUPPORTED_PROTOCOL:
-        return NS_ERROR_UNKNOWN_PROTOCOL;
+        return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
       case CURLE_URL_MALFORMAT:
-        return NS_ERROR_MALFORMED_URI;
+        return AdblockPlus::WebRequest::NS_ERROR_MALFORMED_URI;
       case CURLE_COULDNT_RESOLVE_PROXY:
-        return NS_ERROR_UNKNOWN_PROXY_HOST;
+        return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROXY_HOST;
       case CURLE_COULDNT_RESOLVE_HOST:
-        return NS_ERROR_UNKNOWN_HOST;
+        return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_HOST;
       case CURLE_COULDNT_CONNECT:
-        return NS_ERROR_CONNECTION_REFUSED;
+        return AdblockPlus::WebRequest::NS_ERROR_CONNECTION_REFUSED;
       case CURLE_OUT_OF_MEMORY:
-        return NS_ERROR_OUT_OF_MEMORY;
+        return AdblockPlus::WebRequest::NS_ERROR_OUT_OF_MEMORY;
       case CURLE_OPERATION_TIMEDOUT:
-        return NS_ERROR_NET_TIMEOUT;
+        return AdblockPlus::WebRequest::NS_ERROR_NET_TIMEOUT;
       case CURLE_TOO_MANY_REDIRECTS:
-        return NS_ERROR_REDIRECT_LOOP;
+        return AdblockPlus::WebRequest::NS_ERROR_REDIRECT_LOOP;
       case CURLE_GOT_NOTHING:
-        return NS_ERROR_NO_CONTENT;
+        return AdblockPlus::WebRequest::NS_ERROR_NO_CONTENT;
       case CURLE_SEND_ERROR:
-        return NS_ERROR_NET_RESET;
+        return AdblockPlus::WebRequest::NS_ERROR_NET_RESET;
       case CURLE_RECV_ERROR:
-        return NS_ERROR_NET_RESET;
+        return AdblockPlus::WebRequest::NS_ERROR_NET_RESET;
       default:
-        return NS_CUSTOM_ERROR_BASE + code;
+        return AdblockPlus::WebRequest::NS_CUSTOM_ERROR_BASE + code;
     }
   }
 

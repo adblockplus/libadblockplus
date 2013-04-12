@@ -45,7 +45,7 @@ TEST(WebRequestTest, TestWebRequest)
   jsEngine.Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
   ASSERT_EQ("undefined", jsEngine.Evaluate("typeof foo"));
   AdblockPlus::Sleep(200);
-  ASSERT_EQ(ToString(NS_OK), jsEngine.Evaluate("foo.status"));
+  ASSERT_EQ(ToString(AdblockPlus::WebRequest::NS_OK), jsEngine.Evaluate("foo.status"));
   ASSERT_EQ("123", jsEngine.Evaluate("foo.responseStatus"));
   ASSERT_EQ("http://example.com/\nX\nY", jsEngine.Evaluate("foo.responseText"));
   ASSERT_EQ("{\"Foo\":\"Bar\"}", jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)"));
@@ -64,7 +64,7 @@ TEST(WebRequestTest, RealWebRequest)
   {
     AdblockPlus::Sleep(200);
   } while (jsEngine.Evaluate("typeof foo") == "undefined");
-  ASSERT_EQ(ToString(NS_OK), jsEngine.Evaluate("foo.status"));
+  ASSERT_EQ(ToString(AdblockPlus::WebRequest::NS_OK), jsEngine.Evaluate("foo.status"));
   ASSERT_EQ("200", jsEngine.Evaluate("foo.responseStatus"));
   ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("foo.responseText.substr(0, 14)"));
   ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)"));
@@ -80,7 +80,7 @@ TEST(WebRequestTest, DummyWebRequest)
   {
     AdblockPlus::Sleep(200);
   } while (jsEngine.Evaluate("typeof foo") == "undefined");
-  ASSERT_EQ(ToString(NS_ERROR_FAILURE), jsEngine.Evaluate("foo.status"));
+  ASSERT_EQ(ToString(AdblockPlus::WebRequest::NS_ERROR_FAILURE), jsEngine.Evaluate("foo.status"));
   ASSERT_EQ("0", jsEngine.Evaluate("foo.responseStatus"));
   ASSERT_EQ("", jsEngine.Evaluate("foo.responseText"));
   ASSERT_EQ("{}", jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)"));
