@@ -1,5 +1,6 @@
 #include <AdblockPlus/DefaultFileSystem.h>
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <stdexcept>
 

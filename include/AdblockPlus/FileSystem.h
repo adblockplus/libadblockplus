@@ -2,6 +2,7 @@
 #define ADBLOCKPLUS_FILE_SYSTEM_H
 
 #include <istream>
+#include <stdint.h>
 #include <string>
 
 #include "tr1_memory.h"
