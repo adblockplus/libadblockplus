@@ -29,5 +29,8 @@
     <ClCompile Include="..\test\GlobalJsObject.cpp">
       <Filter>..\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\WebRequest.cpp">
+      <Filter>..\test</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

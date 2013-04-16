@@ -67,14 +67,14 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\third_party\googletest;..\third_party\googletest\include;..\include;..\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;_VARIADIC_MAX=10;FILTER_ENGINE_STUBS=1;_WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;_VARIADIC_MAX=10;FILTER_ENGINE_STUBS=1;_WIN32;_DEBUG;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAsWinRT>
       </CompileAsWinRT>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;ws2_32.lib;</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;ws2_32.lib;Winhttp.lib;Shlwapi.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(ProjectName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
@@ -178,6 +178,7 @@
     <ClCompile Include="..\test\GlobalJsObject.cpp" />
     <ClCompile Include="..\test\Thread.cpp" />
     <ClCompile Include="..\test\JsEngine.cpp" />
+    <ClCompile Include="..\test\WebRequest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="third_party\googletest_main.vcxproj">

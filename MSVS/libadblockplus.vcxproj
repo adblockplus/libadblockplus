@@ -217,6 +217,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(IntDir)\adblockplus.js.cc" />
+    <ClCompile Include="..\src\DefaultWebRequestDummy.cpp" />
     <ClCompile Include="..\src\FilterEngine.cpp" />
     <ClCompile Include="..\src\FileReader.cpp" />
     <ClCompile Include="..\src\GlobalJsObject.cpp" />
@@ -224,8 +225,8 @@
     <ClCompile Include="..\src\ConsoleJsObject.cpp" />
     <ClCompile Include="..\src\ErrorCallback.cpp" />
     <ClCompile Include="..\src\Thread.cpp" />
-    <ClCompile Include="..\src\WebRequest.cpp" />
     <ClCompile Include="..\src\WebRequestJsObject.cpp" />
+    <ClCompile Include="..\src\WebRequestWinInet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="third_party\v8\tools\gyp\v8.vcxproj">
@@ -238,6 +239,7 @@
     <ClInclude Include="..\src\GlobalJsObject.h" />
     <ClInclude Include="..\src\Thread.h" />
     <ClInclude Include="..\src\WebRequestJsObject.h" />
+    <ClInclude Include="..\src\WebRequestWinInet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -23,7 +23,7 @@ TEST(ConsoleJsObjectTest, ErrorInvokesErrorCallback)
 TEST(ConsoleJsObjectTest, ErrorWithMultipleArguments)
 {
   MockErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
   jsEngine.Evaluate("console.error('foo', 'bar')");
   ASSERT_EQ("foobar", errorCallback.lastMessage);
 }

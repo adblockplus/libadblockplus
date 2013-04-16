@@ -4,6 +4,10 @@
 
 #include "../src/Thread.h"
 
+#ifdef HAVE_WININET
+#include "../src/WebRequestWinInet.h"
+#endif
+
 class TestWebRequest : public AdblockPlus::WebRequest
 {
 public:
@@ -68,6 +72,23 @@ TEST(WebRequestTest, RealWebRequest)
   ASSERT_EQ("200", jsEngine.Evaluate("foo.responseStatus"));
   ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("foo.responseText.substr(0, 14)"));
   ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)"));
+  ASSERT_EQ("undefined", jsEngine.Evaluate("typeof foo.responseHeaders['location']"));
+}
+#elif defined(HAVE_WININET)
+TEST(WebRequestTest, RealWebRequest)
+{
+  AdblockPlus::WebRequestWinInet webRequest;
+  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  jsEngine.Evaluate("_webRequest.GET('https://easylist.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  do
+  {
+    AdblockPlus::Sleep(200);
+  } while (jsEngine.Evaluate("typeof foo") == "undefined");
+  ASSERT_EQ(ToString(AdblockPlus::WebRequest::NS_OK), jsEngine.Evaluate("foo.status"));
+  ASSERT_EQ("200", jsEngine.Evaluate("foo.responseStatus"));
+  ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("foo.responseText.substr(0, 14)"));
+  //TODO: Shall we be strict with letter casing here? Content-Type vs content-type
+  ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['Content-Type'].substr(0, 10)"));
   ASSERT_EQ("undefined", jsEngine.Evaluate("typeof foo.responseHeaders['location']"));
 }
 #else
