@@ -99,10 +99,13 @@
     <ClCompile Include="..\src\GlobalJsObject.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\WebRequest.cpp">
+    <ClCompile Include="..\src\WebRequestJsObject.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\WebRequestJsObject.cpp">
+    <ClCompile Include="..\src\DefaultWebRequestDummy.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\WebRequestWinInet.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -120,6 +123,9 @@
       <Filter>..\src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Thread.h">
+      <Filter>..\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\WebRequestWinInet.h">
       <Filter>..\src</Filter>
     </ClInclude>
   </ItemGroup>
