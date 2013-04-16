@@ -2,17 +2,20 @@
 #include <sstream>
 
 #include "GlobalJsObject.h"
+#include "Utils.h"
 
 namespace
 {
   v8::Handle<v8::Context> CreateContext(
-    AdblockPlus::ErrorCallback& errorCallback,
-    AdblockPlus::WebRequest& webRequest)
+    AdblockPlus::FileSystem& fileSystem,
+    AdblockPlus::WebRequest& webRequest,
+    AdblockPlus::ErrorCallback& errorCallback)
   {
     const v8::Locker locker(v8::Isolate::GetCurrent());
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global =
-      AdblockPlus::GlobalJsObject::Create(errorCallback, webRequest);
+      AdblockPlus::GlobalJsObject::Create(fileSystem, webRequest,
+                                          errorCallback);
     return v8::Context::New(0, global);
   }
 
@@ -32,13 +35,6 @@ namespace
   {
     if (tryCatch.HasCaught())
       throw AdblockPlus::JsError(tryCatch.Exception(), tryCatch.Message());
-  }
-
-  std::string Slurp(std::istream& stream)
-  {
-    std::stringstream content;
-    content << stream.rdbuf();
-    return content.str();
   }
 
   std::string ExceptionToString(const v8::Handle<v8::Value> exception,
@@ -63,10 +59,11 @@ AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
 {
 }
 
-AdblockPlus::JsEngine::JsEngine(const FileReader* const fileReader,
+AdblockPlus::JsEngine::JsEngine(FileSystem* const fileSystem,
                                 WebRequest* const webRequest,
                                 ErrorCallback* const errorCallback)
-  : fileReader(fileReader), context(CreateContext(*errorCallback, *webRequest))
+  : fileSystem(fileSystem),
+    context(CreateContext(*fileSystem, *webRequest, *errorCallback))
 {
 }
 
@@ -87,10 +84,10 @@ std::string AdblockPlus::JsEngine::Evaluate(const std::string& source,
 
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 {
-  const std::auto_ptr<std::istream> file = fileReader->Read(scriptPath);
-  if (!*file)
+  const std::tr1::shared_ptr<std::istream> file = fileSystem->Read(scriptPath);
+  if (!file || !*file)
     throw std::runtime_error("Unable to load script " + scriptPath);
-  Evaluate(Slurp(*file));
+  Evaluate(Utils::Slurp(*file));
 }
 
 void AdblockPlus::JsEngine::Gc()

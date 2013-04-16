@@ -7,9 +7,9 @@
 
 namespace AdblockPlus
 {
-  class ErrorCallback;
-  class FileReader;
+  class FileSystem;
   class WebRequest;
+  class ErrorCallback;
 
   class JsError : public std::runtime_error
   {
@@ -21,7 +21,7 @@ namespace AdblockPlus
   class JsEngine
   {
   public:
-    JsEngine(const FileReader* const fileReader,
+    JsEngine(FileSystem* const fileReader,
              WebRequest* const webRequest,
              ErrorCallback* const errorCallback);
     std::string Evaluate(const std::string& source,
@@ -30,7 +30,7 @@ namespace AdblockPlus
     void Gc();
 
   private:
-    const FileReader* const fileReader;
+    const FileSystem* const fileSystem;
     v8::Persistent<v8::Context> context;
   };
 }

@@ -18,12 +18,14 @@
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
       'src/ConsoleJsObject.cpp',
+      'src/DefaultFileSystem.cpp',
       'src/ErrorCallback.cpp',
-      'src/FileReader.cpp',
+      'src/FileSystemJsObject.cpp',
       'src/FilterEngine.cpp',
       'src/GlobalJsObject.cpp',
       'src/JsEngine.cpp',
       'src/Thread.cpp',
+      'src/Utils.cpp',
       'src/WebRequestJsObject.cpp',
       '<(INTERMEDIATE_DIR)/adblockplus.js.cc'
     ],
@@ -100,6 +102,8 @@
     ],
     'sources': [
       'test/ConsoleJsObject.cpp',
+      'test/DefaultFileSystem.cpp',
+      'test/FileSystemJsObject.cpp',
       'test/FilterEngineStubs.cpp',
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
