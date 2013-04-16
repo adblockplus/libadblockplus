@@ -3,13 +3,28 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
-class ThrowingFileReader : public AdblockPlus::FileReader
+class BaseFileSystem : public AdblockPlus::FileSystem
 {
-public:
-  std::auto_ptr<std::istream> Read(const std::string& path) const
-  {
-    throw std::runtime_error("Unexpected read of file: " + path);
-  }
+    void Write(const std::string& path,
+               std::tr1::shared_ptr<std::ostream> content)
+    {
+      throw std::runtime_error("Write is not implemented");
+    }
+
+    void Move(const std::string& fromPath, const std::string& toPath)
+    {
+      throw std::runtime_error("Move is not implemented");
+    }
+
+    void Remove(const std::string& path)
+    {
+      throw std::runtime_error("Remove is not implemented");
+    }
+
+    StatResult Stat(const std::string& path) const
+    {
+      throw std::runtime_error("Stat is not implemented");
+    }
 };
 
 class ThrowingErrorCallback : public AdblockPlus::ErrorCallback
@@ -21,33 +36,38 @@ public:
   }
 };
 
-class StubFileReader : public AdblockPlus::FileReader
+class StubFileSystem : public BaseFileSystem
 {
 public:
-  std::auto_ptr<std::istream> Read(const std::string& path) const
+  std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
   {
     std::stringstream* const source = new std::stringstream;
     *source << "function hello() { return 'Hello'; }";
-    return std::auto_ptr<std::istream>(source);
+    return std::tr1::shared_ptr<std::istream>(source);
   }
 };
 
-class BadFileReader : public AdblockPlus::FileReader
+class BadFileSystem : public BaseFileSystem
 {
 public:
-  std::auto_ptr<std::istream> Read(const std::string& path) const
+  std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
   {
     std::ifstream* const file = new std::ifstream;
     file->open("");
-    return std::auto_ptr<std::istream>(file);
+    return std::tr1::shared_ptr<std::istream>(file);
+  }
+
+  void Write(const std::string& path,
+             std::tr1::shared_ptr<std::ostream> content)
+  {
+    throw std::runtime_error("No writing");
   }
 };
 
 TEST(JsEngineTest, EvaluateAndCall)
 {
-  ThrowingFileReader fileReader;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
   const std::string source = "function hello() { return 'Hello'; }";
   jsEngine.Evaluate(source);
   const std::string result = jsEngine.Evaluate("hello()");
@@ -56,9 +76,9 @@ TEST(JsEngineTest, EvaluateAndCall)
 
 TEST(JsEngineTest, LoadAndCall)
 {
-  StubFileReader fileReader;
+  StubFileSystem fileSystem;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(&fileSystem, 0, &errorCallback);
   jsEngine.Load("hello.js");
   const std::string result = jsEngine.Evaluate("hello()");
   ASSERT_EQ("Hello", result);
@@ -66,24 +86,22 @@ TEST(JsEngineTest, LoadAndCall)
 
 TEST(JsEngineTest, LoadBadStreamFails)
 {
-  BadFileReader fileReader;
+  BadFileSystem fileSystem;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(&fileSystem, 0, &errorCallback);
   ASSERT_ANY_THROW(jsEngine.Load("hello.js"));
 }
 
 TEST(JsEngineTest, RuntimeExceptionIsThrown)
 {
-  ThrowingFileReader fileReader;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
   ASSERT_THROW(jsEngine.Evaluate("doesnotexist()"), AdblockPlus::JsError);
 }
 
 TEST(JsEngineTest, CompileTimeExceptionIsThrown)
 {
-  ThrowingFileReader fileReader;
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(&fileReader, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
   ASSERT_THROW(jsEngine.Evaluate("'foo'bar'"), AdblockPlus::JsError);
 }

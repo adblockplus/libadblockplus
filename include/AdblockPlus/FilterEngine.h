@@ -4,11 +4,9 @@
 #include <vector>
 #include <map>
 #include <string>
-#ifdef _MSC_VER
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
+
+#include "tr1_memory.h"
+
 namespace AdblockPlus
 {
   class JsEngine;

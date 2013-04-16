@@ -1,5 +1,4 @@
 #include <AdblockPlus.h>
-#include <fstream>
 #include <iostream>
 #include <sstream>
 
@@ -11,17 +10,6 @@
 
 namespace
 {
-  class LibFileReader : public AdblockPlus::FileReader
-  {
-  public:
-    std::auto_ptr<std::istream> Read(const std::string& path) const
-    {
-      std::ifstream* file = new std::ifstream;
-      file->open(("lib/" + path).c_str());
-      return std::auto_ptr<std::istream>(file);
-    }
-  };
-
   class CerrErrorCallback : public AdblockPlus::ErrorCallback
   {
   public:
@@ -58,10 +46,10 @@ int main()
 {
   try
   {
-    LibFileReader fileReader;
+    AdblockPlus::DefaultFileSystem fileSystem;
     AdblockPlus::DefaultWebRequest webRequest;
     CerrErrorCallback errorCallback;
-    AdblockPlus::JsEngine jsEngine(&fileReader, &webRequest, &errorCallback);
+    AdblockPlus::JsEngine jsEngine(&fileSystem, &webRequest, &errorCallback);
     AdblockPlus::FilterEngine filterEngine(jsEngine);
 
     CommandMap commands;
