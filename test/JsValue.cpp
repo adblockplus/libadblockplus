@@ -29,6 +29,7 @@ TEST(JsValueTest, UndefinedValue)
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
   ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
 
@@ -51,6 +52,7 @@ TEST(JsValueTest, NullValue)
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
   ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
 
@@ -74,6 +76,7 @@ TEST(JsValueTest, StringValue)
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
   ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
 
@@ -97,6 +100,7 @@ TEST(JsValueTest, IntValue)
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
   ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
 
@@ -119,6 +123,7 @@ TEST(JsValueTest, BoolValue)
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
   ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
 
@@ -149,7 +154,10 @@ TEST(JsValueTest, ObjectValue)
   ASSERT_EQ(2, value->GetProperty("x")->AsInt());
   value->SetProperty("x", 12);
   ASSERT_EQ(12, value->GetProperty("x")->AsInt());
+  value->SetProperty("x", jsEngine.NewValue(15));
+  ASSERT_EQ(15, value->GetProperty("x")->AsInt());
   ASSERT_EQ("Foo", value->GetClassName());
+  ASSERT_EQ(3u, value->GetOwnPropertyNames().size());
   ASSERT_ANY_THROW(value->Call());
 }
 

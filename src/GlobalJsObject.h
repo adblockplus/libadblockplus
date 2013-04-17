@@ -5,15 +5,11 @@
 
 namespace AdblockPlus
 {
-  class FileSystem;
-  class WebRequest;
-  class ErrorCallback;
+  class JsEngine;
 
   namespace GlobalJsObject
   {
-    v8::Handle<v8::ObjectTemplate> Create(FileSystem& fileSystem,
-                                          WebRequest& webRequest,
-                                          ErrorCallback& errorCallback);
+    v8::Handle<v8::ObjectTemplate> Create(JsEngine& jsEngine);
   }
 }
 

@@ -26,7 +26,6 @@ TEST(GlobalJsObjectTest, SetTimeoutWithInvalidArgs)
   AdblockPlus::JsEngine jsEngine(0, 0, 0);
   ASSERT_ANY_THROW(jsEngine.Evaluate("setTimeout()"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("setTimeout('', 1)"));
-  ASSERT_ANY_THROW(jsEngine.Evaluate("setTimeout(function(){}, '')"));
 }
 
 TEST(GlobalJsObjectTest, SetMultipleTimeouts)

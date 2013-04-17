@@ -5,11 +5,11 @@
 
 namespace AdblockPlus
 {
-  class WebRequest;
+  class JsEngine;
 
   namespace WebRequestJsObject
   {
-    v8::Handle<v8::ObjectTemplate> Create(WebRequest& webRequest);
+    v8::Handle<v8::ObjectTemplate> Create(JsEngine& jsEngine);
   }
 }
 

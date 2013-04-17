@@ -1,3 +1,5 @@
+#include <AdblockPlus/JsEngine.h>
+#include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/ErrorCallback.h>
 #include <sstream>
 
@@ -7,19 +9,15 @@ namespace
 {
   v8::Handle<v8::Value> ErrorCallback(const v8::Arguments& arguments)
   {
+    AdblockPlus::JsEngine& jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    const AdblockPlus::JsEngine::Context context(jsEngine);
+    AdblockPlus::JsValueList converted = jsEngine.ConvertArguments(arguments);
+
     std::stringstream message;
-    const v8::HandleScope handleScope;
-    for (int i = 0; i < arguments.Length(); i++)
-    {
-      const v8::Handle<v8::Value> argument = arguments[i];
-      const v8::String::Utf8Value value(argument);
-      message << *value;
-    }
-    const v8::Handle<const v8::External> external =
-      v8::Handle<const v8::External>::Cast(arguments.Data());
-    AdblockPlus::ErrorCallback* const errorCallback =
-      static_cast<AdblockPlus::ErrorCallback*>(external->Value());
-    (*errorCallback)(message.str());
+    for (size_t i = 0; i < converted.size(); i++)
+      message << converted[i]->AsString();
+
+    (jsEngine.GetErrorCallback())(message.str());
     return v8::Undefined();
   }
 
@@ -30,13 +28,13 @@ namespace
 }
 
 v8::Handle<v8::ObjectTemplate> AdblockPlus::ConsoleJsObject::Create(
-  AdblockPlus::ErrorCallback& errorCallback)
+  AdblockPlus::JsEngine& jsEngine)
 {
   v8::HandleScope handleScope;
   const v8::Handle<v8::ObjectTemplate> console = v8::ObjectTemplate::New();
   const v8::Handle<v8::FunctionTemplate> errorFunction =
     v8::FunctionTemplate::New(::ErrorCallback,
-                              v8::External::New(&errorCallback));
+                              v8::External::New(&jsEngine));
   console->Set(v8::String::New("error"), errorFunction);
   const v8::Handle<v8::FunctionTemplate> traceFunction =
     v8::FunctionTemplate::New(TraceCallback);

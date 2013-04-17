@@ -1,6 +1,8 @@
 #include <vector>
 #include <stdexcept>
 
+#include <AdblockPlus/JsEngine.h>
+#include <AdblockPlus/JsValue.h>
 #include "ConsoleJsObject.h"
 #include "FileSystemJsObject.h"
 #include "GlobalJsObject.h"
@@ -15,58 +17,32 @@ namespace
   class TimeoutThread : public Thread
   {
   public:
-    TimeoutThread(v8::Isolate* const isolate, const v8::Arguments& arguments)
-      : isolate(isolate)
+    TimeoutThread(JsValueList& arguments)
     {
-      if (arguments.Length() < 2)
+      if (arguments.size() < 2)
         throw std::runtime_error("setTimeout requires at least 2 parameters");
 
-      const v8::Local<v8::Value> functionValue = arguments[0];
-      if (!functionValue->IsFunction())
+      if (!arguments[0]->IsFunction())
         throw std::runtime_error(
           "First argument to setTimeout must be a function");
 
-      const v8::Local<v8::Value> delayValue = arguments[1];
-      if (!delayValue->IsNumber())
-        throw std::runtime_error(
-          "Second argument to setTimeout must be a number");
-
-      function = v8::Persistent<v8::Function>::New(
-        isolate, v8::Local<v8::Function>::Cast(functionValue));
-      delay = delayValue->ToNumber()->Value();
-      for (int i = 2; i < arguments.Length(); i++)
-      {
-        const Value argument = Value::New(isolate, arguments[i]);
-        functionArguments.push_back(argument);
-      }
-    }
-
-    ~TimeoutThread()
-    {
-      function.Dispose(isolate);
-      for (Values::iterator it = functionArguments.begin();
-           it != functionArguments.end(); it++)
-        it->Dispose(isolate);
+      function = arguments[0];
+      delay = arguments[1]->AsInt();
+      for (size_t i = 2; i < arguments.size(); i++)
+        functionArguments.push_back(arguments[i]);
     }
 
     void Run()
     {
       Sleep(delay);
-      const v8::Locker locker(isolate);
-      const v8::HandleScope handleScope;
-      v8::Handle<v8::Value>* argv = functionArguments.empty() ? 0 : &(functionArguments.front());
-      function->Call(function, functionArguments.size(), argv);
-      delete this;
+
+      function->Call(functionArguments);
     }
 
   private:
-    typedef v8::Persistent<v8::Value> Value;
-    typedef std::vector<Value> Values;
-
-    v8::Isolate* const isolate;
-    v8::Persistent<v8::Function> function;
+    JsValuePtr function;
     int delay;
-    Values functionArguments;
+    JsValueList functionArguments;
   };
 
   v8::Handle<v8::Value> SetTimeoutCallback(const v8::Arguments& arguments)
@@ -74,7 +50,10 @@ namespace
     TimeoutThread* timeoutThread;
     try
     {
-      timeoutThread = new TimeoutThread(v8::Isolate::GetCurrent(), arguments);
+      AdblockPlus::JsValueList converted =
+          AdblockPlus::JsEngine::FromArguments(arguments)
+          .ConvertArguments(arguments);
+      timeoutThread = new TimeoutThread(converted);
     }
     catch (const std::exception& e)
     {
@@ -90,22 +69,23 @@ namespace
 }
 
 v8::Handle<v8::ObjectTemplate> GlobalJsObject::Create(
-  FileSystem& fileSystem, WebRequest& webRequest, ErrorCallback& errorCallback)
+  JsEngine& jsEngine)
 {
   const v8::Locker locker(v8::Isolate::GetCurrent());
   v8::HandleScope handleScope;
   const v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
   const v8::Handle<v8::FunctionTemplate> setTimeoutFunction =
-    v8::FunctionTemplate::New(SetTimeoutCallback);
+    v8::FunctionTemplate::New(SetTimeoutCallback,
+                              v8::External::New(&jsEngine));
   global->Set(v8::String::New("setTimeout"), setTimeoutFunction);
   const v8::Handle<v8::ObjectTemplate> fileSystemObject =
-    FileSystemJsObject::Create(fileSystem);
+    FileSystemJsObject::Create(jsEngine);
   global->Set(v8::String::New("_fileSystem"), fileSystemObject);
   const v8::Handle<v8::ObjectTemplate> webRequestObject =
-    WebRequestJsObject::Create(webRequest);
+    WebRequestJsObject::Create(jsEngine);
   global->Set(v8::String::New("_webRequest"), webRequestObject);
   const v8::Handle<v8::ObjectTemplate> consoleObject =
-    ConsoleJsObject::Create(errorCallback);
+    ConsoleJsObject::Create(jsEngine);
   global->Set(v8::String::New("console"), consoleObject);
   return handleScope.Close(global);
 }

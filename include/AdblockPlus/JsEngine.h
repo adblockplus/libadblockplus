@@ -42,6 +42,22 @@ namespace AdblockPlus
     {
       return NewValue(static_cast<int64_t>(val));
     }
+    JsValuePtr NewObject();
+    static JsEngine& FromArguments(const v8::Arguments& arguments);
+    JsValueList ConvertArguments(const v8::Arguments& arguments);
+
+    inline FileSystem& GetFileSystem()
+    {
+      return fileSystem;
+    }
+    inline WebRequest& GetWebRequest()
+    {
+      return webRequest;
+    }
+    inline ErrorCallback& GetErrorCallback()
+    {
+      return errorCallback;
+    }
 
     class Context
     {
@@ -56,7 +72,9 @@ namespace AdblockPlus
     };
 
   private:
-    const FileSystem* const fileSystem;
+    FileSystem& fileSystem;
+    WebRequest& webRequest;
+    ErrorCallback& errorCallback;
     v8::Isolate* isolate;
     v8::Persistent<v8::Context> context;
   };

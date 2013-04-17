@@ -125,4 +125,8 @@ TEST(JsEngineTest, ValueCreation)
   value = jsEngine.NewValue(true);
   ASSERT_TRUE(value->IsBool());
   ASSERT_TRUE(value->AsBool());
+
+  value = jsEngine.NewObject();
+  ASSERT_TRUE(value->IsObject());
+  ASSERT_EQ(0u, value->GetOwnPropertyNames().size());
 }
