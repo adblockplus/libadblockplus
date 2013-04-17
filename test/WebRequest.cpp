@@ -91,6 +91,32 @@ TEST(WebRequestTest, RealWebRequest)
   ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['Content-Type'].substr(0, 10)"));
   ASSERT_EQ("undefined", jsEngine.Evaluate("typeof foo.responseHeaders['location']"));
 }
+
+TEST(WebRequestTest, XMLHttpRequest)
+{
+  AdblockPlus::DefaultWebRequest webRequest;
+  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  AdblockPlus::FilterEngine filterEngine(jsEngine);
+
+  jsEngine.Evaluate("\
+    var result;\
+    var request = new XMLHttpRequest();\
+    request.open('GET', 'https://easylist.adblockplus.org/easylist.txt');\
+    request.setRequestHeader('X', 'Y');\
+    request.overrideMimeType('text/plain');\
+    request.addEventListener('load', function() {result = request.responseText;}, false);\
+    request.addEventListener('error', function() {result = 'error';}, false);\
+    request.send(null);");
+  do
+  {
+    AdblockPlus::Sleep(200);
+  } while (jsEngine.Evaluate("result")->IsUndefined());
+  ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine.Evaluate("request.channel.status")->AsInt());
+  ASSERT_EQ(200, jsEngine.Evaluate("request.status")->AsInt());
+  ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("result.substr(0, 14)")->AsString());
+  ASSERT_EQ("text/plain", jsEngine.Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)")->AsString());
+  ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Location')")->IsNull());
+}
 #else
 TEST(WebRequestTest, DummyWebRequest)
 {
@@ -105,5 +131,30 @@ TEST(WebRequestTest, DummyWebRequest)
   ASSERT_EQ(0, jsEngine.Evaluate("foo.responseStatus")->AsInt());
   ASSERT_EQ("", jsEngine.Evaluate("foo.responseText")->AsString());
   ASSERT_EQ("{}", jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+}
+
+TEST(WebRequestTest, XMLHttpRequest)
+{
+  AdblockPlus::DefaultWebRequest webRequest;
+  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  AdblockPlus::FilterEngine filterEngine(jsEngine);
+
+  jsEngine.Evaluate("\
+    var result;\
+    var request = new XMLHttpRequest();\
+    request.open('GET', 'https://easylist.adblockplus.org/easylist.txt');\
+    request.setRequestHeader('X', 'Y');\
+    request.overrideMimeType('text/plain');\
+    request.addEventListener('load', function() {result = request.responseText;}, false);\
+    request.addEventListener('error', function() {result = 'error';}, false);\
+    request.send(null);");
+  do
+  {
+    AdblockPlus::Sleep(200);
+  } while (jsEngine.Evaluate("result")->IsUndefined());
+  ASSERT_EQ(AdblockPlus::WebRequest::NS_ERROR_FAILURE, jsEngine.Evaluate("request.channel.status")->AsInt());
+  ASSERT_EQ(0, jsEngine.Evaluate("request.status")->AsInt());
+  ASSERT_EQ("error", jsEngine.Evaluate("result")->AsString());
+  ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Content-Type')")->IsNull());
 }
 #endif
