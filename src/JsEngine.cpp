@@ -8,12 +8,13 @@ namespace
 {
   v8::Handle<v8::Context> CreateContext(
     v8::Isolate* isolate,
+    const AdblockPlus::AppInfo& appInfo,
     AdblockPlus::JsEngine& jsEngine)
   {
     const v8::Locker locker(isolate);
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global =
-      AdblockPlus::GlobalJsObject::Create(jsEngine);
+      AdblockPlus::GlobalJsObject::Create(appInfo, jsEngine);
     return v8::Context::New(0, global);
   }
 
@@ -57,12 +58,13 @@ AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
 {
 }
 
-AdblockPlus::JsEngine::JsEngine(FileSystem* const fileSystem,
+AdblockPlus::JsEngine::JsEngine(const AppInfo& appInfo,
+                                FileSystem* const fileSystem,
                                 WebRequest* const webRequest,
                                 ErrorCallback* const errorCallback)
   : fileSystem(*fileSystem), webRequest(*webRequest),
     errorCallback(*errorCallback), isolate(v8::Isolate::GetCurrent()),
-    context(CreateContext(isolate, *this))
+    context(CreateContext(isolate, appInfo, *this))
 {
 }
 

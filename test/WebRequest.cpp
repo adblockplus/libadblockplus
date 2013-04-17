@@ -33,7 +33,7 @@ std::string ToString(unsigned int i)
 
 TEST(WebRequestTest, BadCall)
 {
-  AdblockPlus::JsEngine jsEngine(0, 0, 0);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, 0);
   ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET()"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET('', {}, function(){})"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET({toString: false}, {}, function(){})"));
@@ -45,7 +45,7 @@ TEST(WebRequestTest, BadCall)
 TEST(WebRequestTest, TestWebRequest)
 {
   TestWebRequest webRequest;
-  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, &webRequest, 0);
   jsEngine.Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
   ASSERT_TRUE(jsEngine.Evaluate("this.foo")->IsUndefined());
   AdblockPlus::Sleep(200);
@@ -59,7 +59,7 @@ TEST(WebRequestTest, TestWebRequest)
 TEST(WebRequestTest, RealWebRequest)
 {
   AdblockPlus::DefaultWebRequest webRequest;
-  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, &webRequest, 0);
 
   // This URL should redirect to easylist-downloads.adblockplus.org and we
   // should get the actual filter list back.
@@ -78,7 +78,7 @@ TEST(WebRequestTest, RealWebRequest)
 TEST(WebRequestTest, RealWebRequest)
 {
   AdblockPlus::WebRequestWinInet webRequest;
-  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, &webRequest, 0);
   jsEngine.Evaluate("_webRequest.GET('https://easylist.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   do
   {
@@ -95,7 +95,7 @@ TEST(WebRequestTest, RealWebRequest)
 TEST(WebRequestTest, XMLHttpRequest)
 {
   AdblockPlus::DefaultWebRequest webRequest;
-  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, &webRequest, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
 
   jsEngine.Evaluate("\
@@ -121,7 +121,7 @@ TEST(WebRequestTest, XMLHttpRequest)
 TEST(WebRequestTest, DummyWebRequest)
 {
   AdblockPlus::DefaultWebRequest webRequest;
-  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, &webRequest, 0);
   jsEngine.Evaluate("_webRequest.GET('https://easylist.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   do
   {
@@ -136,7 +136,7 @@ TEST(WebRequestTest, DummyWebRequest)
 TEST(WebRequestTest, XMLHttpRequest)
 {
   AdblockPlus::DefaultWebRequest webRequest;
-  AdblockPlus::JsEngine jsEngine(0, &webRequest, 0);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, &webRequest, 0);
   AdblockPlus::FilterEngine filterEngine(jsEngine);
 
   jsEngine.Evaluate("\

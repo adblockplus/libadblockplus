@@ -49,7 +49,11 @@ int main()
     AdblockPlus::DefaultFileSystem fileSystem;
     AdblockPlus::DefaultWebRequest webRequest;
     CerrErrorCallback errorCallback;
-    AdblockPlus::JsEngine jsEngine(&fileSystem, &webRequest, &errorCallback);
+    AdblockPlus::AppInfo appInfo;
+    appInfo.version = "1.0";
+    appInfo.name = "Adblock Plus Shell";
+    AdblockPlus::JsEngine jsEngine(appInfo, &fileSystem, &webRequest,
+                                   &errorCallback);
     AdblockPlus::FilterEngine filterEngine(jsEngine);
 
     CommandMap commands;

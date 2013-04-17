@@ -3,6 +3,8 @@
 
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
+
+#include "AppInfoJsObject.h"
 #include "ConsoleJsObject.h"
 #include "FileSystemJsObject.h"
 #include "GlobalJsObject.h"
@@ -69,7 +71,7 @@ namespace
 }
 
 v8::Handle<v8::ObjectTemplate> GlobalJsObject::Create(
-  JsEngine& jsEngine)
+  const AppInfo& appInfo, JsEngine& jsEngine)
 {
   const v8::Locker locker(v8::Isolate::GetCurrent());
   v8::HandleScope handleScope;
@@ -87,5 +89,8 @@ v8::Handle<v8::ObjectTemplate> GlobalJsObject::Create(
   const v8::Handle<v8::ObjectTemplate> consoleObject =
     ConsoleJsObject::Create(jsEngine);
   global->Set(v8::String::New("console"), consoleObject);
+  const v8::Handle<v8::ObjectTemplate> appInfoObject =
+    AppInfoJsObject::Create(appInfo);
+  global->Set(v8::String::New("_appInfo"), appInfoObject);
   return handleScope.Close(global);
 }
