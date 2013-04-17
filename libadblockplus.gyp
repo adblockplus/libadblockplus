@@ -11,9 +11,9 @@
       'include',
       'third_party/v8/include'
     ],
-    'defines': ['FILTER_ENGINE_STUBS=1'],
+    'defines': ['FILTER_ENGINE_STUBS=0'],
     'all_dependent_settings': {
-      'defines': ['FILTER_ENGINE_STUBS=1']
+      'defines': ['FILTER_ENGINE_STUBS=0']
     },
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
@@ -24,6 +24,7 @@
       'src/FilterEngine.cpp',
       'src/GlobalJsObject.cpp',
       'src/JsEngine.cpp',
+      'src/JsValue.cpp',
       'src/Thread.cpp',
       'src/Utils.cpp',
       'src/WebRequestJsObject.cpp',
@@ -56,7 +57,7 @@
     'actions': [{
       'action_name': 'convert_js',
       'variables': {
-        'core_library_files': [
+        'library_files': [
           'lib/info.js',
           'lib/io.js',
           'lib/prefs.js',
@@ -71,14 +72,18 @@
           'adblockplus/lib/filterListener.js',
           'adblockplus/lib/synchronizer.js',
         ],
-        'additional_library_files': [
+        'load_before_files': [
           'lib/compat.js'
+        ],
+        'load_after_files': [
+          'lib/api.js'
         ],
       },
       'inputs': [
         'convert_js.py',
-        '<@(core_library_files)',
-        '<@(additional_library_files)',
+        '<@(library_files)',
+        '<@(load_before_files)',
+        '<@(load_after_files)',
       ],
       'outputs': [
         '<(INTERMEDIATE_DIR)/adblockplus.js.cpp'
@@ -86,9 +91,9 @@
       'action': [
         'python',
         'convert_js.py',
-        '<@(core_library_files)',
-        '--',
-        '<@(additional_library_files)',
+        'before=<@(load_before_files)',
+        '<@(library_files)',
+        'after=<@(load_after_files)',
         '<@(_outputs)',
       ]
     }]
@@ -107,6 +112,7 @@
       'test/FilterEngineStubs.cpp',
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
+      'test/JsValue.cpp',
       'test/Thread.cpp',
       'test/WebRequest.cpp'
     ]
