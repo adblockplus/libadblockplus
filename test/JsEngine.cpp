@@ -70,8 +70,9 @@ TEST(JsEngineTest, EvaluateAndCall)
   AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
   const std::string source = "function hello() { return 'Hello'; }";
   jsEngine.Evaluate(source);
-  const std::string result = jsEngine.Evaluate("hello()");
-  ASSERT_EQ("Hello", result);
+  AdblockPlus::JsValuePtr result = jsEngine.Evaluate("hello()");
+  ASSERT_TRUE(result->IsString());
+  ASSERT_EQ("Hello", result->AsString());
 }
 
 TEST(JsEngineTest, LoadAndCall)
@@ -80,8 +81,9 @@ TEST(JsEngineTest, LoadAndCall)
   ThrowingErrorCallback errorCallback;
   AdblockPlus::JsEngine jsEngine(&fileSystem, 0, &errorCallback);
   jsEngine.Load("hello.js");
-  const std::string result = jsEngine.Evaluate("hello()");
-  ASSERT_EQ("Hello", result);
+  AdblockPlus::JsValuePtr result = jsEngine.Evaluate("hello()");
+  ASSERT_TRUE(result->IsString());
+  ASSERT_EQ("Hello", result->AsString());
 }
 
 TEST(JsEngineTest, LoadBadStreamFails)
@@ -104,4 +106,23 @@ TEST(JsEngineTest, CompileTimeExceptionIsThrown)
   ThrowingErrorCallback errorCallback;
   AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
   ASSERT_THROW(jsEngine.Evaluate("'foo'bar'"), AdblockPlus::JsError);
+}
+
+TEST(JsEngineTest, ValueCreation)
+{
+  ThrowingErrorCallback errorCallback;
+  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsValuePtr value;
+
+  value = jsEngine.NewValue("foo");
+  ASSERT_TRUE(value->IsString());
+  ASSERT_EQ("foo", value->AsString());
+
+  value = jsEngine.NewValue(12);
+  ASSERT_TRUE(value->IsNumber());
+  ASSERT_EQ(12, value->AsInt());
+
+  value = jsEngine.NewValue(true);
+  ASSERT_TRUE(value->IsBool());
+  ASSERT_TRUE(value->AsBool());
 }

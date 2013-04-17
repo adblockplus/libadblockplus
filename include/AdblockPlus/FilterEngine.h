@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <AdblockPlus/JsValue.h>
 
 #include "tr1_memory.h"
 
@@ -12,24 +13,38 @@ namespace AdblockPlus
   class JsEngine;
   class FilterEngine;
 
+#if FILTER_ENGINE_STUBS
   class JsObject
+#else
+  class JsObject : public JsValue
+#endif
   {
   public:
     std::string GetProperty(const std::string& name, const std::string& defaultValue) const;
-    int GetProperty(const std::string& name, int defaultValue) const;
+    int64_t GetProperty(const std::string& name, int64_t defaultValue) const;
     bool GetProperty(const std::string& name, bool defaultValue) const;
     inline std::string GetProperty(const std::string& name, const char* defaultValue) const
     {
       return GetProperty(name, std::string(defaultValue));
     }
+    inline int64_t GetProperty(const std::string& name, int defaultValue) const
+    {
+      return GetProperty(name, static_cast<int64_t>(defaultValue));
+    }
 
+#if FILTER_ENGINE_STUBS
     void SetProperty(const std::string& name, const std::string& value);
-    void SetProperty(const std::string& name, int value);
+    void SetProperty(const std::string& name, int64_t value);
     void SetProperty(const std::string& name, bool value);
     inline void SetProperty(const std::string& name, const char* value)
     {
       SetProperty(name, std::string(value));
     }
+    inline void SetProperty(const std::string& name, int value)
+    {
+      SetProperty(name, static_cast<int64_t>(value));
+    }
+#endif
 
   protected:
 #if FILTER_ENGINE_STUBS
@@ -37,51 +52,52 @@ namespace AdblockPlus
 
     FilterEngine& filterEngine;
     std::map<std::string, std::string> stringProperties;
-    std::map<std::string, int> intProperties;
+    std::map<std::string, int64_t> intProperties;
     std::map<std::string, bool> boolProperties;
 #else
-    JsObject();
+    JsObject(JsValuePtr value);
 #endif
   };
 
   class Filter : public JsObject,
                  public std::tr1::enable_shared_from_this<Filter>
   {
-    friend class FilterEngine;
-
   public:
     enum Type {TYPE_BLOCKING, TYPE_EXCEPTION,
                TYPE_ELEMHIDE, TYPE_ELEMHIDE_EXCEPTION,
                TYPE_COMMENT, TYPE_INVALID};
 
-    bool IsListed() const;
+    bool IsListed();
     void AddToList();
     void RemoveFromList();
+    bool operator==(const Filter& filter) const;
 
-  private:
 #if FILTER_ENGINE_STUBS
+  private:
+    friend class FilterEngine;
     Filter(FilterEngine& filterEngine, const std::string& text);
 #else
-    Filter();
+    Filter(JsValuePtr value);
 #endif
   };
 
   class Subscription : public JsObject,
                        public std::tr1::enable_shared_from_this<Subscription>
   {
-    friend class FilterEngine;
-
   public:
-    bool IsListed() const;
+    bool IsListed();
     void AddToList();
     void RemoveFromList();
     void UpdateFilters();
+    bool IsUpdating();
+    bool operator==(const Subscription& subscription) const;
 
-  private:
 #if FILTER_ENGINE_STUBS
+  private:
+    friend class FilterEngine;
     Subscription(FilterEngine& filterEngine, const std::string& url);
 #else
-    Subscription();
+    Subscription(JsValuePtr value);
 #endif
   };
 
@@ -91,14 +107,17 @@ namespace AdblockPlus
 
   class FilterEngine
   {
+#if FILTER_ENGINE_STUBS
     friend class Filter;
     friend class Subscription;
+#endif
+
   public:
     explicit FilterEngine(JsEngine& jsEngine);
     FilterPtr GetFilter(const std::string& text);
     SubscriptionPtr GetSubscription(const std::string& url);
-    const std::vector<FilterPtr>& GetListedFilters() const;
-    const std::vector<SubscriptionPtr>& GetListedSubscriptions() const;
+    const std::vector<FilterPtr> GetListedFilters() const;
+    const std::vector<SubscriptionPtr> GetListedSubscriptions() const;
     void FetchAvailableSubscriptions(SubscriptionsCallback callback);
     FilterPtr Matches(const std::string& url,
         const std::string& contentType,

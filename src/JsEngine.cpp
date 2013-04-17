@@ -7,11 +7,12 @@
 namespace
 {
   v8::Handle<v8::Context> CreateContext(
+    v8::Isolate* isolate,
     AdblockPlus::FileSystem& fileSystem,
     AdblockPlus::WebRequest& webRequest,
     AdblockPlus::ErrorCallback& errorCallback)
   {
-    const v8::Locker locker(v8::Isolate::GetCurrent());
+    const v8::Locker locker(isolate);
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global =
       AdblockPlus::GlobalJsObject::Create(fileSystem, webRequest,
@@ -62,24 +63,21 @@ AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
 AdblockPlus::JsEngine::JsEngine(FileSystem* const fileSystem,
                                 WebRequest* const webRequest,
                                 ErrorCallback* const errorCallback)
-  : fileSystem(fileSystem),
-    context(CreateContext(*fileSystem, *webRequest, *errorCallback))
+  : fileSystem(fileSystem), isolate(v8::Isolate::GetCurrent()),
+    context(CreateContext(isolate, *fileSystem, *webRequest, *errorCallback))
 {
 }
 
-std::string AdblockPlus::JsEngine::Evaluate(const std::string& source,
+AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& source,
     const std::string& filename)
 {
-  const v8::Locker locker(v8::Isolate::GetCurrent());
-  const v8::HandleScope handleScope;
-  const v8::Context::Scope contextScope(context);
+  const Context context(*this);
   const v8::TryCatch tryCatch;
   const v8::Handle<v8::Script> script = CompileScript(source, filename);
   CheckTryCatch(tryCatch);
   v8::Local<v8::Value> result = script->Run();
   CheckTryCatch(tryCatch);
-  v8::String::Utf8Value resultString(result);
-  return std::string(*resultString);
+  return JsValuePtr(new JsValue(*this, result));
 }
 
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
@@ -93,4 +91,28 @@ void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 void AdblockPlus::JsEngine::Gc()
 {
   while (!v8::V8::IdleNotification());
+}
+
+AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(const std::string& val)
+{
+  const Context context(*this);
+  return JsValuePtr(new JsValue(*this, v8::String::New(val.c_str(), val.length())));
+}
+
+AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(int64_t val)
+{
+  const Context context(*this);
+  return JsValuePtr(new JsValue(*this, v8::Integer::New(val)));
+}
+
+AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(bool val)
+{
+  const Context context(*this);
+  return JsValuePtr(new JsValue(*this, v8::Boolean::New(val)));
+}
+
+AdblockPlus::JsEngine::Context::Context(const JsEngine& jsEngine)
+    : locker(jsEngine.isolate), handleScope(),
+      contextScope(jsEngine.context)
+{
 }
