@@ -11,7 +11,7 @@ def toCString(string):
   string = string.replace('\r', '').replace('\n', '\\n')
   # Work around MSVC line length limitation
   #(see http://msdn.microsoft.com/en-us/library/dddywwsc(v=vs.80).aspx)
-  string = re.sub(r'(.{16000})(.)', r'\1"\n"\2', string, re.S)
+  string = re.sub(r'((?:[^\\]|\\.){16000})(.)', r'\1"\n"\2', string, re.S)
   return '"%s"' % string.encode('utf-8')
 
 def printFilesVerbatim(outHandle, files):
