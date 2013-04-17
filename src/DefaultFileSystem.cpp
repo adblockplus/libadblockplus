@@ -54,11 +54,11 @@ void DefaultFileSystem::Remove(const std::string& path)
 FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
 {
 #ifdef WIN32
-  struct _stat64 nativeStat;
-  const int failure = _stat64(path.c_str(), &nativeStat);
+  struct _stat nativeStat;
+  const int failure = _stat(path.c_str(), &nativeStat);
 #else
-  struct stat64 nativeStat;
-  const int failure = stat64(path.c_str(), &nativeStat);
+  struct stat nativeStat;
+  const int failure = stat(path.c_str(), &nativeStat);
 #endif
   if (failure) {
     if (errno == ENOENT)
