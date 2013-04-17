@@ -5,11 +5,13 @@
 
 namespace AdblockPlus
 {
+  class AppInfo;
   class JsEngine;
 
   namespace GlobalJsObject
   {
-    v8::Handle<v8::ObjectTemplate> Create(JsEngine& jsEngine);
+    v8::Handle<v8::ObjectTemplate> Create(const AppInfo& appInfo,
+                                          JsEngine& jsEngine);
   }
 }
 

@@ -13,7 +13,7 @@ public:
 TEST(JsValueTest, UndefinedValue)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   AdblockPlus::JsValuePtr value = jsEngine.Evaluate("undefined");
   ASSERT_TRUE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -36,7 +36,7 @@ TEST(JsValueTest, UndefinedValue)
 TEST(JsValueTest, NullValue)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   AdblockPlus::JsValuePtr value = jsEngine.Evaluate("null");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_TRUE(value->IsNull());
@@ -59,7 +59,7 @@ TEST(JsValueTest, NullValue)
 TEST(JsValueTest, StringValue)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   AdblockPlus::JsValuePtr value = jsEngine.Evaluate("'123'");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -83,7 +83,7 @@ TEST(JsValueTest, StringValue)
 TEST(JsValueTest, IntValue)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   AdblockPlus::JsValuePtr value = jsEngine.Evaluate("123");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -107,7 +107,7 @@ TEST(JsValueTest, IntValue)
 TEST(JsValueTest, BoolValue)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   AdblockPlus::JsValuePtr value = jsEngine.Evaluate("true");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -130,7 +130,7 @@ TEST(JsValueTest, BoolValue)
 TEST(JsValueTest, ObjectValue)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   const std::string source("\
     function Foo() {\
       this.x = 2;\
@@ -164,7 +164,7 @@ TEST(JsValueTest, ObjectValue)
 TEST(JsValueTest, ArrayValue)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   AdblockPlus::JsValuePtr value = jsEngine.Evaluate("[5,8,12]");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -186,7 +186,7 @@ TEST(JsValueTest, ArrayValue)
 TEST(JsValueTest, FunctionValue)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   AdblockPlus::JsValuePtr value = jsEngine.Evaluate("(function(foo, bar) {return this.x + '/' + foo + '/' + bar;})");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -210,7 +210,7 @@ TEST(JsValueTest, FunctionValue)
 TEST(JsValueTest, ThrowingCoversion)
 {
   ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
   const std::string source("\
     function Foo() {\
       this.toString = function() {throw 'test1';};\

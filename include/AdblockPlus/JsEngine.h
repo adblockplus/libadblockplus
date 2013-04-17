@@ -8,6 +8,7 @@
 
 namespace AdblockPlus
 {
+  struct AppInfo;
   class FileSystem;
   class WebRequest;
   class ErrorCallback;
@@ -24,7 +25,8 @@ namespace AdblockPlus
     friend class JsValue;
 
   public:
-    JsEngine(FileSystem* const fileReader,
+    JsEngine(const AppInfo& appInfo,
+             FileSystem* const fileReader,
              WebRequest* const webRequest,
              ErrorCallback* const errorCallback);
     JsValuePtr Evaluate(const std::string& source,

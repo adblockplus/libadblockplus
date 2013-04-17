@@ -17,6 +17,7 @@
     },
     'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
+      'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
       'src/DefaultFileSystem.cpp',
       'src/ErrorCallback.cpp',
@@ -106,6 +107,7 @@
       'libadblockplus'
     ],
     'sources': [
+      'test/AppInfoJsObject.cpp',
       'test/ConsoleJsObject.cpp',
       'test/DefaultFileSystem.cpp',
       'test/FileSystemJsObject.cpp',
