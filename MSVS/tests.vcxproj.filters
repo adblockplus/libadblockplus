@@ -32,5 +32,8 @@
     <ClCompile Include="..\test\WebRequest.cpp">
       <Filter>..\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\test\DefaultFileSystem.cpp" />
+    <ClCompile Include="..\test\FileSystemJsObject.cpp" />
+    <ClCompile Include="..\test\JsValue.cpp" />
   </ItemGroup>
 </Project>
