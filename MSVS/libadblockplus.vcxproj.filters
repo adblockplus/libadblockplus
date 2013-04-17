@@ -39,9 +39,6 @@
     <ClCompile Include="..\src\FilterEngine.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\FileReader.cpp">
-      <Filter>..\src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\JsEngine.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
@@ -108,6 +105,18 @@
     <ClCompile Include="..\src\WebRequestWinInet.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Utils.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\FileSystemJsObject.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\JsValue.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DefaultFileSystem.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\convert_js.py" />
@@ -126,6 +135,12 @@
       <Filter>..\src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\WebRequestWinInet.h">
+      <Filter>..\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Utils.h">
+      <Filter>..\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\FileSystemJsObject.h">
       <Filter>..\src</Filter>
     </ClInclude>
   </ItemGroup>

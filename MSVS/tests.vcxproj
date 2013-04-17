@@ -173,9 +173,12 @@
     <None Include="..\libadblockplus.gyp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\test\DefaultFileSystem.cpp" />
+    <ClCompile Include="..\test\FileSystemJsObject.cpp" />
     <ClCompile Include="..\test\FilterEngineStubs.cpp" />
     <ClCompile Include="..\test\ConsoleJsObject.cpp" />
     <ClCompile Include="..\test\GlobalJsObject.cpp" />
+    <ClCompile Include="..\test\JsValue.cpp" />
     <ClCompile Include="..\test\Thread.cpp" />
     <ClCompile Include="..\test\JsEngine.cpp" />
     <ClCompile Include="..\test\WebRequest.cpp" />
