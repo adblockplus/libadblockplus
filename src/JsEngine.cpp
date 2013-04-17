@@ -8,15 +8,12 @@ namespace
 {
   v8::Handle<v8::Context> CreateContext(
     v8::Isolate* isolate,
-    AdblockPlus::FileSystem& fileSystem,
-    AdblockPlus::WebRequest& webRequest,
-    AdblockPlus::ErrorCallback& errorCallback)
+    AdblockPlus::JsEngine& jsEngine)
   {
     const v8::Locker locker(isolate);
     const v8::HandleScope handleScope;
     const v8::Handle<v8::ObjectTemplate> global =
-      AdblockPlus::GlobalJsObject::Create(fileSystem, webRequest,
-                                          errorCallback);
+      AdblockPlus::GlobalJsObject::Create(jsEngine);
     return v8::Context::New(0, global);
   }
 
@@ -63,8 +60,9 @@ AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
 AdblockPlus::JsEngine::JsEngine(FileSystem* const fileSystem,
                                 WebRequest* const webRequest,
                                 ErrorCallback* const errorCallback)
-  : fileSystem(fileSystem), isolate(v8::Isolate::GetCurrent()),
-    context(CreateContext(isolate, *fileSystem, *webRequest, *errorCallback))
+  : fileSystem(*fileSystem), webRequest(*webRequest),
+    errorCallback(*errorCallback), isolate(v8::Isolate::GetCurrent()),
+    context(CreateContext(isolate, *this))
 {
 }
 
@@ -82,7 +80,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
 
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 {
-  const std::tr1::shared_ptr<std::istream> file = fileSystem->Read(scriptPath);
+  const std::tr1::shared_ptr<std::istream> file = fileSystem.Read(scriptPath);
   if (!file || !*file)
     throw std::runtime_error("Unable to load script " + scriptPath);
   Evaluate(Utils::Slurp(*file));
@@ -109,6 +107,28 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(bool val)
 {
   const Context context(*this);
   return JsValuePtr(new JsValue(*this, v8::Boolean::New(val)));
+}
+
+AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewObject()
+{
+  const Context context(*this);
+  return JsValuePtr(new JsValue(*this, v8::Object::New()));
+}
+
+AdblockPlus::JsEngine& AdblockPlus::JsEngine::FromArguments(const v8::Arguments& arguments)
+{
+  const v8::Local<const v8::External> external =
+      v8::Local<const v8::External>::Cast(arguments.Data());
+  return *static_cast<JsEngine* const>(external->Value());
+}
+
+AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Arguments& arguments)
+{
+  const Context context(*this);
+  JsValueList list;
+  for (int i = 0; i < arguments.Length(); i++)
+    list.push_back(JsValuePtr(new JsValue(*this, arguments[i])));
+  return list;
 }
 
 AdblockPlus::JsEngine::Context::Context(const JsEngine& jsEngine)

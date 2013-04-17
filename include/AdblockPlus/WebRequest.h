@@ -10,7 +10,7 @@ namespace AdblockPlus
 
   struct ServerResponse
   {
-    unsigned int status;
+    int64_t status;
     HeaderList responseHeaders;
     int responseStatus;
     std::string responseText;

@@ -5,11 +5,11 @@
 
 namespace AdblockPlus
 {
-  class ErrorCallback;
+  class JsEngine;
 
   namespace ConsoleJsObject
   {
-    v8::Handle<v8::ObjectTemplate> Create(ErrorCallback& errorCallback);
+    v8::Handle<v8::ObjectTemplate> Create(JsEngine& jsEngine);
   }
 }
 

@@ -31,41 +31,49 @@ AdblockPlus::JsValue::~JsValue()
 
 bool AdblockPlus::JsValue::IsUndefined() const
 {
+  const JsEngine::Context context(jsEngine);
   return value->IsUndefined();
 }
 
 bool AdblockPlus::JsValue::IsNull() const
 {
+  const JsEngine::Context context(jsEngine);
   return value->IsNull();
 }
 
 bool AdblockPlus::JsValue::IsString() const
 {
+  const JsEngine::Context context(jsEngine);
   return value->IsString() || value->IsStringObject();
 }
 
 bool AdblockPlus::JsValue::IsNumber() const
 {
+  const JsEngine::Context context(jsEngine);
   return value->IsNumber() || value->IsNumberObject();
 }
 
 bool AdblockPlus::JsValue::IsBool() const
 {
+  const JsEngine::Context context(jsEngine);
   return value->IsBoolean() || value->IsBooleanObject();
 }
 
 bool AdblockPlus::JsValue::IsObject() const
 {
+  const JsEngine::Context context(jsEngine);
   return value->IsObject();
 }
 
 bool AdblockPlus::JsValue::IsArray() const
 {
+  const JsEngine::Context context(jsEngine);
   return value->IsArray();
 }
 
 bool AdblockPlus::JsValue::IsFunction() const
 {
+  const JsEngine::Context context(jsEngine);
   return value->IsFunction();
 }
 
@@ -104,6 +112,21 @@ AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
   return result;
 }
 
+std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
+{
+  if (!IsObject())
+    throw new std::runtime_error("Attempting to get propert list for a non-object");
+
+  const JsEngine::Context context(jsEngine);
+  const v8::Persistent<v8::Object> object = v8::Persistent<v8::Object>::Cast(value);
+  JsValueList properties = JsValuePtr(new JsValue(jsEngine, object->GetOwnPropertyNames()))->AsList();
+  std::vector<std::string> result;
+  for (JsValueList::iterator it = properties.begin(); it != properties.end(); ++it)
+    result.push_back((*it)->AsString());
+  return result;
+}
+
+
 AdblockPlus::JsValuePtr AdblockPlus::JsValue::GetProperty(const std::string& name) const
 {
   if (!IsObject())
@@ -135,6 +158,12 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)
 {
   const JsEngine::Context context(jsEngine);
   SetProperty(name, v8::Integer::New(val));
+}
+
+void AdblockPlus::JsValue::SetProperty(const std::string& name, JsValuePtr val)
+{
+  const JsEngine::Context context(jsEngine);
+  SetProperty(name, val->value);
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)
