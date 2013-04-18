@@ -70,27 +70,17 @@ namespace
   }
 }
 
-v8::Handle<v8::ObjectTemplate> GlobalJsObject::Create(
-  const AppInfo& appInfo, JsEngine& jsEngine)
+JsValuePtr GlobalJsObject::Setup(JsEngine& jsEngine, const AppInfo& appInfo,
+    JsValuePtr obj)
 {
-  const v8::Locker locker(v8::Isolate::GetCurrent());
-  v8::HandleScope handleScope;
-  const v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-  const v8::Handle<v8::FunctionTemplate> setTimeoutFunction =
-    v8::FunctionTemplate::New(SetTimeoutCallback,
-                              v8::External::New(&jsEngine));
-  global->Set(v8::String::New("setTimeout"), setTimeoutFunction);
-  const v8::Handle<v8::ObjectTemplate> fileSystemObject =
-    FileSystemJsObject::Create(jsEngine);
-  global->Set(v8::String::New("_fileSystem"), fileSystemObject);
-  const v8::Handle<v8::ObjectTemplate> webRequestObject =
-    WebRequestJsObject::Create(jsEngine);
-  global->Set(v8::String::New("_webRequest"), webRequestObject);
-  const v8::Handle<v8::ObjectTemplate> consoleObject =
-    ConsoleJsObject::Create(jsEngine);
-  global->Set(v8::String::New("console"), consoleObject);
-  const v8::Handle<v8::ObjectTemplate> appInfoObject =
-    AppInfoJsObject::Create(appInfo);
-  global->Set(v8::String::New("_appInfo"), appInfoObject);
-  return handleScope.Close(global);
+  obj->SetProperty("setTimeout", jsEngine.NewCallback(::SetTimeoutCallback));
+  obj->SetProperty("_fileSystem",
+      FileSystemJsObject::Setup(jsEngine, jsEngine.NewObject()));
+  obj->SetProperty("_webRequest",
+      WebRequestJsObject::Setup(jsEngine, jsEngine.NewObject()));
+  obj->SetProperty("console",
+      ConsoleJsObject::Setup(jsEngine, jsEngine.NewObject()));
+  obj->SetProperty("_appInfo",
+      AppInfoJsObject::Setup(jsEngine, appInfo, jsEngine.NewObject()));
+  return obj;
 }

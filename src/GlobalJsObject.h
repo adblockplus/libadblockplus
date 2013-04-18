@@ -10,8 +10,7 @@ namespace AdblockPlus
 
   namespace GlobalJsObject
   {
-    v8::Handle<v8::ObjectTemplate> Create(const AppInfo& appInfo,
-                                          JsEngine& jsEngine);
+    JsValuePtr Setup(JsEngine& jsEngine, const AppInfo& appInfo, JsValuePtr obj);
   }
 }
 

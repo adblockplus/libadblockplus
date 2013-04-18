@@ -315,22 +315,12 @@ namespace
   }
 }
 
-v8::Handle<v8::ObjectTemplate>
-FileSystemJsObject::Create(JsEngine& jsEngine)
+JsValuePtr FileSystemJsObject::Setup(JsEngine& jsEngine, JsValuePtr obj)
 {
-  v8::HandleScope handleScope;
-  const v8::Local<v8::ObjectTemplate> file = v8::ObjectTemplate::New();
-  const v8::Local<v8::External> jsEngineExternal =
-    v8::External::New(&jsEngine);
-  file->Set(v8::String::New("read"),
-            v8::FunctionTemplate::New(ReadCallback, jsEngineExternal));
-  file->Set(v8::String::New("write"),
-            v8::FunctionTemplate::New(WriteCallback, jsEngineExternal));
-  file->Set(v8::String::New("move"),
-            v8::FunctionTemplate::New(MoveCallback, jsEngineExternal));
-  file->Set(v8::String::New("remove"),
-            v8::FunctionTemplate::New(RemoveCallback, jsEngineExternal));
-  file->Set(v8::String::New("stat"),
-            v8::FunctionTemplate::New(StatCallback, jsEngineExternal));
-  return handleScope.Close(file);
+  obj->SetProperty("read", jsEngine.NewCallback(::ReadCallback));
+  obj->SetProperty("write", jsEngine.NewCallback(::WriteCallback));
+  obj->SetProperty("move", jsEngine.NewCallback(::MoveCallback));
+  obj->SetProperty("remove", jsEngine.NewCallback(::RemoveCallback));
+  obj->SetProperty("stat", jsEngine.NewCallback(::StatCallback));
+  return obj;
 }

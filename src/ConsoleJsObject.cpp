@@ -27,17 +27,10 @@ namespace
   }
 }
 
-v8::Handle<v8::ObjectTemplate> AdblockPlus::ConsoleJsObject::Create(
-  AdblockPlus::JsEngine& jsEngine)
+AdblockPlus::JsValuePtr AdblockPlus::ConsoleJsObject::Setup(
+    AdblockPlus::JsEngine& jsEngine, AdblockPlus::JsValuePtr obj)
 {
-  v8::HandleScope handleScope;
-  const v8::Handle<v8::ObjectTemplate> console = v8::ObjectTemplate::New();
-  const v8::Handle<v8::FunctionTemplate> errorFunction =
-    v8::FunctionTemplate::New(::ErrorCallback,
-                              v8::External::New(&jsEngine));
-  console->Set(v8::String::New("error"), errorFunction);
-  const v8::Handle<v8::FunctionTemplate> traceFunction =
-    v8::FunctionTemplate::New(TraceCallback);
-  console->Set(v8::String::New("trace"), traceFunction);
-  return handleScope.Close(console);
+  obj->SetProperty("error", jsEngine.NewCallback(::ErrorCallback));
+  obj->SetProperty("trace", jsEngine.NewCallback(::TraceCallback));
+  return obj;
 }

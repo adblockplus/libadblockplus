@@ -45,6 +45,7 @@ namespace AdblockPlus
       return NewValue(static_cast<int64_t>(val));
     }
     JsValuePtr NewObject();
+    JsValuePtr NewCallback(v8::InvocationCallback callback);
     static JsEngine& FromArguments(const v8::Arguments& arguments);
     JsValueList ConvertArguments(const v8::Arguments& arguments);
 

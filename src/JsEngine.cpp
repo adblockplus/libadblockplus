@@ -6,18 +6,6 @@
 
 namespace
 {
-  v8::Handle<v8::Context> CreateContext(
-    v8::Isolate* isolate,
-    const AdblockPlus::AppInfo& appInfo,
-    AdblockPlus::JsEngine& jsEngine)
-  {
-    const v8::Locker locker(isolate);
-    const v8::HandleScope handleScope;
-    const v8::Handle<v8::ObjectTemplate> global =
-      AdblockPlus::GlobalJsObject::Create(appInfo, jsEngine);
-    return v8::Context::New(0, global);
-  }
-
   v8::Handle<v8::Script> CompileScript(const std::string& source, const std::string& filename)
   {
     const v8::Handle<v8::String> v8Source = v8::String::New(source.c_str());
@@ -63,9 +51,14 @@ AdblockPlus::JsEngine::JsEngine(const AppInfo& appInfo,
                                 WebRequest* const webRequest,
                                 ErrorCallback* const errorCallback)
   : fileSystem(*fileSystem), webRequest(*webRequest),
-    errorCallback(*errorCallback), isolate(v8::Isolate::GetCurrent()),
-    context(CreateContext(isolate, appInfo, *this))
+    errorCallback(*errorCallback), isolate(v8::Isolate::GetCurrent())
 {
+  const v8::Locker locker(isolate);
+  const v8::HandleScope handleScope;
+
+  context = v8::Context::New();
+  AdblockPlus::GlobalJsObject::Setup(*this, appInfo,
+      JsValuePtr(new JsValue(*this, context->Global())));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& source,
@@ -115,6 +108,16 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewObject()
 {
   const Context context(*this);
   return JsValuePtr(new JsValue(*this, v8::Object::New()));
+}
+
+AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewCallback(
+    v8::InvocationCallback callback)
+{
+  const Context context(*this);
+
+  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(callback,
+      v8::External::New(this));
+  return JsValuePtr(new JsValue(*this, templ->GetFunction()));
 }
 
 AdblockPlus::JsEngine& AdblockPlus::JsEngine::FromArguments(const v8::Arguments& arguments)

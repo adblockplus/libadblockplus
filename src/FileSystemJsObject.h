@@ -9,7 +9,7 @@ namespace AdblockPlus
 
   namespace FileSystemJsObject
   {
-    v8::Handle<v8::ObjectTemplate> Create(JsEngine& jsEngine);
+    JsValuePtr Setup(JsEngine& jsEngine, JsValuePtr obj);
   }
 }
 
