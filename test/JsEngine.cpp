@@ -3,30 +3,6 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
-class BaseFileSystem : public AdblockPlus::FileSystem
-{
-    void Write(const std::string& path,
-               std::tr1::shared_ptr<std::ostream> content)
-    {
-      throw std::runtime_error("Write is not implemented");
-    }
-
-    void Move(const std::string& fromPath, const std::string& toPath)
-    {
-      throw std::runtime_error("Move is not implemented");
-    }
-
-    void Remove(const std::string& path)
-    {
-      throw std::runtime_error("Remove is not implemented");
-    }
-
-    StatResult Stat(const std::string& path) const
-    {
-      throw std::runtime_error("Stat is not implemented");
-    }
-};
-
 class ThrowingErrorCallback : public AdblockPlus::ErrorCallback
 {
 public:
@@ -36,62 +12,14 @@ public:
   }
 };
 
-class StubFileSystem : public BaseFileSystem
-{
-public:
-  std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
-  {
-    std::stringstream* const source = new std::stringstream;
-    *source << "function hello() { return 'Hello'; }";
-    return std::tr1::shared_ptr<std::istream>(source);
-  }
-};
-
-class BadFileSystem : public BaseFileSystem
-{
-public:
-  std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
-  {
-    std::ifstream* const file = new std::ifstream;
-    file->open("");
-    return std::tr1::shared_ptr<std::istream>(file);
-  }
-
-  void Write(const std::string& path,
-             std::tr1::shared_ptr<std::ostream> content)
-  {
-    throw std::runtime_error("No writing");
-  }
-};
-
-TEST(JsEngineTest, EvaluateAndCall)
+TEST(JsEngineTest, Evaluate)
 {
   AdblockPlus::JsEngine jsEngine;
   jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
-  const std::string source = "function hello() { return 'Hello'; }";
-  jsEngine.Evaluate(source);
+  jsEngine.Evaluate("function hello() { return 'Hello'; }");
   AdblockPlus::JsValuePtr result = jsEngine.Evaluate("hello()");
   ASSERT_TRUE(result->IsString());
   ASSERT_EQ("Hello", result->AsString());
-}
-
-TEST(JsEngineTest, LoadAndCall)
-{
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
-  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(new StubFileSystem()));
-  jsEngine.Load("hello.js");
-  AdblockPlus::JsValuePtr result = jsEngine.Evaluate("hello()");
-  ASSERT_TRUE(result->IsString());
-  ASSERT_EQ("Hello", result->AsString());
-}
-
-TEST(JsEngineTest, LoadBadStreamFails)
-{
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
-  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(new BadFileSystem()));
-  ASSERT_ANY_THROW(jsEngine.Load("hello.js"));
 }
 
 TEST(JsEngineTest, RuntimeExceptionIsThrown)

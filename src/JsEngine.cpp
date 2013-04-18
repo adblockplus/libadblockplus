@@ -69,14 +69,6 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
   return JsValuePtr(new JsValue(*this, result));
 }
 
-void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
-{
-  const std::tr1::shared_ptr<std::istream> file = GetFileSystem()->Read(scriptPath);
-  if (!file || !*file)
-    throw std::runtime_error("Unable to load script " + scriptPath);
-  Evaluate(Utils::Slurp(*file));
-}
-
 void AdblockPlus::JsEngine::Gc()
 {
   while (!v8::V8::IdleNotification());
