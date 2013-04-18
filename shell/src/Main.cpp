@@ -40,7 +40,7 @@ int main()
     AdblockPlus::AppInfo appInfo;
     appInfo.version = "1.0";
     appInfo.name = "Adblock Plus Shell";
-    AdblockPlus::JsEngine jsEngine(appInfo);
+    AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
     AdblockPlus::FilterEngine filterEngine(jsEngine);
 
     CommandMap commands;

@@ -3,7 +3,6 @@
 #include <sstream>
 #include <vector>
 
-#include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
 #include "FileSystemJsObject.h"
 #include "Utils.h"
@@ -17,14 +16,14 @@ namespace
   class IoThread : public Thread
   {
   public:
-    IoThread(JsEngine& jsEngine, JsValuePtr callback)
-      : jsEngine(jsEngine), fileSystem(jsEngine.GetFileSystem()),
+    IoThread(JsEnginePtr jsEngine, JsValuePtr callback)
+      : jsEngine(jsEngine), fileSystem(jsEngine->GetFileSystem()),
         callback(callback)
     {
     }
 
   protected:
-    JsEngine& jsEngine;
+    JsEnginePtr jsEngine;
     FileSystemPtr fileSystem;
     JsValuePtr callback;
   };
@@ -32,7 +31,7 @@ namespace
   class ReadThread : public IoThread
   {
   public:
-    ReadThread(JsEngine& jsEngine, JsValuePtr callback,
+    ReadThread(JsEnginePtr jsEngine, JsValuePtr callback,
                const std::string& path)
       : IoThread(jsEngine, callback), path(path)
     {
@@ -57,7 +56,7 @@ namespace
       }
 
       const JsEngine::Context context(jsEngine);
-      JsValuePtr result = jsEngine.NewObject();
+      JsValuePtr result = jsEngine->NewObject();
       result->SetProperty("content", content);
       result->SetProperty("error", error);
       JsValueList params;
@@ -73,7 +72,7 @@ namespace
   class WriteThread : public IoThread
   {
   public:
-    WriteThread(JsEngine& jsEngine, JsValuePtr callback,
+    WriteThread(JsEnginePtr jsEngine, JsValuePtr callback,
                 const std::string& path, const std::string& content)
       : IoThread(jsEngine, callback), path(path), content(content)
     {
@@ -98,7 +97,7 @@ namespace
       }
 
       const JsEngine::Context context(jsEngine);
-      JsValuePtr errorValue = jsEngine.NewValue(error);
+      JsValuePtr errorValue = jsEngine->NewValue(error);
       JsValueList params;
       params.push_back(errorValue);
       callback->Call(params);
@@ -113,7 +112,7 @@ namespace
   class MoveThread : public IoThread
   {
   public:
-    MoveThread(JsEngine& jsEngine, JsValuePtr callback,
+    MoveThread(JsEnginePtr jsEngine, JsValuePtr callback,
                const std::string& fromPath, const std::string& toPath)
       : IoThread(jsEngine, callback), fromPath(fromPath), toPath(toPath)
     {
@@ -136,7 +135,7 @@ namespace
       }
 
       const JsEngine::Context context(jsEngine);
-      JsValuePtr errorValue = jsEngine.NewValue(error);
+      JsValuePtr errorValue = jsEngine->NewValue(error);
       JsValueList params;
       params.push_back(errorValue);
       callback->Call(params);
@@ -151,7 +150,7 @@ namespace
   class RemoveThread : public IoThread
   {
   public:
-    RemoveThread(JsEngine& jsEngine, JsValuePtr callback,
+    RemoveThread(JsEnginePtr jsEngine, JsValuePtr callback,
                  const std::string& path)
       : IoThread(jsEngine, callback), path(path)
     {
@@ -174,7 +173,7 @@ namespace
       }
 
       const JsEngine::Context context(jsEngine);
-      JsValuePtr errorValue = jsEngine.NewValue(error);
+      JsValuePtr errorValue = jsEngine->NewValue(error);
       JsValueList params;
       params.push_back(errorValue);
       callback->Call(params);
@@ -188,7 +187,7 @@ namespace
   class StatThread : public IoThread
   {
   public:
-    StatThread(JsEngine& jsEngine, JsValuePtr callback,
+    StatThread(JsEnginePtr jsEngine, JsValuePtr callback,
                const std::string& path)
       : IoThread(jsEngine, callback), path(path)
     {
@@ -212,7 +211,7 @@ namespace
       }
 
       const JsEngine::Context context(jsEngine);
-      JsValuePtr result = jsEngine.NewObject();
+      JsValuePtr result = jsEngine->NewObject();
       result->SetProperty("exists", statResult.exists);
       result->SetProperty("isFile", statResult.isFile);
       result->SetProperty("isDirectory", statResult.isDirectory);
@@ -231,8 +230,8 @@ namespace
 
   v8::Handle<v8::Value> ReadCallback(const v8::Arguments& arguments)
   {
-    AdblockPlus::JsEngine& jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine.ConvertArguments(arguments);
+    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     if (converted.size() != 2)
       return v8::ThrowException(v8::String::New(
@@ -248,8 +247,8 @@ namespace
 
   v8::Handle<v8::Value> WriteCallback(const v8::Arguments& arguments)
   {
-    AdblockPlus::JsEngine& jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine.ConvertArguments(arguments);
+    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     if (converted.size() != 3)
       return v8::ThrowException(v8::String::New(
@@ -265,8 +264,8 @@ namespace
 
   v8::Handle<v8::Value> MoveCallback(const v8::Arguments& arguments)
   {
-    AdblockPlus::JsEngine& jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine.ConvertArguments(arguments);
+    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     if (converted.size() != 3)
       return v8::ThrowException(v8::String::New(
@@ -282,8 +281,8 @@ namespace
 
   v8::Handle<v8::Value> RemoveCallback(const v8::Arguments& arguments)
   {
-    AdblockPlus::JsEngine& jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine.ConvertArguments(arguments);
+    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     if (converted.size() != 2)
       return v8::ThrowException(v8::String::New(
@@ -299,8 +298,8 @@ namespace
 
   v8::Handle<v8::Value> StatCallback(const v8::Arguments& arguments)
   {
-    AdblockPlus::JsEngine& jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine.ConvertArguments(arguments);
+    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     if (converted.size() != 2)
       return v8::ThrowException(v8::String::New(
@@ -315,12 +314,12 @@ namespace
   }
 }
 
-JsValuePtr FileSystemJsObject::Setup(JsEngine& jsEngine, JsValuePtr obj)
+JsValuePtr FileSystemJsObject::Setup(JsEnginePtr jsEngine, JsValuePtr obj)
 {
-  obj->SetProperty("read", jsEngine.NewCallback(::ReadCallback));
-  obj->SetProperty("write", jsEngine.NewCallback(::WriteCallback));
-  obj->SetProperty("move", jsEngine.NewCallback(::MoveCallback));
-  obj->SetProperty("remove", jsEngine.NewCallback(::RemoveCallback));
-  obj->SetProperty("stat", jsEngine.NewCallback(::StatCallback));
+  obj->SetProperty("read", jsEngine->NewCallback(::ReadCallback));
+  obj->SetProperty("write", jsEngine->NewCallback(::WriteCallback));
+  obj->SetProperty("move", jsEngine->NewCallback(::MoveCallback));
+  obj->SetProperty("remove", jsEngine->NewCallback(::RemoveCallback));
+  obj->SetProperty("stat", jsEngine->NewCallback(::StatCallback));
   return obj;
 }

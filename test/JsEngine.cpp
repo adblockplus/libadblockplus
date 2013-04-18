@@ -66,90 +66,90 @@ public:
 
 TEST(JsEngineTest, EvaluateAndCall)
 {
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   const std::string source = "function hello() { return 'Hello'; }";
-  jsEngine.Evaluate(source);
-  AdblockPlus::JsValuePtr result = jsEngine.Evaluate("hello()");
+  jsEngine->Evaluate(source);
+  AdblockPlus::JsValuePtr result = jsEngine->Evaluate("hello()");
   ASSERT_TRUE(result->IsString());
   ASSERT_EQ("Hello", result->AsString());
 }
 
 TEST(JsEngineTest, LoadAndCall)
 {
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
-  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(new StubFileSystem()));
-  jsEngine.Load("hello.js");
-  AdblockPlus::JsValuePtr result = jsEngine.Evaluate("hello()");
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
+  jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new StubFileSystem()));
+  jsEngine->Load("hello.js");
+  AdblockPlus::JsValuePtr result = jsEngine->Evaluate("hello()");
   ASSERT_TRUE(result->IsString());
   ASSERT_EQ("Hello", result->AsString());
 }
 
 TEST(JsEngineTest, LoadBadStreamFails)
 {
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
-  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(new BadFileSystem()));
-  ASSERT_ANY_THROW(jsEngine.Load("hello.js"));
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
+  jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new BadFileSystem()));
+  ASSERT_ANY_THROW(jsEngine->Load("hello.js"));
 }
 
 TEST(JsEngineTest, RuntimeExceptionIsThrown)
 {
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
-  ASSERT_THROW(jsEngine.Evaluate("doesnotexist()"), AdblockPlus::JsError);
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
+  ASSERT_THROW(jsEngine->Evaluate("doesnotexist()"), AdblockPlus::JsError);
 }
 
 TEST(JsEngineTest, CompileTimeExceptionIsThrown)
 {
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
-  ASSERT_THROW(jsEngine.Evaluate("'foo'bar'"), AdblockPlus::JsError);
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
+  ASSERT_THROW(jsEngine->Evaluate("'foo'bar'"), AdblockPlus::JsError);
 }
 
 TEST(JsEngineTest, ValueCreation)
 {
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   AdblockPlus::JsValuePtr value;
 
-  value = jsEngine.NewValue("foo");
+  value = jsEngine->NewValue("foo");
   ASSERT_TRUE(value->IsString());
   ASSERT_EQ("foo", value->AsString());
 
-  value = jsEngine.NewValue(12);
+  value = jsEngine->NewValue(12);
   ASSERT_TRUE(value->IsNumber());
   ASSERT_EQ(12, value->AsInt());
 
-  value = jsEngine.NewValue(true);
+  value = jsEngine->NewValue(true);
   ASSERT_TRUE(value->IsBool());
   ASSERT_TRUE(value->AsBool());
 
-  value = jsEngine.NewObject();
+  value = jsEngine->NewObject();
   ASSERT_TRUE(value->IsObject());
   ASSERT_EQ(0u, value->GetOwnPropertyNames().size());
 }
 
 TEST(JsEngineTest, CallbackGetSet)
 {
-  AdblockPlus::JsEngine jsEngine;
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
 
-  ASSERT_TRUE(jsEngine.GetErrorCallback());
-  ASSERT_ANY_THROW(jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr()));
+  ASSERT_TRUE(jsEngine->GetErrorCallback());
+  ASSERT_ANY_THROW(jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr()));
   AdblockPlus::ErrorCallbackPtr errorCallback(new AdblockPlus::DefaultErrorCallback());
-  jsEngine.SetErrorCallback(errorCallback);
-  ASSERT_EQ(errorCallback, jsEngine.GetErrorCallback());
+  jsEngine->SetErrorCallback(errorCallback);
+  ASSERT_EQ(errorCallback, jsEngine->GetErrorCallback());
 
-  ASSERT_TRUE(jsEngine.GetFileSystem());
-  ASSERT_ANY_THROW(jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr()));
+  ASSERT_TRUE(jsEngine->GetFileSystem());
+  ASSERT_ANY_THROW(jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr()));
   AdblockPlus::FileSystemPtr fileSystem(new AdblockPlus::DefaultFileSystem());
-  jsEngine.SetFileSystem(fileSystem);
-  ASSERT_EQ(fileSystem, jsEngine.GetFileSystem());
+  jsEngine->SetFileSystem(fileSystem);
+  ASSERT_EQ(fileSystem, jsEngine->GetFileSystem());
 
-  ASSERT_TRUE(jsEngine.GetWebRequest());
-  ASSERT_ANY_THROW(jsEngine.SetWebRequest(AdblockPlus::WebRequestPtr()));
+  ASSERT_TRUE(jsEngine->GetWebRequest());
+  ASSERT_ANY_THROW(jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr()));
   AdblockPlus::WebRequestPtr webRequest(new AdblockPlus::DefaultWebRequest());
-  jsEngine.SetWebRequest(webRequest);
-  ASSERT_EQ(webRequest, jsEngine.GetWebRequest());
+  jsEngine->SetWebRequest(webRequest);
+  ASSERT_EQ(webRequest, jsEngine->GetWebRequest());
 }

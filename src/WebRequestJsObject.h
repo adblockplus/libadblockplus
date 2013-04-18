@@ -2,6 +2,7 @@
 #define ADBLOCK_PLUS_WEB_REQUEST_JS_OBJECT_H
 
 #include <v8.h>
+#include <AdblockPlus/JsEngine.h>
 
 namespace AdblockPlus
 {
@@ -9,7 +10,7 @@ namespace AdblockPlus
 
   namespace WebRequestJsObject
   {
-    JsValuePtr Setup(JsEngine& jsEngine, JsValuePtr obj);
+    JsValuePtr Setup(JsEnginePtr jsEngine, JsValuePtr obj);
   }
 }
 

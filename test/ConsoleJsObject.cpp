@@ -14,24 +14,24 @@ public:
 
 TEST(ConsoleJsObjectTest, ErrorInvokesErrorCallback)
 {
-  AdblockPlus::JsEngine jsEngine;
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   MockErrorCallback* errorCallback = new MockErrorCallback();
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(errorCallback));
-  jsEngine.Evaluate("console.error('foo')");
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(errorCallback));
+  jsEngine->Evaluate("console.error('foo')");
   ASSERT_EQ("foo", errorCallback->lastMessage);
 }
 
 TEST(ConsoleJsObjectTest, ErrorWithMultipleArguments)
 {
-  AdblockPlus::JsEngine jsEngine;
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   MockErrorCallback* errorCallback = new MockErrorCallback();
-  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(errorCallback));
-  jsEngine.Evaluate("console.error('foo', 'bar')");
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(errorCallback));
+  jsEngine->Evaluate("console.error('foo', 'bar')");
   ASSERT_EQ("foobar", errorCallback->lastMessage);
 }
 
 TEST(ConsoleJsObjectTest, TraceDoesNothing)
 {
-  AdblockPlus::JsEngine jsEngine;
-  jsEngine.Evaluate("console.trace()");
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  jsEngine->Evaluate("console.trace()");
 }

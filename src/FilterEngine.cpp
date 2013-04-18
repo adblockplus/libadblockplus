@@ -145,7 +145,7 @@ bool Filter::IsListed()
   }
   return false;
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.isListedFilter");
+  JsValuePtr func = jsEngine->Evaluate("API.isListedFilter");
   JsValueList params;
   params.push_back(shared_from_this());
   return func->Call(params)->AsBool();
@@ -158,7 +158,7 @@ void Filter::AddToList()
   if (!IsListed())
     filterEngine.listedFilters.push_back(shared_from_this());
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.addFilterToList");
+  JsValuePtr func = jsEngine->Evaluate("API.addFilterToList");
   JsValueList params;
   params.push_back(shared_from_this());
   func->Call(params);
@@ -177,7 +177,7 @@ void Filter::RemoveFromList()
       it++;
   }
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.removeFilterFromList");
+  JsValuePtr func = jsEngine->Evaluate("API.removeFilterFromList");
   JsValueList params;
   params.push_back(shared_from_this());
   func->Call(params);
@@ -213,7 +213,7 @@ bool Subscription::IsListed()
   }
   return false;
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.isListedFilter");
+  JsValuePtr func = jsEngine->Evaluate("API.isListedFilter");
   JsValueList params;
   params.push_back(shared_from_this());
   return func->Call(params)->AsBool();
@@ -226,7 +226,7 @@ void Subscription::AddToList()
   if (!IsListed())
     filterEngine.listedSubscriptions.push_back(shared_from_this());
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.addSubscriptionToList");
+  JsValuePtr func = jsEngine->Evaluate("API.addSubscriptionToList");
   JsValueList params;
   params.push_back(shared_from_this());
   func->Call(params);
@@ -245,7 +245,7 @@ void Subscription::RemoveFromList()
       it++;
   }
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.removeSubscriptionFromList");
+  JsValuePtr func = jsEngine->Evaluate("API.removeSubscriptionFromList");
   JsValueList params;
   params.push_back(shared_from_this());
   func->Call(params);
@@ -255,7 +255,7 @@ void Subscription::RemoveFromList()
 void Subscription::UpdateFilters()
 {
 #if !FILTER_ENGINE_STUBS
-  JsValuePtr func = jsEngine.Evaluate("API.updateSubscription");
+  JsValuePtr func = jsEngine->Evaluate("API.updateSubscription");
   JsValueList params;
   params.push_back(shared_from_this());
   func->Call(params);
@@ -267,7 +267,7 @@ bool Subscription::IsUpdating()
 #if FILTER_ENGINE_STUBS
   return false;
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.isSubscriptionUpdating");
+  JsValuePtr func = jsEngine->Evaluate("API.isSubscriptionUpdating");
   JsValueList params;
   params.push_back(shared_from_this());
   JsValuePtr result = func->Call(params);
@@ -280,11 +280,11 @@ bool Subscription::operator==(const Subscription& subscription) const
   return GetProperty("url", "") == subscription.GetProperty("url", "");
 }
 
-FilterEngine::FilterEngine(JsEngine& jsEngine) : jsEngine(jsEngine)
+FilterEngine::FilterEngine(JsEnginePtr jsEngine) : jsEngine(jsEngine)
 {
 #if !FILTER_ENGINE_STUBS
   for (int i = 0; jsSources[i] && jsSources[i + 1]; i += 2)
-    jsEngine.Evaluate(jsSources[i + 1], jsSources[i]);
+    jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
 #endif
 }
 
@@ -304,9 +304,9 @@ FilterPtr FilterEngine::GetFilter(const std::string& text)
   knownFilters[trimmed] = result;
   return result;
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.getFilterFromText");
+  JsValuePtr func = jsEngine->Evaluate("API.getFilterFromText");
   JsValueList params;
-  params.push_back(jsEngine.NewValue(text));
+  params.push_back(jsEngine->NewValue(text));
   return FilterPtr(new Filter(func->Call(params)));
 #endif
 }
@@ -322,9 +322,9 @@ SubscriptionPtr FilterEngine::GetSubscription(const std::string& url)
   knownSubscriptions[url] = result;
   return result;
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.getSubscriptionFromUrl");
+  JsValuePtr func = jsEngine->Evaluate("API.getSubscriptionFromUrl");
   JsValueList params;
-  params.push_back(jsEngine.NewValue(url));
+  params.push_back(jsEngine->NewValue(url));
   return SubscriptionPtr(new Subscription(func->Call(params)));
 #endif
 }
@@ -334,7 +334,7 @@ const std::vector<FilterPtr> FilterEngine::GetListedFilters() const
 #if FILTER_ENGINE_STUBS
   return listedFilters;
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.getListedFilters");
+  JsValuePtr func = jsEngine->Evaluate("API.getListedFilters");
   JsValueList values = func->Call()->AsList();
   std::vector<FilterPtr> result;
   for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
@@ -348,7 +348,7 @@ const std::vector<SubscriptionPtr> FilterEngine::GetListedSubscriptions() const
 #if FILTER_ENGINE_STUBS
   return listedSubscriptions;
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.getListedSubscriptions");
+  JsValuePtr func = jsEngine->Evaluate("API.getListedSubscriptions");
   JsValueList values = func->Call()->AsList();
   std::vector<SubscriptionPtr> result;
   for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
@@ -389,11 +389,11 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
   else
     return AdblockPlus::FilterPtr();
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.checkFilterMatch");
+  JsValuePtr func = jsEngine->Evaluate("API.checkFilterMatch");
   JsValueList params;
-  params.push_back(jsEngine.NewValue(url));
-  params.push_back(jsEngine.NewValue(contentType));
-  params.push_back(jsEngine.NewValue(documentUrl));
+  params.push_back(jsEngine->NewValue(url));
+  params.push_back(jsEngine->NewValue(contentType));
+  params.push_back(jsEngine->NewValue(documentUrl));
   JsValuePtr result = func->Call(params);
   if (!result->IsNull())
     return FilterPtr(new Filter(result));
@@ -413,9 +413,9 @@ std::vector<std::string> FilterEngine::GetElementHidingSelectors(const std::stri
     selectors.push_back(".ad_300x250");
   return selectors;
 #else
-  JsValuePtr func = jsEngine.Evaluate("API.getElementHidingSelectors");
+  JsValuePtr func = jsEngine->Evaluate("API.getElementHidingSelectors");
   JsValueList params;
-  params.push_back(jsEngine.NewValue(domain));
+  params.push_back(jsEngine->NewValue(domain));
   JsValueList result = func->Call(params)->AsList();
   std::vector<std::string> selectors;
   for (JsValueList::iterator it = result.begin(); it != result.end(); ++it)
