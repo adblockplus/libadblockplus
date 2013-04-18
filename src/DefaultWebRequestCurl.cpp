@@ -2,7 +2,7 @@
 #include <cctype>
 #include <algorithm>
 #include <curl/curl.h>
-#include <AdblockPlus/WebRequest.h>
+#include <AdblockPlus/DefaultWebRequest.h>
 
 namespace
 {

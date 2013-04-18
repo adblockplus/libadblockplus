@@ -17,7 +17,8 @@ namespace
     for (size_t i = 0; i < converted.size(); i++)
       message << converted[i]->AsString();
 
-    (jsEngine.GetErrorCallback())(message.str());
+    AdblockPlus::ErrorCallbackPtr callback = jsEngine.GetErrorCallback();
+    (*callback)(message.str());
     return v8::Undefined();
   }
 

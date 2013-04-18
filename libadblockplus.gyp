@@ -19,6 +19,7 @@
     'sources': [
       'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
+      'src/DefaultErrorCallback.cpp',
       'src/DefaultFileSystem.cpp',
       'src/ErrorCallback.cpp',
       'src/FileSystemJsObject.cpp',

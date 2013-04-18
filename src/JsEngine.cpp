@@ -46,12 +46,8 @@ AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
 {
 }
 
-AdblockPlus::JsEngine::JsEngine(const AppInfo& appInfo,
-                                FileSystem* const fileSystem,
-                                WebRequest* const webRequest,
-                                ErrorCallback* const errorCallback)
-  : fileSystem(*fileSystem), webRequest(*webRequest),
-    errorCallback(*errorCallback), isolate(v8::Isolate::GetCurrent())
+AdblockPlus::JsEngine::JsEngine(const AppInfo& appInfo)
+  : isolate(v8::Isolate::GetCurrent())
 {
   const v8::Locker locker(isolate);
   const v8::HandleScope handleScope;
@@ -75,7 +71,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
 
 void AdblockPlus::JsEngine::Load(const std::string& scriptPath)
 {
-  const std::tr1::shared_ptr<std::istream> file = fileSystem.Read(scriptPath);
+  const std::tr1::shared_ptr<std::istream> file = GetFileSystem()->Read(scriptPath);
   if (!file || !*file)
     throw std::runtime_error("Unable to load script " + scriptPath);
   Evaluate(Utils::Slurp(*file));
@@ -134,6 +130,42 @@ AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Argum
   for (int i = 0; i < arguments.Length(); i++)
     list.push_back(JsValuePtr(new JsValue(*this, arguments[i])));
   return list;
+}
+
+AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetFileSystem()
+{
+  if (!fileSystem)
+    fileSystem.reset(new DefaultFileSystem());
+  return fileSystem;
+}
+
+void AdblockPlus::JsEngine::SetFileSystem(AdblockPlus::FileSystemPtr val)
+{
+  fileSystem = val;
+}
+
+AdblockPlus::WebRequestPtr AdblockPlus::JsEngine::GetWebRequest()
+{
+  if (!webRequest)
+    webRequest.reset(new DefaultWebRequest());
+  return webRequest;
+}
+
+void AdblockPlus::JsEngine::SetWebRequest(AdblockPlus::WebRequestPtr val)
+{
+  webRequest = val;
+}
+
+AdblockPlus::ErrorCallbackPtr AdblockPlus::JsEngine::GetErrorCallback()
+{
+  if (!errorCallback)
+    errorCallback.reset(new DefaultErrorCallback());
+  return errorCallback;
+}
+
+void AdblockPlus::JsEngine::SetErrorCallback(AdblockPlus::ErrorCallbackPtr val)
+{
+  errorCallback = val;
 }
 
 AdblockPlus::JsEngine::Context::Context(const JsEngine& jsEngine)

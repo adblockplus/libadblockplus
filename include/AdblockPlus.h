@@ -3,7 +3,9 @@
 
 #include <AdblockPlus/AppInfo.h>
 #include <AdblockPlus/FileSystem.h>
+#include <AdblockPlus/DefaultErrorCallback.h>
 #include <AdblockPlus/DefaultFileSystem.h>
+#include <AdblockPlus/DefaultWebRequest.h>
 #include <AdblockPlus/FilterEngine.h>
 #include <AdblockPlus/ErrorCallback.h>
 #include <AdblockPlus/JsEngine.h>

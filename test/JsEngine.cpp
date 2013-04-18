@@ -66,8 +66,8 @@ public:
 
 TEST(JsEngineTest, EvaluateAndCall)
 {
-  ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine;
+  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   const std::string source = "function hello() { return 'Hello'; }";
   jsEngine.Evaluate(source);
   AdblockPlus::JsValuePtr result = jsEngine.Evaluate("hello()");
@@ -77,10 +77,9 @@ TEST(JsEngineTest, EvaluateAndCall)
 
 TEST(JsEngineTest, LoadAndCall)
 {
-  StubFileSystem fileSystem;
-  ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0,
-                                 &errorCallback);
+  AdblockPlus::JsEngine jsEngine;
+  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(new StubFileSystem()));
   jsEngine.Load("hello.js");
   AdblockPlus::JsValuePtr result = jsEngine.Evaluate("hello()");
   ASSERT_TRUE(result->IsString());
@@ -89,31 +88,30 @@ TEST(JsEngineTest, LoadAndCall)
 
 TEST(JsEngineTest, LoadBadStreamFails)
 {
-  BadFileSystem fileSystem;
-  ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0,
-                                 &errorCallback);
+  AdblockPlus::JsEngine jsEngine;
+  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(new BadFileSystem()));
   ASSERT_ANY_THROW(jsEngine.Load("hello.js"));
 }
 
 TEST(JsEngineTest, RuntimeExceptionIsThrown)
 {
-  ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine;
+  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   ASSERT_THROW(jsEngine.Evaluate("doesnotexist()"), AdblockPlus::JsError);
 }
 
 TEST(JsEngineTest, CompileTimeExceptionIsThrown)
 {
-  ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine;
+  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   ASSERT_THROW(jsEngine.Evaluate("'foo'bar'"), AdblockPlus::JsError);
 }
 
 TEST(JsEngineTest, ValueCreation)
 {
-  ThrowingErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine;
+  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   AdblockPlus::JsValuePtr value;
 
   value = jsEngine.NewValue("foo");

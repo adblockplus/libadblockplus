@@ -85,9 +85,10 @@ namespace
 
 TEST(FileSystemJsObjectTest, Read)
 {
-  MockFileSystem fileSystem;
-  fileSystem.contentToRead = "foo";
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  fileSystem->contentToRead = "foo";
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   std::string content;
   std::string error;
   ReadFile(jsEngine, content, error);
@@ -97,16 +98,17 @@ TEST(FileSystemJsObjectTest, Read)
 
 TEST(FileSystemJsObjectTest, ReadIllegalArguments)
 {
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.read()"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.read('', '')"));
 }
 
 TEST(FileSystemJsObjectTest, ReadError)
 {
-  MockFileSystem fileSystem;
-  fileSystem.success = false;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  fileSystem->success = false;
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   std::string content;
   std::string error;
   ReadFile(jsEngine, content, error);
@@ -116,27 +118,29 @@ TEST(FileSystemJsObjectTest, ReadError)
 
 TEST(FileSystemJsObjectTest, Write)
 {
-  MockFileSystem fileSystem;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   jsEngine.Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(10);
-  ASSERT_EQ("foo", fileSystem.lastWrittenPath);
-  ASSERT_EQ("bar", fileSystem.lastWrittenContent);
+  ASSERT_EQ("foo", fileSystem->lastWrittenPath);
+  ASSERT_EQ("bar", fileSystem->lastWrittenContent);
   ASSERT_EQ("", jsEngine.Evaluate("error")->AsString());
 }
 
 TEST(FileSystemJsObjectTest, WriteIllegalArguments)
 {
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.write()"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.write('', '', '')"));
 }
 
 TEST(FileSystemJsObjectTest, WriteError)
 {
-  MockFileSystem fileSystem;
-  fileSystem.success = false;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  fileSystem->success = false;
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   jsEngine.Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(10);
   ASSERT_NE("", jsEngine.Evaluate("error")->AsString());
@@ -144,27 +148,29 @@ TEST(FileSystemJsObjectTest, WriteError)
 
 TEST(FileSystemJsObjectTest, Move)
 {
-  MockFileSystem fileSystem;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   jsEngine.Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(10);
-  ASSERT_EQ("foo", fileSystem.movedFrom);
-  ASSERT_EQ("bar", fileSystem.movedTo);
+  ASSERT_EQ("foo", fileSystem->movedFrom);
+  ASSERT_EQ("bar", fileSystem->movedTo);
   ASSERT_EQ("", jsEngine.Evaluate("error")->AsString());
 }
 
 TEST(FileSystemJsObjectTest, MoveIllegalArguments)
 {
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.move()"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.move('', '', '')"));
 }
 
 TEST(FileSystemJsObjectTest, MoveError)
 {
-  MockFileSystem fileSystem;
-  fileSystem.success = false;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  fileSystem->success = false;
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   jsEngine.Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(10);
   ASSERT_NE("", jsEngine.Evaluate("error")->AsString());
@@ -172,26 +178,28 @@ TEST(FileSystemJsObjectTest, MoveError)
 
 TEST(FileSystemJsObjectTest, Remove)
 {
-  MockFileSystem fileSystem;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   jsEngine.Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
   AdblockPlus::Sleep(10);
-  ASSERT_EQ("foo", fileSystem.removedPath);
+  ASSERT_EQ("foo", fileSystem->removedPath);
   ASSERT_EQ("", jsEngine.Evaluate("error")->AsString());
 }
 
 TEST(FileSystemJsObjectTest, RemoveIllegalArguments)
 {
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.remove()"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.remove('', '')"));
 }
 
 TEST(FileSystemJsObjectTest, RemoveError)
 {
-  MockFileSystem fileSystem;
-  fileSystem.success = false;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  fileSystem->success = false;
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   jsEngine.Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
   AdblockPlus::Sleep(10);
   ASSERT_NE("", jsEngine.Evaluate("error")->AsString());
@@ -199,15 +207,16 @@ TEST(FileSystemJsObjectTest, RemoveError)
 
 TEST(FileSystemJsObjectTest, Stat)
 {
-  MockFileSystem fileSystem;
-  fileSystem.statExists = true;
-  fileSystem.statIsDirectory= false;
-  fileSystem.statIsFile = true;
-  fileSystem.statLastModified = 1337;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  fileSystem->statExists = true;
+  fileSystem->statIsDirectory= false;
+  fileSystem->statIsFile = true;
+  fileSystem->statLastModified = 1337;
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   jsEngine.Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
   AdblockPlus::Sleep(10);
-  ASSERT_EQ("foo", fileSystem.statPath);
+  ASSERT_EQ("foo", fileSystem->statPath);
   ASSERT_EQ("", jsEngine.Evaluate("result.error")->AsString());
   ASSERT_TRUE(jsEngine.Evaluate("result.exists")->AsBool());
   ASSERT_FALSE(jsEngine.Evaluate("result.isDirectory")->AsBool());
@@ -217,16 +226,17 @@ TEST(FileSystemJsObjectTest, Stat)
 
 TEST(FileSystemJsObjectTest, StatIllegalArguments)
 {
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.stat()"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_fileSystem.stat('', '')"));
 }
 
 TEST(FileSystemJsObjectTest, StatError)
 {
-  MockFileSystem fileSystem;
-  fileSystem.success = false;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), &fileSystem, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
+  MockFileSystem* fileSystem = new MockFileSystem();
+  fileSystem->success = false;
+  jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr(fileSystem));;
   jsEngine.Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
   AdblockPlus::Sleep(10);
   ASSERT_NE("", jsEngine.Evaluate("result.error")->AsString());

@@ -10,15 +10,6 @@
 
 namespace
 {
-  class CerrErrorCallback : public AdblockPlus::ErrorCallback
-  {
-  public:
-    void operator()(const std::string& message)
-    {
-      std::cerr << "Error: " << message << std::endl;
-    }
-  };
-
   void Add(CommandMap& commands, Command* command)
   {
     commands[command->name] = command;
@@ -46,14 +37,10 @@ int main()
 {
   try
   {
-    AdblockPlus::DefaultFileSystem fileSystem;
-    AdblockPlus::DefaultWebRequest webRequest;
-    CerrErrorCallback errorCallback;
     AdblockPlus::AppInfo appInfo;
     appInfo.version = "1.0";
     appInfo.name = "Adblock Plus Shell";
-    AdblockPlus::JsEngine jsEngine(appInfo, &fileSystem, &webRequest,
-                                   &errorCallback);
+    AdblockPlus::JsEngine jsEngine(appInfo);
     AdblockPlus::FilterEngine filterEngine(jsEngine);
 
     CommandMap commands;

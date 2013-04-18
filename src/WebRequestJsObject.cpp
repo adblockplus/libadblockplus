@@ -39,7 +39,7 @@ namespace
 
     void Run()
     {
-      AdblockPlus::ServerResponse result = jsEngine.GetWebRequest().GET(url, headers);
+      AdblockPlus::ServerResponse result = jsEngine.GetWebRequest()->GET(url, headers);
 
       AdblockPlus::JsEngine::Context context(jsEngine);
 

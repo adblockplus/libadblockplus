@@ -4,15 +4,16 @@
 #include <stdexcept>
 #include <string>
 #include <v8.h>
+#include <AdblockPlus/AppInfo.h>
+#include <AdblockPlus/ErrorCallback.h>
+#include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/JsValue.h>
+#include <AdblockPlus/WebRequest.h>
+
+#include "tr1_memory.h"
 
 namespace AdblockPlus
 {
-  struct AppInfo;
-  class FileSystem;
-  class WebRequest;
-  class ErrorCallback;
-
   class JsError : public std::runtime_error
   {
   public:
@@ -20,15 +21,14 @@ namespace AdblockPlus
         const v8::Handle<v8::Message> message);
   };
 
+  typedef std::tr1::shared_ptr<JsEngine> JsEnginePtr;
+
   class JsEngine
   {
     friend class JsValue;
 
   public:
-    JsEngine(const AppInfo& appInfo,
-             FileSystem* const fileReader,
-             WebRequest* const webRequest,
-             ErrorCallback* const errorCallback);
+    JsEngine(const AppInfo& appInfo = AppInfo());
     JsValuePtr Evaluate(const std::string& source,
         const std::string& filename = "");
     void Load(const std::string& scriptPath);
@@ -49,18 +49,12 @@ namespace AdblockPlus
     static JsEngine& FromArguments(const v8::Arguments& arguments);
     JsValueList ConvertArguments(const v8::Arguments& arguments);
 
-    inline FileSystem& GetFileSystem()
-    {
-      return fileSystem;
-    }
-    inline WebRequest& GetWebRequest()
-    {
-      return webRequest;
-    }
-    inline ErrorCallback& GetErrorCallback()
-    {
-      return errorCallback;
-    }
+    FileSystemPtr GetFileSystem();
+    void SetFileSystem(FileSystemPtr val);
+    WebRequestPtr GetWebRequest();
+    void SetWebRequest(WebRequestPtr val);
+    ErrorCallbackPtr GetErrorCallback();
+    void SetErrorCallback(ErrorCallbackPtr val);
 
     class Context
     {
@@ -75,9 +69,9 @@ namespace AdblockPlus
     };
 
   private:
-    FileSystem& fileSystem;
-    WebRequest& webRequest;
-    ErrorCallback& errorCallback;
+    FileSystemPtr fileSystem;
+    WebRequestPtr webRequest;
+    ErrorCallbackPtr errorCallback;
     v8::Isolate* isolate;
     v8::Persistent<v8::Context> context;
   };
