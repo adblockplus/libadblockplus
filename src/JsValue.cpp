@@ -17,16 +17,16 @@ namespace
   }
 }
 
-AdblockPlus::JsValue::JsValue(AdblockPlus::JsEngine& jsEngine,
+AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
       v8::Handle<v8::Value> value)
     : jsEngine(jsEngine),
-      value(v8::Persistent<v8::Value>::New(jsEngine.isolate, value))
+      value(v8::Persistent<v8::Value>::New(jsEngine->isolate, value))
 {
 }
 
 AdblockPlus::JsValue::~JsValue()
 {
-  value.Dispose(jsEngine.isolate);
+  value.Dispose(jsEngine->isolate);
 }
 
 bool AdblockPlus::JsValue::IsUndefined() const
@@ -192,7 +192,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(
   const JsEngine::Context context(jsEngine);
 
   if (!thisPtr)
-    thisPtr = JsValuePtr(new JsValue(jsEngine, jsEngine.context->Global()));
+    thisPtr = JsValuePtr(new JsValue(jsEngine, jsEngine->context->Global()));
   if (!thisPtr->IsObject())
     throw new std::runtime_error("`this` pointer has to be an object");
   v8::Persistent<v8::Object> thisObj = v8::Persistent<v8::Object>::Cast(thisPtr->value);

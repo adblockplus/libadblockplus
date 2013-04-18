@@ -2,6 +2,7 @@
 #define ADBLOCK_PLUS_GLOBAL_JS_OBJECT_H
 
 #include <v8.h>
+#include <AdblockPlus/JsEngine.h>
 
 namespace AdblockPlus
 {
@@ -10,7 +11,7 @@ namespace AdblockPlus
 
   namespace GlobalJsObject
   {
-    JsValuePtr Setup(JsEngine& jsEngine, const AppInfo& appInfo, JsValuePtr obj);
+    JsValuePtr Setup(JsEnginePtr jsEngine, const AppInfo& appInfo, JsValuePtr obj);
   }
 }
 

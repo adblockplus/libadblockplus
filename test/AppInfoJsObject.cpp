@@ -8,9 +8,9 @@ TEST(AppInfoJsObjectTest, AllProperties)
   appInfo.version = "2";
   appInfo.name = "4";
   appInfo.platform = "5";
-  AdblockPlus::JsEngine jsEngine(appInfo);
-  ASSERT_EQ("1", jsEngine.Evaluate("_appInfo.id")->AsString());
-  ASSERT_EQ("2", jsEngine.Evaluate("_appInfo.version")->AsString());
-  ASSERT_EQ("4", jsEngine.Evaluate("_appInfo.name")->AsString());
-  ASSERT_EQ("5", jsEngine.Evaluate("_appInfo.platform")->AsString());
+  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
+  ASSERT_EQ("1", jsEngine->Evaluate("_appInfo.id")->AsString());
+  ASSERT_EQ("2", jsEngine->Evaluate("_appInfo.version")->AsString());
+  ASSERT_EQ("4", jsEngine->Evaluate("_appInfo.name")->AsString());
+  ASSERT_EQ("5", jsEngine->Evaluate("_appInfo.platform")->AsString());
 }

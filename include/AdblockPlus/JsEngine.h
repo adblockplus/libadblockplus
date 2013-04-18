@@ -21,14 +21,15 @@ namespace AdblockPlus
             const v8::Handle<v8::Message> message);
   };
 
+  class JsEngine;
   typedef std::tr1::shared_ptr<JsEngine> JsEnginePtr;
 
-  class JsEngine
+  class JsEngine : public std::tr1::enable_shared_from_this<JsEngine>
   {
     friend class JsValue;
 
   public:
-    JsEngine(const AppInfo& appInfo = AppInfo());
+    static JsEnginePtr New(const AppInfo& appInfo = AppInfo());
     JsValuePtr Evaluate(const std::string& source,
         const std::string& filename = "");
     void Load(const std::string& scriptPath);
@@ -46,7 +47,7 @@ namespace AdblockPlus
     }
     JsValuePtr NewObject();
     JsValuePtr NewCallback(v8::InvocationCallback callback);
-    static JsEngine& FromArguments(const v8::Arguments& arguments);
+    static JsEnginePtr FromArguments(const v8::Arguments& arguments);
     JsValueList ConvertArguments(const v8::Arguments& arguments);
 
     FileSystemPtr GetFileSystem();
@@ -59,7 +60,7 @@ namespace AdblockPlus
     class Context
     {
     public:
-      Context(const JsEngine& jsEngine);
+      Context(const JsEnginePtr jsEngine);
       virtual inline ~Context() {};
 
     private:
@@ -69,6 +70,8 @@ namespace AdblockPlus
     };
 
   private:
+    JsEngine();
+
     FileSystemPtr fileSystem;
     WebRequestPtr webRequest;
     ErrorCallbackPtr errorCallback;

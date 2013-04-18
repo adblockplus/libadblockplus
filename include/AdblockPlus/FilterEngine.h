@@ -4,13 +4,13 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
 
 #include "tr1_memory.h"
 
 namespace AdblockPlus
 {
-  class JsEngine;
   class FilterEngine;
 
 #if FILTER_ENGINE_STUBS
@@ -113,7 +113,7 @@ namespace AdblockPlus
 #endif
 
   public:
-    explicit FilterEngine(JsEngine& jsEngine);
+    explicit FilterEngine(JsEnginePtr jsEngine);
     FilterPtr GetFilter(const std::string& text);
     SubscriptionPtr GetSubscription(const std::string& url);
     const std::vector<FilterPtr> GetListedFilters() const;
@@ -125,7 +125,7 @@ namespace AdblockPlus
     std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
 
   private:
-    JsEngine& jsEngine;
+    JsEnginePtr jsEngine;
 #if FILTER_ENGINE_STUBS
     std::map<std::string, FilterPtr> knownFilters;
     std::vector<FilterPtr> listedFilters;

@@ -1,13 +1,13 @@
 #include "GcCommand.h"
 
-GcCommand::GcCommand(AdblockPlus::JsEngine& jsEngine)
+GcCommand::GcCommand(AdblockPlus::JsEnginePtr jsEngine)
   : Command("gc"), jsEngine(jsEngine)
 {
 }
 
 void GcCommand::operator()(const std::string& arguments)
 {
-  jsEngine.Gc();
+  jsEngine->Gc();
 }
 
 std::string GcCommand::GetDescription() const

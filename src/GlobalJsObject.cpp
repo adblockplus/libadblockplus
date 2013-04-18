@@ -1,7 +1,6 @@
 #include <vector>
 #include <stdexcept>
 
-#include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
 
 #include "AppInfoJsObject.h"
@@ -54,7 +53,7 @@ namespace
     {
       AdblockPlus::JsValueList converted =
           AdblockPlus::JsEngine::FromArguments(arguments)
-          .ConvertArguments(arguments);
+          ->ConvertArguments(arguments);
       timeoutThread = new TimeoutThread(converted);
     }
     catch (const std::exception& e)
@@ -70,17 +69,17 @@ namespace
   }
 }
 
-JsValuePtr GlobalJsObject::Setup(JsEngine& jsEngine, const AppInfo& appInfo,
+JsValuePtr GlobalJsObject::Setup(JsEnginePtr jsEngine, const AppInfo& appInfo,
     JsValuePtr obj)
 {
-  obj->SetProperty("setTimeout", jsEngine.NewCallback(::SetTimeoutCallback));
+  obj->SetProperty("setTimeout", jsEngine->NewCallback(::SetTimeoutCallback));
   obj->SetProperty("_fileSystem",
-      FileSystemJsObject::Setup(jsEngine, jsEngine.NewObject()));
+      FileSystemJsObject::Setup(jsEngine, jsEngine->NewObject()));
   obj->SetProperty("_webRequest",
-      WebRequestJsObject::Setup(jsEngine, jsEngine.NewObject()));
+      WebRequestJsObject::Setup(jsEngine, jsEngine->NewObject()));
   obj->SetProperty("console",
-      ConsoleJsObject::Setup(jsEngine, jsEngine.NewObject()));
+      ConsoleJsObject::Setup(jsEngine, jsEngine->NewObject()));
   obj->SetProperty("_appInfo",
-      AppInfoJsObject::Setup(jsEngine, appInfo, jsEngine.NewObject()));
+      AppInfoJsObject::Setup(jsEngine, appInfo, jsEngine->NewObject()));
   return obj;
 }
