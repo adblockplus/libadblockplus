@@ -69,40 +69,6 @@ Lock::~Lock()
   mutex.Unlock();
 }
 
-ConditionVariable::ConditionVariable()
-{
-#ifdef WIN32
-  InitializeConditionVariable(&nativeCondition);
-#else
-  pthread_cond_init(&nativeCondition, 0);
-#endif
-}
-
-ConditionVariable::~ConditionVariable()
-{
-#ifndef WIN32
-  pthread_cond_destroy(&nativeCondition);
-#endif
-}
-
-void ConditionVariable::Wait(Mutex& mutex)
-{
-#ifdef WIN32
-  SleepConditionVariableCS(&nativeCondition, &mutex.nativeMutex, INFINITE);
-#else
-  pthread_cond_wait(&nativeCondition, &mutex.nativeMutex);
-#endif
-}
-
-void ConditionVariable::Signal()
-{
-#ifdef WIN32
-  WakeConditionVariable(&nativeCondition);
-#else
-  pthread_cond_signal(&nativeCondition);
-#endif
-}
-
 Thread::~Thread()
 {
 }

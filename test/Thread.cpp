@@ -47,51 +47,6 @@ namespace
     std::vector<std::string>& log;
     AdblockPlus::Mutex& logMutex;
   };
-
-  class Enqueuer : public AdblockPlus::Thread
-  {
-  public:
-    Enqueuer(std::queue<int>& queue, AdblockPlus::Mutex& queueMutex,
-             AdblockPlus::ConditionVariable& notEmpty)
-      : queue(queue), queueMutex(queueMutex), notEmpty(notEmpty)
-    {
-    }
-
-    void Run()
-    {
-      AdblockPlus::Lock lock(queueMutex);
-      queue.push(1);
-      notEmpty.Signal();
-    }
-
-  private:
-    std::queue<int>& queue;
-    AdblockPlus::Mutex& queueMutex;
-    AdblockPlus::ConditionVariable& notEmpty;
-  };
-
-  class Dequeuer : public AdblockPlus::Thread
-  {
-  public:
-    Dequeuer(std::queue<int>& queue, AdblockPlus::Mutex& queueMutex,
-             AdblockPlus::ConditionVariable& notEmpty)
-      : queue(queue), queueMutex(queueMutex), notEmpty(notEmpty)
-    {
-    }
-
-    void Run()
-    {
-      AdblockPlus::Lock lock(queueMutex);
-      if (!queue.size())
-        notEmpty.Wait(queueMutex);
-      queue.pop();
-    }
-
-  private:
-    std::queue<int>& queue;
-    AdblockPlus::Mutex& queueMutex;
-    AdblockPlus::ConditionVariable& notEmpty;
-  };
 }
 
 TEST(ThreadTest, Run)
@@ -120,19 +75,4 @@ TEST(ThreadTest, Mutex)
   ASSERT_EQ("ended", log[1]);
   ASSERT_EQ("started", log[2]);
   ASSERT_EQ("ended", log[3]);
-}
-
-TEST(ThreadTest, ConditionVariable)
-{
-  std::queue<int> queue;
-  AdblockPlus::Mutex queueMutex;
-  AdblockPlus::ConditionVariable notEmpty;
-  Dequeuer dequeuer(queue, queueMutex, notEmpty);
-  Enqueuer enqueuer(queue, queueMutex, notEmpty);
-  dequeuer.Start();
-  AdblockPlus::Sleep(5);
-  enqueuer.Start();
-  enqueuer.Join();
-  dequeuer.Join();
-  ASSERT_EQ(0u, queue.size());
 }
