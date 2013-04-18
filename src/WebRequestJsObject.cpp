@@ -89,14 +89,9 @@ namespace
   }
 }
 
-v8::Handle<v8::ObjectTemplate> AdblockPlus::WebRequestJsObject::Create(
-  AdblockPlus::JsEngine& jsEngine)
+AdblockPlus::JsValuePtr AdblockPlus::WebRequestJsObject::Setup(
+    AdblockPlus::JsEngine& jsEngine, AdblockPlus::JsValuePtr obj)
 {
-  v8::HandleScope handleScope;
-  const v8::Handle<v8::ObjectTemplate> request = v8::ObjectTemplate::New();
-  const v8::Handle<v8::FunctionTemplate> getFunction =
-    v8::FunctionTemplate::New(::GETCallback,
-                              v8::External::New(&jsEngine));
-  request->Set(v8::String::New("GET"), getFunction);
-  return handleScope.Close(request);
+  obj->SetProperty("GET", jsEngine.NewCallback(::GETCallback));
+  return obj;
 }
