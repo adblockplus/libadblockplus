@@ -166,6 +166,44 @@
                 </p>
             </dd>        
             
+            <dt><tt>msvs_configuration_attributes</tt></dt>
+            <dd>
+                <p>
+                    Appears in <tt>msvs.py:_GetMSVSAttributes</tt>,
+                        where it provides defaults for project attributes,
+                        apparently even ones not on the list below.
+                    The function ensure that a few attributes are always present in its return value.
+                    <dl>
+                        <dt><tt>ConfigurationType</tt></dt>
+                        <dd><p>
+                            The function sets it to its argument <tt>config_type</tt>.
+                            It's not possible to override this with parameter <tt>msvs_configuration_attributes</tt>. 
+                        </p></dd>
+                        
+                        <dt><tt>InheritedPropertySheets</tt></dt>
+                        <dd><p>
+                            Sets this property from the list specified by parameter <tt>msvs_props</tt>, if present.
+                            If not present, it's uses whatever was already there, if anything.
+                        </p></dd>
+                        
+                        <dt><tt>IntermediateDirectory</tt></dt>
+                        <dd><p>
+                            Overrides the default, which is <tt>$(OutDir)obj\$(ProjectName)\</tt>.
+                            Who comes up with these defaults, anyway?
+                            <span style="font-size:xx-small">*cough*Chrome*cough*</span>
+                        </p></dd>
+                        
+                        <dt><tt>OutputDirectory</tt></dt>
+                        <dd><p>
+                            Overrides the default, which is <tt>'$(SolutionDir)$(ConfigurationName)</tt>.
+                        </p></dd>
+                    </dl>                      
+                    
+                </p><p>
+                    Also appears in <tt>msvs_emulation.py</tt>. 
+                </p> 
+            </dd>        
+            
             <dt><tt>msvs_configuration_platform</tt></dt>
             <dd>
                 <p>
@@ -231,10 +269,11 @@
             </dd>        
             
             <dt><tt>msvs_list_excluded_files</tt></dt>
-            <dd>
-                <p>
-                </p> 
-            </dd>        
+            <dd><p>
+                This one's a generator flag.
+                If true (which is the default) it adds all possible source files it finds to the project file, 
+                    but as "excluded from build".                
+            </p></dd>        
 
             <dt><tt>msvs_new</tt></dt>
             <dd>
@@ -372,6 +411,20 @@
             <dt><tt>pylib/gyp/MSVSVersion.py</tt></dt>
             <dd>
             </dd>
+            
+            <dt><tt>pylib/gyp/msvs_emulation.py</tt></dt>
+            <dd>
+                <p>
+                    Here's what the documentation at the top of this file says.
+                    I haven't looked any farther than this.
+                    <pre style="border: 1px solid"><code>
+  This module helps emulate Visual Studio 2008 behavior on top of other
+  build systems, primarily ninja.
+                    </code></pre>
+                    Sound like out of the frying pan and into fire, if you were to ask me.
+                </p>
+            </dd>
+
         </dl>
 
         <h4>Restrictions arising from the <tt>msvs</tt> generator</h4>
