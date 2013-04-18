@@ -217,7 +217,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(IntDir)\adblockplus.js.cc" />
+    <ClCompile Include="..\src\AppInfoJsObject.cpp" />
+    <ClCompile Include="..\src\DefaultErrorCallback.cpp" />
     <ClCompile Include="..\src\DefaultFileSystem.cpp" />
+    <ClCompile Include="..\src\DefaultWebRequestCurl.cpp" />
     <ClCompile Include="..\src\DefaultWebRequestDummy.cpp" />
     <ClCompile Include="..\src\FileSystemJsObject.cpp" />
     <ClCompile Include="..\src\FilterEngine.cpp" />
@@ -238,6 +241,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\AppInfoJsObject.h" />
     <ClInclude Include="..\src\ConsoleJsObject.h" />
     <ClInclude Include="..\src\FileSystemJsObject.h" />
     <ClInclude Include="..\src\GlobalJsObject.h" />

@@ -32,8 +32,17 @@
     <ClCompile Include="..\test\WebRequest.cpp">
       <Filter>..\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\test\DefaultFileSystem.cpp" />
-    <ClCompile Include="..\test\FileSystemJsObject.cpp" />
-    <ClCompile Include="..\test\JsValue.cpp" />
+    <ClCompile Include="..\test\AppInfoJsObject.cpp">
+      <Filter>..\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\DefaultFileSystem.cpp">
+      <Filter>..\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\FileSystemJsObject.cpp">
+      <Filter>..\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test\JsValue.cpp">
+      <Filter>..\test</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

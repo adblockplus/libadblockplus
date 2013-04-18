@@ -1,4 +1,4 @@
-#include <AdblockPlus/WebRequest.h>
+#include <AdblockPlus/DefaultWebRequest.h>
 
 AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
     const std::string& url, const HeaderList& requestHeaders) const
