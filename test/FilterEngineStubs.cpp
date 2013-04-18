@@ -135,8 +135,7 @@ TEST(FilterEngineStubsTest, SubscriptionUpdates)
   AdblockPlus::SubscriptionPtr subscription = filterEngine.GetSubscription("foo");
   ASSERT_FALSE(subscription->IsUpdating());
 
-  //TODO: This currently crashes due to errors reported on a different thread
-  //subscription->UpdateFilters();
+  subscription->UpdateFilters();
 }
 
 TEST(FilterEngineStubsTest, Matches)
