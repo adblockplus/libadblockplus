@@ -32,7 +32,6 @@ namespace AdblockPlus
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo());
     JsValuePtr Evaluate(const std::string& source,
         const std::string& filename = "");
-    void Load(const std::string& scriptPath);
     void Gc();
     JsValuePtr NewValue(const std::string& val);
     JsValuePtr NewValue(int64_t val);
