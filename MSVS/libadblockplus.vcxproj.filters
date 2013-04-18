@@ -123,9 +123,6 @@
     <ClCompile Include="..\src\DefaultErrorCallback.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\DefaultWebRequestCurl.cpp">
-      <Filter>..\src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\convert_js.py" />
