@@ -14,22 +14,24 @@ public:
 
 TEST(ConsoleJsObjectTest, ErrorInvokesErrorCallback)
 {
-  MockErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine;
+  MockErrorCallback* errorCallback = new MockErrorCallback();
+  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(errorCallback));
   jsEngine.Evaluate("console.error('foo')");
-  ASSERT_EQ("foo", errorCallback.lastMessage);
+  ASSERT_EQ("foo", errorCallback->lastMessage);
 }
 
 TEST(ConsoleJsObjectTest, ErrorWithMultipleArguments)
 {
-  MockErrorCallback errorCallback;
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, &errorCallback);
+  AdblockPlus::JsEngine jsEngine;
+  MockErrorCallback* errorCallback = new MockErrorCallback();
+  jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr(errorCallback));
   jsEngine.Evaluate("console.error('foo', 'bar')");
-  ASSERT_EQ("foobar", errorCallback.lastMessage);
+  ASSERT_EQ("foobar", errorCallback->lastMessage);
 }
 
 TEST(ConsoleJsObjectTest, TraceDoesNothing)
 {
-  AdblockPlus::JsEngine jsEngine(AdblockPlus::AppInfo(), 0, 0, 0);
+  AdblockPlus::JsEngine jsEngine;
   jsEngine.Evaluate("console.trace()");
 }

@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "tr1_memory.h"
+
 namespace AdblockPlus
 {
   typedef std::vector<std::pair<std::string, std::string> > HeaderList;
@@ -45,10 +47,7 @@ namespace AdblockPlus
     virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
   };
 
-  class DefaultWebRequest : public WebRequest
-  {
-    ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const;
-  };
+  typedef std::tr1::shared_ptr<WebRequest> WebRequestPtr;
 }
 
 #endif

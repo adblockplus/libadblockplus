@@ -25,7 +25,7 @@ namespace
 
   protected:
     JsEngine& jsEngine;
-    FileSystem& fileSystem;
+    FileSystemPtr fileSystem;
     JsValuePtr callback;
   };
 
@@ -44,7 +44,7 @@ namespace
       std::string error;
       try
       {
-        std::tr1::shared_ptr<std::istream> stream = fileSystem.Read(path);
+        std::tr1::shared_ptr<std::istream> stream = fileSystem->Read(path);
         content = Utils::Slurp(*stream);
       }
       catch (std::exception& e)
@@ -86,7 +86,7 @@ namespace
       {
         std::tr1::shared_ptr<std::ostream> stream(new std::stringstream);
         *stream << content;
-        fileSystem.Write(path, stream);
+        fileSystem->Write(path, stream);
       }
       catch (std::exception& e)
       {
@@ -124,7 +124,7 @@ namespace
       std::string error;
       try
       {
-        fileSystem.Move(fromPath, toPath);
+        fileSystem->Move(fromPath, toPath);
       }
       catch (std::exception& e)
       {
@@ -162,7 +162,7 @@ namespace
       std::string error;
       try
       {
-        fileSystem.Remove(path);
+        fileSystem->Remove(path);
       }
       catch (std::exception& e)
       {
@@ -200,7 +200,7 @@ namespace
       FileSystem::StatResult statResult;
       try
       {
-        statResult = fileSystem.Stat(path);
+        statResult = fileSystem->Stat(path);
       }
       catch (std::exception& e)
       {
