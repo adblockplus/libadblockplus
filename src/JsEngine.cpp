@@ -141,6 +141,9 @@ AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetFileSystem()
 
 void AdblockPlus::JsEngine::SetFileSystem(AdblockPlus::FileSystemPtr val)
 {
+  if (!val)
+    throw std::runtime_error("FileSystem cannot be null");
+
   fileSystem = val;
 }
 
@@ -153,6 +156,9 @@ AdblockPlus::WebRequestPtr AdblockPlus::JsEngine::GetWebRequest()
 
 void AdblockPlus::JsEngine::SetWebRequest(AdblockPlus::WebRequestPtr val)
 {
+  if (!val)
+    throw std::runtime_error("WebRequest cannot be null");
+
   webRequest = val;
 }
 
@@ -165,6 +171,9 @@ AdblockPlus::ErrorCallbackPtr AdblockPlus::JsEngine::GetErrorCallback()
 
 void AdblockPlus::JsEngine::SetErrorCallback(AdblockPlus::ErrorCallbackPtr val)
 {
+  if (!val)
+    throw std::runtime_error("ErrorCallback cannot be null");
+
   errorCallback = val;
 }
 
