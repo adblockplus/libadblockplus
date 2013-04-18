@@ -58,3 +58,18 @@ The shell is automatically built by `make`, you can run it as follows:
 ### Windows
 
 Just run the project *abpshell*.
+
+Restrictions on .gyp files
+--------------------------
+
+The `msvs` generator is broken; well not so much broken as twisted.
+Its behavior induces some restrictions on the way we're able to use `gyp`.
+For the full story, see the extended `gyp` documentation.
+
+* All our own command line tools have to have arguments that 
+    either (a) begin with a hyphen or slash, 
+    or (b) are path names. Sounds bizarre? I'm with you.
+* We can't support spaces in path or file names. 
+    Strictly speaking, that's only for some path names in certain situations. 
+    But please, make everyone's lives easier. 
+    Just don't do it.
