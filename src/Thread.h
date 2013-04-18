@@ -36,22 +36,6 @@ namespace AdblockPlus
     Mutex& mutex;
   };
 
-  class ConditionVariable
-  {
-  public:
-    ConditionVariable();
-    ~ConditionVariable();
-    void Wait(Mutex& mutex);
-    void Signal();
-
-  private:
-#ifdef WIN32
-    CONDITION_VARIABLE nativeCondition;
-#else
-    pthread_cond_t nativeCondition;
-#endif
-  };
-
   class Thread
   {
   public:
