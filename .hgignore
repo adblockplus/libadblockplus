@@ -1,2 +1,8 @@
 ^build
 .pyc$
+syntax: glob
+MSVS/Default
+MSVS/third_party/Default
+MSVS/libadblockplus.v11.suo
+MSVS/libadblockplus.sdf
+MSVS/libadblockplus.opensdf
