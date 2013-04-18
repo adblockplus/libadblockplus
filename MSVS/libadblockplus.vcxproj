@@ -220,7 +220,6 @@
     <ClCompile Include="..\src\AppInfoJsObject.cpp" />
     <ClCompile Include="..\src\DefaultErrorCallback.cpp" />
     <ClCompile Include="..\src\DefaultFileSystem.cpp" />
-    <ClCompile Include="..\src\DefaultWebRequestCurl.cpp" />
     <ClCompile Include="..\src\DefaultWebRequestDummy.cpp" />
     <ClCompile Include="..\src\FileSystemJsObject.cpp" />
     <ClCompile Include="..\src\FilterEngine.cpp" />
