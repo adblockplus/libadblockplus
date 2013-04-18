@@ -130,3 +130,26 @@ TEST(JsEngineTest, ValueCreation)
   ASSERT_TRUE(value->IsObject());
   ASSERT_EQ(0u, value->GetOwnPropertyNames().size());
 }
+
+TEST(JsEngineTest, CallbackGetSet)
+{
+  AdblockPlus::JsEngine jsEngine;
+
+  ASSERT_TRUE(jsEngine.GetErrorCallback());
+  ASSERT_ANY_THROW(jsEngine.SetErrorCallback(AdblockPlus::ErrorCallbackPtr()));
+  AdblockPlus::ErrorCallbackPtr errorCallback(new AdblockPlus::DefaultErrorCallback());
+  jsEngine.SetErrorCallback(errorCallback);
+  ASSERT_EQ(errorCallback, jsEngine.GetErrorCallback());
+
+  ASSERT_TRUE(jsEngine.GetFileSystem());
+  ASSERT_ANY_THROW(jsEngine.SetFileSystem(AdblockPlus::FileSystemPtr()));
+  AdblockPlus::FileSystemPtr fileSystem(new AdblockPlus::DefaultFileSystem());
+  jsEngine.SetFileSystem(fileSystem);
+  ASSERT_EQ(fileSystem, jsEngine.GetFileSystem());
+
+  ASSERT_TRUE(jsEngine.GetWebRequest());
+  ASSERT_ANY_THROW(jsEngine.SetWebRequest(AdblockPlus::WebRequestPtr()));
+  AdblockPlus::WebRequestPtr webRequest(new AdblockPlus::DefaultWebRequest());
+  jsEngine.SetWebRequest(webRequest);
+  ASSERT_EQ(webRequest, jsEngine.GetWebRequest());
+}
