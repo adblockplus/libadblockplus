@@ -13,11 +13,7 @@ namespace AdblockPlus
 {
   class FilterEngine;
 
-#if FILTER_ENGINE_STUBS
-  class JsObject
-#else
   class JsObject : public JsValue
-#endif
   {
   public:
     std::string GetProperty(const std::string& name, const std::string& defaultValue) const;
@@ -32,31 +28,8 @@ namespace AdblockPlus
       return GetProperty(name, static_cast<int64_t>(defaultValue));
     }
 
-#if FILTER_ENGINE_STUBS
-    void SetProperty(const std::string& name, const std::string& value);
-    void SetProperty(const std::string& name, int64_t value);
-    void SetProperty(const std::string& name, bool value);
-    inline void SetProperty(const std::string& name, const char* value)
-    {
-      SetProperty(name, std::string(value));
-    }
-    inline void SetProperty(const std::string& name, int value)
-    {
-      SetProperty(name, static_cast<int64_t>(value));
-    }
-#endif
-
   protected:
-#if FILTER_ENGINE_STUBS
-    JsObject(FilterEngine& filterEngine);
-
-    FilterEngine& filterEngine;
-    std::map<std::string, std::string> stringProperties;
-    std::map<std::string, int64_t> intProperties;
-    std::map<std::string, bool> boolProperties;
-#else
     JsObject(JsValuePtr value);
-#endif
   };
 
   class Filter : public JsObject,
@@ -72,13 +45,7 @@ namespace AdblockPlus
     void RemoveFromList();
     bool operator==(const Filter& filter) const;
 
-#if FILTER_ENGINE_STUBS
-  private:
-    friend class FilterEngine;
-    Filter(FilterEngine& filterEngine, const std::string& text);
-#else
     Filter(JsValuePtr value);
-#endif
   };
 
   class Subscription : public JsObject,
@@ -92,13 +59,7 @@ namespace AdblockPlus
     bool IsUpdating();
     bool operator==(const Subscription& subscription) const;
 
-#if FILTER_ENGINE_STUBS
-  private:
-    friend class FilterEngine;
-    Subscription(FilterEngine& filterEngine, const std::string& url);
-#else
     Subscription(JsValuePtr value);
-#endif
   };
 
   typedef std::tr1::shared_ptr<Filter> FilterPtr;
@@ -106,11 +67,6 @@ namespace AdblockPlus
 
   class FilterEngine
   {
-#if FILTER_ENGINE_STUBS
-    friend class Filter;
-    friend class Subscription;
-#endif
-
   public:
     explicit FilterEngine(JsEnginePtr jsEngine);
     FilterPtr GetFilter(const std::string& text);
@@ -125,12 +81,6 @@ namespace AdblockPlus
 
   private:
     JsEnginePtr jsEngine;
-#if FILTER_ENGINE_STUBS
-    std::map<std::string, FilterPtr> knownFilters;
-    std::vector<FilterPtr> listedFilters;
-    std::map<std::string, SubscriptionPtr> knownSubscriptions;
-    std::vector<SubscriptionPtr> listedSubscriptions;
-#endif
   };
 }
 
