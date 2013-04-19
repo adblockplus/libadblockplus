@@ -14,6 +14,7 @@ namespace AdblockPlus
     std::wstring ToUTF16String(const std::string& str, unsigned long length);
     std::string ToUTF8String(const std::wstring& str, unsigned long length);
     std::wstring CanonizeUrl(const std::wstring url);
+    std::wstring TrimString(std::wstring text);
 #endif
   }
 }
