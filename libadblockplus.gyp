@@ -73,6 +73,7 @@
           'adblockplus/lib/matcher.js',
           'adblockplus/lib/filterListener.js',
           'adblockplus/lib/synchronizer.js',
+          'adblockplus/chrome/content/ui/subscriptions.xml',
         ],
         'load_before_files': [
           'lib/compat.js'
