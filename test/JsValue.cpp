@@ -1,9 +1,14 @@
-#include <AdblockPlus.h>
-#include <gtest/gtest.h>
+#include "BaseJsTest.h"
 
-TEST(JsValueTest, UndefinedValue)
+namespace
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  class JsValueTest : public BaseJsTest
+  {
+  };
+}
+
+TEST_F(JsValueTest, UndefinedValue)
+{
   AdblockPlus::JsValuePtr value = jsEngine->Evaluate("undefined");
   ASSERT_TRUE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -23,9 +28,8 @@ TEST(JsValueTest, UndefinedValue)
   ASSERT_ANY_THROW(value->Call());
 }
 
-TEST(JsValueTest, NullValue)
+TEST_F(JsValueTest, NullValue)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   AdblockPlus::JsValuePtr value = jsEngine->Evaluate("null");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_TRUE(value->IsNull());
@@ -45,9 +49,8 @@ TEST(JsValueTest, NullValue)
   ASSERT_ANY_THROW(value->Call());
 }
 
-TEST(JsValueTest, StringValue)
+TEST_F(JsValueTest, StringValue)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   AdblockPlus::JsValuePtr value = jsEngine->Evaluate("'123'");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -68,9 +71,8 @@ TEST(JsValueTest, StringValue)
   ASSERT_ANY_THROW(value->Call());
 }
 
-TEST(JsValueTest, IntValue)
+TEST_F(JsValueTest, IntValue)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   AdblockPlus::JsValuePtr value = jsEngine->Evaluate("12345678901234");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -91,9 +93,8 @@ TEST(JsValueTest, IntValue)
   ASSERT_ANY_THROW(value->Call());
 }
 
-TEST(JsValueTest, BoolValue)
+TEST_F(JsValueTest, BoolValue)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   AdblockPlus::JsValuePtr value = jsEngine->Evaluate("true");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -113,9 +114,8 @@ TEST(JsValueTest, BoolValue)
   ASSERT_ANY_THROW(value->Call());
 }
 
-TEST(JsValueTest, ObjectValue)
+TEST_F(JsValueTest, ObjectValue)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   const std::string source("\
     function Foo() {\
       this.x = 2;\
@@ -146,9 +146,8 @@ TEST(JsValueTest, ObjectValue)
   ASSERT_ANY_THROW(value->Call());
 }
 
-TEST(JsValueTest, ArrayValue)
+TEST_F(JsValueTest, ArrayValue)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   AdblockPlus::JsValuePtr value = jsEngine->Evaluate("[5,8,12]");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -167,9 +166,8 @@ TEST(JsValueTest, ArrayValue)
   ASSERT_ANY_THROW(value->Call());
 }
 
-TEST(JsValueTest, FunctionValue)
+TEST_F(JsValueTest, FunctionValue)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   AdblockPlus::JsValuePtr value = jsEngine->Evaluate("(function(foo, bar) {return this.x + '/' + foo + '/' + bar;})");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
@@ -190,9 +188,8 @@ TEST(JsValueTest, FunctionValue)
   ASSERT_EQ("2/5/xyz", value->Call(params, thisPtr)->AsString());
 }
 
-TEST(JsValueTest, ThrowingCoversion)
+TEST_F(JsValueTest, ThrowingCoversion)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   const std::string source("\
     function Foo() {\
       this.toString = function() {throw 'test1';};\

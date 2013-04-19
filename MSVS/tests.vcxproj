@@ -67,7 +67,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\third_party\googletest;..\third_party\googletest\include;..\include;..\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;_VARIADIC_MAX=10;FILTER_ENGINE_STUBS=0;_WIN32;_DEBUG;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;_VARIADIC_MAX=10;_WIN32;_DEBUG;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <CompileAsWinRT>
       </CompileAsWinRT>
@@ -213,6 +213,9 @@
       <Project>{49135473-EB63-9B96-1382-20C889488A21}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\test\BaseJsTest.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

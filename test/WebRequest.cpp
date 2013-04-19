@@ -4,27 +4,32 @@
 
 #include "../src/Thread.h"
 
-class TestWebRequest : public AdblockPlus::WebRequest
+// TODO: Use a fixture here
+
+namespace
 {
-public:
-  AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
+  class TestWebRequest : public AdblockPlus::WebRequest
   {
-    AdblockPlus::Sleep(50);
+  public:
+    AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
+    {
+      AdblockPlus::Sleep(50);
 
-    AdblockPlus::ServerResponse result;
-    result.status = NS_OK;
-    result.responseStatus = 123;
-    result.responseHeaders.push_back(std::pair<std::string, std::string>("Foo", "Bar"));
-    result.responseText = url + "\n" + requestHeaders[0].first + "\n" + requestHeaders[0].second;
-    return result;
+      AdblockPlus::ServerResponse result;
+      result.status = NS_OK;
+      result.responseStatus = 123;
+      result.responseHeaders.push_back(std::pair<std::string, std::string>("Foo", "Bar"));
+      result.responseText = url + "\n" + requestHeaders[0].first + "\n" + requestHeaders[0].second;
+      return result;
+    }
+  };
+
+  std::string ToString(unsigned int i)
+  {
+    std::stringstream stream;
+    stream << i;
+    return stream.str();
   }
-};
-
-std::string ToString(unsigned int i)
-{
-  std::stringstream stream;
-  stream << i;
-  return stream.str();
 }
 
 TEST(WebRequestTest, BadCall)
@@ -109,7 +114,6 @@ TEST(WebRequestTest, DummyWebRequest)
   ASSERT_EQ("{}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
 }
 
-#if !FILTER_ENGINE_STUBS
 TEST(WebRequestTest, XMLHttpRequest)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
@@ -133,6 +137,5 @@ TEST(WebRequestTest, XMLHttpRequest)
   ASSERT_EQ("error", jsEngine->Evaluate("result")->AsString());
   ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Content-Type')")->IsNull());
 }
-#endif
 
 #endif

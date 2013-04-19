@@ -1,43 +1,32 @@
-#include <AdblockPlus.h>
-#include <gtest/gtest.h>
+#include "BaseJsTest.h"
 
-class ThrowingErrorCallback : public AdblockPlus::ErrorCallback
+namespace
 {
-public:
-  void operator()(const std::string& message)
+  class JsEngineTest : public BaseJsTest
   {
-    throw std::runtime_error("Unexpected error: " + message);
-  }
-};
+  };
+}
 
-TEST(JsEngineTest, Evaluate)
+TEST_F(JsEngineTest, Evaluate)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   jsEngine->Evaluate("function hello() { return 'Hello'; }");
   AdblockPlus::JsValuePtr result = jsEngine->Evaluate("hello()");
   ASSERT_TRUE(result->IsString());
   ASSERT_EQ("Hello", result->AsString());
 }
 
-TEST(JsEngineTest, RuntimeExceptionIsThrown)
+TEST_F(JsEngineTest, RuntimeExceptionIsThrown)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   ASSERT_THROW(jsEngine->Evaluate("doesnotexist()"), AdblockPlus::JsError);
 }
 
-TEST(JsEngineTest, CompileTimeExceptionIsThrown)
+TEST_F(JsEngineTest, CompileTimeExceptionIsThrown)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   ASSERT_THROW(jsEngine->Evaluate("'foo'bar'"), AdblockPlus::JsError);
 }
 
-TEST(JsEngineTest, ValueCreation)
+TEST_F(JsEngineTest, ValueCreation)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback()));
   AdblockPlus::JsValuePtr value;
 
   value = jsEngine->NewValue("foo");
@@ -57,7 +46,7 @@ TEST(JsEngineTest, ValueCreation)
   ASSERT_EQ(0u, value->GetOwnPropertyNames().size());
 }
 
-TEST(JsEngineTest, CallbackGetSet)
+TEST(NewJsEngineTest, CallbackGetSet)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
 
