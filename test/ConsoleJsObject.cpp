@@ -1,37 +1,48 @@
-#include <AdblockPlus.h>
-#include <gtest/gtest.h>
+#include "BaseJsTest.h"
 
-class MockErrorCallback : public AdblockPlus::ErrorCallback
+namespace
 {
-public:
-  std::string lastMessage;
-
-  void operator()(const std::string& message)
+  class MockErrorCallback : public AdblockPlus::ErrorCallback
   {
-    lastMessage = message;
-  }
-};
+  public:
+    std::string lastMessage;
 
-TEST(ConsoleJsObjectTest, ErrorInvokesErrorCallback)
+    void operator()(const std::string& message)
+    {
+      lastMessage = message;
+    }
+  };
+
+  typedef std::shared_ptr<MockErrorCallback> MockErrorCallbackPtr;
+
+  class ConsoleJsObjectTest : public BaseJsTest
+  {
+  protected:
+    MockErrorCallbackPtr mockErrorCallback;
+
+    void SetUp()
+    {
+      BaseJsTest::SetUp();
+      mockErrorCallback = MockErrorCallbackPtr(new MockErrorCallback);
+      jsEngine->SetErrorCallback(mockErrorCallback);
+    }
+  };
+}
+
+TEST_F(ConsoleJsObjectTest, ErrorInvokesErrorCallback)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  MockErrorCallback* errorCallback = new MockErrorCallback();
-  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(errorCallback));
   jsEngine->Evaluate("console.error('foo')");
-  ASSERT_EQ("foo", errorCallback->lastMessage);
+  ASSERT_EQ("foo", mockErrorCallback->lastMessage);
 }
 
-TEST(ConsoleJsObjectTest, ErrorWithMultipleArguments)
+TEST_F(ConsoleJsObjectTest, ErrorWithMultipleArguments)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  MockErrorCallback* errorCallback = new MockErrorCallback();
-  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(errorCallback));
   jsEngine->Evaluate("console.error('foo', 'bar')");
-  ASSERT_EQ("foobar", errorCallback->lastMessage);
+  ASSERT_EQ("foobar", mockErrorCallback->lastMessage);
 }
 
-TEST(ConsoleJsObjectTest, TraceDoesNothing)
+TEST_F(ConsoleJsObjectTest, TraceDoesNothing)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback));
   jsEngine->Evaluate("console.trace()");
 }

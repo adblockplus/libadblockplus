@@ -45,4 +45,9 @@
       <Filter>..\test</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\test\BaseJsTest.h">
+      <Filter>..\test</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

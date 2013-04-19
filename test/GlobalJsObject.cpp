@@ -1,36 +1,37 @@
-#include <AdblockPlus.h>
-#include <gtest/gtest.h>
-
+#include "BaseJsTest.h"
 #include "../src/Thread.h"
 
-TEST(GlobalJsObjectTest, SetTimeout)
+namespace
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  class GlobalJsObjectTest : public BaseJsTest
+  {
+  };
+}
+
+TEST_F(GlobalJsObjectTest, SetTimeout)
+{
   jsEngine->Evaluate("setTimeout(function() {foo = 'bar';}, 100)");
   ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
   AdblockPlus::Sleep(200);
   ASSERT_EQ("bar", jsEngine->Evaluate("this.foo")->AsString());
 }
 
-TEST(GlobalJsObjectTest, SetTimeoutWithArgs)
+TEST_F(GlobalJsObjectTest, SetTimeoutWithArgs)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->Evaluate("setTimeout(function(s) {foo = s;}, 100, 'foobar')");
   ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
   AdblockPlus::Sleep(200);
   ASSERT_EQ("foobar", jsEngine->Evaluate("this.foo")->AsString());
 }
 
-TEST(GlobalJsObjectTest, SetTimeoutWithInvalidArgs)
+TEST_F(GlobalJsObjectTest, SetTimeoutWithInvalidArgs)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   ASSERT_ANY_THROW(jsEngine->Evaluate("setTimeout()"));
   ASSERT_ANY_THROW(jsEngine->Evaluate("setTimeout('', 1)"));
 }
 
-TEST(GlobalJsObjectTest, SetMultipleTimeouts)
+TEST_F(GlobalJsObjectTest, SetMultipleTimeouts)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->Evaluate("foo = []");
   jsEngine->Evaluate("setTimeout(function(s) {foo.push('1');}, 100)");
   jsEngine->Evaluate("setTimeout(function(s) {foo.push('2');}, 150)");
