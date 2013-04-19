@@ -146,5 +146,8 @@
     <ClInclude Include="..\src\AppInfoJsObject.h">
       <Filter>..\src</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\WinInetErrorCodes.h">
+      <Filter>..\src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
