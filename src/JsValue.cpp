@@ -157,7 +157,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::strin
 void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)
 {
   const JsEngine::Context context(jsEngine);
-  SetProperty(name, v8::Integer::New(val));
+  SetProperty(name, v8::Number::New(val));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, JsValuePtr val)
