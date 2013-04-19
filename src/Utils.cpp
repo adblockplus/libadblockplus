@@ -5,6 +5,11 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <Shlwapi.h>
+
+#include <algorithm>
+#include <cctype>
+#include <functional>
+
 #endif
 
 using namespace AdblockPlus;
@@ -40,7 +45,7 @@ std::wstring Utils::ToUTF16String(const std::string& str, unsigned long length)
   utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
   if (utf16StringLength > 0)
   {
-    utf16String.resize(utf16StringLength);
+    utf16String.resize(utf16StringLength + 1);
     utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
     utf16String[utf16StringLength] = L'\0';  
     return utf16String;
@@ -61,7 +66,7 @@ std::string Utils::ToUTF8String(const std::wstring& str, unsigned long length)
   utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
   if (utf8StringLength > 0)
   {
-    utf8String.resize(utf8StringLength);
+    utf8String.resize(utf8StringLength + 1);
     utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
     utf8String[utf8StringLength] = L'\0';  
 
@@ -83,7 +88,7 @@ std::wstring Utils::CanonizeUrl(std::wstring url)
   if (FAILED(hr))
   {
     // The URL was too long. Let's try again with an increased buffer
-    canonizedUrl.resize(canonizedUrlLength);
+    canonizedUrl.resize(canonizedUrlLength + 1);
     hr = UrlCanonicalize(url.c_str(), &canonizedUrl[0], &canonizedUrlLength, 0);
     if (FAILED(hr))
     {
@@ -93,4 +98,14 @@ std::wstring Utils::CanonizeUrl(std::wstring url)
   return canonizedUrl;
 
 }
+
+std::wstring Utils::TrimString(std::wstring text)
+{
+  // Via http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+  std::wstring trimmed(text);
+  trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+  trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), trimmed.end());
+  return trimmed;
+}
+
 #endif

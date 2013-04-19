@@ -1,4 +1,4 @@
-#include "AdblockPlus\WebRequest.h"
+#include "AdblockPlus/DefaultWebRequest.h"
 #include <algorithm>
 #include <Windows.h>
 #include <winhttp.h>
@@ -6,6 +6,36 @@
 
 #include "Utils.h"
 
+
+class WinHttpHandle
+{
+public:
+  HINTERNET handle;
+  WinHttpHandle() : handle(0) {}
+  WinHttpHandle(HINTERNET handle) : handle(handle) {}
+
+  ~WinHttpHandle()
+  {
+    if (handle) WinHttpCloseHandle(handle);
+    handle = 0;
+  }
+  // Overloaded HINTERNET cast
+  operator HINTERNET() { return handle; }
+
+};
+
+
+long WindowsErrorToNS_ERROR(DWORD err)
+{
+  // TODO: Add some more error code translations for easier debugging
+  switch (err)
+  {
+  case 6:
+    return AdblockPlus::DefaultWebRequest::NS_ERROR_NOT_INITIALIZED;
+  default:
+    return AdblockPlus::DefaultWebRequest::NS_CUSTOM_ERROR_BASE + err;
+  }
+}
 
 BOOL GetProxySettings(std::wstring& proxyName, std::wstring& proxyBypass)
 {
@@ -49,6 +79,72 @@ BOOL GetProxySettings(std::wstring& proxyName, std::wstring& proxyBypass)
   return bResult;
 }
 
+void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* result)
+{
+  if (result == 0)
+  {
+    throw std::runtime_error("ParseResponseHeaders - second parameter is 0");
+  }
+
+  if (!hRequest)
+  {
+    throw std::runtime_error("ParseResponseHeaders - request is 0");
+    return;
+  }
+  // Parse the response headers
+  BOOL res = 0;
+  DWORD bufLen = 0;
+  WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_RAW_HEADERS, WINHTTP_HEADER_NAME_BY_INDEX, WINHTTP_NO_OUTPUT_BUFFER, &bufLen, WINHTTP_NO_HEADER_INDEX);
+  std::wstring responseHeaders;
+  responseHeaders.resize(bufLen);
+  res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_RAW_HEADERS, WINHTTP_HEADER_NAME_BY_INDEX, &responseHeaders[0], &bufLen, WINHTTP_NO_HEADER_INDEX);
+  if (res)
+  {
+    // Iterate through each header. Separator is '\0'
+    int nextHeaderNameStart = 0;
+    int headerNameEnd = 0;
+    int headerValueStart = 0;
+    int prevHeaderStart = 0;
+    while ((nextHeaderNameStart = responseHeaders.find(L'\0', nextHeaderNameStart)) != std::wstring::npos)
+    {
+      headerNameEnd = responseHeaders.find(L":", prevHeaderStart);
+      headerValueStart = headerNameEnd + strlen(":");
+      if ((headerNameEnd > nextHeaderNameStart) || (headerNameEnd == std::wstring::npos))
+      {
+        nextHeaderNameStart++;
+        prevHeaderStart = nextHeaderNameStart;
+        continue;
+      }
+      std::wstring headerNameW = responseHeaders.substr(prevHeaderStart, headerNameEnd - prevHeaderStart);
+      std::wstring headerValueW = responseHeaders.substr(headerValueStart, nextHeaderNameStart - headerValueStart);
+
+      headerNameW = AdblockPlus::Utils::TrimString(headerNameW);
+      headerValueW = AdblockPlus::Utils::TrimString(headerValueW);
+      
+      std::string headerName = AdblockPlus::Utils::ToUTF8String(headerNameW.c_str(), headerNameW.length());
+      std::string headerValue = AdblockPlus::Utils::ToUTF8String(headerValueW.c_str(), headerValueW.length());
+
+      std::transform(headerName.begin(), headerName.end(), headerName.begin(), ::tolower);
+      std::transform(headerValue.begin(), headerValue.end(), headerValue.begin(), ::tolower);
+
+      result->responseHeaders.push_back(
+        std::pair<std::string, std::string>(headerName, headerValue));
+
+      nextHeaderNameStart++;
+      prevHeaderStart = nextHeaderNameStart;
+    }
+  }
+
+  // Get the response status code
+  std::wstring statusStr;
+  DWORD statusLen = 0;
+  res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, &statusStr[0], &statusLen, WINHTTP_NO_HEADER_INDEX);
+  statusStr.resize(statusLen / 2);
+  res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, &statusStr[0], &statusLen, WINHTTP_NO_HEADER_INDEX);
+  result->responseStatus = wcstol(statusStr.c_str(), 0, 10);
+  result->status = AdblockPlus::DefaultWebRequest::NS_OK;
+
+}
 
 AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   const std::string& url, const HeaderList& requestHeaders) const
@@ -72,7 +168,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
 
   LPSTR outBuffer;
   DWORD downloadSize, downloaded;
-  HINTERNET  hSession = 0, hConnect = 0, hRequest = 0;
+  WinHttpHandle hSession(0), hConnect(0), hRequest(0);
 
   // Use WinHttpOpen to obtain a session handle.
   std::wstring proxyName, proxyBypass;
@@ -80,13 +176,13 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   GetProxySettings(proxyName, proxyBypass);
   if (proxyName.empty())
   {
-    hSession = WinHttpOpen(L"Adblock Plus", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+    hSession.handle = WinHttpOpen(L"Adblock Plus", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+    int ff = 0;
   }
   else
   {
-    hSession = WinHttpOpen(L"Adblock Plus", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, proxyName.c_str(), proxyBypass.c_str(), 0);
+    hSession.handle = WinHttpOpen(L"Adblock Plus", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, proxyName.c_str(), proxyBypass.c_str(), 0);
   }
-  // Specify an HTTP server.
   if (!hSession)
   {
     result.status = NS_CUSTOM_ERROR_BASE;
@@ -113,19 +209,18 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   bool isSecure = urlComponents.nScheme == INTERNET_SCHEME_HTTPS;
   if (isSecure)
   {
-    hConnect = WinHttpConnect(hSession, hostName.c_str(), urlComponents.nPort, 0);
+    hConnect.handle = WinHttpConnect(hSession, hostName.c_str(), urlComponents.nPort, 0);
   }
   else
   {
-    hConnect = WinHttpConnect(hSession, hostName.c_str(), urlComponents.nPort, 0);
+    hConnect.handle = WinHttpConnect(hSession, hostName.c_str(), urlComponents.nPort, 0);
   }
-  DWORD err = GetLastError();
+
 
   // Create an HTTP request handle.
   if (!hConnect)
   {
-    if (hSession) WinHttpCloseHandle(hSession);
-    result.status = NS_ERROR_UNKNOWN_HOST;
+    result.status = WindowsErrorToNS_ERROR(GetLastError());
     return result;
   }
   DWORD flags = 0;
@@ -133,14 +228,12 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   {
     flags = WINHTTP_FLAG_SECURE;
   }
-  hRequest = WinHttpOpenRequest(hConnect, L"GET", urlComponents.lpszUrlPath, 0, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
+  hRequest.handle = WinHttpOpenRequest(hConnect, L"GET", urlComponents.lpszUrlPath, 0, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
 
   // Send a request.
   if (!hRequest)
   {
-    if (hConnect) WinHttpCloseHandle(hConnect);
-    if (hSession) WinHttpCloseHandle(hSession);
-    result.status = NS_ERROR_FAILURE;
+    result.status = WindowsErrorToNS_ERROR(GetLastError());
     return result;
   }
   // TODO: Make sure for HTTP 1.1 "Accept-Encoding: gzip, deflate" doesn't HAVE to be set here
@@ -154,109 +247,53 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   }
 
   // End the request.
-  if(res)
+  if (!res)
   {
-    res = WinHttpReceiveResponse(hRequest, 0);
-    if (!res)
-    {
-      if (hRequest) WinHttpCloseHandle(hRequest);
-      if (hConnect) WinHttpCloseHandle(hConnect);
-      if (hSession) WinHttpCloseHandle(hSession);
-      result.status = NS_ERROR_NO_CONTENT;
-      return result;
-    }
+    result.status = WindowsErrorToNS_ERROR(GetLastError());;
+    return result;
   }
 
-  // Parse the response headers
-  DWORD bufLen = 0;
-  WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_RAW_HEADERS, WINHTTP_HEADER_NAME_BY_INDEX, WINHTTP_NO_OUTPUT_BUFFER, &bufLen, WINHTTP_NO_HEADER_INDEX);
-  WCHAR* responseHeadersRaw = new WCHAR[bufLen];
-  res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_RAW_HEADERS, WINHTTP_HEADER_NAME_BY_INDEX, responseHeadersRaw, &bufLen, WINHTTP_NO_HEADER_INDEX);
-  if (res)
+  res = WinHttpReceiveResponse(hRequest, 0);
+  if (!res)
   {
-    std::wstring responseHeaders(responseHeadersRaw, bufLen);
-    // Iterate through each header. Separator is '\0'
-    int nextHeaderNameStart = 0;
-    int headerNameEnd = 0;
-    int headerValueStart = 0;
-    int prevHeaderStart = 0;
-    while ((nextHeaderNameStart = responseHeaders.find(L'\0', nextHeaderNameStart)) > 0)
-    {
-      headerNameEnd = responseHeaders.find(L": ", prevHeaderStart);
-      headerValueStart = headerNameEnd + strlen(": ");
-      if ((headerNameEnd > nextHeaderNameStart) || (headerNameEnd < 0))
-      {
-        nextHeaderNameStart ++;
-        prevHeaderStart = nextHeaderNameStart;
-        continue;
-      }
-      std::wstring headerNameW = responseHeaders.substr(prevHeaderStart, headerNameEnd - prevHeaderStart);
-      std::wstring headerValueW = responseHeaders.substr(headerValueStart, nextHeaderNameStart - headerValueStart);
-
-      std::string headerName = Utils::ToUTF8String(headerNameW.c_str(), headerNameW.length());
-      std::string headerValue = Utils::ToUTF8String(headerValueW.c_str(), headerValueW.length());
-
-      std::transform(headerName.begin(), headerName.end(), headerName.begin(), ::tolower);
-      std::transform(headerValue.begin(), headerValue.end(), headerValue.begin(), ::tolower);
-
-      result.responseHeaders.push_back(
-        std::pair<std::string, std::string>(headerName, headerValue));
-
-      nextHeaderNameStart ++;
-      prevHeaderStart = nextHeaderNameStart;
-    }
+    result.status = NS_ERROR_NO_CONTENT;
+    return result;
   }
-  delete [] responseHeadersRaw;
 
-  // Get the response status code
-  WCHAR statusStr[64];
-  DWORD statusLen = sizeof(statusStr);
-  res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, &statusStr, &statusLen, WINHTTP_NO_HEADER_INDEX);
-  result.responseStatus = wcstol(statusStr, 0, 10);
-  result.status = NS_OK;
+  ParseResponseHeaders(hRequest, &result);
 
   // Download the actual response
   // Keep checking for data until there is nothing left.
-  if(res)
+  do 
   {
-    do 
+    // Check for available data.
+    downloadSize = 0;
+    if( !WinHttpQueryDataAvailable(hRequest, &downloadSize))
     {
-      // Check for available data.
-      downloadSize = 0;
-      if( !WinHttpQueryDataAvailable(hRequest, &downloadSize))
-      {
-        result.responseStatus = NS_ERROR_FAILURE;
-        break;
-      }
-      // Allocate space for the buffer.
-      outBuffer = new char[downloadSize+1];
-      if (!outBuffer)
-      {
-        //Out of memory?
-        downloadSize=0;
-        res = FALSE;
-        break;
-      }
-      else
-      {
-        // Read the data.
-        ZeroMemory(outBuffer, downloadSize+1);
+      result.responseStatus = WindowsErrorToNS_ERROR(GetLastError());
+      break;
+    }
+    // Allocate space for the buffer.
+    outBuffer = new char[downloadSize+1];
+    if (!outBuffer)
+    {
+      //Out of memory?
+      downloadSize=0;
+      res = FALSE;
+      break;
+    }
+    else
+    {
+      // Read the data.
+      ZeroMemory(outBuffer, downloadSize+1);
 
-        if( WinHttpReadData(hRequest, (LPVOID)outBuffer, downloadSize, &downloaded))
-        {
-          result.responseText.append(outBuffer, downloaded);
-        }
-        // Free the memory allocated to the buffer.
-        delete [] outBuffer;
+      if( WinHttpReadData(hRequest, (LPVOID)outBuffer, downloadSize, &downloaded))
+      {
+        result.responseText.append(outBuffer, downloaded);
       }
-    } while (downloadSize > 0);
-  }
-  // Clean up
-  // Close any open handles.
-  if (hRequest) WinHttpCloseHandle(hRequest);
-  if (hConnect) WinHttpCloseHandle(hConnect);
-  if (hSession) WinHttpCloseHandle(hSession);
-
-
+      // Free the memory allocated to the buffer.
+      delete[] outBuffer;
+    }
+  } while (downloadSize > 0);
   return result;
 }
