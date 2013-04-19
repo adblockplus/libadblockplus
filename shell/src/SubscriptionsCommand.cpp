@@ -11,7 +11,14 @@ namespace
   {
     for (SubscriptionList::const_iterator it = subscriptions.begin();
          it != subscriptions.end(); it++)
-      std::cout << (*it)->GetProperty("title", "(no title)") << " - " << (*it)->GetProperty("url", "") << std::endl;
+    {
+      std::cout << (*it)->GetProperty("title", "(no title)") << " - " << (*it)->GetProperty("url", "");
+      if ((*it)->GetProperty("author", "") != "")
+        std::cout << " - " << (*it)->GetProperty("author", "");
+      if ((*it)->GetProperty("specialization", "") != "")
+        std::cout << " - " << (*it)->GetProperty("specialization", "");
+      std::cout << std::endl;
+    }
   }
 }
 
@@ -105,5 +112,5 @@ void SubscriptionsCommand::UpdateSubscriptions()
 
 void SubscriptionsCommand::FetchSubscriptions()
 {
-  filterEngine.FetchAvailableSubscriptions(&ShowSubscriptionList);
+  ShowSubscriptionList(filterEngine.FetchAvailableSubscriptions());
 }

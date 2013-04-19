@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import sys, os, codecs, re
+import sys, os, codecs, re, json
+import xml.dom.minidom as minidom
 baseDir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(baseDir, 'adblockplus', 'buildtools', 'jshydra'))
 from abp_rewrite import doRewrite
@@ -21,6 +22,31 @@ def printFilesVerbatim(outHandle, files):
     print >>outHandle, toCString(fileHandle.read()) + ','
     fileHandle.close()
 
+def convertXMLFile(outHandle, file):
+    fileHandle = codecs.open(file, 'rb', encoding='utf-8')
+    doc = minidom.parse(file)
+    fileHandle.close()
+
+    data = []
+    for node in doc.documentElement.childNodes:
+      if node.nodeType != node.ELEMENT_NODE:
+        continue
+      result = {'type': node.tagName}
+      for name, value in node.attributes.items():
+        result[name] = value
+      data.append(result)
+    fileNameString = toCString(os.path.basename(file))
+    print >>outHandle, fileNameString + ','
+    print >>outHandle, toCString('require.scopes[%s] = %s;' % (fileNameString, json.dumps(data))) + ','
+    fileHandle.close()
+
+def convertJsFile(outHandle, file):
+  if not os.path.isabs(file):
+    file = os.path.join(baseDir, file)
+  converted = doRewrite([file], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
+  print >>outHandle, toCString(os.path.basename(file)) + ','
+  print >>outHandle, toCString(converted) + ','
+
 def convert(verbatimBefore, convertFiles, verbatimAfter, outFile):
   outHandle = open(outFile, 'wb')
   print >>outHandle, 'const char* jsSources[] = {'
@@ -28,11 +54,10 @@ def convert(verbatimBefore, convertFiles, verbatimAfter, outFile):
   printFilesVerbatim(outHandle, verbatimBefore)
 
   for file in convertFiles:
-    if not os.path.isabs(file):
-      file = os.path.join(baseDir, file)
-    converted = doRewrite([file], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
-    print >>outHandle, toCString(os.path.basename(file)) + ','
-    print >>outHandle, toCString(converted) + ','
+    if file.endswith('.xml'):
+      convertXMLFile(outHandle, file)
+    else:
+      convertJsFile(outHandle, file)
 
   printFilesVerbatim(outHandle, verbatimAfter)
 

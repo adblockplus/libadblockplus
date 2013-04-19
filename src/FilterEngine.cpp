@@ -329,7 +329,7 @@ SubscriptionPtr FilterEngine::GetSubscription(const std::string& url)
 #endif
 }
 
-const std::vector<FilterPtr> FilterEngine::GetListedFilters() const
+std::vector<FilterPtr> FilterEngine::GetListedFilters() const
 {
 #if FILTER_ENGINE_STUBS
   return listedFilters;
@@ -343,7 +343,7 @@ const std::vector<FilterPtr> FilterEngine::GetListedFilters() const
 #endif
 }
 
-const std::vector<SubscriptionPtr> FilterEngine::GetListedSubscriptions() const
+std::vector<SubscriptionPtr> FilterEngine::GetListedSubscriptions() const
 {
 #if FILTER_ENGINE_STUBS
   return listedSubscriptions;
@@ -357,7 +357,7 @@ const std::vector<SubscriptionPtr> FilterEngine::GetListedSubscriptions() const
 #endif
 }
 
-void FilterEngine::FetchAvailableSubscriptions(SubscriptionsCallback callback)
+std::vector<SubscriptionPtr> FilterEngine::FetchAvailableSubscriptions() const
 {
 #if FILTER_ENGINE_STUBS
   std::vector<SubscriptionPtr> availableSubscriptions;
@@ -372,7 +372,12 @@ void FilterEngine::FetchAvailableSubscriptions(SubscriptionsCallback callback)
 
   callback(availableSubscriptions);
 #else
-  // TODO!
+  JsValuePtr func = jsEngine->Evaluate("API.getRecommendedSubscriptions");
+  JsValueList values = func->Call()->AsList();
+  std::vector<SubscriptionPtr> result;
+  for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
+    result.push_back(SubscriptionPtr(new Subscription(*it)));
+  return result;
 #endif
 }
 
