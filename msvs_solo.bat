@@ -19,6 +19,8 @@ exit /b 1
 cls
 @echo on
 
+rem There's no way to set generator flags within the .gyp file, so we have to set them here.
+set GYP_GENERATOR_FLAGS=msvs_list_excluded_files=0
 %PYTHON% third_party\gyp\gyp --help
 %PYTHON% third_party\gyp\gyp --depth=src -f msvs -I common.gypi --generator-output=build_solo -Dpython=%PYTHON% -Dtarget_arch=%ARCH% libadblockplus-solo.gyp
 echo Finished
