@@ -70,7 +70,6 @@ TEST(WebRequestTest, RealWebRequest)
   ASSERT_TRUE(jsEngine->Evaluate("foo.responseHeaders['location']")->IsUndefined());
 }
 
-#if !FILTER_ENGINE_STUBS
 TEST(WebRequestTest, XMLHttpRequest)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
@@ -95,8 +94,6 @@ TEST(WebRequestTest, XMLHttpRequest)
   ASSERT_EQ("text/plain", jsEngine->Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)")->AsString());
   ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Location')")->IsNull());
 }
-#endif
-
 #else
 TEST(WebRequestTest, DummyWebRequest)
 {
