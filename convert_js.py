@@ -27,10 +27,12 @@ def convert(verbatimBefore, convertFiles, verbatimAfter, outFile):
 
   printFilesVerbatim(outHandle, verbatimBefore)
 
-  convertFiles = map(lambda f: f if os.path.isabs(f) else os.path.join(baseDir, f), convertFiles)
-  converted = doRewrite(convertFiles, ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
-  print >>outHandle, toCString('adblockplus.js') + ','
-  print >>outHandle, toCString(converted) + ','
+  for file in convertFiles:
+    if not os.path.isabs(file):
+      file = os.path.join(baseDir, file)
+    converted = doRewrite([file], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
+    print >>outHandle, toCString(os.path.basename(file)) + ','
+    print >>outHandle, toCString(converted) + ','
 
   printFilesVerbatim(outHandle, verbatimAfter)
 
