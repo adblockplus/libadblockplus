@@ -1,7 +1,18 @@
 {
-  'variables': {
-    'have_curl': '<!(python check_curl.py)'
-  },
+  'conditions': [[
+    # We don't want to use curl on Windows, skip the check there
+    'OS=="win"',
+    {
+      'variables': {
+        'have_curl': 0
+      }
+    },
+    {
+      'variables': {
+        'have_curl': '<!(python check_curl.py)'
+      }
+    }
+  ]],
   'includes': ['third_party/v8/build/common.gypi',
                'shell/shell.gyp'],
   'targets': [{
