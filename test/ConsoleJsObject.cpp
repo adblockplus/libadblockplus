@@ -13,7 +13,7 @@ namespace
     }
   };
 
-  typedef std::shared_ptr<MockErrorCallback> MockErrorCallbackPtr;
+  typedef std::tr1::shared_ptr<MockErrorCallback> MockErrorCallbackPtr;
 
   class ConsoleJsObjectTest : public BaseJsTest
   {
