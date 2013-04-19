@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import sys, os, codecs, re, json
+import sys, os, codecs, re, json, argparse
 import xml.dom.minidom as minidom
 baseDir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(baseDir, 'adblockplus', 'buildtools', 'jshydra'))
@@ -63,18 +63,14 @@ def convert(verbatimBefore, convertFiles, verbatimAfter, outFile):
   print >>outHandle, '};'
 
 if __name__ == '__main__':
-  args = sys.argv[1:]
-  outFile = args.pop()
-
-  verbatimBefore = []
-  verbatimAfter = []
-  convertFiles = []
-  for fileName in args:
-    if fileName.startswith('before='):
-      verbatimBefore.append(fileName.replace('before=', ''))
-    elif fileName.startswith('after='):
-      verbatimAfter.append(fileName.replace('after=', ''))
-    else:
-      convertFiles.append(fileName)
-
-  convert(verbatimBefore, convertFiles, verbatimAfter, outFile)
+  parser = argparse.ArgumentParser(description='Convert JavaScript files')
+  parser.add_argument('--before', metavar='verbatim_file', nargs='+',
+      help='JavaScript file to include verbatim at the beginning')
+  parser.add_argument('--convert', metavar='file_to_convert', nargs='+',
+      help='JavaScript files to convert')
+  parser.add_argument('--after', metavar='verbatim_file', nargs='+',
+      help='JavaScript file to include verbatim at the end')
+  parser.add_argument('output_file',
+      help='output from the conversion')
+  args = parser.parse_args()
+  convert(args.before, args.convert, args.after, args.output_file)

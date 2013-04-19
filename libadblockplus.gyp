@@ -90,10 +90,10 @@
       'action': [
         'python',
         'convert_js.py',
-        'before=<@(load_before_files)',
-        '<@(library_files)',
-        'after=<@(load_after_files)',
         '<@(_outputs)',
+        '--before', '<@(load_before_files)',
+        '--convert', '<@(library_files)',
+        '--after', '<@(load_after_files)',
       ]
     }]
   },
