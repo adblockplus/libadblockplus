@@ -44,9 +44,9 @@ TEST(JsEngineTest, ValueCreation)
   ASSERT_TRUE(value->IsString());
   ASSERT_EQ("foo", value->AsString());
 
-  value = jsEngine->NewValue(12);
+  value = jsEngine->NewValue(12345678901234);
   ASSERT_TRUE(value->IsNumber());
-  ASSERT_EQ(12, value->AsInt());
+  ASSERT_EQ(12345678901234, value->AsInt());
 
   value = jsEngine->NewValue(true);
   ASSERT_TRUE(value->IsBool());

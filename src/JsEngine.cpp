@@ -91,7 +91,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(const std::string& val)
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(int64_t val)
 {
   const Context context(shared_from_this());
-  return JsValuePtr(new JsValue(shared_from_this(), v8::Integer::New(val)));
+  return JsValuePtr(new JsValue(shared_from_this(), v8::Number::New(val)));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(bool val)
