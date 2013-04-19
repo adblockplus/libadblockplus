@@ -176,7 +176,7 @@
     <ClCompile Include="..\test\AppInfoJsObject.cpp" />
     <ClCompile Include="..\test\DefaultFileSystem.cpp" />
     <ClCompile Include="..\test\FileSystemJsObject.cpp" />
-    <ClCompile Include="..\test\FilterEngineStubs.cpp" />
+    <ClCompile Include="..\test\FilterEngine.cpp" />
     <ClCompile Include="..\test\ConsoleJsObject.cpp" />
     <ClCompile Include="..\test\GlobalJsObject.cpp" />
     <ClCompile Include="..\test\JsValue.cpp" />

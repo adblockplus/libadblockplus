@@ -31,7 +31,7 @@ class DummyFileSystem : public AdblockPlus::FileSystem
   }
 };
 
-TEST(FilterEngineStubsTest, FilterCreation)
+TEST(FilterEngineTest, FilterCreation)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new DummyFileSystem()));
@@ -49,7 +49,7 @@ TEST(FilterEngineStubsTest, FilterCreation)
   ASSERT_EQ(*filter1, *filter5);
 }
 
-TEST(FilterEngineStubsTest, FilterProperties)
+TEST(FilterEngineTest, FilterProperties)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new DummyFileSystem()));
@@ -68,7 +68,7 @@ TEST(FilterEngineStubsTest, FilterProperties)
   ASSERT_TRUE(filter->GetProperty("boolFoo", false));
 }
 
-TEST(FilterEngineStubsTest, AddRemoveFilters)
+TEST(FilterEngineTest, AddRemoveFilters)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new DummyFileSystem()));
@@ -88,7 +88,7 @@ TEST(FilterEngineStubsTest, AddRemoveFilters)
   ASSERT_EQ(0u, filterEngine.GetListedFilters().size());
 }
 
-TEST(FilterEngineStubsTest, SubscriptionProperties)
+TEST(FilterEngineTest, SubscriptionProperties)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new DummyFileSystem()));
@@ -107,7 +107,7 @@ TEST(FilterEngineStubsTest, SubscriptionProperties)
   ASSERT_TRUE(subscription->GetProperty("boolFoo", false));
 }
 
-TEST(FilterEngineStubsTest, AddRemoveSubscriptions)
+TEST(FilterEngineTest, AddRemoveSubscriptions)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new DummyFileSystem()));
@@ -127,7 +127,7 @@ TEST(FilterEngineStubsTest, AddRemoveSubscriptions)
   ASSERT_EQ(0u, filterEngine.GetListedSubscriptions().size());
 }
 
-TEST(FilterEngineStubsTest, SubscriptionUpdates)
+TEST(FilterEngineTest, SubscriptionUpdates)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new DummyFileSystem()));
@@ -138,7 +138,7 @@ TEST(FilterEngineStubsTest, SubscriptionUpdates)
   subscription->UpdateFilters();
 }
 
-TEST(FilterEngineStubsTest, Matches)
+TEST(FilterEngineTest, Matches)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new DummyFileSystem()));
