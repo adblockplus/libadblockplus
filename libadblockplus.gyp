@@ -113,7 +113,7 @@
       'test/ConsoleJsObject.cpp',
       'test/DefaultFileSystem.cpp',
       'test/FileSystemJsObject.cpp',
-      'test/FilterEngineStubs.cpp',
+      'test/FilterEngine.cpp',
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
       'test/JsValue.cpp',
