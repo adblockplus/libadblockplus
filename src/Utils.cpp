@@ -45,9 +45,8 @@ std::wstring Utils::ToUTF16String(const std::string& str, unsigned long length)
   utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
   if (utf16StringLength > 0)
   {
-    utf16String.resize(utf16StringLength + 1);
+    utf16String.resize(utf16StringLength);
     utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
-    utf16String[utf16StringLength] = L'\0';  
     return utf16String;
   }
   std::runtime_error("ToUTF16String failed. Can't determine the length of the buffer needed\n");
@@ -66,10 +65,8 @@ std::string Utils::ToUTF8String(const std::wstring& str, unsigned long length)
   utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
   if (utf8StringLength > 0)
   {
-    utf8String.resize(utf8StringLength + 1);
+    utf8String.resize(utf8StringLength);
     utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
-    utf8String[utf8StringLength] = L'\0';  
-
     return utf8String;
   }
   std::runtime_error("ToUTF8String failed. Can't determine the length of the buffer needed\n");
