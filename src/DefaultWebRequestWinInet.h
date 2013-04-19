@@ -5,7 +5,7 @@
 
 namespace AdblockPlus
 {
-  class WebRequestWinInet : public WebRequest
+  class DefaultWebRequest : public WebRequest
   {
     ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const;
   };

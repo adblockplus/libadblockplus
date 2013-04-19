@@ -220,7 +220,7 @@
     <ClCompile Include="..\src\AppInfoJsObject.cpp" />
     <ClCompile Include="..\src\DefaultErrorCallback.cpp" />
     <ClCompile Include="..\src\DefaultFileSystem.cpp" />
-    <ClCompile Include="..\src\DefaultWebRequestDummy.cpp" />
+    <ClCompile Include="..\src\DefaultWebRequestWinInet.cpp" />
     <ClCompile Include="..\src\FileSystemJsObject.cpp" />
     <ClCompile Include="..\src\FilterEngine.cpp" />
     <ClCompile Include="..\src\GlobalJsObject.cpp" />
@@ -231,7 +231,6 @@
     <ClCompile Include="..\src\Thread.cpp" />
     <ClCompile Include="..\src\Utils.cpp" />
     <ClCompile Include="..\src\WebRequestJsObject.cpp" />
-    <ClCompile Include="..\src\WebRequestWinInet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="third_party\v8\tools\gyp\v8.vcxproj">
@@ -247,7 +246,6 @@
     <ClInclude Include="..\src\Thread.h" />
     <ClInclude Include="..\src\Utils.h" />
     <ClInclude Include="..\src\WebRequestJsObject.h" />
-    <ClInclude Include="..\src\WebRequestWinInet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
