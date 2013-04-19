@@ -39,7 +39,8 @@ int main()
   {
     AdblockPlus::AppInfo appInfo;
     appInfo.version = "1.0";
-    appInfo.name = "Adblock Plus Shell";
+    appInfo.name = "abpshell";
+    appInfo.platform = "standalone";
     AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
     AdblockPlus::FilterEngine filterEngine(jsEngine);
 
