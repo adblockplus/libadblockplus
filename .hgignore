@@ -8,3 +8,5 @@ MSVS/*.sdf
 MSVS/*.opensdf
 MSVS/*.vcxproj.user
 
+upload.py
+MSVS/patterns.ini
