@@ -99,12 +99,6 @@
     <ClCompile Include="..\src\WebRequestJsObject.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\DefaultWebRequestDummy.cpp">
-      <Filter>..\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\WebRequestWinInet.cpp">
-      <Filter>..\src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Utils.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
@@ -123,6 +117,9 @@
     <ClCompile Include="..\src\DefaultErrorCallback.cpp">
       <Filter>..\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\DefaultWebRequestWinInet.cpp">
+      <Filter>..\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\convert_js.py" />
@@ -138,9 +135,6 @@
       <Filter>..\src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Thread.h">
-      <Filter>..\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\WebRequestWinInet.h">
       <Filter>..\src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Utils.h">
