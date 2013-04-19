@@ -1,7 +1,10 @@
 {
   'variables': {
+    # We need python as a parameter to support Windows correctly. There are two 
+    # Windows versions of python commonly installed, one for cygwin and one not. 
+    # Rather than rely on whatever happens to be in the path (if anything), we 
+    # provide the option to explicitly specify an known executable.
     'python%': 'python',
-    'msvs_cygwin_shell': 0
   },
   'conditions': [
     [
@@ -9,6 +12,12 @@
         'OS=="win"',      
         { 'variables': { 'have_curl': 0 }},
         { 'variables' :{ 'have_curl': '<!(<(python) check_curl.py' }}
+    ],[
+        'OS=="win"', { 
+          'variables': {
+            'SHARED_INTERMEDIATE_DIR': 'build_solo/shared_intermediate',
+            'PRODUCT_DIR': 'build_solo' 
+        }}        
     ]
   ],
   'includes': ['third_party/v8/build/common.gypi'],
@@ -20,20 +29,15 @@
       'include',
       'third_party/v8/include'
     ],
-    'defines': ['FILTER_ENGINE_STUBS=1'],
-    'all_dependent_settings': {
-      'defines': ['FILTER_ENGINE_STUBS=1']
-    },
     'sources': [
       'src/ConsoleJsObject.cpp',
       'src/ErrorCallback.cpp',
-      'src/FileReader.cpp',
       'src/FilterEngine.cpp',
       'src/GlobalJsObject.cpp',
       'src/JsEngine.cpp',
       'src/Thread.cpp',
       'src/WebRequestJsObject.cpp',
-      '<(INTERMEDIATE_DIR)/adblockplus.js.cc'
+      '<(SHARED_INTERMEDIATE_DIR)/adblockplus.js.cpp'
     ],
     'direct_dependent_settings': {
       'include_dirs': ['include']
@@ -61,7 +65,7 @@
     'actions': [{
       'action_name': 'convert_js',
       'variables': {
-        'core_library_files': [
+        'library_files': [
           'lib/info.js',
           'lib/io.js',
           'lib/prefs.js',
@@ -76,25 +80,30 @@
           'adblockplus/lib/filterListener.js',
           'adblockplus/lib/synchronizer.js',
         ],
-        'additional_library_files': [
+        'load_before_files': [
           'lib/compat.js'
+        ],
+        'load_after_files': [
+          'lib/api.js'
         ],
       },
       'inputs': [
         'convert_js.py',
-        '<@(core_library_files)',
-        '<@(additional_library_files)',
+        '<@(library_files)',
+        '<@(load_before_files)',
+        '<@(load_after_files)',
       ],
       'outputs': [
-        '<(INTERMEDIATE_DIR)/adblockplus.js.cpp'
+        '<(SHARED_INTERMEDIATE_DIR)/adblockplus.js.cpp'
       ],
+      'msvs_quote_cmd': 0,
       'action': [
         '<(python)',
         'convert_js.py',
-        '<@(core_library_files)',
-        '--',
-        '<@(additional_library_files)',
         '<@(_outputs)',
+        '--before', '<@(load_before_files)',
+        '--convert', '<@(library_files)',
+        '--after', '<@(load_after_files)',
       ]
     }]
   },
@@ -107,7 +116,7 @@
     ],
     'sources': [
       'test/ConsoleJsObject.cpp',
-      'test/FilterEngineStubs.cpp',
+      'test/FilterEngine.cpp',
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
       'test/Thread.cpp',
