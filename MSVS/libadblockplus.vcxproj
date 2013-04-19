@@ -67,7 +67,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\include;..\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;FILTER_ENGINE_STUBS=1;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;FILTER_ENGINE_STUBS=0;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Lib>
