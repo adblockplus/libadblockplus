@@ -21,6 +21,37 @@
     ]
   ],
   'includes': ['third_party/v8/build/common.gypi'],
+  'target_defaults': {
+    'configurations': {
+      'Base': {
+        # 'abstract' is an undocumented attribute that suppresses generating
+        # the configuration in output files.
+        # See http://www.mail-archive.com/chromium-dev@googlegroups.com/msg10147.html
+        'abstract': 1,
+        # No need to put conditionals around generator-specific attributes.
+        # They're simply ignored if not used.
+        'msvs_configuration_attributes': {
+          'OutputDirectory': '<(PRODUCT_DIR)/$(ConfigurationName)',
+        },
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            # Definition for _VARIADIC_MAX is a workaround for VS 2012 defect.
+            # See http://code.google.com/p/googletest/issues/detail?id=412
+            'PreprocessorDefinitions': ['_VARIADIC_MAX=10'],
+          },
+          'VCLinkerTool': {
+            
+          },
+        }
+      },
+      'Debug': {
+        'inherit_from': ['Base'],
+      },
+      'Release': {
+        'inherit_from': ['Base'],
+      },
+    },
+  },
   'targets': [{
     'target_name': 'libadblockplus_solo',
     'type': '<(library)',
@@ -30,12 +61,18 @@
       'third_party/v8/include'
     ],
     'sources': [
+      'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
+      'src/DefaultErrorCallback.cpp',
+      'src/DefaultFileSystem.cpp',
       'src/ErrorCallback.cpp',
+      'src/FileSystemJsObject.cpp',
       'src/FilterEngine.cpp',
       'src/GlobalJsObject.cpp',
       'src/JsEngine.cpp',
+      'src/JsValue.cpp',
       'src/Thread.cpp',
+      'src/Utils.cpp',
       'src/WebRequestJsObject.cpp',
       '<(SHARED_INTERMEDIATE_DIR)/adblockplus.js.cpp'
     ],
@@ -79,6 +116,7 @@
           'adblockplus/lib/matcher.js',
           'adblockplus/lib/filterListener.js',
           'adblockplus/lib/synchronizer.js',
+          'adblockplus/chrome/content/ui/subscriptions.xml',
         ],
         'load_before_files': [
           'lib/compat.js'
@@ -110,15 +148,23 @@
   {
     'target_name': 'tests',
     'type': 'executable',
+    'include_dirs': [
+      'third_party/v8/include',
+      'third_party/googletest/include'
+    ],
     'dependencies': [
       'libadblockplus_solo',
       #'third_party/googletest.gyp:googletest_main',
     ],
     'sources': [
+      'test/AppInfoJsObject.cpp',
       'test/ConsoleJsObject.cpp',
+      'test/DefaultFileSystem.cpp',
+      'test/FileSystemJsObject.cpp',
       'test/FilterEngine.cpp',
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
+      'test/JsValue.cpp',
       'test/Thread.cpp',
       'test/WebRequest.cpp'
     ]
