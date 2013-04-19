@@ -66,7 +66,7 @@ TEST(WebRequestTest, RealWebRequest)
   jsEngine->Evaluate("_webRequest.GET('https://easylist.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   do
   {
-    AdblockPlus::Sleep(1000);
+    AdblockPlus::Sleep(200);
   } while (jsEngine->Evaluate("this.foo")->IsUndefined());
   ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)")->AsString());
   ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
