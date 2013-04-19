@@ -78,6 +78,6 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
   result.exists = true;
   result.isFile = S_ISREG(nativeStat.st_mode);
   result.isDirectory = S_ISDIR(nativeStat.st_mode);
-  result.lastModified = nativeStat.st_mtime;
+  result.lastModified = nativeStat.st_mtime * 1000;
   return result;
 }
