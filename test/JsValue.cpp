@@ -71,7 +71,7 @@ TEST(JsValueTest, StringValue)
 TEST(JsValueTest, IntValue)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  AdblockPlus::JsValuePtr value = jsEngine->Evaluate("123");
+  AdblockPlus::JsValuePtr value = jsEngine->Evaluate("12345678901234");
   ASSERT_FALSE(value->IsUndefined());
   ASSERT_FALSE(value->IsNull());
   ASSERT_FALSE(value->IsString());
@@ -80,8 +80,8 @@ TEST(JsValueTest, IntValue)
   ASSERT_FALSE(value->IsObject());
   ASSERT_FALSE(value->IsArray());
   ASSERT_FALSE(value->IsFunction());
-  ASSERT_EQ("123", value->AsString());
-  ASSERT_EQ(123, value->AsInt());
+  ASSERT_EQ("12345678901234", value->AsString());
+  ASSERT_EQ(12345678901234, value->AsInt());
   ASSERT_TRUE(value->AsBool());
   ASSERT_ANY_THROW(value->AsList());
   ASSERT_ANY_THROW(value->GetProperty("foo"));
