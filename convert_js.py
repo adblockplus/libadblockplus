@@ -41,9 +41,7 @@ def convertXMLFile(outHandle, file):
     fileHandle.close()
 
 def convertJsFile(outHandle, file):
-  if not os.path.isabs(file):
-    file = os.path.join(baseDir, file)
-  converted = doRewrite([file], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
+  converted = doRewrite([os.path.abspath(file)], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
   print >>outHandle, toCString(os.path.basename(file)) + ','
   print >>outHandle, toCString(converted) + ','
 
