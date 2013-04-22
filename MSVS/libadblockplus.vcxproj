@@ -120,7 +120,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;FILTER_ENGINE_STUBS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;V8_TARGET_ARCH_IA32;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <StringPooling>true</StringPooling>
     </ClCompile>
@@ -145,7 +145,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;FILTER_ENGINE_STUBS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <StringPooling>true</StringPooling>
     </ClCompile>
@@ -166,7 +166,7 @@
   <ItemGroup>
     <CustomBuild Include="..\convert_js.py">
       <FileType>Document</FileType>
-      <Command>$(PYTHON) %(Identity) --before="..\lib/compat.js" --convert "..\lib/info.js"  "..\lib/io.js" "..\lib/prefs.js" "..\lib/utils.js" "..\lib/elemHideHitRegistration.js" "..\adblockplus/lib/filterNotifier.js" "..\adblockplus/lib/filterClasses.js" "..\adblockplus/lib/subscriptionClasses.js" "..\adblockplus/lib/filterStorage.js" "..\adblockplus/lib/elemHide.js" "..\adblockplus/lib/matcher.js" "..\adblockplus/lib/filterListener.js" "..\adblockplus/lib/synchronizer.js" --after="..\lib/api.js" $(IntDir)adblockplus.js.cc</Command>
+      <Command>$(PYTHON) %(Identity) --before="..\lib/compat.js" --convert "..\lib/info.js"  "..\lib/io.js" "..\lib/prefs.js" "..\lib/utils.js" "..\lib/elemHideHitRegistration.js" "..\adblockplus/lib/filterNotifier.js" "..\adblockplus/lib/filterClasses.js" "..\adblockplus/lib/subscriptionClasses.js" "..\adblockplus/lib/filterStorage.js" "..\adblockplus/lib/elemHide.js" "..\adblockplus/lib/matcher.js" "..\adblockplus/lib/filterListener.js" "..\adblockplus/lib/synchronizer.js" "..\adblockplus/chrome/content/ui/subscriptions.xml" --after="..\lib/api.js" $(IntDir)adblockplus.js.cc</Command>
       <Outputs>%(IntDir)adblockplus.js.cc</Outputs>
       <AdditionalInputs>..\lib\info.js;..\lib\io.js;..\lib\prefs.js;..\lib\utils.js;..\lib\elemHideHitRegistration.js;..\adblockplus\lib\filterNotifier.js;..\adblockplus\lib\filterClasses.js;..\adblockplus\lib\subscriptionClasses.js;..\adblockplus\lib\filterStorage.js;..\adblockplus\lib\elemHide.js;..\adblockplus\lib\matcher.js;..\adblockplus\lib\filterListener.js;..\adblockplus\lib\synchronizer.js</AdditionalInputs>
       <LinkObjects>false</LinkObjects>
