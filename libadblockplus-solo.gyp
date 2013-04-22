@@ -40,7 +40,14 @@
             'PreprocessorDefinitions': ['_VARIADIC_MAX=10'],
           },
           'VCLinkerTool': {
-            
+            'AdditionalDependencies': [
+              'googletest.lib', 'googletest_main.lib', 
+              'v8_base.lib', 'v8_nosnapshot.lib', 'v8_snapshot.lib',
+              'winmm.lib', 'ws2_32.lib',
+              'Shlwapi.lib', 'Winhttp.lib'
+            ],
+            'AdditionalLibraryDirectories': ['external_library/$(ConfigurationName)'],
+            'EntryPointSymbol': 'mainCRTStartup',            
           },
         }
       },
