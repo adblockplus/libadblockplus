@@ -1,7 +1,7 @@
 @echo off
 setlocal
 pushd %~dp0
-set ARCH=x64     
+set ARCH=x86     
 
 rem Verify that the python interpreter is available
 if not defined PYTHON (set PYTHON=python)
