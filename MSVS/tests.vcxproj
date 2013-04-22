@@ -78,7 +78,7 @@
       <OutputFile>$(OutDir)$(ProjectName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
       <AssemblyDebug>true</AssemblyDebug>
       <GenerateDebugInformation>true</GenerateDebugInformation>
