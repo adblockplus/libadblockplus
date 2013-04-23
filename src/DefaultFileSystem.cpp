@@ -11,6 +11,7 @@
 #ifdef _WIN32
 #ifndef S_ISDIR
 #define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
+#include <Shlobj.h>
 #endif
 
 #ifndef S_ISREG
@@ -87,3 +88,25 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
   result.lastModified = static_cast<int64_t>(nativeStat.st_mtime) * 1000;
   return result;
 }
+
+std::string DefaultFileSystem::Resolve(const std::string& path) const
+{
+#ifdef WIN32
+  // Resolve to LocalLow folder
+  wchar_t* resolvedPath;
+  HRESULT hr = SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, NULL, &resolvedPath);
+  if (FAILED(hr))
+    return std::string(path);
+  std::wstring resolvedW(resolvedPath);
+  CoTaskMemFree(resolvedPath);
+
+  // TODO: Better conversion here
+  std::string resolved(resolvedW.begin(), resolvedW.end());
+  resolved.append("\\AdblockPlus\\");
+  resolved.append(path);
+  return resolved;
+#else
+  return std::string(path);
+#endif
+}
+

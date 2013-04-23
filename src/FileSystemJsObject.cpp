@@ -184,6 +184,7 @@ namespace
     std::string path;
   };
 
+
   class StatThread : public IoThread
   {
   public:
@@ -312,7 +313,23 @@ namespace
     statThread->Start();
     return v8::Undefined();
   }
+
+  v8::Handle<v8::Value> ResolveCallback(const v8::Arguments& arguments)
+  {
+    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+
+    if (converted.size() != 1)
+      return v8::ThrowException(v8::String::New(
+        "_fileSystem.resolve requires 1 parameter"));
+
+    std::string resolved = jsEngine->GetFileSystem()->Resolve(converted[0]->AsString());
+
+    return v8::String::New(resolved.c_str(), resolved.length());
+  }
+
 }
+
 
 JsValuePtr FileSystemJsObject::Setup(JsEnginePtr jsEngine, JsValuePtr obj)
 {
@@ -321,5 +338,6 @@ JsValuePtr FileSystemJsObject::Setup(JsEnginePtr jsEngine, JsValuePtr obj)
   obj->SetProperty("move", jsEngine->NewCallback(::MoveCallback));
   obj->SetProperty("remove", jsEngine->NewCallback(::RemoveCallback));
   obj->SetProperty("stat", jsEngine->NewCallback(::StatCallback));
+  obj->SetProperty("resolve", jsEngine->NewCallback(::ResolveCallback));
   return obj;
 }
