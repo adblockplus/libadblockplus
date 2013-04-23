@@ -141,7 +141,6 @@
       'outputs': [
         '<(SHARED_INTERMEDIATE_DIR)/adblockplus.js.cpp'
       ],
-      'msvs_quote_cmd': 0,
       'action': [
         '<(python)',
         'convert_js.py',
