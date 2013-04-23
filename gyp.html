@@ -273,8 +273,9 @@
             <dt><tt>msvs_list_excluded_files</tt></dt>
             <dd><p>
                 This one's a generator flag.
-                If true (which is the default) it adds all possible source files it finds to the project file, 
-                    but as "excluded from build".                
+                If true it adds all possible source files it finds to the project file, but as "excluded from build",
+                    which could be useful for someone, but also generates a lot of entries for standard libraries that are just clutter.
+                The default is true, however, and since it's a generator flag, you can't put it into the configuation file itself.                
             </p></dd>        
 
             <dt><tt>msvs_new</tt></dt>
@@ -318,13 +319,11 @@
             <dd>
                 <p>
                     In the same place as <tt>msvs_cygwin_shell</tt>, there's <tt>msvs_quote_cmd</tt>,
-                        which counterintuitively defaults to true.
-                    It puts double quotes around each "argument", which completely screws with actual argument parsing,
-                        because an "argument" in the function where it's used can be a list of actual arguments.
-                    Good luck trying to pass a list of files in and have them appear separately if this is turned on,
-                        since it will put quote marks around the entire list.
-                    And since that's the completely ordinary case when expanding lists of dependencies,
-                        it means we can't support paths with internal space characters.
+                        which defaults to true.
+                    It puts double quotes around each "argument", 
+                        and that word is in quote marks because there's a catch.
+                    Strings are quoted as whole strings,
+                        but arguments that consist only of a single list variable expansion are quoted separately. 
                 </p><p>
                     <tt>msvs_quote_cmd</tt> is only looked for on the rule itself.
                     It appears once in <tt>msvs.py:_BuildCommandLineForRule</tt>.
@@ -458,16 +457,16 @@
                 Instead it just assumes everything is a path, which (damning with faint praise) at least finds all the dependencies.            
             </p>
             <li>
-                We can't support spaces in path or file names. 
-                Strictly speaking, that's only for some path names in certain situations.
+                You have to ensure that list expansion in <tt>action</tt> elements is done in individual list elements, not within a larger string.
             </li>
             <p>
-                This has to do with how quoting is handled.
-                The quoting algorithm is broken, putting quotes around a list of strings as a whole rather than around each element in the list.
-                So quoting has to be turned off whenever lists are involved, which is often.
-                You can get away with leaving the quoting in when there are no lists,
-                    but if a file or path that requires it ever needs to appear in a list, it will break.
-                So it's just safer not to do it at all.
+                This all has to do with how quoting is handled.
+                Consider the examples <tt>[ ... '--convert <@(files)', ... ]</tt> versus <tt>[ ... '--convert', '<@(files)', ... ]</tt>.
+                The first has one list element; the second, two.
+                In the first, list substitution is done first and then the string as a whole is quoted, 
+                    which is basically never what you want if the list contains filenames.
+                In the second, each element of <tt>files</tt> is quoted separately.
+                (In addition, <tt>--convert</tt> is quoted, which is completely useless, yet harmless.)            
             </p>
         </ul>
     
