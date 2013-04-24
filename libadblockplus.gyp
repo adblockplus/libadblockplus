@@ -37,7 +37,7 @@
       'src/Thread.cpp',
       'src/Utils.cpp',
       'src/WebRequestJsObject.cpp',
-      '<(INTERMEDIATE_DIR)/adblockplus.js.cc'
+      '<(INTERMEDIATE_DIR)/adblockplus.js.cpp'
     ],
     'direct_dependent_settings': {
       'include_dirs': ['include']
@@ -49,19 +49,31 @@
           'sources': [
             'src/DefaultWebRequestCurl.cpp',
           ],
+          'link_settings': {
+            'libraries': ['-lcurl']
+          },
           'all_dependent_settings': {
             'defines': ['HAVE_CURL'],
-            'libraries': ['-lcurl']
           }
         }
       ],
-      ['have_curl!=1',
+      ['OS=="win"',
+        {
+          'sources': [
+            'src/DefaultWebRequestWinInet.cpp',
+          ],
+          'link_settings': {
+            'libraries': [ '-lshlwapi.lib', '-lwinhttp.lib' ]
+          }
+        }
+      ],
+      ['have_curl!=1 and OS!="win"',
         {
           'sources': [
             'src/DefaultWebRequestDummy.cpp',
           ]
         }
-      ]
+      ],
     ],
     'actions': [{
       'action_name': 'convert_js',
@@ -126,6 +138,12 @@
       'test/JsValue.cpp',
       'test/Thread.cpp',
       'test/WebRequest.cpp'
-    ]
+    ],
+    'msvs_settings': {
+      'VCLinkerTool': {
+        'SubSystem': '1',   # Console
+        'EntryPointSymbol': 'mainCRTStartup',
+      },
+    },
   }]
 }
