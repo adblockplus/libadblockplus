@@ -56,7 +56,7 @@ TEST(WebRequestTest, TestWebRequest)
   ASSERT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
 }
 
-#if defined(HAVE_CURL) || defined(HAVE_WININET)
+#if defined(HAVE_CURL) || defined(_WIN32)
 TEST(WebRequestTest, RealWebRequest)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());

@@ -35,9 +35,14 @@ yet. To build it anyway:
 ### Windows
 
 You need Microsoft Visual C++ (Express is sufficient) 2012
-and Python 2.6.
+and Python 2.6. Make sure that `python.exe` is on your `PATH`.
 
-- Execute *buildmsvs.bat* from Visual Studio command line (with VS environment variables defined, ie msbuild can be run from)
+* Execute `createsolution.bat ia32` to generate project files for the 32 bit
+build or `createsolution.bat x64` for the 64 bit build. Unfortunately, V8
+doesn't support creating both from the same project files.
+* Open `build\libadblockplus.sln` in Visual Studio and build the solution there.
+Alternatively you can run `msbuild /m build\libadblockplus.sln` from the Visual
+Studio Developer Command Prompt to create a debug build.
 
 Shell
 -----
@@ -66,10 +71,10 @@ The `msvs` generator is broken; well not so much broken as twisted.
 Its behavior induces some restrictions on the way we're able to use `gyp`.
 For the full story, see the extended `gyp` documentation.
 
-* All our own command line tools have to have arguments that 
-    either (a) begin with a hyphen or slash, 
+* All our own command line tools have to have arguments that
+    either (a) begin with a hyphen or slash,
     or (b) are path names. Sounds bizarre? I'm with you.
-* We can't support spaces in path or file names. 
-    Strictly speaking, that's only for some path names in certain situations. 
-    But please, make everyone's lives easier. 
+* We can't support spaces in path or file names.
+    Strictly speaking, that's only for some path names in certain situations.
+    But please, make everyone's lives easier.
     Just don't do it.

@@ -1,12 +1,5 @@
 ^build
 .pyc$
-syntax: glob
-MSVS/Default
-MSVS/third_party/Default
-MSVS/*.suo
-MSVS/*.sdf
-MSVS/*.opensdf
-MSVS/*.vcxproj.user
 
+syntax: glob
 upload.py
-MSVS/patterns.ini

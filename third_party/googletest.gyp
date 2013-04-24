@@ -1,4 +1,43 @@
 {
+  'target_defaults': {
+    'configurations': {
+      'Debug': {
+        'defines': [ 'DEBUG' ],
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'Optimization': '0',
+
+            'conditions': [
+              ['OS=="win" and component=="shared_library"', {
+                'RuntimeLibrary': '3',  # /MDd
+              }, {
+                'RuntimeLibrary': '1',  # /MTd
+              }]
+            ],
+          },
+        },
+      },
+      'Release': {
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'Optimization': '2',
+            'InlineFunctionExpansion': '2',
+            'EnableIntrinsicFunctions': 'true',
+            'FavorSizeOrSpeed': '0',
+            'StringPooling': 'true',
+
+            'conditions': [
+              ['OS=="win" and component=="shared_library"', {
+                'RuntimeLibrary': '2',  # /MD
+              }, {
+                'RuntimeLibrary': '0',  # /MT
+              }]
+            ],
+          },
+        },
+      },
+    },
+  },
   'targets': [{
     'target_name': 'googletest',
     'type': '<(library)',
@@ -11,12 +50,25 @@
       'googletest/src/gtest-typed-test.cc',
       'googletest/src/gtest.cc'
     ],
+    'include_dirs': [
+      'googletest',
+      'googletest/include'
+    ],
     'direct_dependent_settings': {
       'include_dirs': [
         'googletest',
         'googletest/include'
       ]
-    }
+    },
+    'conditions': [[
+      'OS=="win"',
+      {
+        'defines': [ '_VARIADIC_MAX=10' ],
+        'direct_dependent_settings': {
+          'defines': [ '_VARIADIC_MAX=10' ],
+        },
+      }
+    ]],
   },
   {
     'target_name': 'googletest_main',
