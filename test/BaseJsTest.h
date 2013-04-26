@@ -3,6 +3,7 @@
 
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
+#include "../src/Thread.h"
 
 class ThrowingErrorCallback : public AdblockPlus::ErrorCallback
 {
@@ -49,6 +50,53 @@ class ThrowingWebRequest : public AdblockPlus::WebRequest
     throw std::runtime_error("Unexpected GET: " + url);
   }
 };
+
+class LazyFileSystem : public AdblockPlus::FileSystem
+{
+  std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
+  {
+    while (true)
+      AdblockPlus::Sleep(100000);
+    return std::tr1::shared_ptr<std::istream>();
+  }
+
+  void Write(const std::string& path,
+             std::tr1::shared_ptr<std::ostream> content)
+  {
+    while (true)
+      AdblockPlus::Sleep(100000);
+  }
+
+  void Move(const std::string& fromPath, const std::string& toPath)
+  {
+    while (true)
+      AdblockPlus::Sleep(100000);
+  }
+
+  void Remove(const std::string& path)
+  {
+    while (true)
+      AdblockPlus::Sleep(100000);
+  }
+
+  StatResult Stat(const std::string& path) const
+  {
+    while (true)
+      AdblockPlus::Sleep(100000);
+    return StatResult();
+  }
+};
+
+class LazyWebRequest : public AdblockPlus::WebRequest
+{
+  AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
+  {
+    while (true)
+      AdblockPlus::Sleep(100000);
+    return AdblockPlus::ServerResponse();
+  }
+};
+
 
 class BaseJsTest : public ::testing::Test
 {
