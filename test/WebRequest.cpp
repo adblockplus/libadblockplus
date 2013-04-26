@@ -23,13 +23,6 @@ namespace
       return result;
     }
   };
-
-  std::string ToString(unsigned int i)
-  {
-    std::stringstream stream;
-    stream << i;
-    return stream.str();
-  }
 }
 
 TEST(WebRequestTest, BadCall)
