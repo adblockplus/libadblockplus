@@ -98,7 +98,10 @@
           'lib/compat.js'
         ],
         'load_after_files': [
-          'lib/api.js'
+          'lib/api.js',
+          'lib/publicSuffixList.js',
+          'lib/punycode.js',
+          'lib/basedomain.js',
         ],
       },
       'inputs': [
