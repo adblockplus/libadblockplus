@@ -1,8 +1,61 @@
 #include "BaseJsTest.h"
+#include "../src/Thread.h"
 
 namespace
 {
   typedef std::tr1::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
+
+  // This file system implementation never does anything - makes sure
+  // FilterEngine doesn't do any I/O during test and the corresponding
+  // callbacks are never called.
+  class LazyFileSystem : public AdblockPlus::FileSystem
+  {
+    std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
+    {
+      while (true)
+        AdblockPlus::Sleep(100000);
+      return std::tr1::shared_ptr<std::istream>();
+    }
+
+    void Write(const std::string& path,
+               std::tr1::shared_ptr<std::ostream> content)
+    {
+      while (true)
+        AdblockPlus::Sleep(100000);
+    }
+
+    void Move(const std::string& fromPath, const std::string& toPath)
+    {
+      while (true)
+        AdblockPlus::Sleep(100000);
+    }
+
+    void Remove(const std::string& path)
+    {
+      while (true)
+        AdblockPlus::Sleep(100000);
+    }
+
+    StatResult Stat(const std::string& path) const
+    {
+      while (true)
+        AdblockPlus::Sleep(100000);
+      return StatResult();
+    }
+  };
+
+  // This web request implementation never does anything - makes sure
+  // FilterEngine doesn't cause any net traffic during test and the
+  // corresponding callbacks are never called.
+  class LazyWebRequest : public AdblockPlus::WebRequest
+  {
+    AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
+    {
+      while (true)
+        AdblockPlus::Sleep(100000);
+      return AdblockPlus::ServerResponse();
+    }
+  };
 
   class FilterEngineTest : public BaseJsTest
   {
@@ -12,9 +65,9 @@ namespace
     void SetUp()
     {
       BaseJsTest::SetUp();
-      // TODO: Don't use the default ErrorCallback/WebRequest
+      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
+      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
       jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new AdblockPlus::DefaultErrorCallback));
-      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new AdblockPlus::DefaultWebRequest));
       filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine));
     }
   };
