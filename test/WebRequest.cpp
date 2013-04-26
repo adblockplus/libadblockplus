@@ -1,14 +1,10 @@
 #include <sstream>
-#include <AdblockPlus.h>
-#include <gtest/gtest.h>
-
+#include "BaseJsTest.h"
 #include "../src/Thread.h"
-
-// TODO: Use a fixture here
 
 namespace
 {
-  class TestWebRequest : public AdblockPlus::WebRequest
+  class MockWebRequest : public AdblockPlus::WebRequest
   {
   public:
     AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
@@ -23,11 +19,25 @@ namespace
       return result;
     }
   };
+
+  template<class T>
+  class WebRequestTest : public BaseJsTest
+  {
+  protected:
+    void SetUp()
+    {
+      BaseJsTest::SetUp();
+      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new T));
+      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
+    }
+  };
+
+  typedef WebRequestTest<MockWebRequest> MockWebRequestTest;
+  typedef WebRequestTest<AdblockPlus::DefaultWebRequest> DefaultWebRequestTest;
 }
 
-TEST(WebRequestTest, BadCall)
+TEST_F(MockWebRequestTest, BadCall)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET()"));
   ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET('', {}, function(){})"));
   ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET({toString: false}, {}, function(){})"));
@@ -36,10 +46,8 @@ TEST(WebRequestTest, BadCall)
   ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET('http://example.com/', {}, function(){}, 0)"));
 }
 
-TEST(WebRequestTest, TestWebRequest)
+TEST_F(MockWebRequestTest, SuccessfulRequest)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new TestWebRequest()));
   jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
   ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
   AdblockPlus::Sleep(200);
@@ -50,10 +58,8 @@ TEST(WebRequestTest, TestWebRequest)
 }
 
 #if defined(HAVE_CURL) || defined(_WIN32)
-TEST(WebRequestTest, RealWebRequest)
+TEST_F(DefaultWebRequestTest, RealWebRequest)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-
   // This URL should redirect to easylist-downloads.adblockplus.org and we
   // should get the actual filter list back.
   jsEngine->Evaluate("_webRequest.GET('https://easylist.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
@@ -69,9 +75,8 @@ TEST(WebRequestTest, RealWebRequest)
   ASSERT_TRUE(jsEngine->Evaluate("foo.responseHeaders['location']")->IsUndefined());
 }
 
-TEST(WebRequestTest, XMLHttpRequest)
+TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   AdblockPlus::FilterEngine filterEngine(jsEngine);
 
   jsEngine->Evaluate("\
@@ -94,9 +99,8 @@ TEST(WebRequestTest, XMLHttpRequest)
   ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Location')")->IsNull());
 }
 #else
-TEST(WebRequestTest, DummyWebRequest)
+TEST_F(DefaultWebRequestTest, DummyWebRequest)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->Evaluate("_webRequest.GET('https://easylist.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   do
   {
@@ -108,9 +112,8 @@ TEST(WebRequestTest, DummyWebRequest)
   ASSERT_EQ("{}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
 }
 
-TEST(WebRequestTest, XMLHttpRequest)
+TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   AdblockPlus::FilterEngine filterEngine(jsEngine);
 
   jsEngine->Evaluate("\
