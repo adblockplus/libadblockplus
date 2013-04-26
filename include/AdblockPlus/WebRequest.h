@@ -1,6 +1,7 @@
 #ifndef ADBLOCKPLUS_WEB_REQUEST_H
 #define ADBLOCKPLUS_WEB_REQUEST_H
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 

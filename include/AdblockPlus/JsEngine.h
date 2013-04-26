@@ -2,6 +2,7 @@
 #define ADBLOCKPLUS_JS_ENGINE_H
 
 #include <stdexcept>
+#include <stdint.h>
 #include <string>
 #include <v8.h>
 #include <AdblockPlus/AppInfo.h>
