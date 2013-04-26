@@ -7,6 +7,9 @@
 #include <v8.h>
 #include "tr1_memory.h"
 
+// Make sure windows.h doesn't mess with our method names
+#undef GetClassName
+
 namespace AdblockPlus
 {
   class JsValue;
