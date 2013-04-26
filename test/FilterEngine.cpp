@@ -23,13 +23,13 @@ namespace
 TEST_F(FilterEngineTest, FilterCreation)
 {
   AdblockPlus::FilterPtr filter1 = filterEngine->GetFilter("foo");
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, filter1->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, filter1->GetType());
   AdblockPlus::FilterPtr filter2 = filterEngine->GetFilter("@@foo");
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, filter2->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, filter2->GetType());
   AdblockPlus::FilterPtr filter3 = filterEngine->GetFilter("example.com##foo");
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_ELEMHIDE, filter3->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_ELEMHIDE, filter3->GetType());
   AdblockPlus::FilterPtr filter4 = filterEngine->GetFilter("example.com#@#foo");
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION, filter4->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION, filter4->GetType());
   AdblockPlus::FilterPtr filter5 = filterEngine->GetFilter("  foo  ");
   ASSERT_EQ(*filter1, *filter5);
 }
@@ -38,16 +38,16 @@ TEST_F(FilterEngineTest, FilterProperties)
 {
   AdblockPlus::FilterPtr filter = filterEngine->GetFilter("foo");
 
-  ASSERT_EQ("x", filter->GetProperty("stringFoo", "x"));
-  ASSERT_EQ(42, filter->GetProperty("intFoo", 42));
-  ASSERT_FALSE(filter->GetProperty("boolFoo", false));
+  ASSERT_TRUE(filter->GetProperty("stringFoo")->IsUndefined());
+  ASSERT_TRUE(filter->GetProperty("intFoo")->IsUndefined());
+  ASSERT_TRUE(filter->GetProperty("boolFoo")->IsUndefined());
 
   filter->SetProperty("stringFoo", "y");
   filter->SetProperty("intFoo", 24);
   filter->SetProperty("boolFoo", true);
-  ASSERT_EQ("y", filter->GetProperty("stringFoo", "x"));
-  ASSERT_EQ(24, filter->GetProperty("intFoo", 42));
-  ASSERT_TRUE(filter->GetProperty("boolFoo", false));
+  ASSERT_EQ("y", filter->GetProperty("stringFoo")->AsString());
+  ASSERT_EQ(24, filter->GetProperty("intFoo")->AsInt());
+  ASSERT_TRUE(filter->GetProperty("boolFoo")->AsBool());
 }
 
 TEST_F(FilterEngineTest, AddRemoveFilters)
@@ -71,16 +71,16 @@ TEST_F(FilterEngineTest, SubscriptionProperties)
 {
   AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription("foo");
 
-  ASSERT_EQ("x", subscription->GetProperty("stringFoo", "x"));
-  ASSERT_EQ(42, subscription->GetProperty("intFoo", 42));
-  ASSERT_FALSE(subscription->GetProperty("boolFoo", false));
+  ASSERT_TRUE(subscription->GetProperty("stringFoo")->IsUndefined());
+  ASSERT_TRUE(subscription->GetProperty("intFoo")->IsUndefined());
+  ASSERT_TRUE(subscription->GetProperty("boolFoo")->IsUndefined());
 
   subscription->SetProperty("stringFoo", "y");
   subscription->SetProperty("intFoo", 24);
   subscription->SetProperty("boolFoo", true);
-  ASSERT_EQ("y", subscription->GetProperty("stringFoo", "x"));
-  ASSERT_EQ(24, subscription->GetProperty("intFoo", 42));
-  ASSERT_TRUE(subscription->GetProperty("boolFoo", false));
+  ASSERT_EQ("y", subscription->GetProperty("stringFoo")->AsString());
+  ASSERT_EQ(24, subscription->GetProperty("intFoo")->AsInt());
+  ASSERT_TRUE(subscription->GetProperty("boolFoo")->AsBool());
 }
 
 TEST_F(FilterEngineTest, AddRemoveSubscriptions)
@@ -119,26 +119,26 @@ TEST_F(FilterEngineTest, Matches)
 
   AdblockPlus::FilterPtr match2 = filterEngine->Matches("http://example.org/adbanner.gif", "IMAGE", "");
   ASSERT_TRUE(match2);
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match2->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match2->GetType());
 
   AdblockPlus::FilterPtr match3 = filterEngine->Matches("http://example.org/notbanner.gif", "IMAGE", "");
   ASSERT_TRUE(match3);
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match3->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match3->GetType());
 
   AdblockPlus::FilterPtr match4 = filterEngine->Matches("http://example.org/notbanner.gif", "IMAGE", "");
   ASSERT_TRUE(match4);
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match4->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match4->GetType());
 
   AdblockPlus::FilterPtr match5 = filterEngine->Matches("http://example.org/tpbanner.gif", "IMAGE", "http://example.org/");
   ASSERT_FALSE(match5);
 
   AdblockPlus::FilterPtr match6 = filterEngine->Matches("http://example.org/fpbanner.gif", "IMAGE", "http://example.org/");
   ASSERT_TRUE(match6);
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match6->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match6->GetType());
 
   AdblockPlus::FilterPtr match7 = filterEngine->Matches("http://example.org/tpbanner.gif", "IMAGE", "http://example.com/");
   ASSERT_TRUE(match7);
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match6->GetProperty("type", -1));
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match6->GetType());
 
   AdblockPlus::FilterPtr match8 = filterEngine->Matches("http://example.org/fpbanner.gif", "IMAGE", "http://example.com/");
   ASSERT_FALSE(match8);

@@ -13,26 +13,7 @@ namespace AdblockPlus
 {
   class FilterEngine;
 
-  class JsObject : public JsValue
-  {
-  public:
-    std::string GetProperty(const std::string& name, const std::string& defaultValue) const;
-    int64_t GetProperty(const std::string& name, int64_t defaultValue) const;
-    bool GetProperty(const std::string& name, bool defaultValue) const;
-    inline std::string GetProperty(const std::string& name, const char* defaultValue) const
-    {
-      return GetProperty(name, std::string(defaultValue));
-    }
-    inline int64_t GetProperty(const std::string& name, int defaultValue) const
-    {
-      return GetProperty(name, static_cast<int64_t>(defaultValue));
-    }
-
-  protected:
-    JsObject(JsValuePtr value);
-  };
-
-  class Filter : public JsObject,
+  class Filter : public JsValue,
                  public std::tr1::enable_shared_from_this<Filter>
   {
   public:
@@ -40,6 +21,7 @@ namespace AdblockPlus
                TYPE_ELEMHIDE, TYPE_ELEMHIDE_EXCEPTION,
                TYPE_COMMENT, TYPE_INVALID};
 
+    Type GetType();
     bool IsListed();
     void AddToList();
     void RemoveFromList();
@@ -48,7 +30,7 @@ namespace AdblockPlus
     Filter(JsValuePtr value);
   };
 
-  class Subscription : public JsObject,
+  class Subscription : public JsValue,
                        public std::tr1::enable_shared_from_this<Subscription>
   {
   public:

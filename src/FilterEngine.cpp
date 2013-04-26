@@ -8,59 +8,28 @@ using namespace AdblockPlus;
 
 extern const char* jsSources[];
 
-JsObject::JsObject(JsValuePtr value)
-    : JsValue(value->jsEngine, value->value)
+Filter::Filter(JsValuePtr value)
+    : JsValue(value)
 {
   if (!IsObject())
     throw std::runtime_error("JavaScript value is not an object");
 }
 
-std::string JsObject::GetProperty(const std::string& name, const std::string& defaultValue) const
+Filter::Type Filter::GetType()
 {
-  JsValuePtr value = JsValue::GetProperty(name);
-  if (value->IsString())
-    return value->AsString();
-  else
-    return defaultValue;
-}
-
-int64_t JsObject::GetProperty(const std::string& name, int64_t defaultValue) const
-{
-  JsValuePtr value = JsValue::GetProperty(name);
-  if (value->IsNumber())
-    return value->AsInt();
-  else
-    return defaultValue;
-}
-
-bool JsObject::GetProperty(const std::string& name, bool defaultValue) const
-{
-  JsValuePtr value = JsValue::GetProperty(name);
-  if (value->IsBool())
-    return value->AsBool();
-  else
-    return defaultValue;
-}
-
-Filter::Filter(JsValuePtr value)
-    : JsObject(value)
-{
-  // Hack: set `type` property according to class name
   std::string className = GetClassName();
-  Type type;
   if (className == "BlockingFilter")
-    type = TYPE_BLOCKING;
+    return TYPE_BLOCKING;
   else if (className == "WhitelistFilter")
-    type = TYPE_EXCEPTION;
+    return TYPE_EXCEPTION;
   else if (className == "ElemHideFilter")
-    type = TYPE_ELEMHIDE;
+    return TYPE_ELEMHIDE;
   else if (className == "ElemHideException")
-    type = TYPE_ELEMHIDE_EXCEPTION;
+    return TYPE_ELEMHIDE_EXCEPTION;
   else if (className == "CommentFilter")
-    type = TYPE_COMMENT;
+    return TYPE_COMMENT;
   else
-    type = TYPE_INVALID;
-  SetProperty("type", type);
+    return TYPE_INVALID;
 }
 
 bool Filter::IsListed()
@@ -89,12 +58,14 @@ void Filter::RemoveFromList()
 
 bool Filter::operator==(const Filter& filter) const
 {
-  return GetProperty("text", "") == filter.GetProperty("text", "");
+  return GetProperty("text")->AsString() == filter.GetProperty("text")->AsString();
 }
 
 Subscription::Subscription(JsValuePtr value)
-    : JsObject(value)
+    : JsValue(value)
 {
+  if (!IsObject())
+    throw std::runtime_error("JavaScript value is not an object");
 }
 
 bool Subscription::IsListed()
@@ -140,7 +111,7 @@ bool Subscription::IsUpdating()
 
 bool Subscription::operator==(const Subscription& subscription) const
 {
-  return GetProperty("url", "") == subscription.GetProperty("url", "");
+  return GetProperty("url")->AsString() == subscription.GetProperty("url")->AsString();
 }
 
 FilterEngine::FilterEngine(JsEnginePtr jsEngine) : jsEngine(jsEngine)
