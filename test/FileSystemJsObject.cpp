@@ -69,6 +69,14 @@ namespace
       result.lastModified = statLastModified;
       return result;
     }
+
+    std::string Resolve(const std::string& path) const
+    {
+      if (!success)
+        throw std::runtime_error("Unable to stat " + path);
+      return path;
+    }
+
   };
 
   void ReadFile(AdblockPlus::JsEnginePtr jsEngine, std::string& content,
