@@ -26,10 +26,10 @@ void MatchesCommand::operator()(const std::string& arguments)
   AdblockPlus::FilterPtr match = filterEngine.Matches(url, contentType, documentUrl);
   if (!match)
     std::cout << "No match" << std::endl;
-  else if (match->GetProperty("type", "") == "exception")
-    std::cout << "Whitelisted" << std::endl;
+  else if (match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
+    std::cout << "Whitelisted by " << match->GetProperty("text")->AsString() << std::endl;
   else
-    std::cout << "Blocked" << std::endl;
+    std::cout << "Blocked by " << match->GetProperty("text")->AsString() << std::endl;
 }
 
 std::string MatchesCommand::GetDescription() const

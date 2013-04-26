@@ -24,6 +24,12 @@ AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
 {
 }
 
+AdblockPlus::JsValue::JsValue(AdblockPlus::JsValuePtr value)
+    : jsEngine(value->jsEngine),
+      value(v8::Persistent<v8::Value>::New(jsEngine->isolate, value->value))
+{
+}
+
 AdblockPlus::JsValue::~JsValue()
 {
   value.Dispose(jsEngine->isolate);

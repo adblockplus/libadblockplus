@@ -13,7 +13,7 @@ namespace
          it != filters.end(); it++)
     {
       std::string type;
-      switch ((*it)->GetProperty("type", -1))
+      switch ((*it)->GetType())
       {
         case AdblockPlus::Filter::TYPE_BLOCKING:
           type = "blocking";
@@ -37,7 +37,7 @@ namespace
           type = "(unknown type)";
           break;
       }
-      std::cout << (*it)->GetProperty("text", "(no text)") << " - " <<
+      std::cout << (*it)->GetProperty("text")->AsString() << " - " <<
           type << std::endl;
     }
   }

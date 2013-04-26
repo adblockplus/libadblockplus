@@ -20,8 +20,8 @@ namespace AdblockPlus
   class JsValue
   {
     friend class JsEngine;
-    friend class JsObject;
   public:
+    JsValue(JsValuePtr value);
     virtual ~JsValue();
 
     bool IsUndefined() const;
