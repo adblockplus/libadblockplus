@@ -7,22 +7,32 @@ baseDir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(baseDir, 'adblockplus', 'buildtools', 'jshydra'))
 from abp_rewrite import doRewrite
 
-def toCString(string):
-  string = string.replace('\\', '\\\\').replace('"', '\\"')
-  string = string.replace('\r', '').replace('\n', '\\n')
-  # Work around MSVC line length limitation
-  #(see http://msdn.microsoft.com/en-us/library/dddywwsc(v=vs.80).aspx)
-  string = re.sub(r'((?:[^\\]|\\.){16000})(.)', r'\1"\n"\2', string, re.S)
-  return '"%s"' % string.encode('utf-8')
+class CStringArray:
+  def __init__(self):
+    self._buffer = []
+    self._strings = []
 
-def printFilesVerbatim(outHandle, files):
+  def add(self, string):
+    string = string.encode('utf-8').replace('\r', '')
+    self._strings.append('std::string(buffer + %i, %i)' % (len(self._buffer), len(string)))
+    self._buffer.extend(map(lambda c: str(ord(c)), string))
+
+  def write(self, outHandle, arrayName):
+    print >>outHandle, '#include <string>'
+    print >>outHandle, 'namespace'
+    print >>outHandle, '{'
+    print >>outHandle, '  const char buffer[] = {%s};' % ', '.join(self._buffer)
+    print >>outHandle, '}'
+    print >>outHandle, 'std::string %s[] = {%s, std::string()};' % (arrayName, ', '.join(self._strings))
+
+def addFilesVerbatim(array, files):
   for file in files:
     fileHandle = codecs.open(file, 'rb', encoding='utf-8')
-    print >>outHandle, toCString(os.path.basename(file)) + ','
-    print >>outHandle, toCString(fileHandle.read()) + ','
+    array.add(os.path.basename(file))
+    array.add(fileHandle.read())
     fileHandle.close()
 
-def convertXMLFile(outHandle, file):
+def convertXMLFile(array, file):
     fileHandle = codecs.open(file, 'rb', encoding='utf-8')
     doc = minidom.parse(file)
     fileHandle.close()
@@ -35,32 +45,31 @@ def convertXMLFile(outHandle, file):
       for name, value in node.attributes.items():
         result[name] = value
       data.append(result)
-    fileNameString = toCString(os.path.basename(file))
-    print >>outHandle, fileNameString + ','
-    print >>outHandle, toCString('require.scopes[%s] = %s;' % (fileNameString, json.dumps(data))) + ','
+      fileName = os.path.basename(file)
+    array.add(fileName)
+    array.add('require.scopes["%s"] = %s;' % (fileName, json.dumps(data)))
     fileHandle.close()
 
-def convertJsFile(outHandle, file):
+def convertJsFile(array, file):
   converted = doRewrite([os.path.abspath(file)], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
-  print >>outHandle, toCString(os.path.basename(file)) + ','
-  print >>outHandle, toCString(converted) + ','
+  array.add(os.path.basename(file))
+  array.add(converted)
 
 def convert(verbatimBefore, convertFiles, verbatimAfter, outFile):
-  outHandle = open(outFile, 'wb')
-  print >>outHandle, 'const char* jsSources[] = {'
-
-  printFilesVerbatim(outHandle, verbatimBefore)
+  array = CStringArray()
+  addFilesVerbatim(array, verbatimBefore)
 
   for file in convertFiles:
     if file.endswith('.xml'):
-      convertXMLFile(outHandle, file)
+      convertXMLFile(array, file)
     else:
-      convertJsFile(outHandle, file)
+      convertJsFile(array, file)
 
-  printFilesVerbatim(outHandle, verbatimAfter)
+  addFilesVerbatim(array, verbatimAfter)
 
-  print >>outHandle, '0, 0'
-  print >>outHandle, '};'
+  outHandle = open(outFile, 'wb')
+  array.write(outHandle, 'jsSources')
+  outHandle.close()
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Convert JavaScript files')

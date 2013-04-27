@@ -1,12 +1,13 @@
 #include <algorithm>
 #include <cctype>
 #include <functional>
+#include <string>
 
 #include <AdblockPlus.h>
 
 using namespace AdblockPlus;
 
-extern const char* jsSources[];
+extern std::string jsSources[];
 
 Filter::Filter(JsValuePtr value)
     : JsValue(value)
@@ -116,7 +117,7 @@ bool Subscription::operator==(const Subscription& subscription) const
 
 FilterEngine::FilterEngine(JsEnginePtr jsEngine) : jsEngine(jsEngine)
 {
-  for (int i = 0; jsSources[i] && jsSources[i + 1]; i += 2)
+  for (int i = 0; !jsSources[i].empty(); i += 2)
     jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
 }
 
