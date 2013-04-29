@@ -45,6 +45,12 @@ namespace AdblockPlus
     {
       return NewValue(static_cast<int64_t>(val));
     }
+#ifdef __MACOSX_
+    inline JsValuePtr NewValue(long val)
+    {
+      return NewValue(static_cast<int64_t>(val));
+    }
+#endif
     JsValuePtr NewObject();
     JsValuePtr NewCallback(v8::InvocationCallback callback);
     static JsEnginePtr FromArguments(const v8::Arguments& arguments);
