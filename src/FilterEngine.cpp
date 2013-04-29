@@ -18,7 +18,7 @@ Filter::Filter(JsValuePtr value)
 
 Filter::Type Filter::GetType()
 {
-  std::string className = GetClassName();
+  std::string className = GetClass();
   if (className == "BlockingFilter")
     return TYPE_BLOCKING;
   else if (className == "WhitelistFilter")

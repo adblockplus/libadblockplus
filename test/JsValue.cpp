@@ -23,7 +23,7 @@ TEST_F(JsValueTest, UndefinedValue)
   ASSERT_ANY_THROW(value->AsList());
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
-  ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetClass());
   ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
@@ -44,7 +44,7 @@ TEST_F(JsValueTest, NullValue)
   ASSERT_ANY_THROW(value->AsList());
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
-  ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetClass());
   ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
@@ -66,7 +66,7 @@ TEST_F(JsValueTest, StringValue)
   ASSERT_ANY_THROW(value->AsList());
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
-  ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetClass());
   ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
@@ -88,7 +88,7 @@ TEST_F(JsValueTest, IntValue)
   ASSERT_ANY_THROW(value->AsList());
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
-  ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetClass());
   ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
@@ -109,7 +109,7 @@ TEST_F(JsValueTest, BoolValue)
   ASSERT_ANY_THROW(value->AsList());
   ASSERT_ANY_THROW(value->GetProperty("foo"));
   ASSERT_ANY_THROW(value->SetProperty("foo", false));
-  ASSERT_ANY_THROW(value->GetClassName());
+  ASSERT_ANY_THROW(value->GetClass());
   ASSERT_ANY_THROW(value->GetOwnPropertyNames());
   ASSERT_ANY_THROW(value->Call());
 }
@@ -141,7 +141,7 @@ TEST_F(JsValueTest, ObjectValue)
   ASSERT_EQ(12, value->GetProperty("x")->AsInt());
   value->SetProperty("x", jsEngine->NewValue(15));
   ASSERT_EQ(15, value->GetProperty("x")->AsInt());
-  ASSERT_EQ("Foo", value->GetClassName());
+  ASSERT_EQ("Foo", value->GetClass());
   ASSERT_EQ(3u, value->GetOwnPropertyNames().size());
   ASSERT_ANY_THROW(value->Call());
 }
@@ -162,7 +162,7 @@ TEST_F(JsValueTest, ArrayValue)
   ASSERT_EQ(3u, value->AsList().size());
   ASSERT_EQ(8, value->AsList()[1]->AsInt());
   ASSERT_EQ(3, value->GetProperty("length")->AsInt());
-  ASSERT_EQ("Array", value->GetClassName());
+  ASSERT_EQ("Array", value->GetClass());
   ASSERT_ANY_THROW(value->Call());
 }
 
