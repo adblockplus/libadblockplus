@@ -60,6 +60,12 @@ void DefaultFileSystem::Remove(const std::string& path)
     throw RuntimeErrorWithErrno("Failed to remove " + path);
 }
 
+/*
+ * In order to get millisecond resolution for modification times, it's necessary to use the 'stat' structure defined in
+ * POSIX 2008, which has 'struct timespec st_mtim' instead of 'time_t st_mtime'. Use "#define _POSIX_C_SOURCE 200809L" 
+ * before the headers to invoke. The trouble is that not all systems may have this available, a category that includes 
+ * MS Windows, and so we'll need multiple implementations.
+ */
 FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
 {
 #ifdef WIN32
