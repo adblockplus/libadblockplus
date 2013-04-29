@@ -7,9 +7,6 @@
 #include <v8.h>
 #include "tr1_memory.h"
 
-// Make sure windows.h doesn't mess with our method names
-#undef GetClassName
-
 namespace AdblockPlus
 {
   class JsValue;
@@ -54,7 +51,7 @@ namespace AdblockPlus
     {
       SetProperty(name, static_cast<int64_t>(val));
     }
-    std::string GetClassName() const;
+    std::string GetClass() const;
     JsValuePtr Call(const JsValueList& params = JsValueList(),
         AdblockPlus::JsValuePtr thisPtr = AdblockPlus::JsValuePtr()) const;
   protected:

@@ -178,7 +178,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)
   SetProperty(name, v8::Boolean::New(val));
 }
 
-std::string AdblockPlus::JsValue::GetClassName() const
+std::string AdblockPlus::JsValue::GetClass() const
 {
   if (!IsObject())
     throw new std::runtime_error("Cannot get constructor of a non-object");
