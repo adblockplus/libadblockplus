@@ -45,7 +45,7 @@ namespace AdblockPlus
     {
       return NewValue(static_cast<int64_t>(val));
     }
-#ifdef __MACOSX_
+#ifdef __APPLE__
     inline JsValuePtr NewValue(long val)
     {
       return NewValue(static_cast<int64_t>(val));
