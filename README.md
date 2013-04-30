@@ -30,7 +30,7 @@ This will build a version of libdabblockplus that uses stubs instead
 of the actual Adblock Plus code, because the latter does not work
 yet. To build it anyway:
 
-    make test CXXFLAGS="-DFILTER_ENGINE_STUBS=0"
+    make test
 
 ### Windows
 
