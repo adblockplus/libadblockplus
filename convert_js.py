@@ -33,22 +33,22 @@ def addFilesVerbatim(array, files):
     fileHandle.close()
 
 def convertXMLFile(array, file):
-    fileHandle = codecs.open(file, 'rb', encoding='utf-8')
-    doc = minidom.parse(file)
-    fileHandle.close()
+  fileHandle = codecs.open(file, 'rb', encoding='utf-8')
+  doc = minidom.parse(file)
+  fileHandle.close()
 
-    data = []
-    for node in doc.documentElement.childNodes:
-      if node.nodeType != node.ELEMENT_NODE:
-        continue
-      result = {'type': node.tagName}
-      for name, value in node.attributes.items():
-        result[name] = value
-      data.append(result)
-      fileName = os.path.basename(file)
-    array.add(fileName)
-    array.add('require.scopes["%s"] = %s;' % (fileName, json.dumps(data)))
-    fileHandle.close()
+  data = []
+  for node in doc.documentElement.childNodes:
+    if node.nodeType != node.ELEMENT_NODE:
+      continue
+    result = {'type': node.tagName}
+    for name, value in node.attributes.items():
+      result[name] = value
+    data.append(result)
+    fileName = os.path.basename(file)
+  array.add(fileName)
+  array.add('require.scopes["%s"] = %s;' % (fileName, json.dumps(data)))
+  fileHandle.close()
 
 def convertJsFile(array, file):
   converted = doRewrite([os.path.abspath(file)], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
