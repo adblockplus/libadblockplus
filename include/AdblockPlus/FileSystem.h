@@ -1,5 +1,5 @@
-#ifndef ADBLOCKPLUS_FILE_SYSTEM_H
-#define ADBLOCKPLUS_FILE_SYSTEM_H
+#ifndef ADBLOCK_PLUS_FILE_SYSTEM_H
+#define ADBLOCK_PLUS_FILE_SYSTEM_H
 
 #include <istream>
 #include <stdint.h>

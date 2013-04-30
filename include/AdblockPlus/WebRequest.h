@@ -1,5 +1,5 @@
-#ifndef ADBLOCKPLUS_WEB_REQUEST_H
-#define ADBLOCKPLUS_WEB_REQUEST_H
+#ifndef ADBLOCK_PLUS_WEB_REQUEST_H
+#define ADBLOCK_PLUS_WEB_REQUEST_H
 
 #include <stdint.h>
 #include <string>
