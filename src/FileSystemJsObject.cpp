@@ -325,7 +325,7 @@ namespace
 
     std::string resolved = jsEngine->GetFileSystem()->Resolve(converted[0]->AsString());
 
-    return v8::String::New(resolved.c_str(), resolved.length());
+    return Utils::ToV8String(resolved);
   }
 
 }

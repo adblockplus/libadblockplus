@@ -16,6 +16,7 @@ namespace AdblockPlus
     void Remove(const std::string& path);
     StatResult Stat(const std::string& path) const;
     std::string Resolve(const std::string& path) const;
+    void SetBasePath(const std::string& path);
 
   };
 }

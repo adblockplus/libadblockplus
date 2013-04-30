@@ -41,6 +41,17 @@ class ThrowingFileSystem : public AdblockPlus::FileSystem
   {
     throw std::runtime_error("Not implemented");
   }
+
+  std::string Resolve(const std::string& path) const
+  {
+    throw std::runtime_error("Not implemented");
+  }
+  
+  void SetBasePath(const std::string& path)
+  {
+    throw std::runtime_error("Not implemented");
+  }
+
 };
 
 class ThrowingWebRequest : public AdblockPlus::WebRequest
@@ -84,6 +95,19 @@ class LazyFileSystem : public AdblockPlus::FileSystem
     while (true)
       AdblockPlus::Sleep(100000);
     return StatResult();
+  }
+
+  std::string Resolve(const std::string& path) const
+  {
+    while (true)
+      AdblockPlus::Sleep(100000);
+    return std::string();
+  }
+
+  void SetBasePath(const std::string& path)
+  {
+    while (true)
+      AdblockPlus::Sleep(100000);    
   }
 };
 
