@@ -30,6 +30,9 @@ namespace AdblockPlus
     virtual void Remove(const std::string& path) = 0;
     virtual StatResult Stat(const std::string& path) const = 0;
     virtual std::string Resolve(const std::string& path) const = 0;
+    virtual void SetBasePath(const std::string& path) = 0;
+  protected:
+    std::string basePath;
   };
 
   typedef std::tr1::shared_ptr<FileSystem> FileSystemPtr;

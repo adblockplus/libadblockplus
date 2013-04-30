@@ -91,45 +91,19 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
 
 std::string DefaultFileSystem::Resolve(const std::string& path) const
 {
-#ifdef WIN32
-  // Resolve to LocalLow folder
+  return basePath + "\\" + path;
+}
 
-  OSVERSIONINFOEX osvi;
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-  BOOL res = GetVersionEx((OSVERSIONINFO*) &osvi);
+void DefaultFileSystem::SetBasePath(const std::string& path)
+{
 
-  if(res == 0 ) return std::string(path);
-
-  std::wstring resolvedW = L"";
-  wchar_t resolvedPath[MAX_PATH];
-  HRESULT hr;
-  if (osvi.dwMajorVersion >= 6)
+  if (path.rfind('\\') == (path.length() - 1))
   {
-    hr = SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, 0, 0, resolvedPath);
+    basePath = path.substr(0, path.length() - 1);
   }
   else
   {
-    hr = SHGetFolderPath(NULL, CSIDL_APPDATA, 0, 0, resolvedPath);
+    basePath = path;
   }
-  if (FAILED(hr))
-    return std::string(path);
-  resolvedW.assign(resolvedPath);
-
-  // TODO: Better conversion here
-  std::string resolved(resolvedW.begin(), resolvedW.end());
-  if (osvi.dwMajorVersion >= 6)
-  {
-    resolved.append("Low\\AdblockPlus\\");
-  }
-  else
-  {
-    resolved.append("\\AdblockPlus\\");
-  }
-  resolved.append(path);
-  return resolved;
-#else
-  return std::string(path);
-#endif
 }
 

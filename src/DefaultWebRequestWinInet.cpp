@@ -181,7 +181,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
 
   std::wstring canonizedUrl = Utils::CanonizeUrl(Utils::ToUTF16String(url, url.length()));
 
-  std::string headersString;
+  std::string headersString = "";
   for (int i = 0; i < requestHeaders.size(); i++)
   {
     headersString += requestHeaders[i].first + ": ";

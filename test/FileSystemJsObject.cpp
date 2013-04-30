@@ -77,6 +77,12 @@ namespace
       return path;
     }
 
+    void SetBasePath(const std::string& path)
+    {
+      basePath = "";
+      return;
+    }
+
   };
 
   void ReadFile(AdblockPlus::JsEnginePtr jsEngine, std::string& content,
