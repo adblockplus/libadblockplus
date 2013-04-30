@@ -1,5 +1,5 @@
-#ifndef ADBLOCKPLUS_FILTER_ENGINE_H
-#define ADBLOCKPLUS_FILTER_ENGINE_H
+#ifndef ADBLOCK_PLUS_FILTER_ENGINE_H
+#define ADBLOCK_PLUS_FILTER_ENGINE_H
 
 #include <vector>
 #include <map>

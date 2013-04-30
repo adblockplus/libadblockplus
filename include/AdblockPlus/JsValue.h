@@ -1,5 +1,5 @@
-#ifndef ADBLOCKPLUS_JS_VALUE_H
-#define ADBLOCKPLUS_JS_VALUE_H
+#ifndef ADBLOCK_PLUS_JS_VALUE_H
+#define ADBLOCK_PLUS_JS_VALUE_H
 
 #include <stdint.h>
 #include <string>

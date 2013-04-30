@@ -1,5 +1,5 @@
-#ifndef ADBLOCKPLUS_JS_ENGINE_H
-#define ADBLOCKPLUS_JS_ENGINE_H
+#ifndef ADBLOCK_PLUS_JS_ENGINE_H
+#define ADBLOCK_PLUS_JS_ENGINE_H
 
 #include <stdexcept>
 #include <stdint.h>
