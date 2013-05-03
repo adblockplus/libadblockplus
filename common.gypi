@@ -23,17 +23,5 @@
 
   'target_defaults': {
     'msvs_cygwin_shell': 0,
-    'conditions': [[
-      'target_arch=="x64"', {
-        'xcode_settings': {
-          'ARCHS': [ 'x64' ],
-        },
-        'msvs_configuration_platform': 'x64',
-      }, {
-        'xcode_settings': {
-          'ARCHS': [ 'i386' ],
-        },
-      }
-    ]],
   }
 }
