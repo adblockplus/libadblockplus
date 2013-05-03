@@ -37,6 +37,18 @@
         },
       },
     },
+    'conditions': [[
+      'target_arch=="x64"', {
+        'xcode_settings': {
+          'ARCHS': [ 'x86_64' ],
+        },
+        'msvs_configuration_platform': 'x64',
+      }, {
+        'xcode_settings': {
+          'ARCHS': [ 'i386' ],
+        },
+      },
+    ]]
   },
   'targets': [{
     'target_name': 'googletest',
@@ -67,18 +79,7 @@
         'direct_dependent_settings': {
           'defines': [ '_VARIADIC_MAX=10' ],
         },
-      }], [
-      'target_arch=="x64"', {
-        'xcode_settings': {
-          'ARCHS': [ 'x86_64' ],
-        },
-        'msvs_configuration_platform': 'x64',
-      }, {
-        'xcode_settings': {
-          'ARCHS': [ 'i386' ],
-        },
-      },
-    ]],
+      }]],
   },
   {
     'target_name': 'googletest_main',
