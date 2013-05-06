@@ -12,6 +12,7 @@
 #ifndef S_ISDIR
 #define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
 #include <Shlobj.h>
+#include <Shlwapi.h>
 #endif
 
 #ifndef S_ISREG
@@ -91,19 +92,34 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
 
 std::string DefaultFileSystem::Resolve(const std::string& path) const
 {
-  return basePath + "\\" + path;
+  if (basePath == "")
+  {
+    return path;
+  }
+  else
+  {
+#ifdef _WIN32
+  if (PathIsRelative(Utils::ToUTF16String(path, path.length()).c_str()))
+#else
+  if (path.length() && *path.begin() != PATH_SEPARATOR)
+#endif
+    {
+      return basePath + PATH_SEPARATOR + path;
+    }
+    else
+    {
+      return path;
+    }
+  }
 }
 
 void DefaultFileSystem::SetBasePath(const std::string& path)
 {
+  basePath = path;
 
-  if (path.rfind('\\') == (path.length() - 1))
+  if ((*basePath.rbegin() == PATH_SEPARATOR))
   {
-    basePath = path.substr(0, path.length() - 1);
-  }
-  else
-  {
-    basePath = path;
+    basePath.pop_back();
   }
 }
 

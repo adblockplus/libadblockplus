@@ -3,6 +3,12 @@
 
 #include "FileSystem.h"
 
+#ifdef _WIN32
+#define PATH_SEPARATOR '\\'
+#else
+#define PATH_SEPARATOR '/'
+#endif
+
 namespace AdblockPlus
 {
   class DefaultFileSystem : public FileSystem
@@ -17,6 +23,9 @@ namespace AdblockPlus
     StatResult Stat(const std::string& path) const;
     std::string Resolve(const std::string& path) const;
     void SetBasePath(const std::string& path);
+  protected:
+    std::string basePath;
+
 
   };
 }
