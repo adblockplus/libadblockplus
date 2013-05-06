@@ -37,6 +37,10 @@
         },
       },
     },
+    'msvs_configuration_attributes': {
+      'OutputDirectory': '<(DEPTH)\\build\\$(ConfigurationName)',
+      'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
+    },
     'conditions': [[
       'target_arch=="x64"', {
         'xcode_settings': {
