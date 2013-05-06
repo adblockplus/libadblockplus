@@ -31,12 +31,14 @@ Likewise, use the following on a 32 bit system:
 You need Microsoft Visual C++ (Express is sufficient) 2012
 and Python 2.6. Make sure that `python.exe` is on your `PATH`.
 
-* Execute `createsolution.bat ia32` to generate project files for the 32 bit
-build or `createsolution.bat x64` for the 64 bit build. Unfortunately, V8
-doesn't support creating both from the same project files.
-* Open `build\libadblockplus.sln` in Visual Studio and build the solution there.
-Alternatively you can run `msbuild /m build\libadblockplus.sln` from the Visual
-Studio Developer Command Prompt to create a debug build.
+* Execute `createsolution.bat` to generate project files, this will create
+`build\ia32\libadblockplus.sln` (solution for the 32 bit build) and
+`build\x64\libadblockplus.sln` (solution for the 64 bit build). Unfortunately,
+V8 doesn't support creating both from the same project files.
+* Open `build\ia32\libadblockplus.sln` or `build\x64\libadblockplus.sln` in
+Visual Studio and build the solution there. Alternatively you can use the
+`msbuild` command line tool, e.g. run `msbuild /m build\ia32\libadblockplus.sln`
+from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
 
 Shell
 -----
