@@ -76,13 +76,6 @@ namespace
         throw std::runtime_error("Unable to stat " + path);
       return path;
     }
-
-    void SetBasePath(const std::string& path)
-    {
-      basePath = "";
-      return;
-    }
-
   };
 
   void ReadFile(AdblockPlus::JsEnginePtr jsEngine, std::string& content,
