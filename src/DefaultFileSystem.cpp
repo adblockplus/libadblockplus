@@ -1,3 +1,20 @@
+/*
+ * This file is part of Adblock Plus <http://adblockplus.org/>,
+ * Copyright (C) 2006-2013 Eyeo GmbH
+ *
+ * Adblock Plus is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * Adblock Plus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <AdblockPlus/DefaultFileSystem.h>
 #include <cstdio>
 #include <cstring>
@@ -64,8 +81,8 @@ void DefaultFileSystem::Remove(const std::string& path)
 
 /*
  * In order to get millisecond resolution for modification times, it's necessary to use the 'stat' structure defined in
- * POSIX 2008, which has 'struct timespec st_mtim' instead of 'time_t st_mtime'. Use "#define _POSIX_C_SOURCE 200809L" 
- * before the headers to invoke. The trouble is that not all systems may have this available, a category that includes 
+ * POSIX 2008, which has 'struct timespec st_mtim' instead of 'time_t st_mtime'. Use "#define _POSIX_C_SOURCE 200809L"
+ * before the headers to invoke. The trouble is that not all systems may have this available, a category that includes
  * MS Windows, and so we'll need multiple implementations.
  */
 FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const

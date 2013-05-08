@@ -1,3 +1,20 @@
+/*
+ * This file is part of Adblock Plus <http://adblockplus.org/>,
+ * Copyright (C) 2006-2013 Eyeo GmbH
+ *
+ * Adblock Plus is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * Adblock Plus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "AdblockPlus/DefaultWebRequest.h"
 #include "WinInetErrorCodes.h"
 #include <algorithm>
@@ -139,7 +156,7 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
 
       headerNameW = AdblockPlus::Utils::TrimString(headerNameW);
       headerValueW = AdblockPlus::Utils::TrimString(headerValueW);
-      
+
       std::string headerName = AdblockPlus::Utils::ToUTF8String(headerNameW.c_str(), headerNameW.length());
       std::string headerValue = AdblockPlus::Utils::ToUTF8String(headerValueW.c_str(), headerValueW.length());
 
@@ -195,7 +212,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
 
   // Use WinHttpOpen to obtain a session handle.
   std::wstring proxyName, proxyBypass;
-  
+
   GetProxySettings(proxyName, proxyBypass);
   if (proxyName.empty())
   {
@@ -286,7 +303,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
 
   // Download the actual response
   // Keep checking for data until there is nothing left.
-  do 
+  do
   {
     // Check for available data.
     downloadSize = 0;
