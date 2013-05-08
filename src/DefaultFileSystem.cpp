@@ -136,7 +136,7 @@ void DefaultFileSystem::SetBasePath(const std::string& path)
 
   if ((*basePath.rbegin() == PATH_SEPARATOR))
   {
-    basePath.pop_back();
+    basePath.resize(basePath.size() - 1);
   }
 }
 
