@@ -23,7 +23,7 @@
 #include <string>
 #include <v8.h>
 #include <AdblockPlus/AppInfo.h>
-#include <AdblockPlus/ErrorCallback.h>
+#include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/WebRequest.h>
@@ -77,8 +77,8 @@ namespace AdblockPlus
     void SetFileSystem(FileSystemPtr val);
     WebRequestPtr GetWebRequest();
     void SetWebRequest(WebRequestPtr val);
-    ErrorCallbackPtr GetErrorCallback();
-    void SetErrorCallback(ErrorCallbackPtr val);
+    LogSystemPtr GetLogSystem();
+    void SetLogSystem(LogSystemPtr val);
 
     class Context
     {
@@ -97,7 +97,7 @@ namespace AdblockPlus
 
     FileSystemPtr fileSystem;
     WebRequestPtr webRequest;
-    ErrorCallbackPtr errorCallback;
+    LogSystemPtr logSystem;
     v8::Isolate* isolate;
     v8::Persistent<v8::Context> context;
   };

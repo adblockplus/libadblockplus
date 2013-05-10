@@ -67,11 +67,11 @@ TEST(NewJsEngineTest, CallbackGetSet)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
 
-  ASSERT_TRUE(jsEngine->GetErrorCallback());
-  ASSERT_ANY_THROW(jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr()));
-  AdblockPlus::ErrorCallbackPtr errorCallback(new AdblockPlus::DefaultErrorCallback());
-  jsEngine->SetErrorCallback(errorCallback);
-  ASSERT_EQ(errorCallback, jsEngine->GetErrorCallback());
+  ASSERT_TRUE(jsEngine->GetLogSystem());
+  ASSERT_ANY_THROW(jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr()));
+  AdblockPlus::LogSystemPtr logSystem(new AdblockPlus::DefaultLogSystem());
+  jsEngine->SetLogSystem(logSystem);
+  ASSERT_EQ(logSystem, jsEngine->GetLogSystem());
 
   ASSERT_TRUE(jsEngine->GetFileSystem());
   ASSERT_ANY_THROW(jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr()));

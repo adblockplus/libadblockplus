@@ -15,8 +15,26 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <AdblockPlus/ErrorCallback.h>
+#ifndef ADBLOCK_PLUS_LOG_SYSTEM_H
+#define ADBLOCK_PLUS_LOG_SYSTEM_H
 
-AdblockPlus::ErrorCallback::~ErrorCallback()
+#include <string>
+
+#include "tr1_memory.h"
+
+namespace AdblockPlus
 {
+  class LogSystem
+  {
+  public:
+    enum LogLevel {TRACE, LOG, INFO, WARN, ERROR};
+
+    virtual ~LogSystem() {}
+    virtual void operator()(LogLevel logLevel, const std::string& message,
+          const std::string& source) = 0;
+  };
+
+  typedef std::tr1::shared_ptr<LogSystem> LogSystemPtr;
 }
+
+#endif

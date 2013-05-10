@@ -31,7 +31,7 @@ namespace
       BaseJsTest::SetUp();
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
-      jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new AdblockPlus::DefaultErrorCallback));
+      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new AdblockPlus::DefaultLogSystem));
       filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine));
     }
   };

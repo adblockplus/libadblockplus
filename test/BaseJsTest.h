@@ -22,10 +22,11 @@
 #include <gtest/gtest.h>
 #include "../src/Thread.h"
 
-class ThrowingErrorCallback : public AdblockPlus::ErrorCallback
+class ThrowingLogSystem : public AdblockPlus::LogSystem
 {
 public:
-  void operator()(const std::string& message)
+  void operator()(LogLevel logLevel, const std::string& message,
+        const std::string& source)
   {
     throw std::runtime_error("Unexpected error: " + message);
   }
@@ -134,7 +135,7 @@ protected:
   virtual void SetUp()
   {
     jsEngine = AdblockPlus::JsEngine::New();
-    jsEngine->SetErrorCallback(AdblockPlus::ErrorCallbackPtr(new ThrowingErrorCallback));
+    jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new ThrowingLogSystem));
     jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new ThrowingFileSystem));
     jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new ThrowingWebRequest));
   }
