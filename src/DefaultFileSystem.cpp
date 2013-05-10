@@ -21,20 +21,15 @@
 #include <fstream>
 #include <stdexcept>
 
-#include <cerrno>
 #include <sys/types.h>
-#include <sys/stat.h>
 
 #ifdef _WIN32
-#ifndef S_ISDIR
-#define S_ISDIR(mode)  (((mode) & S_IFMT) == S_IFDIR)
+#include <windows.h>
 #include <Shlobj.h>
 #include <Shlwapi.h>
-#endif
-
-#ifndef S_ISREG
-#define S_ISREG(mode)  (((mode) & S_IFMT) == S_IFREG)
-#endif
+#else
+#include <sys/stat.h>
+#include <cerrno>
 #endif
 
 #include "../src/Utils.h"
@@ -79,32 +74,63 @@ void DefaultFileSystem::Remove(const std::string& path)
     throw RuntimeErrorWithErrno("Failed to remove " + path);
 }
 
-/*
- * In order to get millisecond resolution for modification times, it's necessary to use the 'stat' structure defined in
- * POSIX 2008, which has 'struct timespec st_mtim' instead of 'time_t st_mtime'. Use "#define _POSIX_C_SOURCE 200809L"
- * before the headers to invoke. The trouble is that not all systems may have this available, a category that includes
- * MS Windows, and so we'll need multiple implementations.
- */
 FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
 {
+  FileSystem::StatResult result;
 #ifdef WIN32
-  struct _stat nativeStat;
-  const int failure = _stat(path.c_str(), &nativeStat);
+  WIN32_FILE_ATTRIBUTE_DATA data;
+  std::wstring wpath = Utils::ToUTF16String(path, path.length());
+  if (!GetFileAttributesExW(wpath.c_str(), GetFileExInfoStandard, &data))
+  {
+    DWORD err = GetLastError();
+    if (err == ERROR_FILE_NOT_FOUND || ERROR_PATH_NOT_FOUND || ERROR_INVALID_DRIVE)
+      return result;
+    throw RuntimeErrorWithErrno("Unable to stat " + path);
+  }
+
+  result.exists = true;
+  if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+  {
+    result.isFile = false;
+    result.isDirectory = true;
+  }
+  else
+  {
+    result.isFile = true;
+    result.isDirectory = false;
+  }
+
+  // See http://support.microsoft.com/kb/167296 on this conversion
+  #define FILE_TIME_TO_UNIX_EPOCH_OFFSET 116444736000000000LL
+  #define FILE_TIME_TO_MILLISECONDS_FACTOR 10000
+  ULARGE_INTEGER time;
+  time.LowPart = data.ftLastWriteTime.dwLowDateTime;
+  time.HighPart = data.ftLastWriteTime.dwHighDateTime;
+  result.lastModified = (time.QuadPart - FILE_TIME_TO_UNIX_EPOCH_OFFSET) /
+      FILE_TIME_TO_MILLISECONDS_FACTOR;
+  return result;
 #else
   struct stat nativeStat;
   const int failure = stat(path.c_str(), &nativeStat);
-#endif
-  if (failure) {
+  if (failure)
+  {
     if (errno == ENOENT)
-      return FileSystem::StatResult();
+      return result;
     throw RuntimeErrorWithErrno("Unable to stat " + path);
   }
-  FileSystem::StatResult result;
   result.exists = true;
   result.isFile = S_ISREG(nativeStat.st_mode);
   result.isDirectory = S_ISDIR(nativeStat.st_mode);
+
+  /*
+   * In order to get millisecond resolution for modification times, it's necessary to use the 'stat' structure defined in
+   * POSIX 2008, which has 'struct timespec st_mtim' instead of 'time_t st_mtime'. Use "#define _POSIX_C_SOURCE 200809L"
+   * before the headers to invoke. The trouble is that not all systems may have this available, a category that includes
+   * MS Windows, and so we'll need multiple implementations.
+   */
   result.lastModified = static_cast<int64_t>(nativeStat.st_mtime) * 1000;
   return result;
+#endif
 }
 
 std::string DefaultFileSystem::Resolve(const std::string& path) const
