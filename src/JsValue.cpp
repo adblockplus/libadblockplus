@@ -16,6 +16,7 @@
  */
 
 #include <AdblockPlus.h>
+#include <vector>
 
 namespace
 {
@@ -220,15 +221,13 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(
     throw new std::runtime_error("`this` pointer has to be an object");
   v8::Persistent<v8::Object> thisObj = v8::Persistent<v8::Object>::Cast(thisPtr->value);
 
-  size_t argc = params.size();
-  v8::Handle<v8::Value>* argv = new v8::Handle<v8::Value>[argc];
-  for (size_t i = 0; i < argc; ++i)
-    argv[i] = params[i]->value;
+  std::vector<v8::Handle<v8::Value> > argv;
+  for (JsValueList::const_iterator it = params.begin(); it != params.end(); ++it)
+    argv.push_back((*it)->value);
 
   const v8::TryCatch tryCatch;
   v8::Persistent<v8::Function> func = v8::Persistent<v8::Function>::Cast(value);
-  v8::Local<v8::Value> result = func->Call(thisObj, argc, argv);
-  delete argv;
+  v8::Local<v8::Value> result = func->Call(thisObj, argv.size(), &argv.front());
 
   if (tryCatch.HasCaught())
     throw AdblockPlus::JsError(tryCatch.Exception(), tryCatch.Message());
