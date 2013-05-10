@@ -188,19 +188,19 @@ void AdblockPlus::JsEngine::SetWebRequest(AdblockPlus::WebRequestPtr val)
   webRequest = val;
 }
 
-AdblockPlus::ErrorCallbackPtr AdblockPlus::JsEngine::GetErrorCallback()
+AdblockPlus::LogSystemPtr AdblockPlus::JsEngine::GetLogSystem()
 {
-  if (!errorCallback)
-    errorCallback.reset(new DefaultErrorCallback());
-  return errorCallback;
+  if (!logSystem)
+    logSystem.reset(new DefaultLogSystem());
+  return logSystem;
 }
 
-void AdblockPlus::JsEngine::SetErrorCallback(AdblockPlus::ErrorCallbackPtr val)
+void AdblockPlus::JsEngine::SetLogSystem(AdblockPlus::LogSystemPtr val)
 {
   if (!val)
-    throw std::runtime_error("ErrorCallback cannot be null");
+    throw std::runtime_error("LogSystem cannot be null");
 
-  errorCallback = val;
+  logSystem = val;
 }
 
 AdblockPlus::JsEngine::Context::Context(const JsEnginePtr jsEngine)

@@ -15,10 +15,19 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <AdblockPlus/DefaultErrorCallback.h>
+#ifndef ADBLOCK_PLUS_DEFAULT_LOG_SYSTEM_H
+#define ADBLOCK_PLUS_DEFAULT_LOG_SYSTEM_H
 
-void AdblockPlus::DefaultErrorCallback::operator()(const std::string& message)
+#include "LogSystem.h"
+
+namespace AdblockPlus
 {
-  std::cerr << "Error: " << message << std::endl;
+  class DefaultLogSystem : public LogSystem
+  {
+  public:
+    void operator()(LogLevel logLevel, const std::string& message,
+          const std::string& source);
+  };
 }
+
+#endif

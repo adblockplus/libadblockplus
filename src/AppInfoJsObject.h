@@ -24,7 +24,6 @@
 namespace AdblockPlus
 {
   struct AppInfo;
-  class ErrorCallback;
 
   namespace AppInfoJsObject
   {

@@ -26,9 +26,8 @@
     'sources': [
       'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
-      'src/DefaultErrorCallback.cpp',
+      'src/DefaultLogSystem.cpp',
       'src/DefaultFileSystem.cpp',
-      'src/ErrorCallback.cpp',
       'src/FileSystemJsObject.cpp',
       'src/FilterEngine.cpp',
       'src/GlobalJsObject.cpp',
