@@ -27,7 +27,7 @@ namespace AdblockPlus
   class LogSystem
   {
   public:
-    enum LogLevel {TRACE, LOG, INFO, WARN, ERROR};
+    enum LogLevel {LOG_LEVEL_TRACE, LOG_LEVEL_LOG, LOG_LEVEL_INFO, LOG_LEVEL_WARN, LOG_LEVEL_ERROR};
 
     virtual ~LogSystem() {}
     virtual void operator()(LogLevel logLevel, const std::string& message,

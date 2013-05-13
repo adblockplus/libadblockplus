@@ -54,7 +54,7 @@ namespace
 TEST_F(ConsoleJsObjectTest, ConsoleLogCall)
 {
   jsEngine->Evaluate("\n\nconsole.log('foo', 'bar');\n\n", "eval");
-  ASSERT_EQ(AdblockPlus::LogSystem::LOG, mockLogSystem->lastLogLevel);
+  ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_LOG, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ("eval:3", mockLogSystem->lastSource);
 }
@@ -62,7 +62,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleLogCall)
 TEST_F(ConsoleJsObjectTest, ConsoleDebugCall)
 {
   jsEngine->Evaluate("console.debug('foo', 'bar')");
-  ASSERT_EQ(AdblockPlus::LogSystem::LOG, mockLogSystem->lastLogLevel);
+  ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_LOG, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ(":1", mockLogSystem->lastSource);
 }
@@ -70,7 +70,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleDebugCall)
 TEST_F(ConsoleJsObjectTest, ConsoleInfoCall)
 {
   jsEngine->Evaluate("console.info('foo', 'bar')");
-  ASSERT_EQ(AdblockPlus::LogSystem::INFO, mockLogSystem->lastLogLevel);
+  ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_INFO, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ(":1", mockLogSystem->lastSource);
 }
@@ -78,7 +78,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleInfoCall)
 TEST_F(ConsoleJsObjectTest, ConsoleWarnCall)
 {
   jsEngine->Evaluate("console.warn('foo', 'bar')");
-  ASSERT_EQ(AdblockPlus::LogSystem::WARN, mockLogSystem->lastLogLevel);
+  ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ(":1", mockLogSystem->lastSource);
 }
@@ -86,7 +86,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleWarnCall)
 TEST_F(ConsoleJsObjectTest, ConsoleErrorCall)
 {
   jsEngine->Evaluate("console.error('foo', 'bar')");
-  ASSERT_EQ(AdblockPlus::LogSystem::ERROR, mockLogSystem->lastLogLevel);
+  ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_ERROR, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ(":1", mockLogSystem->lastSource);
 }
@@ -101,7 +101,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleTraceCall)
       })();\n\
     }\n\
     foo();", "eval");
-  ASSERT_EQ(AdblockPlus::LogSystem::TRACE, mockLogSystem->lastLogLevel);
+  ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, mockLogSystem->lastLogLevel);
   ASSERT_EQ("\
 1: /* anonymous */() at eval:5\n\
 2: foo() at eval:6\n\
