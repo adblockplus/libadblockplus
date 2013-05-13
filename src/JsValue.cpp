@@ -227,7 +227,8 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(
 
   const v8::TryCatch tryCatch;
   v8::Persistent<v8::Function> func = v8::Persistent<v8::Function>::Cast(value);
-  v8::Local<v8::Value> result = func->Call(thisObj, argv.size(), &argv.front());
+  v8::Local<v8::Value> result = func->Call(thisObj, argv.size(),
+      argv.size() ? &argv.front() : 0);
 
   if (tryCatch.HasCaught())
     throw AdblockPlus::JsError(tryCatch.Exception(), tryCatch.Message());
