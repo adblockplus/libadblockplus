@@ -51,27 +51,27 @@ namespace
 
   v8::Handle<v8::Value> LogCallback(const v8::Arguments& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::LOG, arguments);
+    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_LOG, arguments);
   }
 
   v8::Handle<v8::Value> DebugCallback(const v8::Arguments& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::LOG, arguments);
+    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_LOG, arguments);
   }
 
   v8::Handle<v8::Value> InfoCallback(const v8::Arguments& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::INFO, arguments);
+    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_INFO, arguments);
   }
 
   v8::Handle<v8::Value> WarnCallback(const v8::Arguments& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::WARN, arguments);
+    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_WARN, arguments);
   }
 
   v8::Handle<v8::Value> ErrorCallback(const v8::Arguments& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::ERROR, arguments);
+    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_ERROR, arguments);
   }
 
   v8::Handle<v8::Value> TraceCallback(const v8::Arguments& arguments)
@@ -98,7 +98,7 @@ namespace
     }
 
     AdblockPlus::LogSystemPtr callback = jsEngine->GetLogSystem();
-    (*callback)(AdblockPlus::LogSystem::TRACE, traceback.str(), "");
+    (*callback)(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, traceback.str(), "");
     return v8::Undefined();
   }
 }
