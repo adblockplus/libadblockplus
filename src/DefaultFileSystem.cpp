@@ -125,7 +125,8 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
   #define MSEC_IN_SEC 1000
   #define NSEC_IN_MSEC 1000000
   // Note: _POSIX_C_SOURCE macro is defined automatically on Linux due to g++
-  // defining _GNU_SOURCE macro.
+  // defining _GNU_SOURCE macro. On OS X we still fall back to the "no
+  // milliseconds" branch, it has st_mtimespec instead of st_mtim.
 #if _POSIX_C_SOURCE >= 200809L
   result.lastModified = static_cast<int64_t>(nativeStat.st_mtim.tv_sec) * MSEC_IN_SEC
                       +  static_cast<int64_t>(nativeStat.st_mtim.tv_nsec) / NSEC_IN_MSEC;
