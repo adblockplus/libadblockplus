@@ -46,31 +46,46 @@ namespace
     {
     }
   };
+
+#ifdef WIN32
+  // Paths need to be converted from UTF-8 to UTF-16 on Windows.
+  std::wstring NormalizePath(const std::string& path)
+  {
+    return Utils::ToUTF16String(path, path.length());
+  }
+
+  #define rename _wrename
+  #define remove _wremove
+#else
+  // POSIX systems: assume that file system encoding is UTF-8 and just use the
+  // file paths as they are.
+  #define NormalizePath(path) (path)
+#endif
 }
 
 std::tr1::shared_ptr<std::istream>
 DefaultFileSystem::Read(const std::string& path) const
 {
-  return std::tr1::shared_ptr<std::istream>(new std::ifstream(path.c_str()));
+  return std::tr1::shared_ptr<std::istream>(new std::ifstream(NormalizePath(path).c_str()));
 }
 
 void DefaultFileSystem::Write(const std::string& path,
                               std::tr1::shared_ptr<std::ostream> data)
 {
-  std::ofstream file(path.c_str());
+  std::ofstream file(NormalizePath(path).c_str());
   file << Utils::Slurp(*data);
 }
 
 void DefaultFileSystem::Move(const std::string& fromPath,
                              const std::string& toPath)
 {
-  if (rename(fromPath.c_str(), toPath.c_str()))
+  if (rename(NormalizePath(fromPath).c_str(), NormalizePath(toPath).c_str()))
     throw RuntimeErrorWithErrno("Failed to move " + fromPath + " to " + toPath);
 }
 
 void DefaultFileSystem::Remove(const std::string& path)
 {
-  if (remove(path.c_str()))
+  if (remove(NormalizePath(path).c_str()))
     throw RuntimeErrorWithErrno("Failed to remove " + path);
 }
 
@@ -79,8 +94,7 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
   FileSystem::StatResult result;
 #ifdef WIN32
   WIN32_FILE_ATTRIBUTE_DATA data;
-  std::wstring wpath = Utils::ToUTF16String(path, path.length());
-  if (!GetFileAttributesExW(wpath.c_str(), GetFileExInfoStandard, &data))
+  if (!GetFileAttributesExW(NormalizePath(path).c_str(), GetFileExInfoStandard, &data))
   {
     DWORD err = GetLastError();
     if (err == ERROR_FILE_NOT_FOUND || ERROR_PATH_NOT_FOUND || ERROR_INVALID_DRIVE)
@@ -111,7 +125,7 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
   return result;
 #else
   struct stat nativeStat;
-  const int failure = stat(path.c_str(), &nativeStat);
+  const int failure = stat(NormalizePath(path).c_str(), &nativeStat);
   if (failure)
   {
     if (errno == ENOENT)

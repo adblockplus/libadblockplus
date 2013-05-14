@@ -22,7 +22,7 @@
 
 namespace
 {
-  const std::string testPath = "libadblockplus-test-file";
+  const std::string testPath = "libadblockplus-t\xc3\xa4st-file";
 
   void WriteString(AdblockPlus::FileSystem& fileSystem,
                    const std::string& content)
