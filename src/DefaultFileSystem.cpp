@@ -51,7 +51,7 @@ namespace
   // Paths need to be converted from UTF-8 to UTF-16 on Windows.
   std::wstring NormalizePath(const std::string& path)
   {
-    return Utils::ToUTF16String(path, path.length());
+    return Utils::ToUTF16String(path);
   }
 
   #define rename _wrename
@@ -160,7 +160,7 @@ std::string DefaultFileSystem::Resolve(const std::string& path) const
   else
   {
 #ifdef _WIN32
-  if (PathIsRelative(Utils::ToUTF16String(path, path.length()).c_str()))
+  if (PathIsRelative(NormalizePath(path).c_str()))
 #else
   if (path.length() && *path.begin() != PATH_SEPARATOR)
 #endif

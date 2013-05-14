@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cctype>
 #include <functional>
+#include <stdexcept>
 
 #endif
 
@@ -53,41 +54,34 @@ v8::Local<v8::String> Utils::ToV8String(const std::string& str)
 }
 
 #ifdef _WIN32
-std::wstring Utils::ToUTF16String(const std::string& str, unsigned long length)
+std::wstring Utils::ToUTF16String(const std::string& str)
 {
+  size_t length = str.size();
   if (length == 0)
     return std::wstring();
-  DWORD utf16StringLength = 0;
-  std::wstring utf16String;
-  utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
-  if (utf16StringLength > 0)
-  {
-    utf16String.resize(utf16StringLength);
-    utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
-    return utf16String;
-  }
-  std::runtime_error("ToUTF16String failed. Can't determine the length of the buffer needed\n");
-  return 0;
+
+  DWORD utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, NULL, 0);
+  if (utf16StringLength == 0)
+    throw std::runtime_error("ToUTF16String failed. Can't determine the length of the buffer needed.");
+
+  std::wstring utf16String(utf16StringLength, L'\0');
+  MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
+  return utf16String;
 }
 
-
-
-std::string Utils::ToUTF8String(const std::wstring& str, unsigned long length)
+std::string Utils::ToUTF8String(const std::wstring& str)
 {
+  size_t length = str.size();
   if (length == 0)
     return std::string();
 
-  DWORD utf8StringLength = 0;
-  std::string utf8String;
-  utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
-  if (utf8StringLength > 0)
-  {
-    utf8String.resize(utf8StringLength);
-    utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
-    return utf8String;
-  }
-  std::runtime_error("ToUTF8String failed. Can't determine the length of the buffer needed\n");
-  return 0;
+  DWORD utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, NULL, 0, 0, 0);
+  if (utf8StringLength == 0)
+    throw std::runtime_error("ToUTF8String failed. Can't determine the length of the buffer needed.");
+
+  std::string utf8String(utf8StringLength, '\0');
+  WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
+  return utf8String;
 }
 
 std::wstring Utils::CanonizeUrl(std::wstring url)

@@ -157,8 +157,8 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
       headerNameW = AdblockPlus::Utils::TrimString(headerNameW);
       headerValueW = AdblockPlus::Utils::TrimString(headerValueW);
 
-      std::string headerName = AdblockPlus::Utils::ToUTF8String(headerNameW.c_str(), headerNameW.length());
-      std::string headerValue = AdblockPlus::Utils::ToUTF8String(headerValueW.c_str(), headerValueW.length());
+      std::string headerName = AdblockPlus::Utils::ToUTF8String(headerNameW.c_str());
+      std::string headerValue = AdblockPlus::Utils::ToUTF8String(headerValueW.c_str());
 
       std::transform(headerName.begin(), headerName.end(), headerName.begin(), ::tolower);
       std::transform(headerValue.begin(), headerValue.end(), headerValue.begin(), ::tolower);
@@ -196,7 +196,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   HRESULT hr;
   BOOL res;
 
-  std::wstring canonizedUrl = Utils::CanonizeUrl(Utils::ToUTF16String(url, url.length()));
+  std::wstring canonizedUrl = Utils::CanonizeUrl(Utils::ToUTF16String(url));
 
   std::string headersString = "";
   for (int i = 0; i < requestHeaders.size(); i++)
@@ -204,7 +204,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
     headersString += requestHeaders[i].first + ": ";
     headersString += requestHeaders[i].second + ";";
   }
-  std::wstring headers = Utils::ToUTF16String(headersString, headersString.length());
+  std::wstring headers = Utils::ToUTF16String(headersString);
 
   LPSTR outBuffer;
   DWORD downloadSize, downloaded;

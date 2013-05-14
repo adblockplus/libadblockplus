@@ -28,8 +28,8 @@ namespace AdblockPlus
     std::string FromV8String(v8::Handle<v8::Value> value);
     v8::Local<v8::String> ToV8String(const std::string& str);
 #ifdef _WIN32
-    std::wstring ToUTF16String(const std::string& str, unsigned long length);
-    std::string ToUTF8String(const std::wstring& str, unsigned long length);
+    std::wstring ToUTF16String(const std::string& str);
+    std::string ToUTF8String(const std::wstring& str);
     std::wstring CanonizeUrl(const std::wstring url);
     std::wstring TrimString(std::wstring text);
 #endif
