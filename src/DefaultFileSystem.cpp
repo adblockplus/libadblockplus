@@ -122,13 +122,16 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
   result.isFile = S_ISREG(nativeStat.st_mode);
   result.isDirectory = S_ISDIR(nativeStat.st_mode);
 
-  /*
-   * In order to get millisecond resolution for modification times, it's necessary to use the 'stat' structure defined in
-   * POSIX 2008, which has 'struct timespec st_mtim' instead of 'time_t st_mtime'. Use "#define _POSIX_C_SOURCE 200809L"
-   * before the headers to invoke. The trouble is that not all systems may have this available, a category that includes
-   * MS Windows, and so we'll need multiple implementations.
-   */
-  result.lastModified = static_cast<int64_t>(nativeStat.st_mtime) * 1000;
+  #define MSEC_IN_SEC 1000
+  #define NSEC_IN_MSEC 1000000
+  // Note: _POSIX_C_SOURCE macro is defined automatically on Linux due to g++
+  // defining _GNU_SOURCE macro.
+#if _POSIX_C_SOURCE >= 200809L
+  result.lastModified = static_cast<int64_t>(nativeStat.st_mtim.tv_sec) * MSEC_IN_SEC
+                      +  static_cast<int64_t>(nativeStat.st_mtim.tv_nsec) / NSEC_IN_MSEC;
+#else
+  result.lastModified = static_cast<int64_t>(nativeStat.st_mtime) * MSEC_IN_SEC;
+#endif
   return result;
 #endif
 }
