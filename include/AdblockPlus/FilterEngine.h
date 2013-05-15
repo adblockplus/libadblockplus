@@ -68,6 +68,7 @@ namespace AdblockPlus
   {
   public:
     explicit FilterEngine(JsEnginePtr jsEngine);
+    bool IsInitialized() const;
     FilterPtr GetFilter(const std::string& text);
     SubscriptionPtr GetSubscription(const std::string& url);
     std::vector<FilterPtr> GetListedFilters() const;
