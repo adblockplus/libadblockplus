@@ -160,3 +160,10 @@ TEST_F(FilterEngineTest, Matches)
   AdblockPlus::FilterPtr match8 = filterEngine->Matches("http://example.org/fpbanner.gif", "IMAGE", "http://example.com/");
   ASSERT_FALSE(match8);
 }
+
+TEST_F(FilterEngineTest, IsInitialized)
+{
+  ASSERT_FALSE(filterEngine->IsInitialized());
+  jsEngine->Evaluate("require('filterNotifier').FilterNotifier.triggerListeners( 'load')");
+  ASSERT_TRUE(filterEngine->IsInitialized());
+}

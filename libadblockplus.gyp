@@ -84,6 +84,7 @@
           'lib/utils.js',
           'lib/elemHideHitRegistration.js',
           'adblockplus/lib/filterNotifier.js',
+          'lib/init.js',
           'adblockplus/lib/filterClasses.js',
           'adblockplus/lib/subscriptionClasses.js',
           'adblockplus/lib/filterStorage.js',

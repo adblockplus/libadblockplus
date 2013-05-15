@@ -138,6 +138,11 @@ FilterEngine::FilterEngine(JsEnginePtr jsEngine) : jsEngine(jsEngine)
     jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
 }
 
+bool FilterEngine::IsInitialized() const
+{
+  return jsEngine->Evaluate("_abpInitialized")->AsBool();
+}
+
 FilterPtr FilterEngine::GetFilter(const std::string& text)
 {
   JsValuePtr func = jsEngine->Evaluate("API.getFilterFromText");
