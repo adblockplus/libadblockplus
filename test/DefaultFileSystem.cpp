@@ -15,10 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
-
-#include "../src/Utils.h"
 
 namespace
 {
@@ -37,9 +36,10 @@ TEST(DefaultFileSystemTest, WriteReadRemove)
 {
   AdblockPlus::DefaultFileSystem fileSystem;
   WriteString(fileSystem, "foo");
-  std::string output = AdblockPlus::Utils::Slurp(*fileSystem.Read(testPath));
+  std::stringstream output;
+  output << fileSystem.Read(testPath)->rdbuf();
   fileSystem.Remove(testPath);
-  ASSERT_EQ("foo", output);
+  ASSERT_EQ("foo", output.str());
 }
 
 TEST(DefaultFileSystemTest, StatWorkingDirectory)

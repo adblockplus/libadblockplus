@@ -8,15 +8,22 @@
 
   'conditions': [
     ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
-       or OS=="netbsd"', {
+       or OS=="netbsd" or OS=="android"', {
       'target_defaults': {
         'cflags': [ '-Wall', '-W', '-Wno-unused-parameter',
                     '-Wnon-virtual-dtor', '-pthread', '-fno-rtti',
-                    '-pedantic',
-                    # Ignore some warnings for googletest
-                    '-Wno-error=long-long', '-Wno-error=variadic-macros',
-                    '-Wno-error=missing-field-initializers' ],
+                    '-pedantic', '-std=c++0x', '-fexceptions', ],
         'ldflags': [ '-pthread', ],
+      },
+    }],
+    ['OS=="android"', {
+      'target_defaults': {
+        'cflags!': [
+          '-pthread',  # Not supported by Android toolchain.
+        ],
+        'ldflags!': [
+          '-pthread',  # Not supported by Android toolchain.
+        ],
       },
     }],
   ],
