@@ -22,6 +22,12 @@ namespace
   class JsEngineTest : public BaseJsTest
   {
   };
+
+  bool callbackCalled = false;
+  void Callback()
+  {
+    callbackCalled = true;
+  }
 }
 
 TEST_F(JsEngineTest, Evaluate)
@@ -61,6 +67,31 @@ TEST_F(JsEngineTest, ValueCreation)
   value = jsEngine->NewObject();
   ASSERT_TRUE(value->IsObject());
   ASSERT_EQ(0u, value->GetOwnPropertyNames().size());
+}
+
+TEST_F(JsEngineTest, EventCallbacks)
+{
+  // Trigger event without a callback
+  callbackCalled = false;
+  jsEngine->Evaluate("_triggerEvent('foobar')");
+  ASSERT_FALSE(callbackCalled);
+
+  // Set callback
+  jsEngine->SetEventCallback("foobar", Callback);
+  callbackCalled = false;
+  jsEngine->Evaluate("_triggerEvent('foobar')");
+  ASSERT_TRUE(callbackCalled);
+
+  // Trigger a different event
+  callbackCalled = false;
+  jsEngine->Evaluate("_triggerEvent('barfoo')");
+  ASSERT_FALSE(callbackCalled);
+
+  // Remove callback
+  jsEngine->RemoveEventCallback("foobar");
+  callbackCalled = false;
+  jsEngine->Evaluate("_triggerEvent('foobar')");
+  ASSERT_FALSE(callbackCalled);
 }
 
 TEST(NewJsEngineTest, CallbackGetSet)

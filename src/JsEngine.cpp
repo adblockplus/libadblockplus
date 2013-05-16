@@ -93,6 +93,24 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
   return JsValuePtr(new JsValue(shared_from_this(), result));
 }
 
+void AdblockPlus::JsEngine::SetEventCallback(const std::string& eventName,
+    AdblockPlus::JsEngine::EventCallback callback)
+{
+  eventCallbacks[eventName] = callback;
+}
+
+void AdblockPlus::JsEngine::RemoveEventCallback(const std::string& eventName)
+{
+  eventCallbacks.erase(eventName);
+}
+
+void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName)
+{
+  EventMap::iterator it = eventCallbacks.find(eventName);
+  if (it != eventCallbacks.end())
+    it->second();
+}
+
 void AdblockPlus::JsEngine::Gc()
 {
   while (!v8::V8::IdleNotification());
