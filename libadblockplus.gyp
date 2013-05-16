@@ -1,7 +1,7 @@
 {
   'conditions': [[
-    # We don't want to use curl on Windows, skip the check there
-    'OS=="win"',
+    # We don't want to use curl on Windows and Android, skip the check there
+    'OS=="win" or OS=="android"',
     {
       'variables': {
         'have_curl': 0
@@ -20,9 +20,8 @@
     'type': '<(library)',
     'include_dirs': [
       'include',
-      'third_party/v8/include'
+      'third_party/v8/include',
     ],
-    'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'sources': [
       'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
@@ -43,8 +42,18 @@
     'direct_dependent_settings': {
       'include_dirs': ['include']
     },
-    'export_dependent_settings': ['third_party/v8/tools/gyp/v8.gyp:v8'],
     'conditions': [
+      ['OS=="android"', {
+        'link_settings': {
+          'libraries': [
+            'android_arm.release/obj.target/tools/gyp/libv8_base.a',
+            'android_arm.release/obj.target/tools/gyp/libv8_snapshot.a',
+          ],
+        }
+      }, {
+        'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
+        'export_dependent_settings': ['third_party/v8/tools/gyp/v8.gyp:v8'],
+      }],
       ['have_curl==1',
         {
           'sources': [

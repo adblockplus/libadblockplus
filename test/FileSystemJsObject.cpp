@@ -15,9 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
 #include "BaseJsTest.h"
 #include "../src/Thread.h"
-#include "../src/Utils.h"
 
 namespace
 {
@@ -55,7 +55,10 @@ namespace
       if (!success)
         throw std::runtime_error("Unable to write to " + path);
       lastWrittenPath = path;
-      lastWrittenContent = AdblockPlus::Utils::Slurp(*data);
+
+      std::stringstream content;
+      content << data->rdbuf();
+      lastWrittenContent = content.str();
     }
 
     void Move(const std::string& fromPath, const std::string& toPath)
