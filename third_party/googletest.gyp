@@ -83,6 +83,11 @@
         'direct_dependent_settings': {
           'defines': [ '_VARIADIC_MAX=10' ],
         },
+      }, {
+        'defines': [ 'GTEST_HAS_TR1_TUPLE=1', 'GTEST_USE_OWN_TR1_TUPLE=0' ],
+        'direct_dependent_settings': {
+          'defines': [ 'GTEST_HAS_TR1_TUPLE=1', 'GTEST_USE_OWN_TR1_TUPLE=0' ],
+        },
       }]],
   },
   {

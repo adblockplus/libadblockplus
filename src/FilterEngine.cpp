@@ -21,6 +21,7 @@
 #include <string>
 
 #include <AdblockPlus.h>
+#include "Thread.h"
 
 using namespace AdblockPlus;
 
@@ -132,15 +133,22 @@ bool Subscription::operator==(const Subscription& subscription) const
   return GetProperty("url")->AsString() == subscription.GetProperty("url")->AsString();
 }
 
-FilterEngine::FilterEngine(JsEnginePtr jsEngine) : jsEngine(jsEngine)
+FilterEngine::FilterEngine(JsEnginePtr jsEngine)
+    : jsEngine(jsEngine), initialized(false)
 {
+  jsEngine->SetEventCallback("init", std::tr1::bind(&FilterEngine::InitDone, this));
   for (int i = 0; !jsSources[i].empty(); i += 2)
     jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+
+  // TODO: This should really be implemented via a conditional variable
+  while (!initialized)
+    ::Sleep(10);
 }
 
-bool FilterEngine::IsInitialized() const
+void FilterEngine::InitDone()
 {
-  return jsEngine->Evaluate("_abpInitialized")->AsBool();
+  jsEngine->RemoveEventCallback("init");
+  initialized = true;
 }
 
 FilterPtr FilterEngine::GetFilter(const std::string& text)

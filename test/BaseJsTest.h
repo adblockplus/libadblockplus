@@ -79,40 +79,42 @@ class LazyFileSystem : public AdblockPlus::FileSystem
 {
   std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
   {
-    while (true)
-      AdblockPlus::Sleep(100000);
-    return std::tr1::shared_ptr<std::istream>();
+    if (path == "patterns.ini")
+    {
+      std::string dummyData("# Adblock Plus preferences\n[Subscription]\nurl=~fl~");
+      return std::tr1::shared_ptr<std::istream>(new std::istringstream(dummyData));
+    }
+    else
+      return std::tr1::shared_ptr<std::istream>();
   }
 
   void Write(const std::string& path,
              std::tr1::shared_ptr<std::ostream> content)
   {
-    while (true)
-      AdblockPlus::Sleep(100000);
   }
 
   void Move(const std::string& fromPath, const std::string& toPath)
   {
-    while (true)
-      AdblockPlus::Sleep(100000);
   }
 
   void Remove(const std::string& path)
   {
-    while (true)
-      AdblockPlus::Sleep(100000);
   }
 
   StatResult Stat(const std::string& path) const
   {
-    while (true)
-      AdblockPlus::Sleep(100000);
-    return StatResult();
+    StatResult result;
+    if (path == "patterns.ini")
+    {
+      result.exists = true;
+      result.isFile = true;
+    }
+    return result;
   }
 
   std::string Resolve(const std::string& path) const
   {
-    return std::string();
+    return path;
   }
 };
 

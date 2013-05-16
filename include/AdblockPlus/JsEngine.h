@@ -18,11 +18,13 @@
 #ifndef ADBLOCK_PLUS_JS_ENGINE_H
 #define ADBLOCK_PLUS_JS_ENGINE_H
 
+#include <map>
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
 #include <v8.h>
 #include <AdblockPlus/AppInfo.h>
+#include <AdblockPlus/tr1_functional.h>
 #include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/JsValue.h>
@@ -47,7 +49,13 @@ namespace AdblockPlus
     friend class JsValue;
 
   public:
+    typedef std::tr1::function<void()> EventCallback;
+    typedef std::map<std::string, EventCallback> EventMap;
+
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo());
+    void SetEventCallback(const std::string& eventName, EventCallback callback);
+    void RemoveEventCallback(const std::string& eventName);
+    void TriggerEvent(const std::string& eventName);
     JsValuePtr Evaluate(const std::string& source,
         const std::string& filename = "");
     void Gc();
@@ -100,6 +108,7 @@ namespace AdblockPlus
     LogSystemPtr logSystem;
     v8::Isolate* isolate;
     v8::Persistent<v8::Context> context;
+    EventMap eventCallbacks;
   };
 }
 

@@ -84,12 +84,24 @@ namespace
     // clearTimeout(), we can save that for later.
     return v8::Undefined();
   }
+
+  v8::Handle<v8::Value> TriggerEventCallback(const v8::Arguments& arguments)
+  {
+    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+    if (converted.size() != 1)
+      return v8::ThrowException(v8::String::New("_triggerEvent expects one parameter"));
+
+    jsEngine->TriggerEvent(converted[0]->AsString());
+    return v8::Undefined();
+  }
 }
 
 JsValuePtr GlobalJsObject::Setup(JsEnginePtr jsEngine, const AppInfo& appInfo,
     JsValuePtr obj)
 {
   obj->SetProperty("setTimeout", jsEngine->NewCallback(::SetTimeoutCallback));
+  obj->SetProperty("_triggerEvent", jsEngine->NewCallback(::TriggerEventCallback));
   obj->SetProperty("_fileSystem",
       FileSystemJsObject::Setup(jsEngine, jsEngine->NewObject()));
   obj->SetProperty("_webRequest",
