@@ -59,7 +59,10 @@ namespace
 #else
   // POSIX systems: assume that file system encoding is UTF-8 and just use the
   // file paths as they are.
-  #define NormalizePath(path) (path)
+  std::string NormalizePath(const std::string& path)
+  {
+    return path;
+  }
 #endif
 }
 
