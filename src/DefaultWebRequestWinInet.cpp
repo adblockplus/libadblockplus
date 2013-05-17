@@ -145,7 +145,7 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
     {
       headerNameEnd = responseHeaders.find(L":", prevHeaderStart);
       headerValueStart = headerNameEnd + strlen(":");
-      if ((headerNameEnd > nextHeaderNameStart) || (headerNameEnd == std::wstring::npos))
+      if (headerNameEnd > nextHeaderNameStart || headerNameEnd == std::wstring::npos)
       {
         nextHeaderNameStart++;
         prevHeaderStart = nextHeaderNameStart;
