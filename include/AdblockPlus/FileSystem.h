@@ -31,12 +31,12 @@ namespace AdblockPlus
   public:
     struct StatResult
     {
-      inline StatResult()
+      StatResult()
       {
         exists = false;
         isDirectory = false;
         isFile = false;
-        lastModified = false;
+        lastModified = 0;
       }
 
       bool exists;
