@@ -19,6 +19,9 @@
 #define ADBLOCK_PLUS_UTILS_H
 
 #include <v8.h>
+#include <algorithm>
+#include <cctype>
+#include <functional>
 
 namespace AdblockPlus
 {
@@ -27,11 +30,19 @@ namespace AdblockPlus
     std::string Slurp(std::ios& stream);
     std::string FromV8String(v8::Handle<v8::Value> value);
     v8::Local<v8::String> ToV8String(const std::string& str);
+    template <class T>
+    T TrimString(T text)
+    {
+      // Via http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+      T trimmed(text);
+      trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+      trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), trimmed.end());
+      return trimmed;
+    }
 #ifdef _WIN32
     std::wstring ToUTF16String(const std::string& str);
     std::string ToUTF8String(const std::wstring& str);
-    std::wstring CanonizeUrl(const std::wstring url);
-    std::wstring TrimString(std::wstring text);
+    std::wstring CanonizeUrl(const std::wstring& url);
 #endif
   }
 }

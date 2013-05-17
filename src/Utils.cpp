@@ -23,9 +23,6 @@
 #include <Windows.h>
 #include <Shlwapi.h>
 
-#include <algorithm>
-#include <cctype>
-#include <functional>
 #include <stdexcept>
 
 #endif
@@ -52,6 +49,7 @@ v8::Local<v8::String> Utils::ToV8String(const std::string& str)
 {
   return v8::String::New(str.c_str(), str.length());
 }
+
 
 #ifdef _WIN32
 std::wstring Utils::ToUTF16String(const std::string& str)
@@ -84,7 +82,7 @@ std::string Utils::ToUTF8String(const std::wstring& str)
   return utf8String;
 }
 
-std::wstring Utils::CanonizeUrl(std::wstring url)
+std::wstring Utils::CanonizeUrl(const std::wstring& url)
 {
   HRESULT hr;
 
@@ -96,24 +94,15 @@ std::wstring Utils::CanonizeUrl(std::wstring url)
   if (FAILED(hr))
   {
     // The URL was too long. Let's try again with an increased buffer
-    canonizedUrl.resize(canonizedUrlLength + 1);
+    canonizedUrl.resize(canonizedUrlLength);
     hr = UrlCanonicalize(url.c_str(), &canonizedUrl[0], &canonizedUrlLength, 0);
     if (FAILED(hr))
     {
-      std::runtime_error("CanonizeUrl failed\n");
+      throw std::runtime_error("CanonizeUrl failed\n");
     }
   }
   return canonizedUrl;
 
 }
-
-std::wstring Utils::TrimString(std::wstring text)
-{
-  // Via http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-  std::wstring trimmed(text);
-  trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-  trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), trimmed.end());
-  return trimmed;
-}
-
 #endif
+
