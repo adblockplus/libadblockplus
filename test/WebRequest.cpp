@@ -101,6 +101,7 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
     var request = new XMLHttpRequest();\
     request.open('GET', 'https://easylist.adblockplus.org/easylist.txt');\
     request.setRequestHeader('X', 'Y');\
+    request.setRequestHeader('X2', 'Y2');\
     request.overrideMimeType('text/plain');\
     request.addEventListener('load', function() {result = request.responseText;}, false);\
     request.addEventListener('error', function() {result = 'error';}, false);\

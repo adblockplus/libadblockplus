@@ -30,6 +30,8 @@ namespace AdblockPlus
     std::string Slurp(std::ios& stream);
     std::string FromV8String(v8::Handle<v8::Value> value);
     v8::Local<v8::String> ToV8String(const std::string& str);
+
+    // Code for templated function has to be in a header file, can't be in .cpp
     template <class T>
     T TrimString(T text)
     {
@@ -40,8 +42,8 @@ namespace AdblockPlus
       return trimmed;
     }
 #ifdef _WIN32
-    std::wstring ToUTF16String(const std::string& str);
-    std::string ToUTF8String(const std::wstring& str);
+    std::wstring ToUtf16String(const std::string& str);
+    std::string ToUtf8String(const std::wstring& str);
     std::wstring CanonizeUrl(const std::wstring& url);
 #endif
   }

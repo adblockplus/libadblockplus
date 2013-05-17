@@ -51,7 +51,7 @@ namespace
   // Paths need to be converted from UTF-8 to UTF-16 on Windows.
   std::wstring NormalizePath(const std::string& path)
   {
-    return Utils::ToUTF16String(path);
+    return Utils::ToUtf16String(path);
   }
 
   #define rename _wrename
