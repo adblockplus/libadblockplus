@@ -97,8 +97,12 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
   if (!GetFileAttributesExW(NormalizePath(path).c_str(), GetFileExInfoStandard, &data))
   {
     DWORD err = GetLastError();
-    if (err == ERROR_FILE_NOT_FOUND || ERROR_PATH_NOT_FOUND || ERROR_INVALID_DRIVE)
+    if (err == ERROR_FILE_NOT_FOUND ||
+        err == ERROR_PATH_NOT_FOUND ||
+        err == ERROR_INVALID_DRIVE)
+    {
       return result;
+    }
     throw RuntimeErrorWithErrno("Unable to stat " + path);
   }
 
