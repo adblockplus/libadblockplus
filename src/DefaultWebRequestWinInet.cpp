@@ -48,24 +48,26 @@ long WindowsErrorToGeckoError(DWORD err)
   switch (err)
   {
   case ERROR_INVALID_HANDLE:
-    return AdblockPlus::DefaultWebRequest::NS_ERROR_NOT_INITIALIZED;
+    return AdblockPlus::WebRequest::NS_ERROR_NOT_INITIALIZED;
   case ERROR_INTERNET_UNRECOGNIZED_SCHEME:
-    return AdblockPlus::DefaultWebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
+    return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
   case ERROR_INTERNET_CONNECTION_ABORTED:
-    return AdblockPlus::DefaultWebRequest::NS_ERROR_CONNECTION_REFUSED;
+    return AdblockPlus::WebRequest::NS_ERROR_NET_INTERRUPT;
   case ERROR_INTERNET_INVALID_URL:
-    return AdblockPlus::DefaultWebRequest::NS_ERROR_MALFORMED_URI;
+    return AdblockPlus::WebRequest::NS_ERROR_MALFORMED_URI;
   case ERROR_INTERNET_CONNECTION_RESET:
-    return AdblockPlus::DefaultWebRequest::NS_ERROR_NET_RESET;
+    return AdblockPlus::WebRequest::NS_ERROR_NET_RESET;
   case ERROR_INTERNET_TIMEOUT:
-    return AdblockPlus::DefaultWebRequest::NS_ERROR_NET_TIMEOUT;
+    return AdblockPlus::WebRequest::NS_ERROR_NET_TIMEOUT;
   case ERROR_INTERNET_SERVER_UNREACHABLE:
-    return AdblockPlus::DefaultWebRequest::NS_ERROR_UNKNOWN_HOST;
+    return AdblockPlus::WebRequest::NS_ERROR_CONNECTION_REFUSED;
+  case ERROR_INTERNET_NAME_NOT_RESOLVED:
+    return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_HOST;
   case ERROR_INTERNET_PROXY_SERVER_UNREACHABLE:
-    return AdblockPlus::DefaultWebRequest::NS_ERROR_UNKNOWN_PROXY_HOST;
+    return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROXY_CONNECTION_REFUSED;
 
   default:
-    return AdblockPlus::DefaultWebRequest::NS_CUSTOM_ERROR_BASE + err;
+    return AdblockPlus::WebRequest::NS_CUSTOM_ERROR_BASE + err;
   }
 }
 
@@ -133,7 +135,7 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
     return;
   }
   std::wstring responseHeaders;
-  responseHeaders.resize(bufLen / sizeof(std::wstring::value_type));
+  responseHeaders.resize((bufLen / sizeof(std::wstring::value_type)) + 1);
   res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_RAW_HEADERS, WINHTTP_HEADER_NAME_BY_INDEX, &responseHeaders[0], &bufLen, WINHTTP_NO_HEADER_INDEX);
   if (res)
   {
@@ -155,11 +157,11 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
       std::wstring headerNameW = responseHeaders.substr(prevHeaderStart, headerNameEnd - prevHeaderStart);
       std::wstring headerValueW = responseHeaders.substr(headerValueStart, nextHeaderNameStart - headerValueStart);
 
-      headerNameW = AdblockPlus::Utils::TrimString<std::wstring>(headerNameW);
-      headerValueW = AdblockPlus::Utils::TrimString<std::wstring>(headerValueW);
+      headerNameW = AdblockPlus::Utils::TrimString(headerNameW);
+      headerValueW = AdblockPlus::Utils::TrimString(headerValueW);
 
-      std::string headerName = AdblockPlus::Utils::ToUTF8String(headerNameW.c_str());
-      std::string headerValue = AdblockPlus::Utils::ToUTF8String(headerValueW.c_str());
+      std::string headerName = AdblockPlus::Utils::ToUtf8String(headerNameW.c_str());
+      std::string headerValue = AdblockPlus::Utils::ToUtf8String(headerValueW.c_str());
 
       std::transform(headerName.begin(), headerName.end(), headerName.begin(), ::tolower);
       std::transform(headerValue.begin(), headerValue.end(), headerValue.begin(), ::tolower);
@@ -180,9 +182,9 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
   {
     throw std::exception("Can't parse the status code");
   }
-  statusStr.resize(statusLen / sizeof(std::wstring::value_type));
+  statusStr.resize(statusLen / sizeof(std::wstring::value_type) + 1);
   res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, &statusStr[0], &statusLen, WINHTTP_NO_HEADER_INDEX);
-  if ((statusLen == 0) || (res == FALSE))
+  if ((statusLen == 0) || (!res))
   {
     throw std::exception("Can't parse the status code");
   }
@@ -201,18 +203,16 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   HRESULT hr;
   BOOL res;
 
-  std::wstring canonizedUrl = Utils::CanonizeUrl(Utils::ToUTF16String(url));
+  std::wstring canonizedUrl = Utils::CanonizeUrl(Utils::ToUtf16String(url));
 
   std::string headersString = "";
   for (int i = 0; i < requestHeaders.size(); i++)
   {
     headersString += requestHeaders[i].first + ": ";
-    headersString += requestHeaders[i].second + ";";
+    headersString += requestHeaders[i].second + "\r\n";
   }
-  std::wstring headers = Utils::ToUTF16String(headersString);
+  std::wstring headers = Utils::ToUtf16String(headersString);
 
-  LPSTR outBuffer;
-  DWORD downloadSize, downloaded;
   WinHttpHandle hSession(0), hConnect(0), hRequest(0);
 
   // Use WinHttpOpen to obtain a session handle.
@@ -226,10 +226,18 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
   else
   {
     hSession.handle = WinHttpOpen(L"Adblock Plus", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, proxyName.c_str(), proxyBypass.c_str(), 0);
+
+
+    // Make sure the proxy is set. Just providing it to the above call is not enough sometimes
+    WINHTTP_PROXY_INFO proxyInfo;
+    proxyInfo.dwAccessType = WINHTTP_ACCESS_TYPE_NAMED_PROXY;
+    proxyInfo.lpszProxy = (LPWSTR)proxyName.c_str();
+    proxyInfo.lpszProxyBypass = (LPWSTR)proxyBypass.c_str();
+    WinHttpSetOption(hSession.handle, WINHTTP_OPTION_PROXY , &proxyInfo, sizeof(WINHTTP_PROXY_INFO));
   }
   if (!hSession)
   {
-    result.status = NS_CUSTOM_ERROR_BASE;
+    result.status = WindowsErrorToGeckoError(GetLastError());
     return result;
   }
   URL_COMPONENTS urlComponents;
@@ -306,6 +314,9 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
 
   ParseResponseHeaders(hRequest, &result);
 
+  std::auto_ptr<char> outBuffer;
+  DWORD downloadSize, downloaded;
+
   // Download the actual response
   // Keep checking for data until there is nothing left.
   do
@@ -318,8 +329,8 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
       break;
     }
     // Allocate space for the buffer.
-    outBuffer = new char[downloadSize+1];
-    if (!outBuffer)
+    outBuffer.reset(new char[downloadSize+1]);
+    if (!outBuffer.get())
     {
       //Out of memory?
       result.status = NS_ERROR_OUT_OF_MEMORY;
@@ -328,14 +339,12 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
     else
     {
       // Read the data.
-      ZeroMemory(outBuffer, downloadSize+1);
+      ZeroMemory(outBuffer.get(), downloadSize+1);
 
-      if (WinHttpReadData(hRequest, (LPVOID)outBuffer, downloadSize, &downloaded))
+      if (WinHttpReadData(hRequest, outBuffer.get(), downloadSize, &downloaded))
       {
-        result.responseText.append(outBuffer, downloaded);
+        result.responseText.append(outBuffer.get(), downloaded);
       }
-      // Free the memory allocated to the buffer.
-      delete[] outBuffer;
     }
   } while (downloadSize > 0);
   return result;

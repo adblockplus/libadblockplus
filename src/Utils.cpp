@@ -52,7 +52,7 @@ v8::Local<v8::String> Utils::ToV8String(const std::string& str)
 
 
 #ifdef _WIN32
-std::wstring Utils::ToUTF16String(const std::string& str)
+std::wstring Utils::ToUtf16String(const std::string& str)
 {
   size_t length = str.size();
   if (length == 0)
@@ -67,7 +67,7 @@ std::wstring Utils::ToUTF16String(const std::string& str)
   return utf16String;
 }
 
-std::string Utils::ToUTF8String(const std::wstring& str)
+std::string Utils::ToUtf8String(const std::wstring& str)
 {
   size_t length = str.size();
   if (length == 0)
@@ -91,10 +91,9 @@ std::wstring Utils::CanonizeUrl(const std::wstring& url)
 
   canonizedUrl.resize(canonizedUrlLength);
   hr = UrlCanonicalize(url.c_str(), &canonizedUrl[0], &canonizedUrlLength, 0);
+  canonizedUrl.resize(canonizedUrlLength);
   if (FAILED(hr))
   {
-    // The URL was too long. Let's try again with an increased buffer
-    canonizedUrl.resize(canonizedUrlLength);
     hr = UrlCanonicalize(url.c_str(), &canonizedUrl[0], &canonizedUrlLength, 0);
     if (FAILED(hr))
     {
