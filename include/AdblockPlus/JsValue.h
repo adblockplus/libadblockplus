@@ -21,8 +21,14 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include <v8.h>
 #include "tr1_memory.h"
+
+namespace v8
+{
+  class Value;
+  template <class T> class Handle;
+  template <class T> class Persistent;
+}
 
 namespace AdblockPlus
 {
@@ -76,7 +82,7 @@ namespace AdblockPlus
     void SetProperty(const std::string& name, v8::Handle<v8::Value> val);
 
     JsEnginePtr jsEngine;
-    v8::Persistent<v8::Value> value;
+    std::auto_ptr<v8::Persistent<v8::Value> > value;
   };
 }
 
