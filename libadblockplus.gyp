@@ -33,6 +33,7 @@
       'src/GlobalJsObject.cpp',
       'src/JsContext.cpp',
       'src/JsEngine.cpp',
+      'src/JsError.cpp',
       'src/JsValue.cpp',
       'src/Thread.cpp',
       'src/Utils.cpp',

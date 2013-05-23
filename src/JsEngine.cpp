@@ -16,10 +16,10 @@
  */
 
 #include <AdblockPlus.h>
-#include <sstream>
 
 #include "GlobalJsObject.h"
 #include "JsContext.h"
+#include "JsError.h"
 #include "Utils.h"
 
 namespace
@@ -41,27 +41,6 @@ namespace
     if (tryCatch.HasCaught())
       throw AdblockPlus::JsError(tryCatch.Exception(), tryCatch.Message());
   }
-
-  std::string ExceptionToString(const v8::Handle<v8::Value> exception,
-      const v8::Handle<v8::Message> message)
-  {
-    std::stringstream error;
-    error << *v8::String::Utf8Value(exception);
-    if (!message.IsEmpty())
-    {
-      error << " at ";
-      error << *v8::String::Utf8Value(message->GetScriptResourceName());
-      error << ":";
-      error << message->GetLineNumber();
-    }
-    return error.str();
-  }
-}
-
-AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
-    const v8::Handle<v8::Message> message)
-  : std::runtime_error(ExceptionToString(exception, message))
-{
 }
 
 AdblockPlus::JsEngine::JsEngine()
