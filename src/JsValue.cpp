@@ -25,85 +25,84 @@
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
       v8::Handle<v8::Value> value)
     : jsEngine(jsEngine),
-      value(new v8::Persistent<v8::Value>(v8::Persistent<v8::Value>::New(jsEngine->isolate, value)))
+      value(jsEngine->isolate, value)
 {
 }
 
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsValuePtr value)
     : jsEngine(value->jsEngine),
-      value(new v8::Persistent<v8::Value>(v8::Persistent<v8::Value>::New(jsEngine->isolate, *value->value)))
+      value(value->value)
 {
 }
 
 AdblockPlus::JsValue::~JsValue()
 {
-  value->Dispose(jsEngine->isolate);
 }
 
 bool AdblockPlus::JsValue::IsUndefined() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IsUndefined();
+  return value->IsUndefined();
 }
 
 bool AdblockPlus::JsValue::IsNull() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IsNull();
+  return value->IsNull();
 }
 
 bool AdblockPlus::JsValue::IsString() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IsString() || (*value)->IsStringObject();
+  return value->IsString() || value->IsStringObject();
 }
 
 bool AdblockPlus::JsValue::IsNumber() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IsNumber() || (*value)->IsNumberObject();
+  return value->IsNumber() || value->IsNumberObject();
 }
 
 bool AdblockPlus::JsValue::IsBool() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IsBoolean() || (*value)->IsBooleanObject();
+  return value->IsBoolean() || value->IsBooleanObject();
 }
 
 bool AdblockPlus::JsValue::IsObject() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IsObject();
+  return value->IsObject();
 }
 
 bool AdblockPlus::JsValue::IsArray() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IsArray();
+  return value->IsArray();
 }
 
 bool AdblockPlus::JsValue::IsFunction() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IsFunction();
+  return value->IsFunction();
 }
 
 std::string AdblockPlus::JsValue::AsString() const
 {
   const JsContext context(jsEngine);
-  return Utils::FromV8String(*value);
+  return Utils::FromV8String(value);
 }
 
 int64_t AdblockPlus::JsValue::AsInt() const
 {
   const JsContext context(jsEngine);
-  return (*value)->IntegerValue();
+  return value->IntegerValue();
 }
 
 bool AdblockPlus::JsValue::AsBool() const
 {
   const JsContext context(jsEngine);
-  return (*value)->BooleanValue();
+  return value->BooleanValue();
 }
 
 AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
@@ -113,7 +112,7 @@ AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
 
   const JsContext context(jsEngine);
   JsValueList result;
-  v8::Persistent<v8::Array> array = v8::Persistent<v8::Array>::Cast(*value);
+  v8::Persistent<v8::Array> array = v8::Persistent<v8::Array>::Cast<v8::Value>(value);
   uint32_t length = array->Length();
   for (uint32_t i = 0; i < length; i++)
   {
@@ -129,7 +128,7 @@ std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
     throw new std::runtime_error("Attempting to get propert list for a non-object");
 
   const JsContext context(jsEngine);
-  const v8::Persistent<v8::Object> object = v8::Persistent<v8::Object>::Cast(*value);
+  const v8::Persistent<v8::Object> object = v8::Persistent<v8::Object>::Cast<v8::Value>(value);
   JsValueList properties = JsValuePtr(new JsValue(jsEngine, object->GetOwnPropertyNames()))->AsList();
   std::vector<std::string> result;
   for (JsValueList::iterator it = properties.begin(); it != properties.end(); ++it)
@@ -145,7 +144,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::GetProperty(const std::string& nam
 
   const JsContext context(jsEngine);
   v8::Local<v8::String> property = Utils::ToV8String(name);
-  v8::Persistent<v8::Object> obj = v8::Persistent<v8::Object>::Cast(*value);
+  v8::Persistent<v8::Object> obj = v8::Persistent<v8::Object>::Cast<v8::Value>(value);
   return JsValuePtr(new JsValue(jsEngine, obj->Get(property)));
 }
 
@@ -155,7 +154,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Handle<v8::V
     throw new std::runtime_error("Attempting to set property on a non-object");
 
   v8::Local<v8::String> property = Utils::ToV8String(name);
-  v8::Persistent<v8::Object> obj = v8::Persistent<v8::Object>::Cast(*value);
+  v8::Persistent<v8::Object> obj = v8::Persistent<v8::Object>::Cast<v8::Value>(value);
   obj->Set(property, val);
 }
 
@@ -174,7 +173,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)
 void AdblockPlus::JsValue::SetProperty(const std::string& name, JsValuePtr val)
 {
   const JsContext context(jsEngine);
-  SetProperty(name, *val->value);
+  SetProperty(name, val->value);
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)
@@ -189,7 +188,7 @@ std::string AdblockPlus::JsValue::GetClass() const
     throw new std::runtime_error("Cannot get constructor of a non-object");
 
   const JsContext context(jsEngine);
-  v8::Persistent<v8::Object> obj = v8::Persistent<v8::Object>::Cast(*value);
+  v8::Persistent<v8::Object> obj = v8::Persistent<v8::Object>::Cast<v8::Value>(value);
   return Utils::FromV8String(obj->GetConstructorName());
 }
 
@@ -203,17 +202,17 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(
   const JsContext context(jsEngine);
 
   if (!thisPtr)
-    thisPtr = JsValuePtr(new JsValue(jsEngine, (*jsEngine->context)->Global()));
+    thisPtr = JsValuePtr(new JsValue(jsEngine, jsEngine->context->Global()));
   if (!thisPtr->IsObject())
     throw new std::runtime_error("`this` pointer has to be an object");
-  v8::Persistent<v8::Object> thisObj = v8::Persistent<v8::Object>::Cast(*thisPtr->value);
+  v8::Persistent<v8::Object> thisObj = v8::Persistent<v8::Object>::Cast<v8::Value>(thisPtr->value);
 
   std::vector<v8::Handle<v8::Value> > argv;
   for (JsValueList::const_iterator it = params.begin(); it != params.end(); ++it)
-    argv.push_back(*(*it)->value);
+    argv.push_back((*it)->value);
 
   const v8::TryCatch tryCatch;
-  v8::Persistent<v8::Function> func = v8::Persistent<v8::Function>::Cast(*value);
+  v8::Persistent<v8::Function> func = v8::Persistent<v8::Function>::Cast<v8::Value>(value);
   v8::Local<v8::Value> result = func->Call(thisObj, argv.size(),
       argv.size() ? &argv.front() : 0);
 

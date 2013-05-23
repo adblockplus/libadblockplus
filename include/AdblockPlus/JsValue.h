@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 #include "tr1_memory.h"
+#include "V8ValueHolder.h"
 
 namespace v8
 {
@@ -82,7 +83,7 @@ namespace AdblockPlus
     void SetProperty(const std::string& name, v8::Handle<v8::Value> val);
 
     JsEnginePtr jsEngine;
-    std::auto_ptr<v8::Persistent<v8::Value> > value;
+    V8ValueHolder<v8::Value> value;
   };
 }
 
