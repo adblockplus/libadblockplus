@@ -22,7 +22,6 @@
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
-#include <v8.h>
 #include <AdblockPlus/AppInfo.h>
 #include <AdblockPlus/tr1_functional.h>
 #include <AdblockPlus/LogSystem.h>
@@ -31,6 +30,16 @@
 #include <AdblockPlus/WebRequest.h>
 
 #include "tr1_memory.h"
+
+namespace v8
+{
+  class Arguments;
+  class Isolate;
+  class Context;
+  template <class T> class Handle;
+  template <class T> class Persistent;
+  typedef Handle<Value>(*InvocationCallback)(const Arguments &args);
+}
 
 namespace AdblockPlus
 {
@@ -89,7 +98,7 @@ namespace AdblockPlus
     WebRequestPtr webRequest;
     LogSystemPtr logSystem;
     v8::Isolate* isolate;
-    v8::Persistent<v8::Context> context;
+    std::auto_ptr<v8::Persistent<v8::Context> > context;
     EventMap eventCallbacks;
   };
 }

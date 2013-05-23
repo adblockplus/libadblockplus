@@ -203,7 +203,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(
   const JsContext context(jsEngine);
 
   if (!thisPtr)
-    thisPtr = JsValuePtr(new JsValue(jsEngine, jsEngine->context->Global()));
+    thisPtr = JsValuePtr(new JsValue(jsEngine, (*jsEngine->context)->Global()));
   if (!thisPtr->IsObject())
     throw new std::runtime_error("`this` pointer has to be an object");
   v8::Persistent<v8::Object> thisObj = v8::Persistent<v8::Object>::Cast(*thisPtr->value);
