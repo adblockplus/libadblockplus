@@ -47,6 +47,7 @@ namespace AdblockPlus
   class JsEngine : public std::tr1::enable_shared_from_this<JsEngine>
   {
     friend class JsValue;
+    friend class JsContext;
 
   public:
     typedef std::tr1::function<void()> EventCallback;
@@ -87,18 +88,6 @@ namespace AdblockPlus
     void SetWebRequest(WebRequestPtr val);
     LogSystemPtr GetLogSystem();
     void SetLogSystem(LogSystemPtr val);
-
-    class Context
-    {
-    public:
-      Context(const JsEnginePtr jsEngine);
-      virtual inline ~Context() {};
-
-    private:
-      const v8::Locker locker;
-      const v8::HandleScope handleScope;
-      const v8::Context::Scope contextScope;
-    };
 
   private:
     JsEngine();

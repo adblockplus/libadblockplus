@@ -31,6 +31,7 @@
       'src/FileSystemJsObject.cpp',
       'src/FilterEngine.cpp',
       'src/GlobalJsObject.cpp',
+      'src/JsContext.cpp',
       'src/JsEngine.cpp',
       'src/JsValue.cpp',
       'src/Thread.cpp',

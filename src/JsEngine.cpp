@@ -19,6 +19,7 @@
 #include <sstream>
 
 #include "GlobalJsObject.h"
+#include "JsContext.h"
 #include "Utils.h"
 
 namespace
@@ -84,7 +85,7 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo)
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& source,
     const std::string& filename)
 {
-  const Context context(shared_from_this());
+  const JsContext context(shared_from_this());
   const v8::TryCatch tryCatch;
   const v8::Handle<v8::Script> script = CompileScript(source, filename);
   CheckTryCatch(tryCatch);
@@ -118,33 +119,33 @@ void AdblockPlus::JsEngine::Gc()
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(const std::string& val)
 {
-  const Context context(shared_from_this());
+  const JsContext context(shared_from_this());
   return JsValuePtr(new JsValue(shared_from_this(),
       v8::String::New(val.c_str(), val.length())));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(int64_t val)
 {
-  const Context context(shared_from_this());
+  const JsContext context(shared_from_this());
   return JsValuePtr(new JsValue(shared_from_this(), v8::Number::New(val)));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(bool val)
 {
-  const Context context(shared_from_this());
+  const JsContext context(shared_from_this());
   return JsValuePtr(new JsValue(shared_from_this(), v8::Boolean::New(val)));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewObject()
 {
-  const Context context(shared_from_this());
+  const JsContext context(shared_from_this());
   return JsValuePtr(new JsValue(shared_from_this(), v8::Object::New()));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewCallback(
     v8::InvocationCallback callback)
 {
-  const Context context(shared_from_this());
+  const JsContext context(shared_from_this());
 
   // Note: we are leaking this weak pointer, no obvious way to destroy it when
   // it's no longer used
@@ -169,7 +170,7 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::Argument
 
 AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Arguments& arguments)
 {
-  const Context context(shared_from_this());
+  const JsContext context(shared_from_this());
   JsValueList list;
   for (int i = 0; i < arguments.Length(); i++)
     list.push_back(JsValuePtr(new JsValue(shared_from_this(), arguments[i])));
@@ -219,10 +220,4 @@ void AdblockPlus::JsEngine::SetLogSystem(AdblockPlus::LogSystemPtr val)
     throw std::runtime_error("LogSystem cannot be null");
 
   logSystem = val;
-}
-
-AdblockPlus::JsEngine::Context::Context(const JsEnginePtr jsEngine)
-    : locker(jsEngine->isolate), handleScope(),
-      contextScope(jsEngine->context)
-{
 }

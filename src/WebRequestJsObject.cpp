@@ -18,8 +18,10 @@
 #include <map>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/WebRequest.h>
-#include "WebRequestJsObject.h"
+
+#include "JsContext.h"
 #include "Thread.h"
+#include "WebRequestJsObject.h"
 
 namespace
 {
@@ -57,7 +59,7 @@ namespace
     {
       AdblockPlus::ServerResponse result = jsEngine->GetWebRequest()->GET(url, headers);
 
-      AdblockPlus::JsEngine::Context context(jsEngine);
+      AdblockPlus::JsContext context(jsEngine);
 
       AdblockPlus::JsValuePtr resultObject = jsEngine->NewObject();
       resultObject->SetProperty("status", result.status);

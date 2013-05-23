@@ -15,8 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <AdblockPlus.h>
 #include <vector>
+#include <AdblockPlus.h>
+
+#include "JsContext.h"
 
 namespace
 {
@@ -55,67 +57,67 @@ AdblockPlus::JsValue::~JsValue()
 
 bool AdblockPlus::JsValue::IsUndefined() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IsUndefined();
 }
 
 bool AdblockPlus::JsValue::IsNull() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IsNull();
 }
 
 bool AdblockPlus::JsValue::IsString() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IsString() || value->IsStringObject();
 }
 
 bool AdblockPlus::JsValue::IsNumber() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IsNumber() || value->IsNumberObject();
 }
 
 bool AdblockPlus::JsValue::IsBool() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IsBoolean() || value->IsBooleanObject();
 }
 
 bool AdblockPlus::JsValue::IsObject() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IsObject();
 }
 
 bool AdblockPlus::JsValue::IsArray() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IsArray();
 }
 
 bool AdblockPlus::JsValue::IsFunction() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IsFunction();
 }
 
 std::string AdblockPlus::JsValue::AsString() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return fromV8String(value);
 }
 
 int64_t AdblockPlus::JsValue::AsInt() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->IntegerValue();
 }
 
 bool AdblockPlus::JsValue::AsBool() const
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   return value->BooleanValue();
 }
 
@@ -124,7 +126,7 @@ AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
   if (!IsArray())
     throw std::runtime_error("Cannot convert a non-array to list");
 
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   JsValueList result;
   v8::Persistent<v8::Array> array = v8::Persistent<v8::Array>::Cast(value);
   uint32_t length = array->Length();
@@ -141,7 +143,7 @@ std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
   if (!IsObject())
     throw new std::runtime_error("Attempting to get propert list for a non-object");
 
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   const v8::Persistent<v8::Object> object = v8::Persistent<v8::Object>::Cast(value);
   JsValueList properties = JsValuePtr(new JsValue(jsEngine, object->GetOwnPropertyNames()))->AsList();
   std::vector<std::string> result;
@@ -156,7 +158,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::GetProperty(const std::string& nam
   if (!IsObject())
     throw new std::runtime_error("Attempting to get property of a non-object");
 
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   v8::Local<v8::String> property = toV8String(name);
   v8::Persistent<v8::Object> obj = v8::Persistent<v8::Object>::Cast(value);
   return JsValuePtr(new JsValue(jsEngine, obj->Get(property)));
@@ -174,25 +176,25 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Handle<v8::V
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::string& val)
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   SetProperty(name, toV8String(val));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   SetProperty(name, v8::Number::New(val));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, JsValuePtr val)
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   SetProperty(name, val->value);
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)
 {
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   SetProperty(name, v8::Boolean::New(val));
 }
 
@@ -201,7 +203,7 @@ std::string AdblockPlus::JsValue::GetClass() const
   if (!IsObject())
     throw new std::runtime_error("Cannot get constructor of a non-object");
 
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
   v8::Persistent<v8::Object> obj = v8::Persistent<v8::Object>::Cast(value);
   return fromV8String(obj->GetConstructorName());
 }
@@ -213,7 +215,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(
   if (!IsFunction())
     throw new std::runtime_error("Attempting to call a non-function");
 
-  const JsEngine::Context context(jsEngine);
+  const JsContext context(jsEngine);
 
   if (!thisPtr)
     thisPtr = JsValuePtr(new JsValue(jsEngine, jsEngine->context->Global()));

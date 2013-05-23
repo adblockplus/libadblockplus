@@ -20,6 +20,7 @@
 #include <sstream>
 
 #include "ConsoleJsObject.h"
+#include "JsContext.h"
 #include "Utils.h"
 
 namespace
@@ -28,7 +29,7 @@ namespace
       const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    const AdblockPlus::JsEngine::Context context(jsEngine);
+    const AdblockPlus::JsContext context(jsEngine);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     std::stringstream message;
@@ -77,7 +78,7 @@ namespace
   v8::Handle<v8::Value> TraceCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    const AdblockPlus::JsEngine::Context context(jsEngine);
+    const AdblockPlus::JsContext context(jsEngine);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     std::stringstream traceback;
