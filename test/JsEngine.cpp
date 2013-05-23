@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdexcept>
 #include "BaseJsTest.h"
 
 namespace
@@ -40,12 +41,12 @@ TEST_F(JsEngineTest, Evaluate)
 
 TEST_F(JsEngineTest, RuntimeExceptionIsThrown)
 {
-  ASSERT_THROW(jsEngine->Evaluate("doesnotexist()"), AdblockPlus::JsError);
+  ASSERT_THROW(jsEngine->Evaluate("doesnotexist()"), std::runtime_error);
 }
 
 TEST_F(JsEngineTest, CompileTimeExceptionIsThrown)
 {
-  ASSERT_THROW(jsEngine->Evaluate("'foo'bar'"), AdblockPlus::JsError);
+  ASSERT_THROW(jsEngine->Evaluate("'foo'bar'"), std::runtime_error);
 }
 
 TEST_F(JsEngineTest, ValueCreation)

@@ -19,6 +19,7 @@
 #include <AdblockPlus.h>
 
 #include "JsContext.h"
+#include "JsError.h"
 #include "Utils.h"
 
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,

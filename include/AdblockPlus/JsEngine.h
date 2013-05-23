@@ -34,13 +34,6 @@
 
 namespace AdblockPlus
 {
-  class JsError : public std::runtime_error
-  {
-  public:
-    JsError(const v8::Handle<v8::Value> exception,
-            const v8::Handle<v8::Message> message);
-  };
-
   class JsEngine;
   typedef std::tr1::shared_ptr<JsEngine> JsEnginePtr;
 
