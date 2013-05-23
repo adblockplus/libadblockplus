@@ -30,6 +30,7 @@
 #include <AdblockPlus/WebRequest.h>
 
 #include "tr1_memory.h"
+#include "V8ValueHolder.h"
 
 namespace v8
 {
@@ -98,7 +99,7 @@ namespace AdblockPlus
     WebRequestPtr webRequest;
     LogSystemPtr logSystem;
     v8::Isolate* isolate;
-    std::auto_ptr<v8::Persistent<v8::Context> > context;
+    V8ValueHolder<v8::Context> context;
     EventMap eventCallbacks;
   };
 }

@@ -55,9 +55,9 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo)
   const v8::Locker locker(result->isolate);
   const v8::HandleScope handleScope;
 
-  result->context.reset(new v8::Persistent<v8::Context>(v8::Context::New()));
+  result->context.reset(result->isolate, v8::Context::New());
   AdblockPlus::GlobalJsObject::Setup(result, appInfo,
-      JsValuePtr(new JsValue(result, (*result->context)->Global())));
+      JsValuePtr(new JsValue(result, result->context->Global())));
   return result;
 }
 
