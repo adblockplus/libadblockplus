@@ -100,7 +100,7 @@ namespace
       std::string error;
       try
       {
-        std::tr1::shared_ptr<std::ostream> stream(new std::stringstream);
+        std::tr1::shared_ptr<std::iostream> stream(new std::stringstream);
         *stream << content;
         fileSystem->Write(path, stream);
       }

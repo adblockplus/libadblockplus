@@ -50,7 +50,7 @@ namespace
       return std::tr1::shared_ptr<std::istream>(stream);
     }
 
-    void Write(const std::string& path, std::tr1::shared_ptr<std::ostream> data)
+    void Write(const std::string& path, std::tr1::shared_ptr<std::istream> data)
     {
       if (!success)
         throw std::runtime_error("Unable to write to " + path);

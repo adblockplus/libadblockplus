@@ -40,7 +40,7 @@ class ThrowingFileSystem : public AdblockPlus::FileSystem
   }
 
   void Write(const std::string& path,
-             std::tr1::shared_ptr<std::ostream> content)
+             std::tr1::shared_ptr<std::istream> content)
   {
     throw std::runtime_error("Not implemented");
   }
@@ -89,7 +89,7 @@ class LazyFileSystem : public AdblockPlus::FileSystem
   }
 
   void Write(const std::string& path,
-             std::tr1::shared_ptr<std::ostream> content)
+             std::tr1::shared_ptr<std::istream> content)
   {
   }
 
