@@ -73,7 +73,7 @@ DefaultFileSystem::Read(const std::string& path) const
 }
 
 void DefaultFileSystem::Write(const std::string& path,
-                              std::tr1::shared_ptr<std::ostream> data)
+                              std::tr1::shared_ptr<std::istream> data)
 {
   std::ofstream file(NormalizePath(path).c_str());
   file << Utils::Slurp(*data);

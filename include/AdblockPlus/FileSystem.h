@@ -49,7 +49,7 @@ namespace AdblockPlus
     virtual std::tr1::shared_ptr<std::istream>
       Read(const std::string& path) const = 0;
     virtual void Write(const std::string& path,
-                       std::tr1::shared_ptr<std::ostream> data) = 0;
+                       std::tr1::shared_ptr<std::istream> data) = 0;
     virtual void Move(const std::string& fromPath,
                       const std::string& toPath) = 0;
     virtual void Remove(const std::string& path) = 0;

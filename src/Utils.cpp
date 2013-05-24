@@ -16,20 +16,18 @@
  */
 
 #include <sstream>
-#include <string>
+#include <stdexcept>
 
-#include "Utils.h"
 #ifdef _WIN32
 #include <Windows.h>
 #include <Shlwapi.h>
-
-#include <stdexcept>
-
 #endif
+
+#include "Utils.h"
 
 using namespace AdblockPlus;
 
-std::string Utils::Slurp(std::ios& stream)
+std::string Utils::Slurp(std::istream& stream)
 {
   std::stringstream content;
   content << stream.rdbuf();
