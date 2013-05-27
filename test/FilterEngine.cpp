@@ -21,7 +21,17 @@ namespace
 {
   typedef std::tr1::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
 
-  class FilterEngineTest : public BaseJsTest
+  class VeryLazyFileSystem : public LazyFileSystem
+  {
+    std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
+    {
+      std::string dummyData("# Adblock Plus preferences");
+      return std::tr1::shared_ptr<std::istream>(new std::istringstream(dummyData));
+    }
+  };
+
+  template<class FileSystem, class LogSystem>
+  class FilterEngineTestGeneric : public BaseJsTest
   {
   protected:
     FilterEnginePtr filterEngine;
@@ -29,12 +39,15 @@ namespace
     void SetUp()
     {
       BaseJsTest::SetUp();
-      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
+      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new FileSystem));
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
-      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new AdblockPlus::DefaultLogSystem));
+      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LogSystem));
       filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine));
     }
   };
+
+  typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
+  typedef FilterEngineTestGeneric<VeryLazyFileSystem, LazyLogSystem> FilterEngineTestNoData;
 }
 
 TEST_F(FilterEngineTest, FilterCreation)
@@ -102,19 +115,20 @@ TEST_F(FilterEngineTest, SubscriptionProperties)
 
 TEST_F(FilterEngineTest, AddRemoveSubscriptions)
 {
-  ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
+  // There should be only the default subscription initially
+  ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
   AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription("foo");
-  ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
-  subscription->AddToList();
   ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[0]);
   subscription->AddToList();
+  ASSERT_EQ(2u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[1]);
+  subscription->AddToList();
+  ASSERT_EQ(2u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[1]);
+  subscription->RemoveFromList();
   ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[0]);
   subscription->RemoveFromList();
-  ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
-  subscription->RemoveFromList();
-  ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
 }
 
 TEST_F(FilterEngineTest, SubscriptionUpdates)
@@ -159,4 +173,14 @@ TEST_F(FilterEngineTest, Matches)
 
   AdblockPlus::FilterPtr match8 = filterEngine->Matches("http://example.org/fpbanner.gif", "IMAGE", "http://example.com/");
   ASSERT_FALSE(match8);
+}
+
+TEST_F(FilterEngineTest, FirstRunFlag)
+{
+  ASSERT_FALSE(filterEngine->IsFirstRun());
+}
+
+TEST_F(FilterEngineTestNoData, FirstRunFlag)
+{
+  ASSERT_FALSE(filterEngine->IsFirstRun());
 }

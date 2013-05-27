@@ -25,9 +25,11 @@ namespace
   };
 
   bool callbackCalled = false;
-  void Callback()
+  AdblockPlus::JsValueList callbackParams;
+  void Callback(AdblockPlus::JsValueList& params)
   {
     callbackCalled = true;
+    callbackParams = params;
   }
 }
 
@@ -80,8 +82,12 @@ TEST_F(JsEngineTest, EventCallbacks)
   // Set callback
   jsEngine->SetEventCallback("foobar", Callback);
   callbackCalled = false;
-  jsEngine->Evaluate("_triggerEvent('foobar')");
+  jsEngine->Evaluate("_triggerEvent('foobar', 1, 'x', true)");
   ASSERT_TRUE(callbackCalled);
+  ASSERT_EQ(callbackParams.size(), 3u);
+  ASSERT_EQ(callbackParams[0]->AsInt(), 1);
+  ASSERT_EQ(callbackParams[1]->AsString(), "x");
+  ASSERT_TRUE(callbackParams[2]->AsBool());
 
   // Trigger a different event
   callbackCalled = false;

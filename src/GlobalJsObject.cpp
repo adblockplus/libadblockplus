@@ -89,10 +89,12 @@ namespace
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
-    if (converted.size() != 1)
-      return v8::ThrowException(v8::String::New("_triggerEvent expects one parameter"));
+    if (converted.size() < 1)
+      return v8::ThrowException(v8::String::New("_triggerEvent expects at least one parameter"));
 
-    jsEngine->TriggerEvent(converted[0]->AsString());
+    std::string eventName = converted.front()->AsString();
+    converted.erase(converted.begin());
+    jsEngine->TriggerEvent(eventName, converted);
     return v8::Undefined();
   }
 }

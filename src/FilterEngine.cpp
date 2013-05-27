@@ -134,9 +134,10 @@ bool Subscription::operator==(const Subscription& subscription) const
 }
 
 FilterEngine::FilterEngine(JsEnginePtr jsEngine)
-    : jsEngine(jsEngine), initialized(false)
+    : jsEngine(jsEngine), initialized(false), firstRun(false)
 {
-  jsEngine->SetEventCallback("init", std::tr1::bind(&FilterEngine::InitDone, this));
+  jsEngine->SetEventCallback("init", std::tr1::bind(&FilterEngine::InitDone,
+      this, std::tr1::placeholders::_1));
   for (int i = 0; !jsSources[i].empty(); i += 2)
     jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
 
@@ -145,10 +146,16 @@ FilterEngine::FilterEngine(JsEnginePtr jsEngine)
     ::Sleep(10);
 }
 
-void FilterEngine::InitDone()
+void FilterEngine::InitDone(JsValueList& params)
 {
   jsEngine->RemoveEventCallback("init");
   initialized = true;
+  firstRun = params.size() && params[0]->AsBool();
+}
+
+bool FilterEngine::IsFirstRun() const
+{
+  return firstRun;
 }
 
 FilterPtr FilterEngine::GetFilter(const std::string& text)
