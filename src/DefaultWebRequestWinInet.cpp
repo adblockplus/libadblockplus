@@ -135,7 +135,7 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
     return;
   }
   std::wstring responseHeaders;
-  responseHeaders.resize((bufLen / sizeof(std::wstring::value_type)) + 1);
+  responseHeaders.resize(bufLen / sizeof(std::wstring::value_type) + 1);
   res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_RAW_HEADERS, WINHTTP_HEADER_NAME_BY_INDEX, &responseHeaders[0], &bufLen, WINHTTP_NO_HEADER_INDEX);
   if (res)
   {
