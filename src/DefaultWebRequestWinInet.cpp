@@ -16,7 +16,6 @@
  */
 
 #include "AdblockPlus/DefaultWebRequest.h"
-#include "WinInetErrorCodes.h"
 #include <algorithm>
 #include <sstream>
 #include <Windows.h>
@@ -49,22 +48,18 @@ long WindowsErrorToGeckoError(DWORD err)
   {
   case ERROR_INVALID_HANDLE:
     return AdblockPlus::WebRequest::NS_ERROR_NOT_INITIALIZED;
-  case ERROR_INTERNET_UNRECOGNIZED_SCHEME:
+  case ERROR_OUTOFMEMORY:
+    return AdblockPlus::WebRequest::NS_ERROR_OUT_OF_MEMORY;
+  case ERROR_WINHTTP_UNRECOGNIZED_SCHEME:
     return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
-  case ERROR_INTERNET_CONNECTION_ABORTED:
+  case ERROR_WINHTTP_CONNECTION_ERROR:
     return AdblockPlus::WebRequest::NS_ERROR_NET_INTERRUPT;
-  case ERROR_INTERNET_INVALID_URL:
+  case ERROR_WINHTTP_INVALID_URL:
     return AdblockPlus::WebRequest::NS_ERROR_MALFORMED_URI;
-  case ERROR_INTERNET_CONNECTION_RESET:
-    return AdblockPlus::WebRequest::NS_ERROR_NET_RESET;
-  case ERROR_INTERNET_TIMEOUT:
+  case ERROR_WINHTTP_TIMEOUT:
     return AdblockPlus::WebRequest::NS_ERROR_NET_TIMEOUT;
-  case ERROR_INTERNET_SERVER_UNREACHABLE:
-    return AdblockPlus::WebRequest::NS_ERROR_CONNECTION_REFUSED;
-  case ERROR_INTERNET_NAME_NOT_RESOLVED:
+  case ERROR_WINHTTP_NAME_NOT_RESOLVED:
     return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_HOST;
-  case ERROR_INTERNET_PROXY_SERVER_UNREACHABLE:
-    return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROXY_CONNECTION_REFUSED;
 
   default:
     return AdblockPlus::WebRequest::NS_CUSTOM_ERROR_BASE + err;
