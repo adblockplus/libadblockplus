@@ -30,5 +30,6 @@ JsValuePtr AppInfoJsObject::Setup(JsEnginePtr jsEngine, const AppInfo& appInfo,
   obj->SetProperty("version", appInfo.version);
   obj->SetProperty("name", appInfo.name);
   obj->SetProperty("platform", appInfo.platform);
+  obj->SetProperty("locale", appInfo.locale);
   return obj;
 }

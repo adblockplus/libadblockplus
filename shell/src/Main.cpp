@@ -58,6 +58,7 @@ int main()
     appInfo.version = "1.0";
     appInfo.name = "abpshell";
     appInfo.platform = "standalone";
+    appInfo.locale = "en-US";
     AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
     AdblockPlus::FilterEngine filterEngine(jsEngine);
 

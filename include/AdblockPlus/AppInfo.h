@@ -28,6 +28,7 @@ namespace AdblockPlus
     std::string version;
     std::string name;
     std::string platform;
+    std::string locale;
   };
 }
 

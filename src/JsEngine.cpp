@@ -84,11 +84,11 @@ void AdblockPlus::JsEngine::RemoveEventCallback(const std::string& eventName)
   eventCallbacks.erase(eventName);
 }
 
-void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName)
+void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, AdblockPlus::JsValueList& params)
 {
   EventMap::iterator it = eventCallbacks.find(eventName);
   if (it != eventCallbacks.end())
-    it->second();
+    it->second(params);
 }
 
 void AdblockPlus::JsEngine::Gc()

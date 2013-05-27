@@ -53,13 +53,13 @@ namespace AdblockPlus
     friend class JsContext;
 
   public:
-    typedef std::tr1::function<void()> EventCallback;
+    typedef std::tr1::function<void(JsValueList& params)> EventCallback;
     typedef std::map<std::string, EventCallback> EventMap;
 
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo());
     void SetEventCallback(const std::string& eventName, EventCallback callback);
     void RemoveEventCallback(const std::string& eventName);
-    void TriggerEvent(const std::string& eventName);
+    void TriggerEvent(const std::string& eventName, JsValueList& params);
     JsValuePtr Evaluate(const std::string& source,
         const std::string& filename = "");
     void Gc();

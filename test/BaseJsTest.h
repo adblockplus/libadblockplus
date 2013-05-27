@@ -128,6 +128,13 @@ class LazyWebRequest : public AdblockPlus::WebRequest
   }
 };
 
+class LazyLogSystem : public AdblockPlus::LogSystem
+{
+  void operator()(LogLevel logLevel, const std::string& message,
+          const std::string& source)
+  {
+  }
+};
 
 class BaseJsTest : public ::testing::Test
 {
