@@ -27,8 +27,7 @@
 namespace v8
 {
   class Value;
-  template <class T> class Handle;
-  template <class T> class Persistent;
+  template<class T> class Handle;
 }
 
 namespace AdblockPlus

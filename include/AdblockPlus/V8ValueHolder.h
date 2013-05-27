@@ -23,8 +23,8 @@
 namespace v8
 {
   class Isolate;
-  template <class T> class Handle;
-  template <class T> class Persistent;
+  template<class T> class Handle;
+  template<class T> class Persistent;
 }
 
 namespace AdblockPlus
