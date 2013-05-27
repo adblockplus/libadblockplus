@@ -34,7 +34,7 @@ namespace AdblockPlus
     v8::Local<v8::String> ToV8String(const std::string& str);
 
     // Code for templated function has to be in a header file, can't be in .cpp
-    template <class T>
+    template<class T>
     T TrimString(T text)
     {
       // Via http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring

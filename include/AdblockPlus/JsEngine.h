@@ -36,9 +36,9 @@ namespace v8
 {
   class Arguments;
   class Isolate;
+  class Value;
   class Context;
-  template <class T> class Handle;
-  template <class T> class Persistent;
+  template<class T> class Handle;
   typedef Handle<Value>(*InvocationCallback)(const Arguments &args);
 }
 
