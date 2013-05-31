@@ -85,16 +85,21 @@ TEST_F(FilterEngineTest, AddRemoveFilters)
   ASSERT_EQ(0u, filterEngine->GetListedFilters().size());
   AdblockPlus::FilterPtr filter = filterEngine->GetFilter("foo");
   ASSERT_EQ(0u, filterEngine->GetListedFilters().size());
+  ASSERT_FALSE(filter->IsListed());
   filter->AddToList();
   ASSERT_EQ(1u, filterEngine->GetListedFilters().size());
   ASSERT_EQ(*filter, *filterEngine->GetListedFilters()[0]);
+  ASSERT_TRUE(filter->IsListed());
   filter->AddToList();
   ASSERT_EQ(1u, filterEngine->GetListedFilters().size());
   ASSERT_EQ(*filter, *filterEngine->GetListedFilters()[0]);
+  ASSERT_TRUE(filter->IsListed());
   filter->RemoveFromList();
   ASSERT_EQ(0u, filterEngine->GetListedFilters().size());
+  ASSERT_FALSE(filter->IsListed());
   filter->RemoveFromList();
   ASSERT_EQ(0u, filterEngine->GetListedFilters().size());
+  ASSERT_FALSE(filter->IsListed());
 }
 
 TEST_F(FilterEngineTest, SubscriptionProperties)
@@ -119,16 +124,21 @@ TEST_F(FilterEngineTest, AddRemoveSubscriptions)
   ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
   AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription("foo");
   ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_FALSE(subscription->IsListed());
   subscription->AddToList();
   ASSERT_EQ(2u, filterEngine->GetListedSubscriptions().size());
   ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[1]);
+  ASSERT_TRUE(subscription->IsListed());
   subscription->AddToList();
   ASSERT_EQ(2u, filterEngine->GetListedSubscriptions().size());
   ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[1]);
+  ASSERT_TRUE(subscription->IsListed());
   subscription->RemoveFromList();
   ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_FALSE(subscription->IsListed());
   subscription->RemoveFromList();
   ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_FALSE(subscription->IsListed());
 }
 
 TEST_F(FilterEngineTest, SubscriptionUpdates)

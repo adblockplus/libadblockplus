@@ -89,7 +89,7 @@ Subscription::Subscription(JsValuePtr value)
 
 bool Subscription::IsListed()
 {
-  JsValuePtr func = jsEngine->Evaluate("API.isListedFilter");
+  JsValuePtr func = jsEngine->Evaluate("API.isListedSubscription");
   JsValueList params;
   params.push_back(shared_from_this());
   return func->Call(params)->AsBool();
