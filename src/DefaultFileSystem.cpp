@@ -69,7 +69,10 @@ namespace
 std::tr1::shared_ptr<std::istream>
 DefaultFileSystem::Read(const std::string& path) const
 {
-  return std::tr1::shared_ptr<std::istream>(new std::ifstream(NormalizePath(path).c_str()));
+  std::tr1::shared_ptr<std::istream> result(new std::ifstream(NormalizePath(path).c_str()));
+  if (result->fail())
+    throw RuntimeErrorWithErrno("Failed to open " + path);
+  return result;
 }
 
 void DefaultFileSystem::Write(const std::string& path,
