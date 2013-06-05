@@ -23,6 +23,7 @@ namespace
 
   class VeryLazyFileSystem : public LazyFileSystem
   {
+  public:
     std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
     {
       std::string dummyData("# Adblock Plus preferences");

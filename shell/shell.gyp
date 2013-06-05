@@ -10,8 +10,9 @@
       'src/Command.cpp',
       'src/GcCommand.cpp',
       'src/HelpCommand.cpp',
-      'src/MatchesCommand.cpp',
       'src/FiltersCommand.cpp',
+      'src/MatchesCommand.cpp',
+      'src/PrefsCommand.cpp',
       'src/SubscriptionsCommand.cpp'
     ]
   }]

@@ -21,6 +21,7 @@
 #include <string>
 
 #include <AdblockPlus.h>
+#include "JsContext.h"
 #include "Thread.h"
 
 using namespace AdblockPlus;
@@ -138,8 +139,14 @@ FilterEngine::FilterEngine(JsEnginePtr jsEngine)
 {
   jsEngine->SetEventCallback("init", std::tr1::bind(&FilterEngine::InitDone,
       this, std::tr1::placeholders::_1));
-  for (int i = 0; !jsSources[i].empty(); i += 2)
-    jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+
+  {
+    // Lock the JS engine while we are loading scripts, no timeouts should fire
+    // until we are done.
+    const JsContext context(jsEngine);
+    for (int i = 0; !jsSources[i].empty(); i += 2)
+      jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+  }
 
   // TODO: This should really be implemented via a conditional variable
   while (!initialized)
@@ -206,7 +213,7 @@ std::vector<SubscriptionPtr> FilterEngine::FetchAvailableSubscriptions() const
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     const std::string& contentType,
-    const std::string& documentUrl)
+    const std::string& documentUrl) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.checkFilterMatch");
   JsValueList params;
@@ -230,4 +237,21 @@ std::vector<std::string> FilterEngine::GetElementHidingSelectors(const std::stri
   for (JsValueList::iterator it = result.begin(); it != result.end(); ++it)
     selectors.push_back((*it)->AsString());
   return selectors;
+}
+
+JsValuePtr FilterEngine::GetPref(const std::string& pref) const
+{
+  JsValuePtr func = jsEngine->Evaluate("API.getPref");
+  JsValueList params;
+  params.push_back(jsEngine->NewValue(pref));
+  return func->Call(params);
+}
+
+void FilterEngine::SetPref(const std::string& pref, JsValuePtr value)
+{
+  JsValuePtr func = jsEngine->Evaluate("API.setPref");
+  JsValueList params;
+  params.push_back(jsEngine->NewValue(pref));
+  params.push_back(value);
+  func->Call(params);
 }

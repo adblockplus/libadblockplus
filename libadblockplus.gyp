@@ -150,6 +150,7 @@
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
       'test/JsValue.cpp',
+      'test/Prefs.cpp',
       'test/Thread.cpp',
       'test/WebRequest.cpp'
     ],
