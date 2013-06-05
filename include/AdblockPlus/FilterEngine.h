@@ -18,9 +18,10 @@
 #ifndef ADBLOCK_PLUS_FILTER_ENGINE_H
 #define ADBLOCK_PLUS_FILTER_ENGINE_H
 
-#include <vector>
+#include <functional>
 #include <map>
 #include <string>
+#include <vector>
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
 
@@ -67,6 +68,8 @@ namespace AdblockPlus
   class FilterEngine
   {
   public:
+    typedef std::function<void(const std::string&)> UpdaterCallback;
+
     explicit FilterEngine(JsEnginePtr jsEngine);
     JsEnginePtr GetJsEngine() const { return jsEngine; }
     bool IsFirstRun() const;
@@ -81,13 +84,16 @@ namespace AdblockPlus
     std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
     JsValuePtr GetPref(const std::string& pref) const;
     void SetPref(const std::string& pref, JsValuePtr value);
+    void ForceUpdateCheck(UpdaterCallback callback = 0);
 
   private:
     JsEnginePtr jsEngine;
     bool initialized;
     bool firstRun;
+    int updateCheckId;
 
     void InitDone(JsValueList& params);
+    void UpdateCheckDone(const std::string& eventName, UpdaterCallback callback, JsValueList& params);
   };
 }
 

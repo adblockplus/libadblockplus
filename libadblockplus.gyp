@@ -94,6 +94,7 @@
           'lib/prefs.js',
           'lib/utils.js',
           'lib/elemHideHitRegistration.js',
+          'lib/updater.js',
           'adblockplus/lib/filterNotifier.js',
           'lib/init.js',
           'adblockplus/lib/filterClasses.js',
@@ -152,6 +153,7 @@
       'test/JsValue.cpp',
       'test/Prefs.cpp',
       'test/Thread.cpp',
+      'test/UpdateCheck.cpp',
       'test/WebRequest.cpp'
     ],
     'msvs_settings': {

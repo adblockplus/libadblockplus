@@ -135,7 +135,7 @@ bool Subscription::operator==(const Subscription& subscription) const
 }
 
 FilterEngine::FilterEngine(JsEnginePtr jsEngine)
-    : jsEngine(jsEngine), initialized(false), firstRun(false)
+    : jsEngine(jsEngine), initialized(false), firstRun(false), updateCheckId(0)
 {
   jsEngine->SetEventCallback("init", std::tr1::bind(&FilterEngine::InitDone,
       this, std::tr1::placeholders::_1));
@@ -254,4 +254,26 @@ void FilterEngine::SetPref(const std::string& pref, JsValuePtr value)
   params.push_back(jsEngine->NewValue(pref));
   params.push_back(value);
   func->Call(params);
+}
+
+void FilterEngine::ForceUpdateCheck(FilterEngine::UpdaterCallback callback)
+{
+  std::string eventName = "updateCheckDone";
+  eventName += ++updateCheckId;
+
+  jsEngine->SetEventCallback(eventName, std::tr1::bind(&FilterEngine::UpdateCheckDone,
+      this, eventName, callback, std::tr1::placeholders::_1));
+
+  JsValuePtr func = jsEngine->Evaluate("API.forceUpdateCheck");
+  JsValueList params;
+  params.push_back(jsEngine->NewValue(eventName));
+  func->Call(params);
+}
+
+void FilterEngine::UpdateCheckDone(const std::string& eventName, FilterEngine::UpdaterCallback callback, JsValueList& params)
+{
+  jsEngine->RemoveEventCallback(eventName);
+
+  std::string error(params.size() >= 1 && !params[0]->IsNull() ? params[0]->AsString() : "");
+  callback(error);
 }
