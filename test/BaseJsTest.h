@@ -122,6 +122,7 @@ public:
 
 class LazyWebRequest : public AdblockPlus::WebRequest
 {
+public:
   AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
   {
     while (true)
@@ -132,6 +133,7 @@ class LazyWebRequest : public AdblockPlus::WebRequest
 
 class LazyLogSystem : public AdblockPlus::LogSystem
 {
+public:
   void operator()(LogLevel logLevel, const std::string& message,
           const std::string& source)
   {
