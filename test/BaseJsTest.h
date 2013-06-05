@@ -34,6 +34,7 @@ public:
 
 class ThrowingFileSystem : public AdblockPlus::FileSystem
 {
+public:
   std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
   {
     throw std::runtime_error("Not implemented");
@@ -69,6 +70,7 @@ class ThrowingFileSystem : public AdblockPlus::FileSystem
 
 class ThrowingWebRequest : public AdblockPlus::WebRequest
 {
+public:
   AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
   {
     throw std::runtime_error("Unexpected GET: " + url);
@@ -77,15 +79,15 @@ class ThrowingWebRequest : public AdblockPlus::WebRequest
 
 class LazyFileSystem : public AdblockPlus::FileSystem
 {
+public:
   std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
   {
+    std::string dummyData("");
     if (path == "patterns.ini")
-    {
-      std::string dummyData("# Adblock Plus preferences\n[Subscription]\nurl=~fl~");
-      return std::tr1::shared_ptr<std::istream>(new std::istringstream(dummyData));
-    }
-    else
-      return std::tr1::shared_ptr<std::istream>();
+      dummyData = "# Adblock Plus preferences\n[Subscription]\nurl=~fl~";
+    else if (path == "prefs.json")
+      dummyData = "{}";
+    return std::tr1::shared_ptr<std::istream>(new std::istringstream(dummyData));
   }
 
   void Write(const std::string& path,

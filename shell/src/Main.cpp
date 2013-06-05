@@ -22,8 +22,9 @@
 #include "GcCommand.h"
 #include "HelpCommand.h"
 #include "FiltersCommand.h"
-#include "SubscriptionsCommand.h"
 #include "MatchesCommand.h"
+#include "PrefsCommand.h"
+#include "SubscriptionsCommand.h"
 
 namespace
 {
@@ -68,6 +69,7 @@ int main()
     Add(commands, new FiltersCommand(filterEngine));
     Add(commands, new SubscriptionsCommand(filterEngine));
     Add(commands, new MatchesCommand(filterEngine));
+    Add(commands, new PrefsCommand(filterEngine));
 
     std::string commandLine;
     while (ReadCommandLine(commandLine))

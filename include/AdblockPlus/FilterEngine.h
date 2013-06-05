@@ -68,6 +68,7 @@ namespace AdblockPlus
   {
   public:
     explicit FilterEngine(JsEnginePtr jsEngine);
+    JsEnginePtr GetJsEngine() const { return jsEngine; }
     bool IsFirstRun() const;
     FilterPtr GetFilter(const std::string& text);
     SubscriptionPtr GetSubscription(const std::string& url);
@@ -76,8 +77,10 @@ namespace AdblockPlus
     std::vector<SubscriptionPtr> FetchAvailableSubscriptions() const;
     FilterPtr Matches(const std::string& url,
         const std::string& contentType,
-        const std::string& documentUrl);
+        const std::string& documentUrl) const;
     std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
+    JsValuePtr GetPref(const std::string& pref) const;
+    void SetPref(const std::string& pref, JsValuePtr value);
 
   private:
     JsEnginePtr jsEngine;
