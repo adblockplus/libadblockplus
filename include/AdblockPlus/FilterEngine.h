@@ -68,7 +68,7 @@ namespace AdblockPlus
   class FilterEngine
   {
   public:
-    typedef std::function<void(const std::string&)> UpdaterCallback;
+    typedef std::tr1::function<void(const std::string&)> UpdaterCallback;
 
     explicit FilterEngine(JsEnginePtr jsEngine);
     JsEnginePtr GetJsEngine() const { return jsEngine; }
