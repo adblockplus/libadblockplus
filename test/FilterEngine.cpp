@@ -155,6 +155,8 @@ TEST_F(FilterEngineTest, Matches)
   filterEngine->GetFilter("@@notbanner.gif")->AddToList();
   filterEngine->GetFilter("tpbanner.gif$third-party")->AddToList();
   filterEngine->GetFilter("fpbanner.gif$~third-party")->AddToList();
+  filterEngine->GetFilter("combanner.gif$domain=example.com")->AddToList();
+  filterEngine->GetFilter("orgbanner.gif$domain=~example.com")->AddToList();
 
   AdblockPlus::FilterPtr match1 = filterEngine->Matches("http://example.org/foobar.gif", "IMAGE", "");
   ASSERT_FALSE(match1);
@@ -180,10 +182,24 @@ TEST_F(FilterEngineTest, Matches)
 
   AdblockPlus::FilterPtr match7 = filterEngine->Matches("http://example.org/tpbanner.gif", "IMAGE", "http://example.com/");
   ASSERT_TRUE(match7);
-  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match6->GetType());
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match7->GetType());
 
   AdblockPlus::FilterPtr match8 = filterEngine->Matches("http://example.org/fpbanner.gif", "IMAGE", "http://example.com/");
   ASSERT_FALSE(match8);
+
+  AdblockPlus::FilterPtr match9 = filterEngine->Matches("http://example.org/combanner.gif", "IMAGE", "http://example.com/");
+  ASSERT_TRUE(match9);
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match9->GetType());
+
+  AdblockPlus::FilterPtr match10 = filterEngine->Matches("http://example.org/combanner.gif", "IMAGE", "http://example.org/");
+  ASSERT_FALSE(match10);
+
+  AdblockPlus::FilterPtr match11 = filterEngine->Matches("http://example.org/orgbanner.gif", "IMAGE", "http://example.com/");
+  ASSERT_FALSE(match11);
+
+  AdblockPlus::FilterPtr match12 = filterEngine->Matches("http://example.org/orgbanner.gif", "IMAGE", "http://example.org/");
+  ASSERT_TRUE(match12);
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match12->GetType());
 }
 
 TEST_F(FilterEngineTest, FirstRunFlag)
