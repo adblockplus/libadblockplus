@@ -103,6 +103,7 @@
           'adblockplus/lib/elemHide.js',
           'adblockplus/lib/matcher.js',
           'adblockplus/lib/filterListener.js',
+          'adblockplus/lib/downloader.js',
           'adblockplus/lib/synchronizer.js',
           'adblockplus/chrome/content/ui/subscriptions.xml',
         ],
