@@ -94,7 +94,6 @@
           'lib/prefs.js',
           'lib/utils.js',
           'lib/elemHideHitRegistration.js',
-          'lib/updater.js',
           'adblockplus/lib/filterNotifier.js',
           'lib/init.js',
           'adblockplus/lib/filterClasses.js',
@@ -106,6 +105,7 @@
           'adblockplus/lib/downloader.js',
           'adblockplus/lib/synchronizer.js',
           'adblockplus/chrome/content/ui/subscriptions.xml',
+          'lib/updater.js',
         ],
         'load_before_files': [
           'lib/compat.js'
