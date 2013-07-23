@@ -24,14 +24,16 @@ TEST(AppInfoJsObjectTest, AllProperties)
   appInfo.id = "1";
   appInfo.version = "2";
   appInfo.name = "4";
-  appInfo.platform = "5";
+  appInfo.application = "5";
+  appInfo.applicationVersion = "6";
   appInfo.locale = "3";
   appInfo.developmentBuild = true;
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
   ASSERT_EQ("1", jsEngine->Evaluate("_appInfo.id")->AsString());
   ASSERT_EQ("2", jsEngine->Evaluate("_appInfo.version")->AsString());
   ASSERT_EQ("4", jsEngine->Evaluate("_appInfo.name")->AsString());
-  ASSERT_EQ("5", jsEngine->Evaluate("_appInfo.platform")->AsString());
+  ASSERT_EQ("5", jsEngine->Evaluate("_appInfo.application")->AsString());
+  ASSERT_EQ("6", jsEngine->Evaluate("_appInfo.applicationVersion")->AsString());
   ASSERT_EQ("3", jsEngine->Evaluate("_appInfo.locale")->AsString());
   ASSERT_TRUE(jsEngine->Evaluate("_appInfo.developmentBuild")->AsBool());
 }
@@ -43,7 +45,8 @@ TEST(AppInfoJsObjectTest, DefaultPropertyValues)
   ASSERT_EQ("", jsEngine->Evaluate("_appInfo.id")->AsString());
   ASSERT_EQ("", jsEngine->Evaluate("_appInfo.version")->AsString());
   ASSERT_EQ("", jsEngine->Evaluate("_appInfo.name")->AsString());
-  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.platform")->AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.application")->AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.applicationVersion")->AsString());
   ASSERT_EQ("", jsEngine->Evaluate("_appInfo.locale")->AsString());
   ASSERT_FALSE(jsEngine->Evaluate("_appInfo.developmentBuild")->AsBool());
 }

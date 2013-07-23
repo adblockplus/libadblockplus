@@ -107,7 +107,8 @@ TEST_F(UpdateCheckTest, RequestFailure)
   appInfo.name = "1";
   appInfo.id = "2";
   appInfo.version = "3";
-  appInfo.platform = "4";
+  appInfo.application = "4";
+  appInfo.applicationVersion = "5";
   appInfo.developmentBuild = false;
 
   Reset();
@@ -120,11 +121,18 @@ TEST_F(UpdateCheckTest, RequestFailure)
   ASSERT_FALSE(updateError.empty());
 
   std::string expectedUrl(filterEngine->GetPref("update_url_release")->AsString());
+  std::string platform = jsEngine->Evaluate("require('info').platform")->AsString();
+  std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion")->AsString();
+
   FindAndReplace(expectedUrl, "%NAME%", appInfo.name);
-  FindAndReplace(expectedUrl, "%ID%", appInfo.id);
-  FindAndReplace(expectedUrl, "%VERSION%", appInfo.version);
-  FindAndReplace(expectedUrl, "%APP%", appInfo.platform);
   FindAndReplace(expectedUrl, "%TYPE%", "1");   // manual update
+  expectedUrl += "&addonName=" + appInfo.name +
+                 "&addonVersion=" + appInfo.version +
+                 "&application=" + appInfo.application +
+                 "&applicationVersion=" + appInfo.applicationVersion +
+                 "&platform=" + platform +
+                 "&platformVersion=" + platformVersion +
+                 "&lastVersion=0";
   ASSERT_EQ(expectedUrl, previousRequestUrl);
 }
 
@@ -137,7 +145,8 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   appInfo.name = "1";
   appInfo.id = "2";
   appInfo.version = "3";
-  appInfo.platform = "4";
+  appInfo.application = "4";
+  appInfo.applicationVersion = "5";
   appInfo.developmentBuild = true;
 
   Reset();
@@ -152,15 +161,22 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   ASSERT_TRUE(updateError.empty());
 
   std::string expectedUrl(filterEngine->GetPref("update_url_devbuild")->AsString());
+  std::string platform = jsEngine->Evaluate("require('info').platform")->AsString();
+  std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion")->AsString();
+
   FindAndReplace(expectedUrl, "%NAME%", appInfo.name);
-  FindAndReplace(expectedUrl, "%ID%", appInfo.id);
-  FindAndReplace(expectedUrl, "%VERSION%", appInfo.version);
-  FindAndReplace(expectedUrl, "%APP%", appInfo.platform);
   FindAndReplace(expectedUrl, "%TYPE%", "1");   // manual update
+  expectedUrl += "&addonName=" + appInfo.name +
+                 "&addonVersion=" + appInfo.version +
+                 "&application=" + appInfo.application +
+                 "&applicationVersion=" + appInfo.applicationVersion +
+                 "&platform=" + platform +
+                 "&platformVersion=" + platformVersion +
+                 "&lastVersion=0";
   ASSERT_EQ(expectedUrl, previousRequestUrl);
 }
 
-TEST_F(UpdateCheckTest, PlatformUpdateAvailable)
+TEST_F(UpdateCheckTest, ApplicationUpdateAvailable)
 {
   webRequest->response.status = AdblockPlus::WebRequest::NS_OK;
   webRequest->response.responseStatus = 200;
@@ -169,7 +185,8 @@ TEST_F(UpdateCheckTest, PlatformUpdateAvailable)
   appInfo.name = "1";
   appInfo.id = "2";
   appInfo.version = "3";
-  appInfo.platform = "4";
+  appInfo.application = "4";
+  appInfo.applicationVersion = "5";
   appInfo.developmentBuild = true;
 
   Reset();
@@ -184,7 +201,7 @@ TEST_F(UpdateCheckTest, PlatformUpdateAvailable)
   ASSERT_TRUE(updateError.empty());
 }
 
-TEST_F(UpdateCheckTest, WrongPlatform)
+TEST_F(UpdateCheckTest, WrongApplication)
 {
   webRequest->response.status = AdblockPlus::WebRequest::NS_OK;
   webRequest->response.responseStatus = 200;
@@ -193,7 +210,8 @@ TEST_F(UpdateCheckTest, WrongPlatform)
   appInfo.name = "1";
   appInfo.id = "2";
   appInfo.version = "3";
-  appInfo.platform = "4";
+  appInfo.application = "4";
+  appInfo.applicationVersion = "5";
   appInfo.developmentBuild = true;
 
   Reset();
@@ -215,7 +233,8 @@ TEST_F(UpdateCheckTest, WrongVersion)
   appInfo.name = "1";
   appInfo.id = "2";
   appInfo.version = "3";
-  appInfo.platform = "4";
+  appInfo.application = "4";
+  appInfo.applicationVersion = "5";
   appInfo.developmentBuild = true;
 
   Reset();
@@ -237,7 +256,8 @@ TEST_F(UpdateCheckTest, WrongURL)
   appInfo.name = "1";
   appInfo.id = "2";
   appInfo.version = "3";
-  appInfo.platform = "4";
+  appInfo.application = "4";
+  appInfo.applicationVersion = "5";
   appInfo.developmentBuild = true;
 
   Reset();

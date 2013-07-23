@@ -27,7 +27,8 @@ namespace AdblockPlus
     std::string id;
     std::string version;
     std::string name;
-    std::string platform;
+    std::string application;
+    std::string applicationVersion;
     std::string locale;
     bool developmentBuild;
 
