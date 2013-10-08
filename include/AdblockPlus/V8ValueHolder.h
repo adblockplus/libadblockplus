@@ -49,7 +49,14 @@ namespace AdblockPlus
     {
       reset(isolate, value);
     }
-
+    ~V8ValueHolder()
+    {
+      if (this->value.get())
+      {
+        this->value->Dispose(this->isolate);
+        this->value.reset(0);
+      }
+    }
     void reset(v8::Isolate* isolate, v8::Persistent<T> value)
     {
       if (this->value.get())
