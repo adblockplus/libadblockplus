@@ -69,6 +69,7 @@ namespace AdblockPlus
   {
   public:
     typedef std::tr1::function<void(const std::string&)> UpdaterCallback;
+    typedef std::tr1::function<void(const std::string&, const JsValuePtr)> FilterChangeCallback;
 
     explicit FilterEngine(JsEnginePtr jsEngine);
     JsEnginePtr GetJsEngine() const { return jsEngine; }
@@ -85,6 +86,8 @@ namespace AdblockPlus
     JsValuePtr GetPref(const std::string& pref) const;
     void SetPref(const std::string& pref, JsValuePtr value);
     void ForceUpdateCheck(UpdaterCallback callback = 0);
+    void SetFilterChangeCallback(FilterChangeCallback callback);
+    void RemoveFilterChangeCallback();
 
   private:
     JsEnginePtr jsEngine;
@@ -94,6 +97,7 @@ namespace AdblockPlus
 
     void InitDone(JsValueList& params);
     void UpdateCheckDone(const std::string& eventName, UpdaterCallback callback, JsValueList& params);
+    void FilterChanged(FilterChangeCallback callback, JsValueList& params);
   };
 }
 

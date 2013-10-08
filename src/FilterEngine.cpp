@@ -277,3 +277,21 @@ void FilterEngine::UpdateCheckDone(const std::string& eventName, FilterEngine::U
   std::string error(params.size() >= 1 && !params[0]->IsNull() ? params[0]->AsString() : "");
   callback(error);
 }
+
+void FilterEngine::SetFilterChangeCallback(FilterEngine::FilterChangeCallback callback)
+{
+  jsEngine->SetEventCallback("filterChange", std::tr1::bind(&FilterEngine::FilterChanged,
+      this, callback, std::tr1::placeholders::_1));
+}
+
+void FilterEngine::RemoveFilterChangeCallback()
+{
+  jsEngine->RemoveEventCallback("filterChange");
+}
+
+void FilterEngine::FilterChanged(FilterEngine::FilterChangeCallback callback, JsValueList& params)
+{
+  std::string action(params.size() >= 1 && !params[0]->IsNull() ? params[0]->AsString() : "");
+  JsValuePtr item(params.size() >= 2 ? params[1] : jsEngine->NewValue(false));
+  callback(action, item);
+}
