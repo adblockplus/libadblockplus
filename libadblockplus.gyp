@@ -49,7 +49,8 @@
             'android_arm.release/obj.target/tools/gyp/libv8_base.a',
             'android_arm.release/obj.target/tools/gyp/libv8_snapshot.a',
           ],
-        }
+        },
+        'standalone_static_library': 1, # disable thin archives
       }, {
         'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
         'export_dependent_settings': ['third_party/v8/tools/gyp/v8.gyp:v8'],
@@ -104,6 +105,7 @@
           'adblockplus/lib/filterListener.js',
           'adblockplus/lib/downloader.js',
           'adblockplus/lib/synchronizer.js',
+          'lib/filterUpdateRegistration.js',
           'adblockplus/chrome/content/ui/subscriptions.xml',
           'lib/updater.js',
         ],
