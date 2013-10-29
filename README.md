@@ -26,6 +26,10 @@ Likewise, use the following on a 32 bit system:
 
     make test ARCH=ia32
 
+To run specific tests, you can specify a filter:
+
+    make test FILTER=*.Matches
+
 ### Windows
 
 You need Microsoft Visual C++ (Express is sufficient) 2012

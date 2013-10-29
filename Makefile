@@ -4,6 +4,8 @@ ANDROID_PARAMETERS = target_arch=arm OS=android
 ANDROID_PARAMETERS += android_target_arch=arm
 ANDROID_PARAMETERS += arm_neon=0 armv7=0 arm_fpu=off vfp3=off
 
+TEST_EXECUTABLE = build/out/Debug/tests
+
 .PHONY: all test clean v8_android android
 
 all:
@@ -11,7 +13,11 @@ all:
 	$(MAKE) -C build
 
 test: all
-	build/out/Debug/tests
+ifdef FILTER
+	$(TEST_EXECUTABLE) --gtest_filter=$(FILTER)
+else
+	$(TEST_EXECUTABLE)
+endif
 
 clean:
 	$(RM) -r build
