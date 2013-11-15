@@ -215,6 +215,36 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     const std::string& contentType,
     const std::string& documentUrl) const
 {
+  std::vector<std::string> documentUrls;
+  documentUrls.push_back(documentUrl);
+  return Matches(url, contentType, documentUrls);
+}
+
+AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
+    const std::string& contentType,
+    const std::vector<std::string>& documentUrls) const
+{
+  if (documentUrls.empty())
+    return CheckFilterMatch(url, contentType, "");
+
+  std::string lastDocumentUrl = documentUrls.front();
+  for (std::vector<std::string>::const_iterator it = documentUrls.begin();
+       it != documentUrls.end(); it++) {
+    const std::string documentUrl = *it;
+    AdblockPlus::FilterPtr match = CheckFilterMatch(documentUrl, "DOCUMENT",
+                                                    lastDocumentUrl);
+    if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
+      return match;
+    lastDocumentUrl = documentUrl;
+  }
+
+  return CheckFilterMatch(url, contentType, lastDocumentUrl);
+}
+
+AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
+    const std::string& contentType,
+    const std::string& documentUrl) const
+{
   JsValuePtr func = jsEngine->Evaluate("API.checkFilterMatch");
   JsValueList params;
   params.push_back(jsEngine->NewValue(url));
