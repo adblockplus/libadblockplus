@@ -82,6 +82,9 @@ namespace AdblockPlus
     FilterPtr Matches(const std::string& url,
         const std::string& contentType,
         const std::string& documentUrl) const;
+    FilterPtr Matches(const std::string& url,
+        const std::string& contentType,
+        const std::vector<std::string>& documentUrls) const;
     std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
     JsValuePtr GetPref(const std::string& pref) const;
     void SetPref(const std::string& pref, JsValuePtr value);
@@ -96,6 +99,9 @@ namespace AdblockPlus
     int updateCheckId;
 
     void InitDone(JsValueList& params);
+    FilterPtr CheckFilterMatch(const std::string& url,
+                               const std::string& contentType,
+                               const std::string& documentUrl) const;
     void UpdateCheckDone(const std::string& eventName, UpdaterCallback callback, JsValueList& params);
     void FilterChanged(FilterChangeCallback callback, JsValueList& params);
   };
