@@ -1,4 +1,0 @@
-third_party/v8 = ../v8
-third_party/gyp = ../gyp
-third_party/googletest = ../googletest
-adblockplus = ../adblockplus
