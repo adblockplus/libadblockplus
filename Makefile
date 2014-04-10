@@ -31,7 +31,7 @@ v8_android:
 
 android: v8_android
 	GYP_DEFINES="${ANDROID_PARAMETERS}" \
-	third_party/gyp/gyp --depth=. -f make -I common.gypi --generator-output=build -Gandroid_ndk_version=r9 libadblockplus.gyp
+	third_party/gyp/gyp --depth=. -f make-android -I common.gypi --generator-output=build -Gandroid_ndk_version=r9 libadblockplus.gyp
 	ndk-build -C build installed_modules \
 	BUILDTYPE=Release \
 	APP_PLATFORM=android-9 \
