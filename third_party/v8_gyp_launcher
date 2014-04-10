@@ -4,4 +4,6 @@ if __name__ == '__main__':
   script_dir = os.path.dirname(sys.argv[0])
   sys.path.append(os.path.join(script_dir, '..', '..', '..', 'gyp', 'pylib'))
   import gyp
+  sys.argv.append("-I")
+  sys.argv.append("../../v8.gypi")
   sys.exit(gyp.main(sys.argv[1:]))
