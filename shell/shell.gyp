@@ -14,6 +14,9 @@
       'src/MatchesCommand.cpp',
       'src/PrefsCommand.cpp',
       'src/SubscriptionsCommand.cpp'
-    ]
+    ],
+    'xcode_settings': {
+      'OTHER_LDFLAGS': ['-stdlib=libstdc++'],
+    },
   }]
 }
