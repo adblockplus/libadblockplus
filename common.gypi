@@ -16,6 +16,13 @@
         'ldflags': [ '-pthread', ],
       },
     }],
+    ['OS=="mac"', {
+      'xcode_settings': {
+        'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
+        'CLANG_CXX_LIBRARY': 'libstdc++',
+        'OTHER_CPLUSPLUSFLAGS' : ['-std=c++0x', '-stdlib=libstdc++'],
+      },
+    }],
     ['OS=="android"', {
       'target_defaults': {
         'cflags!': [
