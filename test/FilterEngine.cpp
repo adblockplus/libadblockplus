@@ -24,10 +24,9 @@ namespace
   class VeryLazyFileSystem : public LazyFileSystem
   {
   public:
-    std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
+    StatResult Stat(const std::string& path) const
     {
-      std::string dummyData("# Adblock Plus preferences");
-      return std::tr1::shared_ptr<std::istream>(new std::istringstream(dummyData));
+      return StatResult();
     }
   };
 
@@ -121,24 +120,23 @@ TEST_F(FilterEngineTest, SubscriptionProperties)
 
 TEST_F(FilterEngineTest, AddRemoveSubscriptions)
 {
-  // There should be only the default subscription initially
-  ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
   AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription("foo");
-  ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
   ASSERT_FALSE(subscription->IsListed());
   subscription->AddToList();
-  ASSERT_EQ(2u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[1]);
+  ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[0]);
   ASSERT_TRUE(subscription->IsListed());
   subscription->AddToList();
-  ASSERT_EQ(2u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[1]);
+  ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[0]);
   ASSERT_TRUE(subscription->IsListed());
   subscription->RemoveFromList();
-  ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
   ASSERT_FALSE(subscription->IsListed());
   subscription->RemoveFromList();
-  ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
+  ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
   ASSERT_FALSE(subscription->IsListed());
 }
 
@@ -311,5 +309,5 @@ TEST_F(FilterEngineTest, FirstRunFlag)
 
 TEST_F(FilterEngineTestNoData, FirstRunFlag)
 {
-  ASSERT_FALSE(filterEngine->IsFirstRun());
+  ASSERT_TRUE(filterEngine->IsFirstRun());
 }
