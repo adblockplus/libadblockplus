@@ -286,6 +286,15 @@ void FilterEngine::SetPref(const std::string& pref, JsValuePtr value)
   func->Call(params);
 }
 
+std::string FilterEngine::GetHostFromURL(const std::string& url)
+{
+  JsValuePtr func = jsEngine->Evaluate("API.getHostFromUrl");
+  JsValueList params;
+  params.push_back(jsEngine->NewValue(url));
+  return func->Call(params)->AsString();
+}
+
+
 void FilterEngine::ForceUpdateCheck(FilterEngine::UpdaterCallback callback)
 {
   std::string eventName = "updateCheckDone";
