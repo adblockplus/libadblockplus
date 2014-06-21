@@ -88,6 +88,7 @@ namespace AdblockPlus
     std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
     JsValuePtr GetPref(const std::string& pref) const;
     void SetPref(const std::string& pref, JsValuePtr value);
+    std::string GetHostFromURL(const std::string& url);
     void ForceUpdateCheck(UpdaterCallback callback = 0);
     void SetFilterChangeCallback(FilterChangeCallback callback);
     void RemoveFilterChangeCallback();
