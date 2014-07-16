@@ -15,19 +15,28 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_ADBLOCK_PLUS_H
-#define ADBLOCK_PLUS_ADBLOCK_PLUS_H
+#ifndef ADBLOCK_PLUS_REFERRER_MAPPING_H
+#define ADBLOCK_PLUS_REFERRER_MAPPING_H
 
-#include <AdblockPlus/AppInfo.h>
-#include <AdblockPlus/FileSystem.h>
-#include <AdblockPlus/DefaultLogSystem.h>
-#include <AdblockPlus/DefaultFileSystem.h>
-#include <AdblockPlus/DefaultWebRequest.h>
-#include <AdblockPlus/FilterEngine.h>
-#include <AdblockPlus/LogSystem.h>
-#include <AdblockPlus/JsEngine.h>
-#include <AdblockPlus/JsValue.h>
-#include <AdblockPlus/ReferrerMapping.h>
-#include <AdblockPlus/WebRequest.h>
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
+
+namespace AdblockPlus
+{
+  class ReferrerMapping
+  {
+  public:
+    ReferrerMapping(const int maxCachedUrls = 5000);
+    void Add(const std::string& url, const std::string& referrer);
+    std::vector<std::string> BuildReferrerChain(const std::string& url) const;
+
+  private:
+    const int maxCachedUrls;
+    std::map<std::string, std::string> mapping;
+    std::list<std::string> cachedUrls;
+  };
+}
 
 #endif

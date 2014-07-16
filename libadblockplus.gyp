@@ -34,6 +34,7 @@
       'src/JsEngine.cpp',
       'src/JsError.cpp',
       'src/JsValue.cpp',
+      'src/ReferrerMapping.cpp',
       'src/Thread.cpp',
       'src/Utils.cpp',
       'src/WebRequestJsObject.cpp',
@@ -155,6 +156,7 @@
       'test/JsEngine.cpp',
       'test/JsValue.cpp',
       'test/Prefs.cpp',
+      'test/ReferrerMapping.cpp',
       'test/Thread.cpp',
       'test/UpdateCheck.cpp',
       'test/WebRequest.cpp'
