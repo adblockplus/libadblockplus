@@ -92,6 +92,7 @@ namespace AdblockPlus
     void ForceUpdateCheck(UpdaterCallback callback = 0);
     void SetFilterChangeCallback(FilterChangeCallback callback);
     void RemoveFilterChangeCallback();
+    int CompareVersions(const std::string& v1, const std::string& v2);
 
   private:
     JsEnginePtr jsEngine;
