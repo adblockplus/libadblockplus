@@ -334,3 +334,12 @@ void FilterEngine::FilterChanged(FilterEngine::FilterChangeCallback callback, Js
   JsValuePtr item(params.size() >= 2 ? params[1] : jsEngine->NewValue(false));
   callback(action, item);
 }
+
+int FilterEngine::CompareVersions(const std::string& v1, const std::string& v2)
+{
+  JsValueList params;
+  params.push_back(jsEngine->NewValue(v1));
+  params.push_back(jsEngine->NewValue(v2));
+  JsValuePtr func = jsEngine->Evaluate("API.compareVersions");
+  return func->Call(params)->AsInt();
+}
