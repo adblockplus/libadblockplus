@@ -37,8 +37,6 @@ namespace AdblockPlus
 
   typedef std::tr1::shared_ptr<JsValue> JsValuePtr;
   typedef std::vector<AdblockPlus::JsValuePtr> JsValueList;
-
-  // Forward declaration to avoid including JsEngine.h
   typedef std::tr1::shared_ptr<JsEngine> JsEnginePtr;
 
   class JsValue
