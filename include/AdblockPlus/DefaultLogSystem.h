@@ -22,6 +22,9 @@
 
 namespace AdblockPlus
 {
+  /**
+   * `LogSystem` implementation that writes messages to stderr.
+   */
   class DefaultLogSystem : public LogSystem
   {
   public:

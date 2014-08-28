@@ -1,4 +1,5 @@
 ^build
+^docs
 .pyc$
 
 syntax: glob

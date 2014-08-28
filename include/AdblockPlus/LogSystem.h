@@ -24,16 +24,33 @@
 
 namespace AdblockPlus
 {
+  /**
+   * Logging interface.
+   */
   class LogSystem
   {
   public:
+    /**
+     * Log level.
+     */
     enum LogLevel {LOG_LEVEL_TRACE, LOG_LEVEL_LOG, LOG_LEVEL_INFO, LOG_LEVEL_WARN, LOG_LEVEL_ERROR};
 
     virtual ~LogSystem() {}
+
+    /**
+     * Writes a log message.
+     * @param logLevel Log level.
+     * @param message Log message.
+     * @param source Source of the message, e.g. file name and line.
+     *        Ignored when empty.
+     */
     virtual void operator()(LogLevel logLevel, const std::string& message,
           const std::string& source) = 0;
   };
 
+  /**
+   * Shared smart pointer to a `LogSystem` instance.
+   */
   typedef std::tr1::shared_ptr<LogSystem> LogSystemPtr;
 }
 

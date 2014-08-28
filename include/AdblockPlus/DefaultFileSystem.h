@@ -28,6 +28,12 @@
 
 namespace AdblockPlus
 {
+  /**
+   * `FileSystem` implementation that interacts directly with the operating
+   * system's file system.
+   * All paths are considered relative to the base path, or to the current
+   * working directory if no base path is set (see `SetBasePath()`).
+   */
   class DefaultFileSystem : public FileSystem
   {
   public:
@@ -39,7 +45,13 @@ namespace AdblockPlus
     void Remove(const std::string& path);
     StatResult Stat(const std::string& path) const;
     std::string Resolve(const std::string& path) const;
+
+    /**
+     * Sets the base path, all paths are considered relative to it.
+     * @param path Base path.
+     */
     void SetBasePath(const std::string& path);
+
   protected:
     std::string basePath;
   };

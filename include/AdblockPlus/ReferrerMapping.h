@@ -25,11 +25,36 @@
 
 namespace AdblockPlus
 {
+  /**
+   * Stores a mapping between URLs and their referrers.
+   * This can be used to build a chain of referrers for any URL
+   * (see `BuildReferrerChain()`), which approximates the frame structure, see
+   * FilterEngine::Matches().
+   */
   class ReferrerMapping
   {
   public:
+    /**
+     * Constructor.
+     * @param maxCachedUrls Number of URL mappings to store. The higher the
+     *        better - clients typically cache requests, and a single cached
+     *        request will break the referrer chain.
+     */
     ReferrerMapping(const int maxCachedUrls = 5000);
+
+    /**
+     * Records the refferer for a URL.
+     * @param url Request URL.
+     * @param referrer Request referrer.
+     */
     void Add(const std::string& url, const std::string& referrer);
+
+    /**
+     * Builds a chain of referrers for the supplied URL.
+     * This should reconstruct a document's parent frame URLs.
+     * @param url URL to build the chain for.
+     * @return List of URLs, starting with `url`.
+     */
     std::vector<std::string> BuildReferrerChain(const std::string& url) const;
 
   private:
