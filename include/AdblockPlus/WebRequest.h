@@ -26,23 +26,55 @@
 
 namespace AdblockPlus
 {
+  /**
+   * List of HTTP headers.
+   */
   typedef std::vector<std::pair<std::string, std::string> > HeaderList;
 
+  /**
+   * HTTP response.
+   */
   struct ServerResponse
   {
+    //@{
+    /**
+     * [Mozilla status code](https://developer.mozilla.org/en/docs/Table_Of_Errors#Network_Errors)
+     * indicating the network-level request status.
+     * This should be 0 (NS_OK) if the request succeeded. Note that this should
+     * be NS_OK if the server responded with an error code like "404 Not Found".
+     */
 #ifdef _WIN32
     __int64 status;
 #else
     int64_t status;
 #endif
+    //@}
+
+    /**
+     * List of response headers.
+     */
     HeaderList responseHeaders;
+
+    /**
+     * HTTP status of the response (e.g.\ 404).
+     */
     int responseStatus;
+
+    /**
+     * Body text of the response.
+     */
     std::string responseText;
   };
 
+  /**
+   * Web request interface.
+   */
   class WebRequest
   {
   public:
+    /**
+     * Possible [Mozilla status codes](https://developer.mozilla.org/en/docs/Table_Of_Errors#Network_Errors).
+     */
     enum
     {
       NS_OK = 0,
@@ -64,9 +96,19 @@ namespace AdblockPlus
     };
 
     virtual inline ~WebRequest() {};
+
+    /**
+     * Performs a GET request.
+     * @param url Request URL.
+     * @param requestHeaders Request headers.
+     * @return HTTP response.
+     */
     virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
   };
 
+  /**
+   * Shared smart pointer to a `WebRequest` instance.
+   */
   typedef std::tr1::shared_ptr<WebRequest> WebRequestPtr;
 }
 

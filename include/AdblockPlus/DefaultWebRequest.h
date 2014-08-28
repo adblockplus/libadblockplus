@@ -22,6 +22,11 @@
 
 namespace AdblockPlus
 {
+  /**
+   * `WebRequest` implementation that uses `WinInet` on Windows and libcurl
+   * on other platforms. A dummy implementation that always reports failure is
+   * used if libcurl is not available.
+   */
   class DefaultWebRequest : public WebRequest
   {
     ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const;

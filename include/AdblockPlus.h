@@ -15,6 +15,18 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @mainpage libadblockplus source code documentation
+ * This is the source code documentation of libadblockplus. See the
+ * <a href="https://hg.adblockplus.org/libadblockplus/file/default/README.md">README</a>
+ * for build instructions and basic usage.
+ */
+
+/**
+ * @namespace AdblockPlus
+ * Main namespace of libadblockplus.
+ */
+
 #ifndef ADBLOCK_PLUS_ADBLOCK_PLUS_H
 #define ADBLOCK_PLUS_ADBLOCK_PLUS_H
 

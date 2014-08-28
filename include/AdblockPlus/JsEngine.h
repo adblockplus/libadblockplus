@@ -45,24 +45,80 @@ namespace v8
 namespace AdblockPlus
 {
   class JsEngine;
+
+  /**
+   * Shared smart pointer to a `JsEngine` instance.
+   */
   typedef std::tr1::shared_ptr<JsEngine> JsEnginePtr;
 
+  /**
+   * JavaScript engine used by `FilterEngine`, wraps v8.
+   */
   class JsEngine : public std::tr1::enable_shared_from_this<JsEngine>
   {
     friend class JsValue;
     friend class JsContext;
 
   public:
+    /**
+     * Event callback function.
+     */
     typedef std::tr1::function<void(JsValueList& params)> EventCallback;
+
+    /**
+     * Maps events to callback functions.
+     */
     typedef std::map<std::string, EventCallback> EventMap;
 
+    /**
+     * Creates a new JavaScript engine instance.
+     * @param appInfo Information about the app.
+     * @return New `JsEngine` instance.
+     */
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo());
+
+    /**
+     * Registers the callback function for an event.
+     * @param eventName Event name. Note that this can be any string - it's a
+     *        general purpose event handling mechanism.
+     * @param callback Event callback function.
+     */
     void SetEventCallback(const std::string& eventName, EventCallback callback);
+
+    /**
+     * Removes the callback function for an event.
+     * @param eventName Event name.
+     */
     void RemoveEventCallback(const std::string& eventName);
+
+    /**
+     * Triggers an event.
+     * @param eventName Event name.
+     * @param params Event parameters.
+     */
     void TriggerEvent(const std::string& eventName, JsValueList& params);
+
+    /**
+     * Evaluates a JavaScript expression.
+     * @param source JavaScript expression to evaluate.
+     * @param filename Optional file name for the expression, used in error
+     *        messages.
+     * @return Result of the evaluated expression.
+     */
     JsValuePtr Evaluate(const std::string& source,
         const std::string& filename = "");
+
+    /**
+     * Initiates a garbage collection.
+     */
     void Gc();
+
+    //@{
+    /**
+     * Creates a new JavaScript value.
+     * @param val Value to convert.
+     * @return New `JsValue` instance.
+     */
     JsValuePtr NewValue(const std::string& val);
     JsValuePtr NewValue(int64_t val);
     JsValuePtr NewValue(bool val);
@@ -80,16 +136,79 @@ namespace AdblockPlus
       return NewValue(static_cast<int64_t>(val));
     }
 #endif
+    //@}
+
+    /**
+     * Creates a new JavaScript object.
+     * @return New `JsValue` instance.
+     */
     JsValuePtr NewObject();
+
+    /**
+     * Creates a JavaScript function that invokes a C++ callback.
+     * @param callback C++ callback to invoke. The callback receives a
+     *        `v8::Arguments` object and can use `FromArguments()` to retrieve
+     *        the current `JsEngine`.
+     * @return New `JsValue` instance.
+     */
     JsValuePtr NewCallback(v8::InvocationCallback callback);
+
+    /**
+     * Returns a `JsEngine` instance contained in a `v8::Arguments` object.
+     * Use this in callbacks created via `NewCallback()` to retrieve the current
+     * `JsEngine`.
+     * @param arguments `v8::Arguments` object containing the `JsEngine`
+     *        instance.
+     * @return `JsEngine` instance from `v8::Arguments`.
+     */
     static JsEnginePtr FromArguments(const v8::Arguments& arguments);
+
+    /**
+     * Converts v8 arguments to `JsValue` objects.
+     * @param arguments `v8::Arguments` object containing the arguments to
+     *        convert.
+     * @return List of arguments converted to `JsValue` objects.
+     */
     JsValueList ConvertArguments(const v8::Arguments& arguments);
 
+    /**
+     * @see `SetFileSystem()`.
+     */
     FileSystemPtr GetFileSystem();
+
+    /**
+     * Sets the `FileSystem` implementation used for all file I/O.
+     * Setting this is optional, the engine will use a `DefaultFileSystem`
+     * instance by default, which might be sufficient.
+     * @param The `FileSystem` instance to use.
+     */
     void SetFileSystem(FileSystemPtr val);
+
+    /**
+     * @see `SetWebRequest()`.
+     */
     WebRequestPtr GetWebRequest();
+
+    /**
+     * Sets the `WebRequest` implementation used for XMLHttpRequests.
+     * Setting this is optional, the engine will use a `DefaultWebRequest`
+     * instance by default, which might be sufficient.
+     * @param The `WebRequest` instance to use.
+     */
     void SetWebRequest(WebRequestPtr val);
+
+    /**
+     * @see `SetLogSystem()`.
+     */
     LogSystemPtr GetLogSystem();
+
+    /**
+     * Sets the `LogSystem` implementation used for logging (e.g. to handle
+     * `console.log()` calls from JavaScript).
+     * Setting this is optional, the engine will use a `DefaultLogSystem`
+     * instance by default, which might be sufficient.
+     * @param The `LogSystem` instance to use.
+     */
     void SetLogSystem(LogSystemPtr val);
 
   private:

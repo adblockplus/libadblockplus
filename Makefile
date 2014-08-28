@@ -6,7 +6,7 @@ ANDROID_PARAMETERS += arm_neon=0 armv7=0 arm_fpu=off vfp3=off
 
 TEST_EXECUTABLE = build/out/Debug/tests
 
-.PHONY: all test clean v8_android android
+.PHONY: all test clean v8_android android docs
 
 all:
 	third_party/gyp/gyp --depth=. -f make -I common.gypi --generator-output=build -Dtarget_arch=$(ARCH) libadblockplus.gyp
@@ -19,8 +19,11 @@ else
 	$(TEST_EXECUTABLE)
 endif
 
+docs:
+	doxygen
+
 clean:
-	$(RM) -r build
+	$(RM) -r build docs
 
 v8_android:
 	mkdir -p third_party/v8/build/gyp
