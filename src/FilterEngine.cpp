@@ -294,7 +294,6 @@ std::string FilterEngine::GetHostFromURL(const std::string& url)
   return func->Call(params)->AsString();
 }
 
-
 void FilterEngine::ForceUpdateCheck(FilterEngine::UpdaterCallback callback)
 {
   std::string eventName = "updateCheckDone";
