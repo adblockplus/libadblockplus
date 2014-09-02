@@ -153,6 +153,51 @@ FilterEngine::FilterEngine(JsEnginePtr jsEngine)
     ::Sleep(10);
 }
 
+namespace
+{
+  typedef std::map<FilterEngine::ContentType, std::string> ContentTypeMap;
+
+  ContentTypeMap CreateContentTypeMap()
+  {
+    ContentTypeMap contentTypes;
+    contentTypes[FilterEngine::CONTENT_TYPE_OTHER] = "OTHER";
+    contentTypes[FilterEngine::CONTENT_TYPE_SCRIPT] = "SCRIPT";
+    contentTypes[FilterEngine::CONTENT_TYPE_IMAGE] = "IMAGE";
+    contentTypes[FilterEngine::CONTENT_TYPE_STYLESHEET] = "STYLESHEET";
+    contentTypes[FilterEngine::CONTENT_TYPE_OBJECT] = "OBJECT";
+    contentTypes[FilterEngine::CONTENT_TYPE_SUBDOCUMENT] = "SUBDOCUMENT";
+    contentTypes[FilterEngine::CONTENT_TYPE_DOCUMENT] = "DOCUMENT";
+    contentTypes[FilterEngine::CONTENT_TYPE_XMLHTTPREQUEST] = "XMLHTTPREQUEST";
+    contentTypes[FilterEngine::CONTENT_TYPE_OBJECT_SUBREQUEST] = "OBJECT_SUBREQUEST";
+    contentTypes[FilterEngine::CONTENT_TYPE_FONT] = "FONT";
+    contentTypes[FilterEngine::CONTENT_TYPE_MEDIA] = "MEDIA";
+    return contentTypes;
+  }
+}
+
+const ContentTypeMap FilterEngine::contentTypes = CreateContentTypeMap();
+
+std::string FilterEngine::ContentTypeToString(ContentType contentType)
+{
+  ContentTypeMap::const_iterator it = contentTypes.find(contentType);
+  if (it != contentTypes.end())
+    return it->second;
+  throw std::invalid_argument("Argument is not a valid ContentType");
+}
+
+FilterEngine::ContentType FilterEngine::StringToContentType(const std::string& contentType)
+{
+  std::string contentTypeUpper = contentType;
+  std::transform(contentType.begin(), contentType.end(), contentTypeUpper.begin(), ::toupper);
+  for (ContentTypeMap::const_iterator it = contentTypes.begin();
+       it != contentTypes.end(); it++)
+  {
+    if (it->second == contentTypeUpper)
+      return it->first;
+  }
+  throw std::invalid_argument("Cannot convert argument to ContentType");
+}
+
 void FilterEngine::InitDone(JsValueList& params)
 {
   jsEngine->RemoveEventCallback("init");
@@ -212,7 +257,7 @@ std::vector<SubscriptionPtr> FilterEngine::FetchAvailableSubscriptions() const
 }
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
-    const std::string& contentType,
+    ContentType contentType,
     const std::string& documentUrl) const
 {
   std::vector<std::string> documentUrls;
@@ -221,7 +266,7 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
 }
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
-    const std::string& contentType,
+    ContentType contentType,
     const std::vector<std::string>& documentUrls) const
 {
   if (documentUrls.empty())
@@ -231,7 +276,8 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
   for (std::vector<std::string>::const_iterator it = documentUrls.begin();
        it != documentUrls.end(); it++) {
     const std::string documentUrl = *it;
-    AdblockPlus::FilterPtr match = CheckFilterMatch(documentUrl, "DOCUMENT",
+    AdblockPlus::FilterPtr match = CheckFilterMatch(documentUrl,
+                                                    CONTENT_TYPE_DOCUMENT,
                                                     lastDocumentUrl);
     if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
       return match;
@@ -242,13 +288,13 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
 }
 
 AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
-    const std::string& contentType,
+    ContentType contentType,
     const std::string& documentUrl) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.checkFilterMatch");
   JsValueList params;
   params.push_back(jsEngine->NewValue(url));
-  params.push_back(jsEngine->NewValue(contentType));
+  params.push_back(jsEngine->NewValue(ContentTypeToString(contentType)));
   params.push_back(jsEngine->NewValue(documentUrl));
   JsValuePtr result = func->Call(params);
   if (!result->IsNull())
