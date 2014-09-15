@@ -144,6 +144,17 @@ namespace AdblockPlus
   class FilterEngine
   {
   public:
+    // Make sure to keep ContentType in sync with FilterEngine::contentTypes
+    /**
+     * Possible resource content types.
+     */
+    enum ContentType {CONTENT_TYPE_OTHER, CONTENT_TYPE_SCRIPT,
+                      CONTENT_TYPE_IMAGE, CONTENT_TYPE_STYLESHEET,
+                      CONTENT_TYPE_OBJECT, CONTENT_TYPE_SUBDOCUMENT,
+                      CONTENT_TYPE_DOCUMENT, CONTENT_TYPE_XMLHTTPREQUEST,
+                      CONTENT_TYPE_OBJECT_SUBREQUEST, CONTENT_TYPE_FONT,
+                      CONTENT_TYPE_MEDIA};
+
     /**
      * Callback type invoked when an update is available.
      * The parameter is optional error message.
@@ -214,45 +225,22 @@ namespace AdblockPlus
     /**
      * Checks if any active filter matches the supplied URL.
      * @param url URL to match.
-     * @param contentType Content type of the requested resource, possible
-     *        values are:
-     *        - OTHER
-     *        - SCRIPT
-     *        - IMAGE
-     *        - STYLESHEET
-     *        - OBJECT
-     *        - SUBDOCUMENT
-     *        - DOCUMENT
-     *        - XMLHTTPREQUEST
-     *        - OBJECT_SUBREQUEST
-     *        - FONT
-     *        - MEDIA
+     * @param contentType Content type of the requested resource.
      * @param documentUrl URL of the document requesting the resource.
      *        Note that there will be more than one document if frames are
      *        involved, see
      *        Matches(const std::string&, const std::string&, const std::vector<std::string>&) const.
      * @return Matching filter, or `null` if there was no match.
+     * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     FilterPtr Matches(const std::string& url,
-        const std::string& contentType,
+        ContentType contentType,
         const std::string& documentUrl) const;
 
     /**
      * Checks if any active filter matches the supplied URL.
      * @param url URL to match.
-     * @param contentType Content type of the requested resource, possible
-     *        values are:
-     *        - OTHER
-     *        - SCRIPT
-     *        - IMAGE
-     *        - STYLESHEET
-     *        - OBJECT
-     *        - SUBDOCUMENT
-     *        - DOCUMENT
-     *        - XMLHTTPREQUEST
-     *        - OBJECT_SUBREQUEST
-     *        - FONT
-     *        - MEDIA
+     * @param contentType Content type of the requested resource.
      * @param documentUrls Chain of documents requesting the resource, starting
      *        with the current resource's parent frame, ending with the
      *        top-level frame.
@@ -260,9 +248,10 @@ namespace AdblockPlus
      *        structure, e.g. because it is a proxy, it can be approximated
      *        using `ReferrerMapping`.
      * @return Matching filter, or a `null` if there was no match.
+     * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     FilterPtr Matches(const std::string& url,
-        const std::string& contentType,
+        ContentType contentType,
         const std::vector<std::string>& documentUrls) const;
 
     /**
@@ -331,15 +320,32 @@ namespace AdblockPlus
      */
     int CompareVersions(const std::string& v1, const std::string& v2);
 
+    /**
+     * Retrieves the `ContentType` for the supplied string.
+     * @param contentType Content type string.
+     * @return The `ContentType` for the string.
+     * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
+     */
+    static ContentType StringToContentType(const std::string& contentType);
+
+    /**
+     * Retrieves the string representation of the supplied `ContentType`.
+     * @param contentType `ContentType` value.
+     * @return The string representation of `contentType`.
+     * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
+     */
+    static std::string ContentTypeToString(ContentType contentType);
+
   private:
     JsEnginePtr jsEngine;
     bool initialized;
     bool firstRun;
     int updateCheckId;
+    static const std::map<ContentType, std::string> contentTypes;
 
     void InitDone(JsValueList& params);
     FilterPtr CheckFilterMatch(const std::string& url,
-                               const std::string& contentType,
+                               ContentType contentType,
                                const std::string& documentUrl) const;
     void UpdateCheckDone(const std::string& eventName, UpdaterCallback callback, JsValueList& params);
     void FilterChanged(FilterChangeCallback callback, JsValueList& params);

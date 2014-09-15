@@ -30,11 +30,20 @@ void MatchesCommand::operator()(const std::string& arguments)
   std::istringstream argumentStream(arguments);
   std::string url;
   argumentStream >> url;
-  std::string contentType;
-  argumentStream >> contentType;
+  std::string contentTypeStr;
+  argumentStream >> contentTypeStr;
   std::string documentUrl;
   argumentStream >> documentUrl;
-  if (!url.size() || !contentType.size() || !documentUrl.size())
+  AdblockPlus::FilterEngine::ContentType contentType;
+  try
+  {
+    contentType = AdblockPlus::FilterEngine::StringToContentType(contentTypeStr);
+  }
+  catch (std::invalid_argument& e)
+  {
+    contentTypeStr.clear();
+  }
+  if (!url.size() || !contentTypeStr.size() || !documentUrl.size())
   {
     ShowUsage();
     return;
