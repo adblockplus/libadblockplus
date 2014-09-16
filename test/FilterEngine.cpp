@@ -49,6 +49,19 @@ namespace
   typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
   typedef FilterEngineTestGeneric<VeryLazyFileSystem, LazyLogSystem> FilterEngineTestNoData;
 
+  struct MockFilterChangeCallback
+  {
+    MockFilterChangeCallback(int& timesCalled) : timesCalled(timesCalled) {}
+
+    void operator()(const std::string&, const AdblockPlus::JsValuePtr)
+    {
+      timesCalled++;
+    }
+
+  private:
+    int& timesCalled;
+  };
+
   class UpdaterTest : public ::testing::Test
   {
   protected:
@@ -359,6 +372,20 @@ TEST_F(FilterEngineTest, FirstRunFlag)
 TEST_F(FilterEngineTestNoData, FirstRunFlag)
 {
   ASSERT_TRUE(filterEngine->IsFirstRun());
+}
+
+TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
+{
+  int timesCalled = 0;
+  MockFilterChangeCallback mockFilterChangeCallback(timesCalled);
+
+  filterEngine->SetFilterChangeCallback(mockFilterChangeCallback);
+  filterEngine->GetFilter("foo")->AddToList();
+  ASSERT_EQ(2, timesCalled);
+
+  filterEngine->RemoveFilterChangeCallback();
+  filterEngine->GetFilter("foo")->RemoveFromList();
+  ASSERT_EQ(2, timesCalled);
 }
 
 TEST_F(UpdaterTest, SetRemoveUpdateAvailableCallback)
