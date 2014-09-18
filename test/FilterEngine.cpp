@@ -48,6 +48,55 @@ namespace
 
   typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
   typedef FilterEngineTestGeneric<VeryLazyFileSystem, LazyLogSystem> FilterEngineTestNoData;
+
+  class UpdaterTest : public ::testing::Test
+  {
+  protected:
+    class MockWebRequest : public AdblockPlus::WebRequest
+    {
+    public:
+      AdblockPlus::ServerResponse response;
+
+      AdblockPlus::ServerResponse GET(const std::string& url,
+          const AdblockPlus::HeaderList& requestHeaders) const
+      {
+        return response;
+      }
+    };
+
+    MockWebRequest* mockWebRequest;
+    FilterEnginePtr filterEngine;
+
+    void SetUp()
+    {
+      AdblockPlus::AppInfo appInfo;
+      appInfo.name = "test";
+      appInfo.version = "1.0.1";
+      AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New(appInfo);
+      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
+      mockWebRequest = new MockWebRequest;
+      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(mockWebRequest));
+      filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine));
+    }
+  };
+
+  struct MockUpdateAvailableCallback
+  {
+    MockUpdateAvailableCallback(int& timesCalled) : timesCalled(timesCalled) {}
+
+    void operator()(const std::string&)
+    {
+      timesCalled++;
+    }
+
+  private:
+    // We currently cannot store timesCalled in the functor, see:
+    // https://issues.adblockplus.org/ticket/1378.
+    int& timesCalled;
+  };
+
+  // Workaround for https://issues.adblockplus.org/ticket/1397.
+  void NoOpUpdaterCallback(const std::string&) {}
 }
 
 TEST_F(FilterEngineTest, FilterCreation)
@@ -310,4 +359,30 @@ TEST_F(FilterEngineTest, FirstRunFlag)
 TEST_F(FilterEngineTestNoData, FirstRunFlag)
 {
   ASSERT_TRUE(filterEngine->IsFirstRun());
+}
+
+TEST_F(UpdaterTest, SetRemoveUpdateAvailableCallback)
+{
+  mockWebRequest->response.status = 0;
+  mockWebRequest->response.responseStatus = 200;
+  mockWebRequest->response.responseText = "\
+{\
+  \"test\": {\
+    \"version\": \"1.0.2\",\
+    \"url\": \"https://downloads.adblockplus.org/test-1.0.2.tar.gz?update\"\
+  }\
+}";
+
+  int timesCalled = 0;
+  MockUpdateAvailableCallback mockUpdateAvailableCallback(timesCalled);
+
+  filterEngine->SetUpdateAvailableCallback(mockUpdateAvailableCallback);
+  filterEngine->ForceUpdateCheck(&NoOpUpdaterCallback);
+  AdblockPlus::Sleep(100);
+  ASSERT_EQ(1, timesCalled);
+
+  filterEngine->RemoveUpdateAvailableCallback();
+  filterEngine->ForceUpdateCheck(&NoOpUpdaterCallback);
+  AdblockPlus::Sleep(100);
+  ASSERT_EQ(1, timesCalled);
 }

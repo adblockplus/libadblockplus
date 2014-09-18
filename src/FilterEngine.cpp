@@ -340,7 +340,28 @@ std::string FilterEngine::GetHostFromURL(const std::string& url)
   return func->Call(params)->AsString();
 }
 
-void FilterEngine::ForceUpdateCheck(FilterEngine::UpdaterCallback callback)
+void FilterEngine::SetUpdateAvailableCallback(
+    FilterEngine::UpdateAvailableCallback callback)
+{
+  jsEngine->SetEventCallback("updateAvailable",
+      std::tr1::bind(&FilterEngine::UpdateAvailable, this, callback,
+                     std::tr1::placeholders::_1));
+}
+
+void FilterEngine::RemoveUpdateAvailableCallback()
+{
+  jsEngine->RemoveEventCallback("updateAvailable");
+}
+
+void FilterEngine::UpdateAvailable(
+    FilterEngine::UpdateAvailableCallback callback, JsValueList& params)
+{
+  if (params.size() >= 1 && !params[0]->IsNull())
+    callback(params[0]->AsString());
+}
+
+void FilterEngine::ForceUpdateCheck(
+    FilterEngine::UpdateCheckDoneCallback callback)
 {
   std::string eventName = "updateCheckDone";
   eventName += ++updateCheckId;
@@ -354,7 +375,8 @@ void FilterEngine::ForceUpdateCheck(FilterEngine::UpdaterCallback callback)
   func->Call(params);
 }
 
-void FilterEngine::UpdateCheckDone(const std::string& eventName, FilterEngine::UpdaterCallback callback, JsValueList& params)
+void FilterEngine::UpdateCheckDone(const std::string& eventName,
+    FilterEngine::UpdateCheckDoneCallback callback, JsValueList& params)
 {
   jsEngine->RemoveEventCallback(eventName);
 
