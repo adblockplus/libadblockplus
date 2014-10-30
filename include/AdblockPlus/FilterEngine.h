@@ -33,6 +33,9 @@ namespace AdblockPlus
 
   /**
    * Wrapper for an Adblock Plus filter object.
+   * There are no accessors for most
+   * [filter properties](https://adblockplus.org/jsdoc/adblockplus/symbols/Filter.html),
+   * use `GetProperty()` to retrieve them by name.
    */
   class Filter : public JsValue,
                  public std::tr1::enable_shared_from_this<Filter>
@@ -80,6 +83,9 @@ namespace AdblockPlus
 
   /**
    * Wrapper for a subscription object.
+   * There are no accessors for most
+   * [subscription properties](https://adblockplus.org/jsdoc/adblockplus/symbols/Subscription.html),
+   * use `GetProperty()` to retrieve them by name.
    */
   class Subscription : public JsValue,
                        public std::tr1::enable_shared_from_this<Subscription>
