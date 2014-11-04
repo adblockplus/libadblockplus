@@ -19,6 +19,6 @@
 
 AdblockPlus::JsContext::JsContext(const JsEnginePtr jsEngine)
     : locker(jsEngine->isolate), handleScope(),
-      contextScope(jsEngine->context)
+      contextScope(v8::Local<v8::Context>::New(jsEngine->isolate, jsEngine->context))
 {
 }
