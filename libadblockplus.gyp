@@ -13,7 +13,8 @@
       }
     }
   ]],
-  'includes': ['third_party/v8/build/common.gypi',
+  'includes': ['third_party/v8/build/features.gypi',
+               'third_party/v8/build/toolchain.gypi',
                'shell/shell.gyp'],
   'targets': [{
     'target_name': 'libadblockplus',

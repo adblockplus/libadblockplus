@@ -33,17 +33,10 @@ namespace AdblockPlus
   class V8ValueHolder
   {
   public:
+    typedef typename v8::Persistent<T> V8Persistent;
     V8ValueHolder()
     {
-      reset(0, v8::Persistent<T>());
-    }
-    V8ValueHolder(V8ValueHolder& value)
-    {
-      reset(value.isolate, static_cast<v8::Handle<T> >(value));
-    }
-    V8ValueHolder(v8::Isolate* isolate, v8::Persistent<T> value)
-    {
-      reset(isolate, value);
+      reset();
     }
     V8ValueHolder(v8::Isolate* isolate, v8::Handle<T> value)
     {
@@ -57,7 +50,11 @@ namespace AdblockPlus
         this->value.reset(0);
       }
     }
-    void reset(v8::Isolate* isolate, v8::Persistent<T> value)
+    void reset(v8::Isolate* isolate, v8::Handle<T> value)
+    {
+      reset(isolate, std::auto_ptr<V8Persistent>(new V8Persistent(isolate, value)));
+    }
+    void reset(v8::Isolate* isolate = 0, std::auto_ptr<V8Persistent> value = std::auto_ptr<V8Persistent>(new V8Persistent()))
     {
       if (this->value.get())
       {
@@ -65,33 +62,20 @@ namespace AdblockPlus
         this->value.reset(0);
       }
 
-      if (!value.IsEmpty())
+      if (!value->IsEmpty())
       {
         this->isolate = isolate;
-        this->value.reset(new v8::Persistent<T>(value));
+        this->value = value;
       }
     }
 
-    void reset(v8::Isolate* isolate, v8::Handle<T> value)
-    {
-      reset(isolate, v8::Persistent<T>::New(isolate, value));
-    }
-
-    T* operator->() const
-    {
-      return **value;
-    }
-    operator v8::Handle<T>() const
-    {
-      return *value;
-    }
-    operator v8::Persistent<T>() const
+    operator V8Persistent&() const
     {
       return *value;
     }
   private:
     v8::Isolate* isolate;
-    std::auto_ptr<v8::Persistent<T> > value;
+    std::auto_ptr<V8Persistent> value;
   };
 }
 

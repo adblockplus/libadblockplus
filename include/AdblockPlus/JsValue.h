@@ -28,6 +28,7 @@ namespace v8
 {
   class Value;
   template<class T> class Handle;
+  template<class T> class Local;
 }
 
 namespace AdblockPlus
@@ -55,7 +56,6 @@ namespace AdblockPlus
   {
     friend class JsEngine;
   public:
-    JsValue(JsValuePtr value);
     virtual ~JsValue();
 
     bool IsUndefined() const;
@@ -94,7 +94,7 @@ namespace AdblockPlus
     void SetProperty(const std::string& name, const std::string& val);
     void SetProperty(const std::string& name, int64_t val);
     void SetProperty(const std::string& name, bool val);
-    void SetProperty(const std::string& name, JsValuePtr value);
+    void SetProperty(const std::string& name, const JsValuePtr& value);
     inline void SetProperty(const std::string& name, const char* val)
     {
       SetProperty(name, std::string(val));
@@ -123,11 +123,13 @@ namespace AdblockPlus
     JsValuePtr Call(const JsValueList& params = JsValueList(),
         AdblockPlus::JsValuePtr thisPtr = AdblockPlus::JsValuePtr()) const;
 
+    v8::Local<v8::Value> UnwrapValue() const;
   protected:
+    JsValue(JsValuePtr value);
+    JsEnginePtr jsEngine;
+  private:
     JsValue(JsEnginePtr jsEngine, v8::Handle<v8::Value> value);
     void SetProperty(const std::string& name, v8::Handle<v8::Value> val);
-
-    JsEnginePtr jsEngine;
     V8ValueHolder<v8::Value> value;
   };
 }
