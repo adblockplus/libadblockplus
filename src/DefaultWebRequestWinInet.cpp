@@ -172,7 +172,7 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
   // Get the response status code
   std::wstring statusStr;
   DWORD statusLen = 0;
-  res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, &statusStr[0], &statusLen, WINHTTP_NO_HEADER_INDEX);
+  res = WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE, WINHTTP_HEADER_NAME_BY_INDEX, WINHTTP_NO_OUTPUT_BUFFER, &statusLen, WINHTTP_NO_HEADER_INDEX);
   if (statusLen == 0)
   {
     throw std::exception("Can't parse the status code");
