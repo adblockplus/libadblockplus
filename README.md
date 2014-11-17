@@ -3,8 +3,6 @@ libadblockplus
 
 A C++ library offering the core functionality of Adblock Plus.
 
-libadblockplus is still work in progress, at an early stage.
-
 Building
 --------
 
