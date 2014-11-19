@@ -41,6 +41,26 @@ namespace
     if (tryCatch.HasCaught())
       throw AdblockPlus::JsError(tryCatch.Exception(), tryCatch.Message());
   }
+
+  class V8Initializer
+  {
+    V8Initializer()
+    {
+      v8::V8::Initialize();
+    }
+
+    ~V8Initializer()
+    {
+      v8::V8::Dispose();
+    }
+  public:
+    static void Init()
+    {
+      // it's threadsafe since C++11 and it will be instantiated only once and
+      // destroyed at the application exit
+      static V8Initializer initializer;
+    }
+  };
 }
 
 AdblockPlus::JsEngine::JsEngine()
@@ -50,6 +70,7 @@ AdblockPlus::JsEngine::JsEngine()
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo)
 {
+  V8Initializer::Init();
   JsEnginePtr result(new JsEngine());
 
   const v8::Locker locker(result->isolate);
