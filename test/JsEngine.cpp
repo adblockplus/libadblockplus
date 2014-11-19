@@ -23,14 +23,6 @@ namespace
   class JsEngineTest : public BaseJsTest
   {
   };
-
-  bool callbackCalled = false;
-  AdblockPlus::JsValueList callbackParams;
-  void Callback(AdblockPlus::JsValueList& params)
-  {
-    callbackCalled = true;
-    callbackParams = params;
-  }
 }
 
 TEST_F(JsEngineTest, Evaluate)
@@ -74,6 +66,15 @@ TEST_F(JsEngineTest, ValueCreation)
 
 TEST_F(JsEngineTest, EventCallbacks)
 {
+  bool callbackCalled = false;
+  AdblockPlus::JsValueList callbackParams;
+  auto Callback = [&callbackCalled, & callbackParams](
+    const AdblockPlus::JsValueList& params)
+  {
+    callbackCalled = true;
+    callbackParams = params;
+  };
+
   // Trigger event without a callback
   callbackCalled = false;
   jsEngine->Evaluate("_triggerEvent('foobar')");
