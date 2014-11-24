@@ -159,7 +159,7 @@ namespace AdblockPlus
                       CONTENT_TYPE_OBJECT, CONTENT_TYPE_SUBDOCUMENT,
                       CONTENT_TYPE_DOCUMENT, CONTENT_TYPE_XMLHTTPREQUEST,
                       CONTENT_TYPE_OBJECT_SUBREQUEST, CONTENT_TYPE_FONT,
-                      CONTENT_TYPE_MEDIA};
+                      CONTENT_TYPE_MEDIA, CONTENT_TYPE_ELEMHIDE};
 
     /**
      * Callback type invoked when an update becomes available.

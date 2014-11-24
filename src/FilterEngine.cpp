@@ -171,6 +171,7 @@ namespace
     contentTypes[FilterEngine::CONTENT_TYPE_OBJECT_SUBREQUEST] = "OBJECT_SUBREQUEST";
     contentTypes[FilterEngine::CONTENT_TYPE_FONT] = "FONT";
     contentTypes[FilterEngine::CONTENT_TYPE_MEDIA] = "MEDIA";
+    contentTypes[FilterEngine::CONTENT_TYPE_ELEMHIDE] = "ELEMHIDE";
     return contentTypes;
   }
 }
