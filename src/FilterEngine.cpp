@@ -257,6 +257,17 @@ std::vector<SubscriptionPtr> FilterEngine::FetchAvailableSubscriptions() const
   return result;
 }
 
+NotificationPtr FilterEngine::GetNextNotificationToShow(const std::string& url)
+{
+  JsValuePtr func = jsEngine->Evaluate("API.getNextNotificationToShow");
+  JsValueList params;
+  if (!url.empty())
+  {
+    params.push_back(jsEngine->NewValue(url));
+  }
+  return Notification::JsValueToNotification(func->Call(params));
+}
+
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     ContentType contentType,
     const std::string& documentUrl) const
