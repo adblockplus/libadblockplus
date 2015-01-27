@@ -24,6 +24,7 @@
 #include <vector>
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
+#include <AdblockPlus/Notification.h>
 
 #include "tr1_memory.h"
 
@@ -235,6 +236,14 @@ namespace AdblockPlus
      * @return List of recommended subscriptions.
      */
     std::vector<SubscriptionPtr> FetchAvailableSubscriptions() const;
+
+    /**
+     * Determines which notification is to be shown next.
+     * @param url URL to match notifications to (optional).
+     * @return Notification to be shown, or `null` if there is no any.
+     */
+    NotificationPtr GetNextNotificationToShow(
+      const std::string& url = std::string());
 
     /**
      * Checks if any active filter matches the supplied URL.

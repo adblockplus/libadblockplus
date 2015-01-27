@@ -41,5 +41,6 @@
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/ReferrerMapping.h>
 #include <AdblockPlus/WebRequest.h>
+#include "AdblockPlus/Notification.h"
 
 #endif
