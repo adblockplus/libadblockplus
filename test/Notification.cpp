@@ -37,7 +37,7 @@ namespace
       jsEngine->SetFileSystem(FileSystemPtr(new LazyFileSystem()));
       jsEngine->SetWebRequest(WebRequestPtr(new LazyWebRequest()));
       jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
-      filterEngine = std::tr1::make_shared<FilterEngine>(jsEngine);
+      filterEngine.reset(new FilterEngine(jsEngine));
     }
 
     void AddNotification(const std::string& notification)
@@ -80,7 +80,8 @@ namespace
     void SetUp() override
     {
       BaseJsTest::SetUp();
-      jsEngine->SetFileSystem(std::tr1::make_shared<LazyFileSystem>());
+      jsEngine->SetFileSystem(
+        std::tr1::shared_ptr<LazyFileSystem>(new LazyFileSystem()));
       const char* responseJsonText = "{"
         "\"notifications\": [{"
           "\"id\": \"some id\","
@@ -91,9 +92,10 @@ namespace
           "\"title\": \"Title\""
         "}]"
         "}";
-      jsEngine->SetWebRequest(std::tr1::make_shared<MockWebRequest>(responseJsonText));
+      jsEngine->SetWebRequest(std::tr1::shared_ptr<MockWebRequest>(
+        new MockWebRequest(responseJsonText)));
       jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
-      filterEngine = std::tr1::make_shared<FilterEngine>(jsEngine);
+      filterEngine.reset(new FilterEngine(jsEngine));
     }
   };
 #endif
