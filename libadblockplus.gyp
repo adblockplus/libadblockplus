@@ -49,7 +49,7 @@
       ['OS=="android"', {
         'link_settings': {
           'libraries': [
-            'android_arm.release/obj.target/tools/gyp/libv8_base.a',
+            'android_arm.release/obj.target/tools/gyp/libv8_base.arm.a',
             'android_arm.release/obj.target/tools/gyp/libv8_snapshot.a',
           ],
         },

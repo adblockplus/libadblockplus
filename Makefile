@@ -3,6 +3,7 @@ ARCH := x64
 ANDROID_PARAMETERS = target_arch=arm OS=android
 ANDROID_PARAMETERS += android_target_arch=arm
 ANDROID_PARAMETERS += arm_neon=0 armv7=0 arm_fpu=off vfp3=off
+ANDROID_PARAMETERS += arm_float_abi=default
 
 TEST_EXECUTABLE = build/out/Debug/tests
 
@@ -35,7 +36,7 @@ v8_android:
 android: v8_android
 	GYP_DEFINES="${ANDROID_PARAMETERS}" \
 	third_party/gyp/gyp --depth=. -f make-android -I common.gypi --generator-output=build -Gandroid_ndk_version=r9 libadblockplus.gyp
-	ndk-build -C build installed_modules \
+	$(ANDROID_NDK_ROOT)/ndk-build -C build installed_modules \
 	BUILDTYPE=Release \
 	APP_PLATFORM=android-9 \
 	APP_STL=gnustl_static \
