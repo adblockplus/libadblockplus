@@ -169,3 +169,23 @@ TEST_F(NotificationTest, MarkAsShown)
   notification->MarkAsShown();
   EXPECT_EQ(NULL, filterEngine->GetNextNotificationToShow().get());
 }
+
+TEST_F(NotificationTest, NoLinks)
+{
+  AddNotification("{ id: 'id'}");
+  NotificationPtr notification = filterEngine->GetNextNotificationToShow();
+  ASSERT_TRUE(notification);
+  std::vector<std::string> notificationLinks = notification->GetLinks();
+  EXPECT_EQ(0, notificationLinks.size());
+}
+
+TEST_F(NotificationTest, Links)
+{
+  AddNotification("{ id: 'id', links: ['link1', 'link2'] }");
+  NotificationPtr notification = filterEngine->GetNextNotificationToShow();
+  ASSERT_TRUE(notification);
+  std::vector<std::string> notificationLinks = notification->GetLinks();
+  ASSERT_EQ(2, notificationLinks.size());
+  EXPECT_EQ("link1", notificationLinks[0]);
+  EXPECT_EQ("link2", notificationLinks[1]);
+}
