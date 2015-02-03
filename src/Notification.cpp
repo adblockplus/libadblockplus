@@ -77,6 +77,23 @@ const std::string& Notification::GetMessageString() const
   return message;
 }
 
+std::vector<std::string> Notification::GetLinks() const
+{
+  std::vector<std::string> retValue;
+  JsValuePtr jsLinks = GetProperty("links");
+  if (!jsLinks->IsArray())
+  {
+    return retValue;
+  }
+  JsValueList urlLinksList = jsLinks->AsList();
+  for (JsValueList::const_iterator linkIterator = urlLinksList.begin();
+    linkIterator != urlLinksList.end(); ++linkIterator)
+  {
+    retValue.push_back((*linkIterator)->AsString());
+  }
+  return retValue;
+}
+
 void Notification::MarkAsShown()
 {
   JsValueList params;

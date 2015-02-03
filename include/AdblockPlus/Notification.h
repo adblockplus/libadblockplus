@@ -68,6 +68,12 @@ namespace AdblockPlus
     const std::string& GetMessageString() const;
 
     /**
+     * Retrieves the URLs which should be mapped to the links in the message.
+     * @return List of links.
+     */
+    std::vector<std::string> GetLinks() const;
+
+    /**
      * Marks this notification as shown. It is only relevant for question
      * notifications. Other notifications are marked automatically.
      */
