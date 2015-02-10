@@ -24,12 +24,14 @@
 
 namespace
 {
-  v8::Handle<v8::Script> CompileScript(const std::string& source, const std::string& filename)
+  v8::Handle<v8::Script> CompileScript(v8::Isolate* isolate,
+    const std::string& source, const std::string& filename)
   {
-    const v8::Handle<v8::String> v8Source = v8::String::New(source.c_str());
+    using AdblockPlus::Utils::ToV8String;
+    const v8::Handle<v8::String> v8Source = ToV8String(isolate, source);
     if (filename.length())
     {
-      const v8::Handle<v8::String> v8Filename = v8::String::New(filename.c_str());
+      const v8::Handle<v8::String> v8Filename = ToV8String(isolate, filename);
       return v8::Script::Compile(v8Source, v8Filename);
     }
     else
@@ -89,7 +91,8 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
 {
   const JsContext context(shared_from_this());
   const v8::TryCatch tryCatch;
-  const v8::Handle<v8::Script> script = CompileScript(source, filename);
+  const v8::Handle<v8::Script> script = CompileScript(isolate, source,
+    filename);
   CheckTryCatch(tryCatch);
   v8::Local<v8::Value> result = script->Run();
   CheckTryCatch(tryCatch);
@@ -123,13 +126,14 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(const std::string& val)
 {
   const JsContext context(shared_from_this());
   return JsValuePtr(new JsValue(shared_from_this(),
-      v8::String::New(val.c_str(), val.length())));
+    Utils::ToV8String(isolate, val)));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(int64_t val)
 {
   const JsContext context(shared_from_this());
-  return JsValuePtr(new JsValue(shared_from_this(), v8::Number::New(val)));
+  return JsValuePtr(new JsValue(shared_from_this(),
+    v8::Number::New(isolate, val)));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(bool val)

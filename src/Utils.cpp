@@ -43,9 +43,10 @@ std::string Utils::FromV8String(v8::Handle<v8::Value> value)
     return std::string();
 }
 
-v8::Local<v8::String> Utils::ToV8String(const std::string& str)
+v8::Local<v8::String> Utils::ToV8String(v8::Isolate* isolate, const std::string& str)
 {
-  return v8::String::New(str.c_str(), str.length());
+  return v8::String::NewFromUtf8(isolate, str.c_str(),
+    v8::String::NewStringType::kNormalString, str.length());
 }
 
 

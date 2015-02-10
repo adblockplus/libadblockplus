@@ -251,11 +251,12 @@ namespace
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
+    v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 2)
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "_fileSystem.read requires 2 parameters"));
     if (!converted[1]->IsFunction())
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "Second argument to _fileSystem.read must be a function"));
     ReadThread* const readThread = new ReadThread(jsEngine, converted[1],
         converted[0]->AsString());
@@ -268,11 +269,12 @@ namespace
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
+    v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 3)
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "_fileSystem.write requires 3 parameters"));
     if (!converted[2]->IsFunction())
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "Third argument to _fileSystem.write must be a function"));
     WriteThread* const writeThread = new WriteThread(jsEngine, converted[2],
         converted[0]->AsString(), converted[1]->AsString());
@@ -285,11 +287,12 @@ namespace
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
+    v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 3)
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "_fileSystem.move requires 3 parameters"));
     if (!converted[2]->IsFunction())
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "Third argument to _fileSystem.move must be a function"));
     MoveThread* const moveThread = new MoveThread(jsEngine, converted[2],
         converted[0]->AsString(), converted[1]->AsString());
@@ -302,11 +305,12 @@ namespace
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
+    v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 2)
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "_fileSystem.remove requires 2 parameters"));
     if (!converted[1]->IsFunction())
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "Second argument to _fileSystem.remove must be a function"));
     RemoveThread* const removeThread = new RemoveThread(jsEngine, converted[1],
         converted[0]->AsString());
@@ -319,11 +323,12 @@ namespace
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
+    v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 2)
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "_fileSystem.stat requires 2 parameters"));
     if (!converted[1]->IsFunction())
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "Second argument to _fileSystem.stat must be a function"));
     StatThread* const statThread = new StatThread(jsEngine, converted[1],
         converted[0]->AsString());
@@ -336,13 +341,14 @@ namespace
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
+    v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 1)
-      return v8::ThrowException(v8::String::New(
+      return v8::ThrowException(Utils::ToV8String(isolate,
         "_fileSystem.resolve requires 1 parameter"));
 
     std::string resolved = jsEngine->GetFileSystem()->Resolve(converted[0]->AsString());
 
-    return Utils::ToV8String(resolved);
+    return Utils::ToV8String(isolate, resolved);
   }
 
 }

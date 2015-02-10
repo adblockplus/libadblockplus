@@ -21,6 +21,7 @@
 
 #include "JsContext.h"
 #include "Thread.h"
+#include "Utils.h"
 #include "WebRequestJsObject.h"
 
 namespace
@@ -100,7 +101,9 @@ namespace
     }
     catch (const std::exception& e)
     {
-      return v8::ThrowException(v8::String::New(e.what()));
+      using AdblockPlus::Utils::ToV8String;
+      v8::Isolate* isolate = arguments.GetIsolate();
+      return v8::ThrowException(ToV8String(isolate, e.what()));
     }
     thread->Start();
     return v8::Undefined();
