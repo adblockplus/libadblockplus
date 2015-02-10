@@ -27,6 +27,7 @@
 #include "ConsoleJsObject.h"
 #include "WebRequestJsObject.h"
 #include "Thread.h"
+#include "Utils.h"
 
 using namespace AdblockPlus;
 
@@ -75,7 +76,8 @@ namespace
     }
     catch (const std::exception& e)
     {
-      return v8::ThrowException(v8::String::New(e.what()));
+      v8::Isolate* isolate = arguments.GetIsolate();
+      return v8::ThrowException(Utils::ToV8String(isolate, e.what()));
     }
     timeoutThread->Start();
 
@@ -90,8 +92,11 @@ namespace
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
     if (converted.size() < 1)
-      return v8::ThrowException(v8::String::New("_triggerEvent expects at least one parameter"));
-
+    {
+      v8::Isolate* isolate = arguments.GetIsolate();
+      return v8::ThrowException(Utils::ToV8String(isolate,
+      "_triggerEvent expects at least one parameter"));
+    }
     std::string eventName = converted.front()->AsString();
     converted.erase(converted.begin());
     jsEngine->TriggerEvent(eventName, converted);
