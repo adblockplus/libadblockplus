@@ -15,6 +15,7 @@
         'cflags': [ '-Wall', '-W', '-Wno-unused-parameter',
                     '-Wnon-virtual-dtor', '-pthread', '-fno-rtti',
                     '-pedantic', '-std=c++0x', '-fexceptions', ],
+        'cflags!': [ '-Werror', ],
         'ldflags': [ '-pthread', ],
       },
     }],
