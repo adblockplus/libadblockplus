@@ -31,7 +31,7 @@ namespace
   {
   protected:
     FilterEnginePtr filterEngine;
-    void SetUp() override
+    void SetUp()
     {
       BaseJsTest::SetUp();
       jsEngine->SetFileSystem(FileSystemPtr(new LazyFileSystem()));
@@ -77,7 +77,7 @@ namespace
   {
   protected:
     FilterEnginePtr filterEngine;
-    void SetUp() override
+    void SetUp()
     {
       BaseJsTest::SetUp();
       jsEngine->SetFileSystem(
