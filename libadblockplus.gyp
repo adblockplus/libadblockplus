@@ -17,8 +17,19 @@
                'third_party/v8/build/toolchain.gypi',
                'shell/shell.gyp'],
   'targets': [{
+    'target_name': 'ensure_dependencies',
+    'type': 'none',
+    'actions': [{
+      'action_name': 'ensure_dependencies',
+      'inputs': ['ensure_dependencies.py'],
+      'outputs': ['ensure_dependencies_phony_output'],
+      'action': ['python', 'ensure_dependencies.py'],
+    }],
+  },
+  {
     'target_name': 'libadblockplus',
     'type': '<(library)',
+    'dependencies': ['ensure_dependencies'],
     'include_dirs': [
       'include',
       'third_party/v8/include',

@@ -132,7 +132,7 @@ TEST_F(UpdateCheckTest, RequestFailure)
                  "&applicationVersion=" + appInfo.applicationVersion +
                  "&platform=" + platform +
                  "&platformVersion=" + platformVersion +
-                 "&lastVersion=0";
+                 "&lastVersion=0&downloadCount=0";
   ASSERT_EQ(expectedUrl, previousRequestUrl);
 }
 
@@ -172,7 +172,7 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
                  "&applicationVersion=" + appInfo.applicationVersion +
                  "&platform=" + platform +
                  "&platformVersion=" + platformVersion +
-                 "&lastVersion=0";
+                 "&lastVersion=0&downloadCount=0";
   ASSERT_EQ(expectedUrl, previousRequestUrl);
 }
 

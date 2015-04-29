@@ -3,6 +3,15 @@ libadblockplus
 
 A C++ library offering the core functionality of Adblock Plus.
 
+Getting/updating the dependencies
+---------------------------------
+
+libadblockplus has dependencies that aren't part of this repository. They are
+retrieved and updated during the build process, but you can also manually update
+them by running the following:
+
+    ./ensure_dependencies.py
+
 Building
 --------
 
