@@ -137,7 +137,7 @@ bool Subscription::operator==(const Subscription& subscription) const
 FilterEngine::FilterEngine(JsEnginePtr jsEngine)
     : jsEngine(jsEngine), initialized(false), firstRun(false), updateCheckId(0)
 {
-  jsEngine->SetEventCallback("init", std::tr1::bind(&FilterEngine::InitDone,
+  jsEngine->SetEventCallback("_init", std::tr1::bind(&FilterEngine::InitDone,
       this, std::tr1::placeholders::_1));
 
   {
@@ -201,7 +201,7 @@ FilterEngine::ContentType FilterEngine::StringToContentType(const std::string& c
 
 void FilterEngine::InitDone(JsValueList& params)
 {
-  jsEngine->RemoveEventCallback("init");
+  jsEngine->RemoveEventCallback("_init");
   initialized = true;
   firstRun = params.size() && params[0]->AsBool();
 }
@@ -375,7 +375,7 @@ void FilterEngine::UpdateAvailable(
 void FilterEngine::ForceUpdateCheck(
     FilterEngine::UpdateCheckDoneCallback callback)
 {
-  std::string eventName = "updateCheckDone";
+  std::string eventName = "_updateCheckDone";
   eventName += ++updateCheckId;
 
   jsEngine->SetEventCallback(eventName, std::tr1::bind(&FilterEngine::UpdateCheckDone,
