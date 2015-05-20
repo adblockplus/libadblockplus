@@ -21,7 +21,6 @@
 TEST(AppInfoJsObjectTest, AllProperties)
 {
   AdblockPlus::AppInfo appInfo;
-  appInfo.id = "1";
   appInfo.version = "2";
   appInfo.name = "4";
   appInfo.application = "5";

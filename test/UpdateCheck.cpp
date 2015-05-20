@@ -105,7 +105,6 @@ TEST_F(UpdateCheckTest, RequestFailure)
   webRequest->response.status = AdblockPlus::WebRequest::NS_ERROR_FAILURE;
 
   appInfo.name = "1";
-  appInfo.id = "2";
   appInfo.version = "3";
   appInfo.application = "4";
   appInfo.applicationVersion = "5";
@@ -143,7 +142,6 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   webRequest->response.responseText = "{\"1\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
 
   appInfo.name = "1";
-  appInfo.id = "2";
   appInfo.version = "3";
   appInfo.application = "4";
   appInfo.applicationVersion = "5";
@@ -183,7 +181,6 @@ TEST_F(UpdateCheckTest, ApplicationUpdateAvailable)
   webRequest->response.responseText = "{\"1/4\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
 
   appInfo.name = "1";
-  appInfo.id = "2";
   appInfo.version = "3";
   appInfo.application = "4";
   appInfo.applicationVersion = "5";
@@ -208,7 +205,6 @@ TEST_F(UpdateCheckTest, WrongApplication)
   webRequest->response.responseText = "{\"1/3\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
 
   appInfo.name = "1";
-  appInfo.id = "2";
   appInfo.version = "3";
   appInfo.application = "4";
   appInfo.applicationVersion = "5";
@@ -231,7 +227,6 @@ TEST_F(UpdateCheckTest, WrongVersion)
   webRequest->response.responseText = "{\"1\": {\"version\":\"3\",\"url\":\"https://foo.bar/\"}}";
 
   appInfo.name = "1";
-  appInfo.id = "2";
   appInfo.version = "3";
   appInfo.application = "4";
   appInfo.applicationVersion = "5";
@@ -254,7 +249,6 @@ TEST_F(UpdateCheckTest, WrongURL)
   webRequest->response.responseText = "{\"1\": {\"version\":\"3.1\",\"url\":\"http://insecure/\"}}";
 
   appInfo.name = "1";
-  appInfo.id = "2";
   appInfo.version = "3";
   appInfo.application = "4";
   appInfo.applicationVersion = "5";
