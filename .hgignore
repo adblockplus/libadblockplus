@@ -1,6 +1,3 @@
 ^build
 ^docs
 .pyc$
-
-syntax: glob
-upload.py
