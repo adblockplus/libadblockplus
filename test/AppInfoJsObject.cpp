@@ -21,19 +21,18 @@
 TEST(AppInfoJsObjectTest, AllProperties)
 {
   AdblockPlus::AppInfo appInfo;
-  appInfo.version = "2";
-  appInfo.name = "4";
-  appInfo.application = "5";
-  appInfo.applicationVersion = "6";
-  appInfo.locale = "3";
+  appInfo.version = "1";
+  appInfo.name = "3";
+  appInfo.application = "4";
+  appInfo.applicationVersion = "5";
+  appInfo.locale = "2";
   appInfo.developmentBuild = true;
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
-  ASSERT_EQ("1", jsEngine->Evaluate("_appInfo.id")->AsString());
-  ASSERT_EQ("2", jsEngine->Evaluate("_appInfo.version")->AsString());
-  ASSERT_EQ("4", jsEngine->Evaluate("_appInfo.name")->AsString());
-  ASSERT_EQ("5", jsEngine->Evaluate("_appInfo.application")->AsString());
-  ASSERT_EQ("6", jsEngine->Evaluate("_appInfo.applicationVersion")->AsString());
-  ASSERT_EQ("3", jsEngine->Evaluate("_appInfo.locale")->AsString());
+  ASSERT_EQ("1", jsEngine->Evaluate("_appInfo.version")->AsString());
+  ASSERT_EQ("3", jsEngine->Evaluate("_appInfo.name")->AsString());
+  ASSERT_EQ("4", jsEngine->Evaluate("_appInfo.application")->AsString());
+  ASSERT_EQ("5", jsEngine->Evaluate("_appInfo.applicationVersion")->AsString());
+  ASSERT_EQ("2", jsEngine->Evaluate("_appInfo.locale")->AsString());
   ASSERT_TRUE(jsEngine->Evaluate("_appInfo.developmentBuild")->AsBool());
 }
 
@@ -41,7 +40,6 @@ TEST(AppInfoJsObjectTest, DefaultPropertyValues)
 {
   AdblockPlus::AppInfo appInfo;
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
-  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.id")->AsString());
   ASSERT_EQ("", jsEngine->Evaluate("_appInfo.version")->AsString());
   ASSERT_EQ("", jsEngine->Evaluate("_appInfo.name")->AsString());
   ASSERT_EQ("", jsEngine->Evaluate("_appInfo.application")->AsString());
