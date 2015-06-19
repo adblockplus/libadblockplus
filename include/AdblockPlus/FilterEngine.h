@@ -186,11 +186,20 @@ namespace AdblockPlus
     typedef std::tr1::function<void(const std::string&, const JsValuePtr)> FilterChangeCallback;
 
     /**
+     * Container of name-value pairs representing a set of preferences.
+     */
+    typedef std::map<std::string, AdblockPlus::JsValuePtr> Prefs;
+
+    /**
      * Constructor.
      * @param jsEngine `JsEngine` instance used to run JavaScript code
      *        internally.
+     * @param preconfiguredPrefs `AdblockPlus::FilterEngine::Prefs`
+     *        name-value list of preconfigured prefs.
      */
-    explicit FilterEngine(JsEnginePtr jsEngine);
+    explicit FilterEngine(JsEnginePtr jsEngine, 
+        const Prefs& preconfiguredPrefs = Prefs()
+      );
 
     /**
      * Retrieves the `JsEngine` instance associated with this `FilterEngine`

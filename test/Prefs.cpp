@@ -78,14 +78,16 @@ namespace
       Reset();
     }
 
-    void Reset()
+    void Reset(const AdblockPlus::FilterEngine::Prefs& preconfiguredPrefs =
+               AdblockPlus::FilterEngine::Prefs())
     {
       jsEngine = AdblockPlus::JsEngine::New();
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
       jsEngine->SetFileSystem(fileSystemPtr);
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
 
-      filterEngine.reset(new AdblockPlus::FilterEngine(jsEngine));
+      filterEngine.reset(
+        new AdblockPlus::FilterEngine(jsEngine, preconfiguredPrefs));
     }
   };
 }
@@ -146,4 +148,57 @@ TEST_F(PrefsTest, SyntaxFailure)
   Reset();
 
   ASSERT_EQ(24, filterEngine->GetPref("patternsbackupinterval")->AsInt());
+}
+
+TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
+{
+  AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+  preconfiguredPrefs["disable_auto_updates"] = jsEngine->NewValue(false);
+  preconfiguredPrefs["suppress_first_run_page"] = jsEngine->NewValue(true);
+  Reset(preconfiguredPrefs);
+
+  ASSERT_TRUE(filterEngine->GetPref("disable_auto_updates")->IsBool());
+  ASSERT_FALSE(filterEngine->GetPref("disable_auto_updates")->AsBool());
+  ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page")->IsBool());
+  ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page")->AsBool());
+}
+
+TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
+{
+  AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+  preconfiguredPrefs["unsupported_preconfig"] = jsEngine->NewValue(true);
+  Reset(preconfiguredPrefs);
+
+  ASSERT_TRUE(filterEngine->GetPref("unsupported_preconfig")->IsUndefined());
+}
+
+TEST_F(PrefsTest, PreconfiguredPrefsOverride)
+{
+  AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+  preconfiguredPrefs["suppress_first_run_page"] = jsEngine->NewValue(true);
+  Reset(preconfiguredPrefs);
+
+  filterEngine->SetPref("suppress_first_run_page", jsEngine->NewValue(false));
+  ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page")->IsBool());
+  ASSERT_FALSE(filterEngine->GetPref("suppress_first_run_page")->AsBool());
+}
+
+TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
+{
+  AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+  preconfiguredPrefs["suppress_first_run_page"] = jsEngine->NewValue(true);
+  Reset(preconfiguredPrefs);
+
+  ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page")->IsBool());
+  ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page")->AsBool());
+  filterEngine->SetPref("suppress_first_run_page", jsEngine->NewValue(false));
+
+  AdblockPlus::Sleep(100);
+
+  ASSERT_FALSE(fileSystem->prefsContents.empty());
+
+  Reset(preconfiguredPrefs);
+
+  ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page")->IsBool());
+  ASSERT_FALSE(filterEngine->GetPref("suppress_first_run_page")->AsBool());
 }

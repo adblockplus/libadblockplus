@@ -134,7 +134,8 @@ bool Subscription::operator==(const Subscription& subscription) const
   return GetProperty("url")->AsString() == subscription.GetProperty("url")->AsString();
 }
 
-FilterEngine::FilterEngine(JsEnginePtr jsEngine)
+FilterEngine::FilterEngine(JsEnginePtr jsEngine, 
+                           const FilterEngine::Prefs& preconfiguredPrefs)
     : jsEngine(jsEngine), initialized(false), firstRun(false), updateCheckId(0)
 {
   jsEngine->SetEventCallback("_init", std::tr1::bind(&FilterEngine::InitDone,
@@ -144,6 +145,16 @@ FilterEngine::FilterEngine(JsEnginePtr jsEngine)
     // Lock the JS engine while we are loading scripts, no timeouts should fire
     // until we are done.
     const JsContext context(jsEngine);
+
+    // Set the preconfigured prefs
+    JsValuePtr preconfiguredPrefsObject = jsEngine->NewObject();
+    for (FilterEngine::Prefs::const_iterator it = preconfiguredPrefs.begin();
+         it != preconfiguredPrefs.end(); it++)
+    {
+      preconfiguredPrefsObject->SetProperty(it->first, it->second);
+    }
+    jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
+    // Load adblockplus scripts
     for (int i = 0; !jsSources[i].empty(); i += 2)
       jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
   }

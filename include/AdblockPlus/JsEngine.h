@@ -211,6 +211,13 @@ namespace AdblockPlus
      */
     void SetLogSystem(LogSystemPtr val);
 
+    /**
+     * Sets a global property that can be accessed by all the scripts.
+     * @param name Name of the property to set.
+     * @param value Value of the property to set.
+     */
+    void SetGlobalProperty(const std::string& name, AdblockPlus::JsValuePtr value);
+
   private:
     JsEngine();
 
@@ -220,6 +227,7 @@ namespace AdblockPlus
     v8::Isolate* isolate;
     V8ValueHolder<v8::Context> context;
     EventMap eventCallbacks;
+    JsValuePtr globalJsObject;
   };
 }
 
