@@ -28,12 +28,6 @@ namespace AdblockPlus
   struct AppInfo
   {
     /**
-     * Optional unique ID of the app.
-     * @deprecated This field is not used anywhere, and will be removed.
-     */
-    std::string id;
-
-    /**
      * Current version of the app, in
      * [Mozilla toolkit version format](https://developer.mozilla.org/en/docs/Toolkit_version_format).
      */
