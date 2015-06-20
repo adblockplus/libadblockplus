@@ -264,9 +264,9 @@ namespace AdblockPlus
      * Checks if any active filter matches the supplied URL.
      * @param url URL to match.
      * @param contentType Content type of the requested resource.
-     * @param documentUrls Chain of documents requesting the resource, starting
-     *        with the current resource's parent frame, ending with the
-     *        top-level frame.
+     * @param documentUrls Chain of documents requesting the resource, 
+     *        starting with the top-level frame, ending with the current
+     *        resource's parent frame.
      *        If the application is not capable of identifying the frame
      *        structure, e.g. because it is a proxy, it can be approximated
      *        using `ReferrerMapping`.
