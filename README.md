@@ -17,7 +17,7 @@ Building
 
 ### Unix
 
-All you need is Python 2.6 and Make:
+All you need is Python 2.7 and Make:
 
     make
 
@@ -40,7 +40,7 @@ To run specific tests, you can specify a filter:
 ### Windows
 
 You need Microsoft Visual C++ (Express is sufficient) 2012
-and Python 2.6. Make sure that `python.exe` is on your `PATH`.
+and Python 2.7. Make sure that `python.exe` is on your `PATH`.
 
 * Execute `createsolution.bat` to generate project files, this will create
 `build\ia32\libadblockplus.sln` (solution for the 32 bit build) and
