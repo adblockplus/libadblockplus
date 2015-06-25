@@ -36,7 +36,7 @@ namespace
   bool ReadCommandLine(std::string& commandLine)
   {
     std::cout << "> ";
-    const bool success = std::getline(std::cin, commandLine);
+    const bool success = std::getline(std::cin, commandLine).good();
     if (!success)
       std::cout << std::endl;
     return success;
