@@ -86,14 +86,14 @@ void DefaultFileSystem::Write(const std::string& path,
   if (file.good())
   {
     file << Utils::Slurp(*data);
-	if (file.good())
-	{
+    if (file.good())
+    {
       file.close();
-	  if (file.good())
-	  {
+      if (file.good())
+      {
         rename(tempfile.c_str(), pathnormalized.c_str());
-	  }
-	}
+      }
+    }
   }
 }
 
