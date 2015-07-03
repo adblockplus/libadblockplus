@@ -119,6 +119,7 @@
           'adblockplus/lib/filterListener.js',
           'adblockplus/lib/downloader.js',
           'adblockplus/lib/notification.js',
+          'lib/notificationShowRegistration.js',
           'adblockplus/lib/synchronizer.js',
           'lib/filterUpdateRegistration.js',
           'adblockplus/chrome/content/ui/subscriptions.xml',
