@@ -191,6 +191,12 @@ namespace AdblockPlus
     typedef std::map<std::string, AdblockPlus::JsValuePtr> Prefs;
 
     /**
+     * Callback type invoked when a new notification should be shown.
+     * The parameter is the Notification object to be shown.
+     */
+    typedef std::tr1::function<void(const NotificationPtr&)> ShowNotificationCallback;
+
+    /**
      * Constructor.
      * @param jsEngine `JsEngine` instance used to run JavaScript code
      *        internally.
@@ -247,12 +253,22 @@ namespace AdblockPlus
     std::vector<SubscriptionPtr> FetchAvailableSubscriptions() const;
 
     /**
-     * Determines which notification is to be shown next.
+     * Invokes the listener set via SetNotificationAvailableCallback() with the
+     * next notification to be shown.
      * @param url URL to match notifications to (optional).
-     * @return Notification to be shown, or `null` if there is no any.
      */
-    NotificationPtr GetNextNotificationToShow(
-      const std::string& url = std::string());
+    void ShowNextNotification(const std::string& url = std::string());
+
+    /**
+     * Sets the callback invoked when a notification should be shown.
+     * @param callback Callback to invoke.
+     */
+    void SetShowNotificationCallback(const ShowNotificationCallback& value);
+
+    /**
+     * Removes the callback invoked when a notification should be shown.
+     */
+    void RemoveShowNotificationCallback();
 
     /**
      * Checks if any active filter matches the supplied URL.
@@ -395,6 +411,8 @@ namespace AdblockPlus
     void UpdateCheckDone(const std::string& eventName,
                          UpdateCheckDoneCallback callback, JsValueList& params);
     void FilterChanged(FilterChangeCallback callback, JsValueList& params);
+    void ShowNotification(const ShowNotificationCallback& callback,
+      const JsValueList& params);
   };
 }
 

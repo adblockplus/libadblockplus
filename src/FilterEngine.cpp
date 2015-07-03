@@ -268,15 +268,30 @@ std::vector<SubscriptionPtr> FilterEngine::FetchAvailableSubscriptions() const
   return result;
 }
 
-NotificationPtr FilterEngine::GetNextNotificationToShow(const std::string& url)
+void FilterEngine::ShowNextNotification(const std::string& url)
 {
-  JsValuePtr func = jsEngine->Evaluate("API.getNextNotificationToShow");
+  JsValuePtr func = jsEngine->Evaluate("API.showNextNotification");
   JsValueList params;
   if (!url.empty())
   {
     params.push_back(jsEngine->NewValue(url));
   }
-  return Notification::JsValueToNotification(func->Call(params));
+  func->Call(params);
+}
+
+void FilterEngine::SetShowNotificationCallback(const ShowNotificationCallback& value)
+{
+  if (!value)
+    return;
+
+  jsEngine->SetEventCallback("_showNotification",
+    std::tr1::bind(&FilterEngine::ShowNotification, this, value,
+                   std::tr1::placeholders::_1));
+}
+
+void FilterEngine::RemoveShowNotificationCallback()
+{
+  jsEngine->RemoveEventCallback("_showNotification");
 }
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
@@ -424,6 +439,16 @@ void FilterEngine::FilterChanged(FilterEngine::FilterChangeCallback callback, Js
   JsValuePtr item(params.size() >= 2 ? params[1] : jsEngine->NewValue(false));
   callback(action, item);
 }
+
+void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
+                                         const JsValueList& params)
+{
+  if (params.size() < 1)
+    return;
+
+  callback(Notification::JsValueToNotification(params[0]));
+}
+
 
 int FilterEngine::CompareVersions(const std::string& v1, const std::string& v2)
 {
