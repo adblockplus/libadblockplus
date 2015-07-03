@@ -56,6 +56,7 @@ namespace
 
   #define rename _wrename
   #define remove _wremove
+  #define tmpfile _wtmpfile
 #else
   // POSIX systems: assume that file system encoding is UTF-8 and just use the
   // file paths as they are.
@@ -75,26 +76,35 @@ DefaultFileSystem::Read(const std::string& path) const
   return result;
 }
 
-void DefaultFileSystem::Write(const std::string& path,
-                              std::tr1::shared_ptr<std::istream> data)
+std::string tmpfile(std::string pathnormalized)
 {
-  std::wstring pathnormalized = NormalizePath(path);
+  int poslastpoint = pathnormalized.find_last_of(".");
+  std::string filename = pathnormalized.substr(0, poslastpoint - 1);
+  std::string tempfile = filename + ".tmp";
+  return tempfile;
+}
+
+std::wstring _wtmpfile(std::wstring pathnormalized)
+{
   int poslastpoint = pathnormalized.find_last_of(L".");
   std::wstring filename = pathnormalized.substr(0, poslastpoint - 1);
   std::wstring tempfile = filename + L".tmp";
-  std::ofstream file(tempfile.c_str(), std::ios_base::out | std::ios_base::binary);
-  if (file.good())
-  {
-    file << Utils::Slurp(*data);
-    if (file.good())
-    {
-      file.close();
-      if (file.good())
-      {
-        rename(tempfile.c_str(), pathnormalized.c_str());
-      }
-    }
-  }
+  return tempfile;
+}
+
+void DefaultFileSystem::Write(const std::string& path,
+                              std::tr1::shared_ptr<std::istream> data)
+{ 
+  std::ofstream file(tmpfile(NormalizePath(path)).c_str(), std::ios_base::out | std::ios_base::binary);
+  if (!file.good())
+    return;
+  file << Utils::Slurp(*data);
+  if (!file.good())
+    return;
+  file.close();
+  if (!file.good())
+    return;
+  rename(tmpfile(NormalizePath(path)).c_str(), NormalizePath(path).c_str());
 }
 
 void DefaultFileSystem::Move(const std::string& fromPath,
