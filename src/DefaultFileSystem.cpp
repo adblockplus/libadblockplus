@@ -34,6 +34,15 @@
 
 #include "../src/Utils.h"
 
+namespace
+{
+  std::string Tmpfile(const std::string& path)
+  {
+    std::string pat = path;
+    return pat += ".tmp";
+  }
+}
+
 using namespace AdblockPlus;
 
 namespace
@@ -56,7 +65,6 @@ namespace
 
   #define rename _wrename
   #define remove _wremove
-  #define tmpfile _wtmpfile
 #else
   // POSIX systems: assume that file system encoding is UTF-8 and just use the
   // file paths as they are.
@@ -76,26 +84,11 @@ DefaultFileSystem::Read(const std::string& path) const
   return result;
 }
 
-std::string tmpfile(std::string pathnormalized)
-{
-  int poslastpoint = pathnormalized.find_last_of(".");
-  std::string filename = pathnormalized.substr(0, poslastpoint - 1);
-  std::string tempfile = filename + ".tmp";
-  return tempfile;
-}
-
-std::wstring _wtmpfile(std::wstring pathnormalized)
-{
-  int poslastpoint = pathnormalized.find_last_of(L".");
-  std::wstring filename = pathnormalized.substr(0, poslastpoint - 1);
-  std::wstring tempfile = filename + L".tmp";
-  return tempfile;
-}
-
 void DefaultFileSystem::Write(const std::string& path,
                               std::tr1::shared_ptr<std::istream> data)
 { 
-  std::ofstream file(tmpfile(NormalizePath(path)).c_str(), std::ios_base::out | std::ios_base::binary);
+  std::string tmppath = Tmpfile(path);
+  std::ofstream file((NormalizePath(tmppath)).c_str(), std::ios_base::out | std::ios_base::binary);
   if (!file.good())
     return;
   file << Utils::Slurp(*data);
@@ -104,7 +97,7 @@ void DefaultFileSystem::Write(const std::string& path,
   file.close();
   if (!file.good())
     return;
-  rename(tmpfile(NormalizePath(path)).c_str(), NormalizePath(path).c_str());
+  DefaultFileSystem::Move(tmppath, path);
 }
 
 void DefaultFileSystem::Move(const std::string& fromPath,
