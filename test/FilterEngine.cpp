@@ -381,11 +381,11 @@ TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
 
   filterEngine->SetFilterChangeCallback(mockFilterChangeCallback);
   filterEngine->GetFilter("foo")->AddToList();
-  ASSERT_EQ(2, timesCalled);
+  EXPECT_EQ(2, timesCalled);
 
   filterEngine->RemoveFilterChangeCallback();
   filterEngine->GetFilter("foo")->RemoveFromList();
-  ASSERT_EQ(2, timesCalled);
+  EXPECT_EQ(2, timesCalled);
 }
 
 TEST_F(UpdaterTest, SetRemoveUpdateAvailableCallback)
