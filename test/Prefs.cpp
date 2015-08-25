@@ -22,22 +22,22 @@
 
 namespace
 {
-  typedef std::tr1::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
+  typedef std::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
 
   class TestFileSystem : public LazyFileSystem
   {
   public:
     std::string prefsContents;
 
-    std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
+    std::shared_ptr<std::istream> Read(const std::string& path) const
     {
       if (path == "prefs.json" && !prefsContents.empty())
-        return std::tr1::shared_ptr<std::istream>(new std::istringstream(prefsContents));
+        return std::shared_ptr<std::istream>(new std::istringstream(prefsContents));
 
       return LazyFileSystem::Read(path);
     }
 
-    void Write(const std::string& path, std::tr1::shared_ptr<std::istream> content)
+    void Write(const std::string& path, std::shared_ptr<std::istream> content)
     {
       if (path == "prefs.json")
       {

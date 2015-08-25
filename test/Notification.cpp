@@ -25,7 +25,7 @@ using namespace AdblockPlus;
 
 namespace
 {
-  typedef std::tr1::shared_ptr<FilterEngine> FilterEnginePtr;
+  typedef std::shared_ptr<FilterEngine> FilterEnginePtr;
 
   class NotificationTest : public BaseJsTest
   {
@@ -51,9 +51,9 @@ namespace
     NotificationPtr PeekNotification(const std::string& url = std::string())
     {
       NotificationPtr retValue;
-      filterEngine->SetShowNotificationCallback(std::tr1::bind(
+      filterEngine->SetShowNotificationCallback(std::bind(
         &NotificationTest::NotificationAvailableCallback,
-        std::tr1::placeholders::_1, std::tr1::ref(retValue)));
+        std::placeholders::_1, std::ref(retValue)));
       filterEngine->ShowNextNotification(url);
       filterEngine->RemoveShowNotificationCallback();
       return retValue;
@@ -100,7 +100,7 @@ namespace
       BaseJsTest::SetUp();
       isNotificationCallbackCalled = false;
       jsEngine->SetFileSystem(
-        std::tr1::shared_ptr<LazyFileSystem>(new LazyFileSystem()));
+        std::shared_ptr<LazyFileSystem>(new LazyFileSystem()));
       const char* responseJsonText = "{"
         "\"notifications\": [{"
           "\"id\": \"some id\","
@@ -111,13 +111,13 @@ namespace
           "\"title\": \"Title\""
         "}]"
         "}";
-      jsEngine->SetWebRequest(std::tr1::shared_ptr<MockWebRequest>(
+      jsEngine->SetWebRequest(std::shared_ptr<MockWebRequest>(
         new MockWebRequest(responseJsonText)));
       jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
       filterEngine.reset(new FilterEngine(jsEngine));
       filterEngine->SetShowNotificationCallback(
         std::bind(&NotificationMockWebRequestTest::OnNotification,
-        this, std::tr1::placeholders::_1));
+        this, std::placeholders::_1));
     }
 
     void OnNotification(const NotificationPtr& notification)

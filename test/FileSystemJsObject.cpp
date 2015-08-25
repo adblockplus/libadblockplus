@@ -41,16 +41,16 @@ namespace
     {
     }
 
-    std::tr1::shared_ptr<std::istream> Read(const std::string& path) const
+    std::shared_ptr<std::istream> Read(const std::string& path) const
     {
       if (!success)
         throw std::runtime_error("Unable to read " + path);
       std::stringstream* const stream = new std::stringstream;
       *stream << contentToRead;
-      return std::tr1::shared_ptr<std::istream>(stream);
+      return std::shared_ptr<std::istream>(stream);
     }
 
-    void Write(const std::string& path, std::tr1::shared_ptr<std::istream> data)
+    void Write(const std::string& path, std::shared_ptr<std::istream> data)
     {
       if (!success)
         throw std::runtime_error("Unable to write to " + path);
@@ -107,7 +107,7 @@ namespace
     error = jsEngine->Evaluate("result.error")->AsString();
   }
 
-  typedef std::tr1::shared_ptr<MockFileSystem> MockFileSystemPtr;
+  typedef std::shared_ptr<MockFileSystem> MockFileSystemPtr;
 
   class FileSystemJsObjectTest : public BaseJsTest
   {

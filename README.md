@@ -51,6 +51,18 @@ Visual Studio and build the solution there. Alternatively you can use the
 `msbuild` command line tool, e.g. run `msbuild /m build\ia32\libadblockplus.sln`
 from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
 
+### Supported compilers
+
+You need a C++11 compatible compiler to build libadblockplus.
+
+The compilation was tested with the following compilers:
+* g++ 4.8
+* Microsoft Visual Studio 2010, 2012
+* clang 3.4 for Android (from android-ndk-r9)
+* clang 3.6 for OS X
+
+If you have a question about another compiler please [create an issue](https://issues.adblockplus.org/).
+
 Usage
 -----
 

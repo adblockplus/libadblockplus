@@ -19,8 +19,7 @@
 #define ADBLOCK_PLUS_LOG_SYSTEM_H
 
 #include <string>
-
-#include "tr1_memory.h"
+#include <memory>
 
 namespace AdblockPlus
 {
@@ -51,7 +50,7 @@ namespace AdblockPlus
   /**
    * Shared smart pointer to a `LogSystem` instance.
    */
-  typedef std::tr1::shared_ptr<LogSystem> LogSystemPtr;
+  typedef std::shared_ptr<LogSystem> LogSystemPtr;
 }
 
 #endif

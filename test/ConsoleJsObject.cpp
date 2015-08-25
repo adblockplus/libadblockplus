@@ -35,7 +35,7 @@ namespace
     }
   };
 
-  typedef std::tr1::shared_ptr<MockLogSystem> MockLogSystemPtr;
+  typedef std::shared_ptr<MockLogSystem> MockLogSystemPtr;
 
   class ConsoleJsObjectTest : public BaseJsTest
   {

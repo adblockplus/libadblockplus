@@ -157,8 +157,8 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewCallback(
 
   // Note: we are leaking this weak pointer, no obvious way to destroy it when
   // it's no longer used
-  std::tr1::weak_ptr<JsEngine>* data =
-      new std::tr1::weak_ptr<JsEngine>(shared_from_this());
+  std::weak_ptr<JsEngine>* data =
+      new std::weak_ptr<JsEngine>(shared_from_this());
   v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(callback,
       v8::External::New(data));
   return JsValuePtr(new JsValue(shared_from_this(), templ->GetFunction()));
@@ -168,8 +168,8 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::Argument
 {
   const v8::Local<const v8::External> external =
       v8::Local<const v8::External>::Cast(arguments.Data());
-  std::tr1::weak_ptr<JsEngine>* data =
-      static_cast<std::tr1::weak_ptr<JsEngine>*>(external->Value());
+  std::weak_ptr<JsEngine>* data =
+      static_cast<std::weak_ptr<JsEngine>*>(external->Value());
   JsEnginePtr result = data->lock();
   if (!result)
     throw std::runtime_error("Oops, our JsEngine is gone, how did that happen?");

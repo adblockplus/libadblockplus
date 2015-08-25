@@ -21,8 +21,7 @@
 #include <istream>
 #include <stdint.h>
 #include <string>
-
-#include "tr1_memory.h"
+#include <memory>
 
 namespace AdblockPlus
 {
@@ -73,7 +72,7 @@ namespace AdblockPlus
      * @param path File path.
      * @return Input stream with the file's contents.
      */
-    virtual std::tr1::shared_ptr<std::istream>
+    virtual std::shared_ptr<std::istream>
       Read(const std::string& path) const = 0;
 
     /**
@@ -82,7 +81,7 @@ namespace AdblockPlus
      * @param data Input stream with the data to write.
      */
     virtual void Write(const std::string& path,
-                       std::tr1::shared_ptr<std::istream> data) = 0;
+                       std::shared_ptr<std::istream> data) = 0;
 
     /**
      * Moves a file (i.e.\ renames it).
@@ -116,7 +115,7 @@ namespace AdblockPlus
   /**
    * Shared smart pointer to a `FileSystem` instance.
    */
-  typedef std::tr1::shared_ptr<FileSystem> FileSystemPtr;
+  typedef std::shared_ptr<FileSystem> FileSystemPtr;
 }
 
 #endif

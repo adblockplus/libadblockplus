@@ -18,11 +18,10 @@
 #ifndef ADBLOCK_PLUS_WEB_REQUEST_H
 #define ADBLOCK_PLUS_WEB_REQUEST_H
 
+#include <memory>
 #include <stdint.h>
 #include <string>
 #include <vector>
-
-#include "tr1_memory.h"
 
 namespace AdblockPlus
 {
@@ -109,7 +108,7 @@ namespace AdblockPlus
   /**
    * Shared smart pointer to a `WebRequest` instance.
    */
-  typedef std::tr1::shared_ptr<WebRequest> WebRequestPtr;
+  typedef std::shared_ptr<WebRequest> WebRequestPtr;
 }
 
 #endif

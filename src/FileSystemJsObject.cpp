@@ -60,7 +60,7 @@ namespace
       std::string error;
       try
       {
-        std::tr1::shared_ptr<std::istream> stream = fileSystem->Read(path);
+        std::shared_ptr<std::istream> stream = fileSystem->Read(path);
         content = Utils::Slurp(*stream);
       }
       catch (std::exception& e)
@@ -100,7 +100,7 @@ namespace
       std::string error;
       try
       {
-        std::tr1::shared_ptr<std::iostream> stream(new std::stringstream);
+        std::shared_ptr<std::iostream> stream(new std::stringstream);
         *stream << content;
         fileSystem->Write(path, stream);
       }

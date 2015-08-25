@@ -15,13 +15,13 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <AdblockPlus/tr1_functional.h>
+#include <functional>
 
 #include "BaseJsTest.h"
 
 namespace
 {
-  typedef std::tr1::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
+  typedef std::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
 
   void FindAndReplace(std::string& source, const std::string& find, const std::string& replace)
   {
@@ -75,7 +75,7 @@ namespace
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
       jsEngine->SetWebRequest(webRequestPtr);
       jsEngine->SetEventCallback("updateAvailable",
-          std::tr1::bind(&UpdateCheckTest::EventCallback, this, std::tr1::placeholders::_1));
+          std::bind(&UpdateCheckTest::EventCallback, this, std::placeholders::_1));
 
       filterEngine.reset(new AdblockPlus::FilterEngine(jsEngine));
     }
@@ -83,7 +83,7 @@ namespace
     void ForceUpdateCheck()
     {
       filterEngine->ForceUpdateCheck(
-          std::tr1::bind(&UpdateCheckTest::UpdateCallback, this, std::tr1::placeholders::_1));
+          std::bind(&UpdateCheckTest::UpdateCallback, this, std::placeholders::_1));
     }
 
     void EventCallback(AdblockPlus::JsValueList& params)

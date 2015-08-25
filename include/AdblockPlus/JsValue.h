@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include "tr1_memory.h"
+#include <memory>
 #include "V8ValueHolder.h"
 
 namespace v8
@@ -36,12 +36,12 @@ namespace AdblockPlus
   class JsValue;
   class JsEngine;
 
-  typedef std::tr1::shared_ptr<JsEngine> JsEnginePtr;
+  typedef std::shared_ptr<JsEngine> JsEnginePtr;
 
   /**
    * Shared smart pointer to a `JsValue` instance.
    */
-  typedef std::tr1::shared_ptr<JsValue> JsValuePtr;
+  typedef std::shared_ptr<JsValue> JsValuePtr;
 
   /**
    * List of JavaScript values.

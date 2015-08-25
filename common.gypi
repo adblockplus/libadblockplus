@@ -21,9 +21,9 @@
     }],
     ['OS=="mac"', {
       'xcode_settings': {
-        'CLANG_CXX_LANGUAGE_STANDARD': 'c++0x',
-        'CLANG_CXX_LIBRARY': 'libstdc++',
-        'OTHER_CPLUSPLUSFLAGS' : ['-std=c++0x', '-stdlib=libstdc++'],
+        'CLANG_CXX_LANGUAGE_STANDARD': 'c++11',
+        'CLANG_CXX_LIBRARY': 'libc++',
+        'OTHER_CPLUSPLUSFLAGS' : ['-std=c++11', '-stdlib=libc++'],
       },
     }],
     ['OS=="android"', {
@@ -40,5 +40,12 @@
 
   'target_defaults': {
     'msvs_cygwin_shell': 0,
+    'target_conditions': [[
+      'OS=="mac" and _type=="executable"', {
+        'xcode_settings': {
+          'OTHER_LDFLAGS': ['-stdlib=libc++'],
+        },
+      }
+    ]],
   }
 }

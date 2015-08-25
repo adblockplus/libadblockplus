@@ -20,7 +20,7 @@
 
 #include <string>
 #include <vector>
-#include "tr1_memory.h"
+#include <memory>
 
 namespace AdblockPlus
 {
@@ -42,7 +42,7 @@ namespace AdblockPlus
   {
     friend class FilterEngine;
   protected:
-    static std::tr1::shared_ptr<Notification> JsValueToNotification(const JsValuePtr& jsValue);
+    static std::shared_ptr<Notification> JsValueToNotification(const JsValuePtr& jsValue);
     /**
      * Constructor.
      * @param jsValue `JsValuePtr` notification JavaScript object.
@@ -83,7 +83,7 @@ namespace AdblockPlus
     std::string message;
     NotificationType type;
   };
-  typedef std::tr1::shared_ptr<Notification> NotificationPtr;
+  typedef std::shared_ptr<Notification> NotificationPtr;
 }
 
 #endif

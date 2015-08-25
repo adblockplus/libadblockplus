@@ -26,8 +26,6 @@
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/Notification.h>
 
-#include "tr1_memory.h"
-
 namespace AdblockPlus
 {
   class FilterEngine;
@@ -39,7 +37,7 @@ namespace AdblockPlus
    * use `GetProperty()` to retrieve them by name.
    */
   class Filter : public JsValue,
-                 public std::tr1::enable_shared_from_this<Filter>
+                 public std::enable_shared_from_this<Filter>
   {
   public:
     /**
@@ -89,7 +87,7 @@ namespace AdblockPlus
    * use `GetProperty()` to retrieve them by name.
    */
   class Subscription : public JsValue,
-                       public std::tr1::enable_shared_from_this<Subscription>
+                       public std::enable_shared_from_this<Subscription>
   {
   public:
     /**
@@ -134,12 +132,12 @@ namespace AdblockPlus
   /**
    * Shared smart pointer to a `Filter` instance.
    */
-  typedef std::tr1::shared_ptr<Filter> FilterPtr;
+  typedef std::shared_ptr<Filter> FilterPtr;
 
   /**
    * Shared smart pointer to a `Subscription` instance.
    */
-  typedef std::tr1::shared_ptr<Subscription> SubscriptionPtr;
+  typedef std::shared_ptr<Subscription> SubscriptionPtr;
 
   /**
    * Main component of libadblockplus.
@@ -166,15 +164,13 @@ namespace AdblockPlus
      * Callback type invoked when an update becomes available.
      * The parameter is the download URL of the update.
      */
-    typedef std::tr1::function<void(const std::string&)>
-        UpdateAvailableCallback;
+    typedef std::function<void(const std::string&)> UpdateAvailableCallback;
 
     /**
      * Callback type invoked when a manually triggered update check finishes.
      * The parameter is an optional error message.
      */
-    typedef std::tr1::function<void(const std::string&)>
-        UpdateCheckDoneCallback;
+    typedef std::function<void(const std::string&)> UpdateCheckDoneCallback;
 
     /**
      * Callback type invoked when the filters change.
@@ -183,7 +179,7 @@ namespace AdblockPlus
      * for the full list).
      * The second parameter is the filter/subscription object affected, if any.
      */
-    typedef std::tr1::function<void(const std::string&, const JsValuePtr)> FilterChangeCallback;
+    typedef std::function<void(const std::string&, const JsValuePtr)> FilterChangeCallback;
 
     /**
      * Container of name-value pairs representing a set of preferences.
@@ -194,7 +190,7 @@ namespace AdblockPlus
      * Callback type invoked when a new notification should be shown.
      * The parameter is the Notification object to be shown.
      */
-    typedef std::tr1::function<void(const NotificationPtr&)> ShowNotificationCallback;
+    typedef std::function<void(const NotificationPtr&)> ShowNotificationCallback;
 
     /**
      * Constructor.
@@ -355,7 +351,7 @@ namespace AdblockPlus
      *        available or not - to react to updates being available, use
      *        `FilterEngine::SetUpdateAvailableCallback()`.
      */
-    void ForceUpdateCheck(UpdateCheckDoneCallback callback = 0);
+    void ForceUpdateCheck(UpdateCheckDoneCallback callback);
 
     /**
      * Sets the callback invoked when the filters change.

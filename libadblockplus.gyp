@@ -183,8 +183,5 @@
         'EntryPointSymbol': 'mainCRTStartup',
       },
     },
-    'xcode_settings': {
-      'OTHER_LDFLAGS': ['-stdlib=libstdc++'],
-    },
   }]
 }

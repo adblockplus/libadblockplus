@@ -138,8 +138,8 @@ FilterEngine::FilterEngine(JsEnginePtr jsEngine,
                            const FilterEngine::Prefs& preconfiguredPrefs)
     : jsEngine(jsEngine), initialized(false), firstRun(false), updateCheckId(0)
 {
-  jsEngine->SetEventCallback("_init", std::tr1::bind(&FilterEngine::InitDone,
-      this, std::tr1::placeholders::_1));
+  jsEngine->SetEventCallback("_init", std::bind(&FilterEngine::InitDone,
+      this, std::placeholders::_1));
 
   {
     // Lock the JS engine while we are loading scripts, no timeouts should fire
@@ -285,8 +285,8 @@ void FilterEngine::SetShowNotificationCallback(const ShowNotificationCallback& v
     return;
 
   jsEngine->SetEventCallback("_showNotification",
-    std::tr1::bind(&FilterEngine::ShowNotification, this, value,
-                   std::tr1::placeholders::_1));
+    std::bind(&FilterEngine::ShowNotification, this, value,
+              std::placeholders::_1));
 }
 
 void FilterEngine::RemoveShowNotificationCallback()
@@ -382,8 +382,8 @@ void FilterEngine::SetUpdateAvailableCallback(
     FilterEngine::UpdateAvailableCallback callback)
 {
   jsEngine->SetEventCallback("updateAvailable",
-      std::tr1::bind(&FilterEngine::UpdateAvailable, this, callback,
-                     std::tr1::placeholders::_1));
+      std::bind(&FilterEngine::UpdateAvailable, this, callback,
+                std::placeholders::_1));
 }
 
 void FilterEngine::RemoveUpdateAvailableCallback()
@@ -404,8 +404,8 @@ void FilterEngine::ForceUpdateCheck(
   std::string eventName = "_updateCheckDone";
   eventName += ++updateCheckId;
 
-  jsEngine->SetEventCallback(eventName, std::tr1::bind(&FilterEngine::UpdateCheckDone,
-      this, eventName, callback, std::tr1::placeholders::_1));
+  jsEngine->SetEventCallback(eventName, std::bind(&FilterEngine::UpdateCheckDone,
+      this, eventName, callback, std::placeholders::_1));
 
   JsValuePtr func = jsEngine->Evaluate("API.forceUpdateCheck");
   JsValueList params;
@@ -424,8 +424,8 @@ void FilterEngine::UpdateCheckDone(const std::string& eventName,
 
 void FilterEngine::SetFilterChangeCallback(FilterEngine::FilterChangeCallback callback)
 {
-  jsEngine->SetEventCallback("filterChange", std::tr1::bind(&FilterEngine::FilterChanged,
-      this, callback, std::tr1::placeholders::_1));
+  jsEngine->SetEventCallback("filterChange", std::bind(&FilterEngine::FilterChanged,
+      this, callback, std::placeholders::_1));
 }
 
 void FilterEngine::RemoveFilterChangeCallback()

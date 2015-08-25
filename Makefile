@@ -39,8 +39,9 @@ android: v8_android
 	$(ANDROID_NDK_ROOT)/ndk-build -C build installed_modules \
 	BUILDTYPE=Release \
 	APP_PLATFORM=android-9 \
-	APP_STL=gnustl_static \
+	APP_STL=c++_static \
 	APP_BUILD_SCRIPT=Makefile \
+	NDK_TOOLCHAIN_VERSION=clang3.4 \
 	NDK_PROJECT_PATH=. \
 	NDK_OUT=. \
 	NDK_APP_DST_DIR=android_arm.release

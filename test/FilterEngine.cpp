@@ -19,7 +19,7 @@
 
 namespace
 {
-  typedef std::tr1::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
+  typedef std::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
 
   class VeryLazyFileSystem : public LazyFileSystem
   {

@@ -18,18 +18,17 @@
 #ifndef ADBLOCK_PLUS_JS_ENGINE_H
 #define ADBLOCK_PLUS_JS_ENGINE_H
 
+#include <functional>
 #include <map>
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
 #include <AdblockPlus/AppInfo.h>
-#include <AdblockPlus/tr1_functional.h>
 #include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/WebRequest.h>
 
-#include "tr1_memory.h"
 #include "V8ValueHolder.h"
 
 namespace v8
@@ -49,12 +48,12 @@ namespace AdblockPlus
   /**
    * Shared smart pointer to a `JsEngine` instance.
    */
-  typedef std::tr1::shared_ptr<JsEngine> JsEnginePtr;
+  typedef std::shared_ptr<JsEngine> JsEnginePtr;
 
   /**
    * JavaScript engine used by `FilterEngine`, wraps v8.
    */
-  class JsEngine : public std::tr1::enable_shared_from_this<JsEngine>
+  class JsEngine : public std::enable_shared_from_this<JsEngine>
   {
     friend class JsValue;
     friend class JsContext;
@@ -63,7 +62,7 @@ namespace AdblockPlus
     /**
      * Event callback function.
      */
-    typedef std::tr1::function<void(JsValueList& params)> EventCallback;
+    typedef std::function<void(JsValueList& params)> EventCallback;
 
     /**
      * Maps events to callback functions.
