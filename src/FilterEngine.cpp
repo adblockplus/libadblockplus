@@ -446,7 +446,11 @@ void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
   if (params.size() < 1)
     return;
 
-  callback(Notification::JsValueToNotification(params[0]));
+  if (!params[0]->IsObject())
+  {
+    return;
+  }
+  callback(NotificationPtr(new Notification(params[0])));
 }
 
 

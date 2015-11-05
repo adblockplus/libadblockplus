@@ -64,17 +64,26 @@ Notification::Notification(const JsValuePtr& jsValue)
 
 NotificationType Notification::GetType() const
 {
-  return type;
+  return StringToNotificationType(GetProperty("type")->AsString());
 }
 
-const std::string& Notification::GetTitle() const
+NotificationTexts Notification::GetTexts()
 {
-  return title;
-}
-
-const std::string& Notification::GetMessageString() const
-{
-  return message;
+  JsValueList params;
+  params.push_back(shared_from_this());
+  JsValuePtr jsTexts = jsEngine->Evaluate("API.getNotificationTexts")->Call(params);
+  NotificationTexts notificationTexts;
+  JsValuePtr jsTitle = jsTexts->GetProperty("title");
+  if (jsTitle->IsString())
+  {
+    notificationTexts.title = jsTitle->AsString();
+  }
+  JsValuePtr jsMessage = jsTexts->GetProperty("message");
+  if (jsMessage->IsString())
+  {
+    notificationTexts.message = jsMessage->AsString();
+  }
+  return notificationTexts;
 }
 
 std::vector<std::string> Notification::GetLinks() const
@@ -99,32 +108,4 @@ void Notification::MarkAsShown()
   JsValueList params;
   params.push_back(GetProperty("id"));
   jsEngine->Evaluate("API.markNotificationAsShown")->Call(params);
-}
-
-NotificationPtr Notification::JsValueToNotification(const JsValuePtr& jsValue)
-{
-  if (!jsValue || !jsValue->IsObject())
-  {
-    return NotificationPtr();
-  }
-
-  NotificationPtr notification(new Notification(jsValue));
-  JsValuePtr jsType = notification->GetProperty("type");
-  notification->type = StringToNotificationType(jsType ? jsType->AsString() : "");
-
-  JsValueList params;
-  params.push_back(notification);
-  JsValuePtr func = notification->jsEngine->Evaluate("API.getNotificationTexts");
-  JsValuePtr jsTexts = func->Call(params);
-  JsValuePtr jsTitle = jsTexts->GetProperty("title");
-  if (jsTitle->IsString())
-  {
-    notification->title = jsTitle->AsString();
-  }
-  JsValuePtr jsMessage = jsTexts->GetProperty("message");
-  if (jsMessage->IsString())
-  {
-    notification->message = jsMessage->AsString();
-  }
-  return notification;
 }

@@ -125,8 +125,8 @@ namespace
       isNotificationCallbackCalled = true;
       ASSERT_TRUE(notification);
       EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_INFORMATION, notification->GetType());
-      EXPECT_EQ("Title", notification->GetTitle());
-      EXPECT_EQ("message", notification->GetMessageString());
+      EXPECT_EQ("Title", notification->GetTexts().title);
+      EXPECT_EQ("message", notification->GetTexts().message);
       notification->MarkAsShown();
     }
   };
@@ -156,8 +156,8 @@ TEST_F(NotificationTest, AddNotification)
   NotificationPtr notification = PeekNotification();
   ASSERT_TRUE(notification);
   EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_CRITICAL, notification->GetType());
-  EXPECT_EQ("testTitle", notification->GetTitle());
-  EXPECT_EQ("testMessage", notification->GetMessageString());
+  EXPECT_EQ("testTitle", notification->GetTexts().title);
+  EXPECT_EQ("testMessage", notification->GetTexts().message);
 }
 
 TEST_F(NotificationTest, FilterByUrl)

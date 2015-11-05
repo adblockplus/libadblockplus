@@ -36,13 +36,23 @@ namespace AdblockPlus
   };
 
   /**
+   * Contains notification title and message. It's returned by
+   * `Notification::GetTexts`.
+   */
+  struct NotificationTexts
+  {
+    std::string title;
+    std::string message;
+  };
+ 
+  /**
    * Wrapper for an Adblock Plus notification object.
    */
-  class Notification: public JsValue
+  class Notification: public JsValue,
+                      public std::tr1::enable_shared_from_this<Notification>
   {
     friend class FilterEngine;
   protected:
-    static std::shared_ptr<Notification> JsValueToNotification(const JsValuePtr& jsValue);
     /**
      * Constructor.
      * @param jsValue `JsValuePtr` notification JavaScript object.
@@ -56,16 +66,10 @@ namespace AdblockPlus
     NotificationType GetType() const;
 
     /**
-     * Retrieves the title of this notification.
-     * @return Title of this notification.
+     * Retrieves the title and message of this notification.
+     * @return Translated texts.
      */
-    const std::string& GetTitle() const;
-
-    /**
-     * Retrieves the message of this notification.
-     * @return Message of this notification.
-     */
-    const std::string& GetMessageString() const;
+    NotificationTexts GetTexts();
 
     /**
      * Retrieves the URLs which should be mapped to the links in the message.
@@ -79,9 +83,6 @@ namespace AdblockPlus
      */
     void MarkAsShown();
   private:
-    std::string title;
-    std::string message;
-    NotificationType type;
   };
   typedef std::shared_ptr<Notification> NotificationPtr;
 }
