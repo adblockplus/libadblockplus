@@ -44,7 +44,7 @@ namespace AdblockPlus
     std::string title;
     std::string message;
   };
- 
+
   /**
    * Wrapper for an Adblock Plus notification object.
    */
