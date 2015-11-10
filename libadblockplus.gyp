@@ -60,8 +60,8 @@
       ['OS=="android"', {
         'link_settings': {
           'libraries': [
-            'android_arm.release/obj.target/tools/gyp/libv8_base.arm.a',
-            'android_arm.release/obj.target/tools/gyp/libv8_snapshot.a',
+            'android_<(ANDROID_ARCH).release/obj.target/tools/gyp/libv8_base.<(ANDROID_ARCH).a',
+            'android_<(ANDROID_ARCH).release/obj.target/tools/gyp/libv8_snapshot.a',
           ],
         },
         'standalone_static_library': 1, # disable thin archives
