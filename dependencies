@@ -3,4 +3,4 @@ _self = adblockplus/buildtools/ensure_dependencies.py
 adblockplus = adblockplus hg:5434ef6e1545 git:08aefda
 third_party/googletest = googletest hg:97c89b953bc2 git:0476e15
 third_party/gyp = gyp hg:fa4a16faa5ce git:8035ac9
-third_party/v8 = v8 hg:062a08f5e129 git:a98e674
+third_party/v8 = v8-googlesource hg:28969bee9861 git:6bcca144a974f97d9496d3f7b538f90208f89c2e
