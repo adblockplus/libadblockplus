@@ -134,7 +134,7 @@ bool Subscription::operator==(const Subscription& subscription) const
   return GetProperty("url")->AsString() == subscription.GetProperty("url")->AsString();
 }
 
-FilterEngine::FilterEngine(JsEnginePtr jsEngine, 
+FilterEngine::FilterEngine(JsEnginePtr jsEngine,
                            const FilterEngine::Prefs& preconfiguredPrefs)
     : jsEngine(jsEngine), initialized(false), firstRun(false), updateCheckId(0)
 {
