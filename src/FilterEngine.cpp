@@ -325,6 +325,18 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
   return CheckFilterMatch(url, contentType, lastDocumentUrl);
 }
 
+bool FilterEngine::IsDocumentWhitelisted(const std::string& url,
+    const std::vector<std::string>& documentUrls) const
+{
+    return !!GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls);
+}
+
+bool FilterEngine::IsElemhideWhitelisted(const std::string& url,
+    const std::vector<std::string>& documentUrls) const
+{
+    return !!GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls);
+}
+
 AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
     ContentType contentType,
     const std::string& documentUrl) const
@@ -461,4 +473,41 @@ int FilterEngine::CompareVersions(const std::string& v1, const std::string& v2)
   params.push_back(jsEngine->NewValue(v2));
   JsValuePtr func = jsEngine->Evaluate("API.compareVersions");
   return func->Call(params)->AsInt();
+}
+
+FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
+  ContentType contentType, const std::string& documentUrl) const
+{
+  FilterPtr match = Matches(url, contentType, documentUrl);
+  if (match && match->GetType() == Filter::TYPE_EXCEPTION)
+  {
+    return match;
+  }
+  return FilterPtr();
+}
+
+FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
+  ContentType contentType,
+  const std::vector<std::string>& documentUrls) const
+{
+  if (documentUrls.empty())
+  {
+    return GetWhitelistingFilter(url, contentType, "");
+  }
+
+  std::vector<std::string>::const_iterator urlIterator = documentUrls.begin();
+  std::string currentUrl = url;
+  do
+  {
+    std::string parentUrl = *urlIterator++;
+    FilterPtr filter = GetWhitelistingFilter(
+                         currentUrl, contentType, parentUrl);
+    if (filter)
+    {
+      return filter;
+    }
+    currentUrl = parentUrl;
+  }
+  while (urlIterator != documentUrls.end());
+  return FilterPtr();
 }

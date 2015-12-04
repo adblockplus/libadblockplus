@@ -299,6 +299,34 @@ namespace AdblockPlus
         const std::vector<std::string>& documentUrls) const;
 
     /**
+     * Checks whether the document at the supplied URL is whitelisted.
+     * @param url URL of the document.
+     * @param documentUrls Chain of document URLs requesting the document,
+     *        starting with the current document's parent frame, ending with
+     *        the top-level frame.
+     *        If the application is not capable of identifying the frame
+     *        structure, e.g. because it is a proxy, it can be approximated
+     *        using `ReferrerMapping`.
+     * @return `true` if the URL is whitelisted.
+     */
+    bool IsDocumentWhitelisted(const std::string& url,
+        const std::vector<std::string>& documentUrls) const;
+
+    /**
+     * Checks whether element hiding is disabled at the supplied URL.
+     * @param url URL of the document.
+     * @param documentUrls Chain of document URLs requesting the document,
+     *        starting with the current document's parent frame, ending with
+     *        the top-level frame.
+     *        If the application is not capable of identifying the frame
+     *        structure, e.g. because it is a proxy, it can be approximated
+     *        using `ReferrerMapping`.
+     * @return `true` if element hiding is whitelisted for the supplied URL.
+     */
+    bool IsElemhideWhitelisted(const std::string& url,
+        const std::vector<std::string>& documentUrls) const;
+
+    /**
      * Retrieves CSS selectors for all element hiding filters active on the
      * supplied domain.
      * @param domain Domain to retrieve CSS selectors for.
@@ -409,6 +437,11 @@ namespace AdblockPlus
     void FilterChanged(FilterChangeCallback callback, JsValueList& params);
     void ShowNotification(const ShowNotificationCallback& callback,
       const JsValueList& params);
+    FilterPtr GetWhitelistingFilter(const std::string& url,
+      ContentType contentType, const std::string& documentUrl) const;
+    FilterPtr GetWhitelistingFilter(const std::string& url,
+      ContentType contentType,
+      const std::vector<std::string>& documentUrls) const;
   };
 }
 

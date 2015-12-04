@@ -413,3 +413,61 @@ TEST_F(UpdaterTest, SetRemoveUpdateAvailableCallback)
   AdblockPlus::Sleep(100);
   ASSERT_EQ(1, timesCalled);
 }
+
+TEST_F(FilterEngineTest, DocumentWhitelisting)
+{
+  filterEngine->GetFilter("@@||example.org^$document")->AddToList();
+  filterEngine->GetFilter("@@||example.com^$document,domain=example.de")->AddToList();
+
+  ASSERT_TRUE(filterEngine->IsDocumentWhitelisted(
+      "http://example.org",
+      std::vector<std::string>()));
+
+  ASSERT_FALSE(filterEngine->IsDocumentWhitelisted(
+      "http://example.co.uk",
+      std::vector<std::string>()));
+
+  ASSERT_FALSE(filterEngine->IsDocumentWhitelisted(
+      "http://example.com",
+      std::vector<std::string>()));
+
+  std::vector<std::string> documentUrls1;
+  documentUrls1.push_back("http://example.de");
+
+  ASSERT_TRUE(filterEngine->IsDocumentWhitelisted(
+      "http://example.com",
+      documentUrls1));
+
+  ASSERT_FALSE(filterEngine->IsDocumentWhitelisted(
+      "http://example.co.uk",
+      documentUrls1));
+}
+
+TEST_F(FilterEngineTest, ElemhideWhitelisting)
+{
+  filterEngine->GetFilter("@@||example.org^$elemhide")->AddToList();
+  filterEngine->GetFilter("@@||example.com^$elemhide,domain=example.de")->AddToList();
+
+  ASSERT_TRUE(filterEngine->IsElemhideWhitelisted(
+      "http://example.org",
+      std::vector<std::string>()));
+
+  ASSERT_FALSE(filterEngine->IsElemhideWhitelisted(
+      "http://example.co.uk",
+      std::vector<std::string>()));
+
+  ASSERT_FALSE(filterEngine->IsElemhideWhitelisted(
+      "http://example.com",
+      std::vector<std::string>()));
+
+  std::vector<std::string> documentUrls1;
+  documentUrls1.push_back("http://example.de");
+
+  ASSERT_TRUE(filterEngine->IsElemhideWhitelisted(
+      "http://example.com",
+      documentUrls1));
+
+  ASSERT_FALSE(filterEngine->IsElemhideWhitelisted(
+      "http://example.co.uk",
+      documentUrls1));
+}
