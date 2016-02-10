@@ -33,7 +33,7 @@ namespace AdblockPlus
   /**
    * Wrapper for an Adblock Plus filter object.
    * There are no accessors for most
-   * [filter properties](https://adblockplus.org/jsdoc/adblockplus/symbols/Filter.html),
+   * [filter properties](https://adblockplus.org/jsdoc/adblockpluscore/Filter.html),
    * use `GetProperty()` to retrieve them by name.
    */
   class Filter : public JsValue,
@@ -83,7 +83,7 @@ namespace AdblockPlus
   /**
    * Wrapper for a subscription object.
    * There are no accessors for most
-   * [subscription properties](https://adblockplus.org/jsdoc/adblockplus/symbols/Subscription.html),
+   * [subscription properties](https://adblockplus.org/jsdoc/adblockpluscore/Subscription.html),
    * use `GetProperty()` to retrieve them by name.
    */
   class Subscription : public JsValue,
@@ -175,7 +175,7 @@ namespace AdblockPlus
     /**
      * Callback type invoked when the filters change.
      * The first parameter is the action event code (see
-     * [FilterNotifier.triggerListeners](https://adblockplus.org/jsdoc/adblockplus/symbols/FilterNotifier.html#.triggerListeners)
+     * [FilterNotifier.triggerListeners](https://adblockplus.org/jsdoc/adblockpluscore/FilterNotifier.html#.triggerListeners)
      * for the full list).
      * The second parameter is the filter/subscription object affected, if any.
      */
