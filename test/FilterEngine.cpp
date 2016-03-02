@@ -280,6 +280,68 @@ TEST_F(FilterEngineTest, MatchesOnWhitelistedDomain)
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match2->GetType());
 }
 
+TEST_F(FilterEngineTest, MatchesWithContentTypeMask)
+{
+  filterEngine->GetFilter("adbanner.gif.js$script,image")->AddToList();
+  filterEngine->GetFilter("@@notbanner.gif")->AddToList();
+  filterEngine->GetFilter("blockme")->AddToList();
+  filterEngine->GetFilter("@@||example.doc^$document")->AddToList();
+
+  EXPECT_FALSE(filterEngine->Matches("http://example.org/foobar.gif",
+    AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, ""))
+    << "another url should not match";
+
+  EXPECT_FALSE(filterEngine->Matches("http://example.org/adbanner.gif.js",
+    /*mask*/ 0, "")) << "zero mask should not match (filter with some options)";
+
+  EXPECT_FALSE(filterEngine->Matches("http://example.xxx/blockme",
+    /*mask*/ 0, "")) << "zero mask should not match (filter without any option)";
+
+  EXPECT_FALSE(filterEngine->Matches("http://example.org/adbanner.gif.js",
+    AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, ""))
+    << "one arbitrary flag in mask should not match";
+
+  EXPECT_TRUE(filterEngine->Matches("http://example.org/adbanner.gif.js",
+    AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE |
+    AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, ""))
+    << "one of flags in mask should match";
+
+  EXPECT_TRUE(filterEngine->Matches("http://example.org/adbanner.gif.js",
+    AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE |
+    AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT, ""))
+    << "both flags in mask should match";
+
+  EXPECT_TRUE(filterEngine->Matches("http://example.org/adbanner.gif.js",
+    AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE |
+    AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT |
+    AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, ""))
+    << "both flags with another flag in mask should match";
+
+  EXPECT_TRUE(filterEngine->Matches("http://example.org/adbanner.gif.js",
+    AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT |
+    AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, ""))
+    << "one of flags in mask should match";
+
+  {
+    AdblockPlus::FilterPtr filter;
+    ASSERT_TRUE(filter = filterEngine->Matches("http://child.any/blockme",
+      AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT |
+      AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, "http://example.doc"))
+      << "non-zero mask should match on whitelisted document";
+
+    EXPECT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, filter->GetType());
+  }
+
+  {
+    AdblockPlus::FilterPtr filter;
+    ASSERT_TRUE(filter = filterEngine->Matches("http://example.doc/blockme",
+      /*mask*/0, "http://example.doc"))
+      << "zero mask should match when document is whitelisted";
+
+    EXPECT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, filter->GetType());
+  }
+}
+
 TEST_F(FilterEngineTest, MatchesNestedFrameRequest)
 {
   filterEngine->GetFilter("adbanner.gif")->AddToList();

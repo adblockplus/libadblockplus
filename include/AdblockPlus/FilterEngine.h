@@ -150,15 +150,35 @@ namespace AdblockPlus
   {
   public:
     // Make sure to keep ContentType in sync with FilterEngine::contentTypes
+    // and with RegExpFilter.typeMap from filterClasses.js.
     /**
      * Possible resource content types.
      */
-    enum ContentType {CONTENT_TYPE_OTHER, CONTENT_TYPE_SCRIPT,
-                      CONTENT_TYPE_IMAGE, CONTENT_TYPE_STYLESHEET,
-                      CONTENT_TYPE_OBJECT, CONTENT_TYPE_SUBDOCUMENT,
-                      CONTENT_TYPE_DOCUMENT, CONTENT_TYPE_XMLHTTPREQUEST,
-                      CONTENT_TYPE_OBJECT_SUBREQUEST, CONTENT_TYPE_FONT,
-                      CONTENT_TYPE_MEDIA, CONTENT_TYPE_ELEMHIDE};
+    enum ContentType
+    {
+      CONTENT_TYPE_OTHER = 1,
+      CONTENT_TYPE_SCRIPT = 2,
+      CONTENT_TYPE_IMAGE = 4,
+      CONTENT_TYPE_STYLESHEET = 8,
+      CONTENT_TYPE_OBJECT = 16,
+      CONTENT_TYPE_SUBDOCUMENT = 32,
+      CONTENT_TYPE_DOCUMENT = 64,
+      CONTENT_TYPE_PING = 1024,
+      CONTENT_TYPE_XMLHTTPREQUEST = 2048,
+      CONTENT_TYPE_OBJECT_SUBREQUEST = 4096,
+      CONTENT_TYPE_MEDIA = 16384,
+      CONTENT_TYPE_FONT = 32768,
+      CONTENT_TYPE_GENERICBLOCK = 0x20000000,
+      CONTENT_TYPE_ELEMHIDE = 0x40000000,
+      CONTENT_TYPE_GENERICHIDE = 0x80000000
+    };
+
+    /**
+     * Bitmask of `ContentType` values.
+     * The underlying type is signed 32 bit integer because it is actually used
+     * in JavaScript where it is converted into 32 bit signed integer.
+     */
+    typedef int32_t ContentTypeMask;
 
     /**
      * Callback type invoked when an update becomes available.
@@ -269,7 +289,7 @@ namespace AdblockPlus
     /**
      * Checks if any active filter matches the supplied URL.
      * @param url URL to match.
-     * @param contentType Content type of the requested resource.
+     * @param contentTypeMask Content type mask of the requested resource.
      * @param documentUrl URL of the document requesting the resource.
      *        Note that there will be more than one document if frames are
      *        involved, see
@@ -278,13 +298,13 @@ namespace AdblockPlus
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     FilterPtr Matches(const std::string& url,
-        ContentType contentType,
+        ContentTypeMask contentTypeMask,
         const std::string& documentUrl) const;
 
     /**
      * Checks if any active filter matches the supplied URL.
      * @param url URL to match.
-     * @param contentType Content type of the requested resource.
+     * @param contentTypeMask Content type mask of the requested resource.
      * @param documentUrls Chain of documents requesting the resource, starting
      *        with the current resource's parent frame, ending with the
      *        top-level frame.
@@ -295,7 +315,7 @@ namespace AdblockPlus
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     FilterPtr Matches(const std::string& url,
-        ContentType contentType,
+        ContentTypeMask contentTypeMask,
         const std::vector<std::string>& documentUrls) const;
 
     /**
@@ -429,7 +449,7 @@ namespace AdblockPlus
 
     void InitDone(JsValueList& params);
     FilterPtr CheckFilterMatch(const std::string& url,
-                               ContentType contentType,
+                               ContentTypeMask contentTypeMask,
                                const std::string& documentUrl) const;
     void UpdateAvailable(UpdateAvailableCallback callback, JsValueList& params);
     void UpdateCheckDone(const std::string& eventName,
@@ -438,9 +458,9 @@ namespace AdblockPlus
     void ShowNotification(const ShowNotificationCallback& callback,
       const JsValueList& params);
     FilterPtr GetWhitelistingFilter(const std::string& url,
-      ContentType contentType, const std::string& documentUrl) const;
+      ContentTypeMask contentTypeMask, const std::string& documentUrl) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
-      ContentType contentType,
+      ContentTypeMask contentTypeMask,
       const std::vector<std::string>& documentUrls) const;
   };
 }

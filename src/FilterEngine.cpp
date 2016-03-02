@@ -178,11 +178,14 @@ namespace
     contentTypes[FilterEngine::CONTENT_TYPE_OBJECT] = "OBJECT";
     contentTypes[FilterEngine::CONTENT_TYPE_SUBDOCUMENT] = "SUBDOCUMENT";
     contentTypes[FilterEngine::CONTENT_TYPE_DOCUMENT] = "DOCUMENT";
+    contentTypes[FilterEngine::CONTENT_TYPE_PING] = "PING";
     contentTypes[FilterEngine::CONTENT_TYPE_XMLHTTPREQUEST] = "XMLHTTPREQUEST";
     contentTypes[FilterEngine::CONTENT_TYPE_OBJECT_SUBREQUEST] = "OBJECT_SUBREQUEST";
     contentTypes[FilterEngine::CONTENT_TYPE_FONT] = "FONT";
     contentTypes[FilterEngine::CONTENT_TYPE_MEDIA] = "MEDIA";
     contentTypes[FilterEngine::CONTENT_TYPE_ELEMHIDE] = "ELEMHIDE";
+    contentTypes[FilterEngine::CONTENT_TYPE_GENERICBLOCK] = "GENERICBLOCK";
+    contentTypes[FilterEngine::CONTENT_TYPE_GENERICHIDE] = "GENERICHIDE";
     return contentTypes;
   }
 }
@@ -295,20 +298,20 @@ void FilterEngine::RemoveShowNotificationCallback()
 }
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
-    ContentType contentType,
+    ContentTypeMask contentTypeMask,
     const std::string& documentUrl) const
 {
   std::vector<std::string> documentUrls;
   documentUrls.push_back(documentUrl);
-  return Matches(url, contentType, documentUrls);
+  return Matches(url, contentTypeMask, documentUrls);
 }
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
-    ContentType contentType,
+    ContentTypeMask contentTypeMask,
     const std::vector<std::string>& documentUrls) const
 {
   if (documentUrls.empty())
-    return CheckFilterMatch(url, contentType, "");
+    return CheckFilterMatch(url, contentTypeMask, "");
 
   std::string lastDocumentUrl = documentUrls.front();
   for (std::vector<std::string>::const_iterator it = documentUrls.begin();
@@ -322,7 +325,7 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     lastDocumentUrl = documentUrl;
   }
 
-  return CheckFilterMatch(url, contentType, lastDocumentUrl);
+  return CheckFilterMatch(url, contentTypeMask, lastDocumentUrl);
 }
 
 bool FilterEngine::IsDocumentWhitelisted(const std::string& url,
@@ -338,13 +341,13 @@ bool FilterEngine::IsElemhideWhitelisted(const std::string& url,
 }
 
 AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
-    ContentType contentType,
+    ContentTypeMask contentTypeMask,
     const std::string& documentUrl) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.checkFilterMatch");
   JsValueList params;
   params.push_back(jsEngine->NewValue(url));
-  params.push_back(jsEngine->NewValue(ContentTypeToString(contentType)));
+  params.push_back(jsEngine->NewValue(contentTypeMask));
   params.push_back(jsEngine->NewValue(documentUrl));
   JsValuePtr result = func->Call(params);
   if (!result->IsNull())
@@ -476,9 +479,9 @@ int FilterEngine::CompareVersions(const std::string& v1, const std::string& v2)
 }
 
 FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
-  ContentType contentType, const std::string& documentUrl) const
+  ContentTypeMask contentTypeMask, const std::string& documentUrl) const
 {
-  FilterPtr match = Matches(url, contentType, documentUrl);
+  FilterPtr match = Matches(url, contentTypeMask, documentUrl);
   if (match && match->GetType() == Filter::TYPE_EXCEPTION)
   {
     return match;
@@ -487,12 +490,12 @@ FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
 }
 
 FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
-  ContentType contentType,
+  ContentTypeMask contentTypeMask,
   const std::vector<std::string>& documentUrls) const
 {
   if (documentUrls.empty())
   {
-    return GetWhitelistingFilter(url, contentType, "");
+    return GetWhitelistingFilter(url, contentTypeMask, "");
   }
 
   std::vector<std::string>::const_iterator urlIterator = documentUrls.begin();
@@ -500,8 +503,7 @@ FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
   do
   {
     std::string parentUrl = *urlIterator++;
-    FilterPtr filter = GetWhitelistingFilter(
-                         currentUrl, contentType, parentUrl);
+    FilterPtr filter = GetWhitelistingFilter(currentUrl, contentTypeMask, parentUrl);
     if (filter)
     {
       return filter;

@@ -115,6 +115,7 @@
           'adblockplus/lib/subscriptionClasses.js',
           'adblockplus/lib/filterStorage.js',
           'adblockplus/lib/elemHide.js',
+          'adblockplus/lib/cssRules.js',
           'adblockplus/lib/matcher.js',
           'adblockplus/lib/filterListener.js',
           'adblockplus/lib/downloader.js',
