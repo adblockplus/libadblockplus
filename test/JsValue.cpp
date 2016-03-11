@@ -205,6 +205,12 @@ TEST_F(JsValueTest, FunctionValue)
   ASSERT_EQ("2/5/xyz", value->Call(params, thisPtr)->AsString());
 }
 
+TEST_F(JsValueTest, JsValueCallSingleArg)
+{
+  auto func = jsEngine->Evaluate("(function(arg) {return arg * 2;})");
+  EXPECT_EQ(10, func->Call(*jsEngine->NewValue(5))->AsInt());
+}
+
 TEST_F(JsValueTest, ThrowingCoversion)
 {
   const std::string source("\

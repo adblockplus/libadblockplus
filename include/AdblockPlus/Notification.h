@@ -69,7 +69,7 @@ namespace AdblockPlus
      * Retrieves the title and message of this notification.
      * @return Translated texts.
      */
-    NotificationTexts GetTexts();
+    NotificationTexts GetTexts() const;
 
     /**
      * Retrieves the URLs which should be mapped to the links in the message.

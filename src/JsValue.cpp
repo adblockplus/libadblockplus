@@ -229,3 +229,11 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsValueList& params, Js
 
   return JsValuePtr(new JsValue(jsEngine, result));
 }
+
+AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsValue& arg) const
+{
+  const JsContext context(jsEngine);
+  JsValueList params;
+  params.push_back(JsValuePtr(new JsValue(arg.jsEngine, arg.UnwrapValue())));
+  return Call(params);
+}

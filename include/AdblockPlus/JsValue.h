@@ -123,6 +123,14 @@ namespace AdblockPlus
     JsValuePtr Call(const JsValueList& params = JsValueList(),
         AdblockPlus::JsValuePtr thisPtr = AdblockPlus::JsValuePtr()) const;
 
+    /**
+     * Invokes the value as a function (see `IsFunction()`) with single
+     * parameter.
+     * @param arg A single required parameter.
+     * @return Value returned by the function.
+     */
+    JsValuePtr Call(const JsValue& arg) const;
+
     v8::Local<v8::Value> UnwrapValue() const;
   protected:
     JsValue(JsValuePtr value);
