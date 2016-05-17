@@ -79,7 +79,7 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
 {
   // This URL should redirect to easylist-downloads.adblockplus.org and we
   // should get the actual filter list back.
-  jsEngine->Evaluate("_webRequest.GET('https://easylist.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  jsEngine->Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   do
   {
     AdblockPlus::Sleep(200);
@@ -99,7 +99,7 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
   jsEngine->Evaluate("\
     var result;\
     var request = new XMLHttpRequest();\
-    request.open('GET', 'https://easylist.adblockplus.org/easylist.txt');\
+    request.open('GET', 'https://easylist-downloads.adblockplus.org/easylist.txt');\
     request.setRequestHeader('X', 'Y');\
     request.setRequestHeader('X2', 'Y2');\
     request.overrideMimeType('text/plain');\
@@ -119,7 +119,7 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 #else
 TEST_F(DefaultWebRequestTest, DummyWebRequest)
 {
-  jsEngine->Evaluate("_webRequest.GET('https://easylist.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  jsEngine->Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   do
   {
     AdblockPlus::Sleep(200);
@@ -137,7 +137,7 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
   jsEngine->Evaluate("\
     var result;\
     var request = new XMLHttpRequest();\
-    request.open('GET', 'https://easylist.adblockplus.org/easylist.txt');\
+    request.open('GET', 'https://easylist-downloads.adblockplus.org/easylist.txt');\
     request.setRequestHeader('X', 'Y');\
     request.overrideMimeType('text/plain');\
     request.addEventListener('load', function() {result = request.responseText;}, false);\
