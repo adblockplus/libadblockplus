@@ -10,7 +10,7 @@ import argparse
 import xml.dom.minidom as minidom
 
 baseDir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(baseDir, 'adblockplus', 'buildtools', 'jshydra'))
+sys.path.append(os.path.join(baseDir, 'adblockpluscore', 'buildtools', 'jshydra'))
 from abp_rewrite import doRewrite
 
 
@@ -61,7 +61,7 @@ def convertXMLFile(array, file):
 
 
 def convertJsFile(array, file):
-    converted = doRewrite([os.path.abspath(file)], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockplus/'])
+    converted = doRewrite([os.path.abspath(file)], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockpluscore/'])
     array.add(os.path.basename(file))
     array.add(converted)
 

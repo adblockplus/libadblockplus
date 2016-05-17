@@ -443,11 +443,11 @@ TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
 
   filterEngine->SetFilterChangeCallback(mockFilterChangeCallback);
   filterEngine->GetFilter("foo")->AddToList();
-  EXPECT_EQ(2, timesCalled);
+  EXPECT_EQ(1, timesCalled);
 
   filterEngine->RemoveFilterChangeCallback();
   filterEngine->GetFilter("foo")->RemoveFromList();
-  EXPECT_EQ(2, timesCalled);
+  EXPECT_EQ(1, timesCalled);
 }
 
 TEST_F(UpdaterTest, SetRemoveUpdateAvailableCallback)
