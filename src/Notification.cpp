@@ -57,8 +57,8 @@ namespace
   }
 }
 
-Notification::Notification(const JsValuePtr& jsValue)
-  : JsValue(jsValue)
+Notification::Notification(JsValue&& jsValue)
+  : JsValue(std::move(jsValue))
 {
 }
 

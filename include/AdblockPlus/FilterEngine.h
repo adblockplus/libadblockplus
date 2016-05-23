@@ -77,7 +77,7 @@ namespace AdblockPlus
      * FilterEngine::GetFilter() instead.
      * @param value JavaScript filter object.
      */
-    Filter(JsValuePtr value);
+    Filter(JsValue&& value);
   };
 
   /**
@@ -126,7 +126,7 @@ namespace AdblockPlus
      * FilterEngine::GetSubscription() instead.
      * @param value JavaScript subscription object.
      */
-    Subscription(JsValuePtr value);
+    Subscription(JsValue&& value);
   };
 
   /**

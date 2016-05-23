@@ -55,9 +55,9 @@ namespace AdblockPlus
   protected:
     /**
      * Constructor.
-     * @param jsValue `JsValuePtr` notification JavaScript object.
+     * @param jsValue `JsValue&&` notification JavaScript object.
      */
-    explicit Notification(const JsValuePtr& jsValue);
+    explicit Notification(JsValue&& jsValue);
   public:
     /**
      * Retrieves the type of this notification.

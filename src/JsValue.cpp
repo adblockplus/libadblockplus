@@ -25,18 +25,23 @@
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
       v8::Handle<v8::Value> value)
     : jsEngine(jsEngine),
-      value(jsEngine->isolate, value)
+      value(new v8::Persistent<v8::Value>(jsEngine->isolate, value))
 {
 }
 
-AdblockPlus::JsValue::JsValue(AdblockPlus::JsValuePtr value)
-    : jsEngine(value->jsEngine),
-      value(value->value)
+AdblockPlus::JsValue::JsValue(AdblockPlus::JsValue&& src)
+    : jsEngine(src.jsEngine),
+      value(std::move(src.value))
 {
 }
 
 AdblockPlus::JsValue::~JsValue()
 {
+  if (value)
+  {
+    value->Dispose();
+    value.reset();
+  }
 }
 
 bool AdblockPlus::JsValue::IsUndefined() const
@@ -163,7 +168,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Handle<v8::V
 
 v8::Local<v8::Value> AdblockPlus::JsValue::UnwrapValue() const
 {
-  return v8::Local<v8::Value>::New(jsEngine->isolate, value);
+  return v8::Local<v8::Value>::New(jsEngine->isolate, *value);
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::string& val)
@@ -208,7 +213,8 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsValueList& params, Js
   const JsContext context(jsEngine);
   if (!thisPtr)
   {
-    v8::Local<v8::Context> localContext = v8::Local<v8::Context>::New(jsEngine->isolate, jsEngine->context);
+    v8::Local<v8::Context> localContext = v8::Local<v8::Context>::New(
+      jsEngine->isolate, *jsEngine->context);
     thisPtr = JsValuePtr(new JsValue(jsEngine, localContext->Global()));
   }
   if (!thisPtr->IsObject())

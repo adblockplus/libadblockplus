@@ -29,8 +29,6 @@
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/WebRequest.h>
 
-#include "V8ValueHolder.h"
-
 namespace v8
 {
   class Arguments;
@@ -224,7 +222,7 @@ namespace AdblockPlus
     WebRequestPtr webRequest;
     LogSystemPtr logSystem;
     v8::Isolate* isolate;
-    V8ValueHolder<v8::Context> context;
+    std::unique_ptr<v8::Persistent<v8::Context>> context;
     EventMap eventCallbacks;
     JsValuePtr globalJsObject;
   };

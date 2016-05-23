@@ -28,8 +28,8 @@ using namespace AdblockPlus;
 
 extern std::string jsSources[];
 
-Filter::Filter(JsValuePtr value)
-    : JsValue(value)
+Filter::Filter(JsValue&& value)
+    : JsValue(std::move(value))
 {
   if (!IsObject())
     throw std::runtime_error("JavaScript value is not an object");
@@ -81,8 +81,8 @@ bool Filter::operator==(const Filter& filter) const
   return GetProperty("text")->AsString() == filter.GetProperty("text")->AsString();
 }
 
-Subscription::Subscription(JsValuePtr value)
-    : JsValue(value)
+Subscription::Subscription(JsValue&& value)
+    : JsValue(std::move(value))
 {
   if (!IsObject())
     throw std::runtime_error("JavaScript value is not an object");
@@ -230,7 +230,7 @@ FilterPtr FilterEngine::GetFilter(const std::string& text)
   JsValuePtr func = jsEngine->Evaluate("API.getFilterFromText");
   JsValueList params;
   params.push_back(jsEngine->NewValue(text));
-  return FilterPtr(new Filter(func->Call(params)));
+  return FilterPtr(new Filter(std::move(*func->Call(params))));
 }
 
 SubscriptionPtr FilterEngine::GetSubscription(const std::string& url)
@@ -238,7 +238,7 @@ SubscriptionPtr FilterEngine::GetSubscription(const std::string& url)
   JsValuePtr func = jsEngine->Evaluate("API.getSubscriptionFromUrl");
   JsValueList params;
   params.push_back(jsEngine->NewValue(url));
-  return SubscriptionPtr(new Subscription(func->Call(params)));
+  return SubscriptionPtr(new Subscription(std::move(*func->Call(params))));
 }
 
 std::vector<FilterPtr> FilterEngine::GetListedFilters() const
@@ -247,7 +247,7 @@ std::vector<FilterPtr> FilterEngine::GetListedFilters() const
   JsValueList values = func->Call()->AsList();
   std::vector<FilterPtr> result;
   for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(FilterPtr(new Filter(*it)));
+    result.push_back(FilterPtr(new Filter(std::move(**it))));
   return result;
 }
 
@@ -257,7 +257,7 @@ std::vector<SubscriptionPtr> FilterEngine::GetListedSubscriptions() const
   JsValueList values = func->Call()->AsList();
   std::vector<SubscriptionPtr> result;
   for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(SubscriptionPtr(new Subscription(*it)));
+    result.push_back(SubscriptionPtr(new Subscription(std::move(**it))));
   return result;
 }
 
@@ -267,7 +267,7 @@ std::vector<SubscriptionPtr> FilterEngine::FetchAvailableSubscriptions() const
   JsValueList values = func->Call()->AsList();
   std::vector<SubscriptionPtr> result;
   for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(SubscriptionPtr(new Subscription(*it)));
+    result.push_back(SubscriptionPtr(new Subscription(std::move(**it))));
   return result;
 }
 
@@ -351,7 +351,7 @@ AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
   params.push_back(jsEngine->NewValue(documentUrl));
   JsValuePtr result = func->Call(params);
   if (!result->IsNull())
-    return FilterPtr(new Filter(result));
+    return FilterPtr(new Filter(std::move(*result)));
   else
     return FilterPtr();
 }
@@ -465,7 +465,7 @@ void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
   {
     return;
   }
-  callback(NotificationPtr(new Notification(params[0])));
+  callback(NotificationPtr(new Notification(std::move(*params[0]))));
 }
 
 

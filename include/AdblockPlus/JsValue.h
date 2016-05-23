@@ -22,13 +22,13 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "V8ValueHolder.h"
 
 namespace v8
 {
   class Value;
   template<class T> class Handle;
   template<class T> class Local;
+  template<class T> class Persistent;
 }
 
 namespace AdblockPlus
@@ -56,6 +56,7 @@ namespace AdblockPlus
   {
     friend class JsEngine;
   public:
+    JsValue(JsValue&& src);
     virtual ~JsValue();
 
     bool IsUndefined() const;
@@ -133,12 +134,11 @@ namespace AdblockPlus
 
     v8::Local<v8::Value> UnwrapValue() const;
   protected:
-    JsValue(JsValuePtr value);
     JsEnginePtr jsEngine;
   private:
     JsValue(JsEnginePtr jsEngine, v8::Handle<v8::Value> value);
     void SetProperty(const std::string& name, v8::Handle<v8::Value> val);
-    V8ValueHolder<v8::Value> value;
+    std::unique_ptr<v8::Persistent<v8::Value>> value;
   };
 }
 
