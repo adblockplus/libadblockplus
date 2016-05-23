@@ -85,7 +85,7 @@ namespace
       AdblockPlus::AppInfo appInfo;
       appInfo.name = "test";
       appInfo.version = "1.0.1";
-      AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New(appInfo);
+      AdblockPlus::JsEnginePtr jsEngine = CreateJsEngine(appInfo);
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
       mockWebRequest = new MockWebRequest;
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(mockWebRequest));

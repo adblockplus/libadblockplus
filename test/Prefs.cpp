@@ -81,7 +81,7 @@ namespace
     void Reset(const AdblockPlus::FilterEngine::Prefs& preconfiguredPrefs =
                AdblockPlus::FilterEngine::Prefs())
     {
-      jsEngine = AdblockPlus::JsEngine::New();
+      jsEngine = CreateJsEngine();
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
       jsEngine->SetFileSystem(fileSystemPtr);
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));

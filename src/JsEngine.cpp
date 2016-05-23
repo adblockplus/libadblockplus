@@ -16,7 +16,6 @@
  */
 
 #include <AdblockPlus.h>
-
 #include "GlobalJsObject.h"
 #include "JsContext.h"
 #include "JsError.h"
@@ -65,23 +64,35 @@ namespace
   };
 }
 
-AdblockPlus::JsEngine::JsEngine()
-  : isolate(v8::Isolate::GetCurrent())
+AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
+{
+  V8Initializer::Init();
+  isolate = v8::Isolate::New();
+}
+
+AdblockPlus::ScopedV8Isolate::~ScopedV8Isolate()
+{
+  isolate->Dispose();
+  isolate = nullptr;
+}
+
+AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate)
+  : isolate(isolate)
 {
 }
 
-AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo)
+AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo, const ScopedV8IsolatePtr& isolate)
 {
-  V8Initializer::Init();
-  JsEnginePtr result(new JsEngine());
+  JsEnginePtr result(new JsEngine(isolate));
 
-  const v8::Locker locker(result->isolate);
-  const v8::HandleScope handleScope;
+  const v8::Locker locker(result->GetIsolate());
+  const v8::Isolate::Scope isolateScope(result->GetIsolate());
+  const v8::HandleScope handleScope(result->GetIsolate());
 
-  result->context.reset(new v8::Persistent<v8::Context>(result->isolate,
-    v8::Context::New(result->isolate)));
+  result->context.reset(new v8::Persistent<v8::Context>(result->GetIsolate(),
+    v8::Context::New(result->GetIsolate())));
   v8::Local<v8::Object> globalContext = v8::Local<v8::Context>::New(
-    result->isolate, *result->context)->Global();
+    result->GetIsolate(), *result->context)->Global();
   result->globalJsObject = JsValuePtr(new JsValue(result, globalContext));
   AdblockPlus::GlobalJsObject::Setup(result, appInfo, result->globalJsObject);
   return result;
@@ -92,7 +103,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
 {
   const JsContext context(shared_from_this());
   const v8::TryCatch tryCatch;
-  const v8::Handle<v8::Script> script = CompileScript(isolate, source,
+  const v8::Handle<v8::Script> script = CompileScript(GetIsolate(), source,
     filename);
   CheckTryCatch(tryCatch);
   v8::Local<v8::Value> result = script->Run();
@@ -127,14 +138,14 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(const std::string& val)
 {
   const JsContext context(shared_from_this());
   return JsValuePtr(new JsValue(shared_from_this(),
-    Utils::ToV8String(isolate, val)));
+    Utils::ToV8String(GetIsolate(), val)));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(int64_t val)
 {
   const JsContext context(shared_from_this());
   return JsValuePtr(new JsValue(shared_from_this(),
-    v8::Number::New(isolate, val)));
+    v8::Number::New(GetIsolate(), val)));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(bool val)

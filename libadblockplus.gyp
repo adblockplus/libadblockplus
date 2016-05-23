@@ -164,6 +164,8 @@
       'libadblockplus'
     ],
     'sources': [
+      'test/BaseJsTest.h',
+      'test/BaseJsTest.cpp',
       'test/AppInfoJsObject.cpp',
       'test/ConsoleJsObject.cpp',
       'test/DefaultFileSystem.cpp',

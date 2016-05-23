@@ -138,6 +138,8 @@ public:
   }
 };
 
+AdblockPlus::JsEnginePtr CreateJsEngine(const AdblockPlus::AppInfo& appInfo = AdblockPlus::AppInfo());
+
 class BaseJsTest : public ::testing::Test
 {
 protected:
@@ -145,7 +147,7 @@ protected:
 
   virtual void SetUp()
   {
-    jsEngine = AdblockPlus::JsEngine::New();
+    jsEngine = CreateJsEngine();
     jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new ThrowingLogSystem));
     jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new ThrowingFileSystem));
     jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new ThrowingWebRequest));

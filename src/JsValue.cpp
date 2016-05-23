@@ -25,7 +25,7 @@
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
       v8::Handle<v8::Value> value)
     : jsEngine(jsEngine),
-      value(new v8::Persistent<v8::Value>(jsEngine->isolate, value))
+      value(new v8::Persistent<v8::Value>(jsEngine->GetIsolate(), value))
 {
 }
 
@@ -151,7 +151,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::GetProperty(const std::string& nam
     throw new std::runtime_error("Attempting to get property of a non-object");
 
   const JsContext context(jsEngine);
-  v8::Local<v8::String> property = Utils::ToV8String(jsEngine->isolate, name);
+  v8::Local<v8::String> property = Utils::ToV8String(jsEngine->GetIsolate(), name);
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
   return JsValuePtr(new JsValue(jsEngine, obj->Get(property)));
 }
@@ -161,26 +161,26 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Handle<v8::V
   if (!IsObject())
     throw new std::runtime_error("Attempting to set property on a non-object");
 
-  v8::Local<v8::String> property = Utils::ToV8String(jsEngine->isolate, name);
+  v8::Local<v8::String> property = Utils::ToV8String(jsEngine->GetIsolate(), name);
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
   obj->Set(property, val);
 }
 
 v8::Local<v8::Value> AdblockPlus::JsValue::UnwrapValue() const
 {
-  return v8::Local<v8::Value>::New(jsEngine->isolate, *value);
+  return v8::Local<v8::Value>::New(jsEngine->GetIsolate(), *value);
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::string& val)
 {
   const JsContext context(jsEngine);
-  SetProperty(name, Utils::ToV8String(jsEngine->isolate, val));
+  SetProperty(name, Utils::ToV8String(jsEngine->GetIsolate(), val));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)
 {
   const JsContext context(jsEngine);
-  SetProperty(name, v8::Number::New(jsEngine->isolate, val));
+  SetProperty(name, v8::Number::New(jsEngine->GetIsolate(), val));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const JsValuePtr& val)
@@ -214,7 +214,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsValueList& params, Js
   if (!thisPtr)
   {
     v8::Local<v8::Context> localContext = v8::Local<v8::Context>::New(
-      jsEngine->isolate, *jsEngine->context);
+      jsEngine->GetIsolate(), *jsEngine->context);
     thisPtr = JsValuePtr(new JsValue(jsEngine, localContext->Global()));
   }
   if (!thisPtr->IsObject())

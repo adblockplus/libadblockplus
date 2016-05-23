@@ -49,6 +49,31 @@ namespace AdblockPlus
   typedef std::shared_ptr<JsEngine> JsEnginePtr;
 
   /**
+   * Scope based isolate manager. Creates a new isolate instance on
+   * constructing and disposes it on destructing.
+   */
+  class ScopedV8Isolate
+  {
+  public:
+    ScopedV8Isolate();
+    ~ScopedV8Isolate();
+    v8::Isolate* Get()
+    {
+      return isolate;
+    }
+  private:
+    ScopedV8Isolate(const ScopedV8Isolate&);
+    ScopedV8Isolate& operator=(const ScopedV8Isolate&);
+
+    v8::Isolate* isolate;
+  };
+
+  /**
+   * Shared smart pointer to ScopedV8Isolate instance;
+   */
+  typedef std::shared_ptr<ScopedV8Isolate> ScopedV8IsolatePtr;
+
+  /**
    * JavaScript engine used by `FilterEngine`, wraps v8.
    */
   class JsEngine : public std::enable_shared_from_this<JsEngine>
@@ -70,9 +95,11 @@ namespace AdblockPlus
     /**
      * Creates a new JavaScript engine instance.
      * @param appInfo Information about the app.
+     * @param isolate v8::Isolate wrapper. This parameter should be considered
+     *        as a temporary hack for tests, it will go away. Issue #3593.
      * @return New `JsEngine` instance.
      */
-    static JsEnginePtr New(const AppInfo& appInfo = AppInfo());
+    static JsEnginePtr New(const AppInfo& appInfo = AppInfo(), const ScopedV8IsolatePtr& isolate = ScopedV8IsolatePtr(new ScopedV8Isolate()));
 
     /**
      * Registers the callback function for an event.
@@ -215,13 +242,24 @@ namespace AdblockPlus
      */
     void SetGlobalProperty(const std::string& name, AdblockPlus::JsValuePtr value);
 
+    /**
+     * Returns a pointer to associated v8::Isolate.
+     */
+    v8::Isolate* GetIsolate()
+    {
+      return isolate->Get();
+    }
+
   private:
-    JsEngine();
+    explicit JsEngine(const ScopedV8IsolatePtr& isolate);
+
+    /// Isolate must be disposed only after disposing of all objects which are
+    /// using it.
+    ScopedV8IsolatePtr isolate;
 
     FileSystemPtr fileSystem;
     WebRequestPtr webRequest;
     LogSystemPtr logSystem;
-    v8::Isolate* isolate;
     std::unique_ptr<v8::Persistent<v8::Context>> context;
     EventMap eventCallbacks;
     JsValuePtr globalJsObject;

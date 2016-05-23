@@ -70,7 +70,7 @@ namespace
 
     void Reset()
     {
-      jsEngine = AdblockPlus::JsEngine::New(appInfo);
+      jsEngine = CreateJsEngine(appInfo);
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
       jsEngine->SetWebRequest(webRequestPtr);
