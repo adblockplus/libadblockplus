@@ -15,6 +15,26 @@ them by running the following:
 Building
 --------
 
+### Supported target platforms and prerequisites
+
+You need a C++11 compatible compiler to build libadblockplus.
+
+Win32:
+* Microsoft Visual Studio 2010, 2012
+
+Linux:
+* g++ 5.2
+
+Mac:
+* clang 3.6 for OS X
+
+Android:
+* The host system should be Linux or OS X
+* android-ndk-r9, android-ndk-r10c. You can download the latter for [OS X](http://dl.google.com/android/ndk/android-ndk-r10c-darwin-x86_64.bin), [Linux 32](http://dl.google.com/android/ndk/android-ndk-r10c-linux-x86.bin), [Linux 64](http://dl.google.com/android/ndk/android-ndk-r10c-linux-x86_64.bin).
+* g++ multilib
+
+If you have a compilation issue with another compiler please [create an issue](https://issues.adblockplus.org/).
+
 ### Unix
 
 All you need is Python 2.7 and Make:
@@ -51,17 +71,17 @@ Visual Studio and build the solution there. Alternatively you can use the
 `msbuild` command line tool, e.g. run `msbuild /m build\ia32\libadblockplus.sln`
 from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
 
-### Supported compilers
+### Building for Android
 
-You need a C++11 compatible compiler to build libadblockplus.
+First set ANDROID_NDK_ROOT environment variable to your Android NDK directory.
 
-The compilation was tested with the following compilers:
-* g++ 4.8
-* Microsoft Visual Studio 2010, 2012
-* clang 3.4 for Android (from android-ndk-r9)
-* clang 3.6 for OS X
+To build for *x86* arch run:
 
-If you have a question about another compiler please [create an issue](https://issues.adblockplus.org/).
+    make android_x86
+
+To build for *arm* arch run:
+
+    make android_arm
 
 Usage
 -----
