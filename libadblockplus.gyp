@@ -110,6 +110,7 @@
           'lib/utils.js',
           'lib/elemHideHitRegistration.js',
           'adblockpluscore/lib/events.js',
+          'adblockpluscore/lib/coreUtils.js',
           'adblockpluscore/lib/filterNotifier.js',
           'lib/init.js',
           'adblockpluscore/lib/filterClasses.js',
