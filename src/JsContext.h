@@ -26,8 +26,7 @@ namespace AdblockPlus
   class JsContext
   {
   public:
-    JsContext(const JsEnginePtr jsEngine);
-    virtual ~JsContext() {};
+    explicit JsContext(const JsEnginePtr jsEngine);
 
   private:
     const v8::Locker locker;
