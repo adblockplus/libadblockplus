@@ -37,6 +37,7 @@ namespace
   {
   public:
     TimeoutThread(JsValueList& arguments)
+      : Thread(true)
     {
       if (arguments.size() < 2)
         throw std::runtime_error("setTimeout requires at least 2 parameters");

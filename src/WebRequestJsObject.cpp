@@ -30,7 +30,7 @@ namespace
   {
   public:
     WebRequestThread(AdblockPlus::JsEnginePtr jsEngine, AdblockPlus::JsValueList& arguments)
-        : jsEngine(jsEngine), url(arguments[0]->AsString())
+        : Thread(true), jsEngine(jsEngine), url(arguments[0]->AsString())
     {
       if (!url.length())
         throw std::runtime_error("Invalid string passed as first argument to GET");
@@ -78,7 +78,6 @@ namespace
       AdblockPlus::JsValueList params;
       params.push_back(resultObject);
       callback->Call(params);
-      delete this;
     }
 
   private:

@@ -23,14 +23,6 @@
 
 using namespace AdblockPlus;
 
-namespace
-{
-  void CallRun(Thread* thread)
-  {
-    thread->Run();
-  }
-}
-
 void AdblockPlus::Sleep(const int millis)
 {
 #ifdef WIN32
@@ -86,6 +78,11 @@ Lock::~Lock()
   mutex.Unlock();
 }
 
+Thread::Thread(bool deleteSelfOnFinish)
+  : m_deleteSelfOnFinish(deleteSelfOnFinish)
+{
+}
+
 Thread::~Thread()
 {
 }
@@ -106,4 +103,11 @@ void Thread::Join()
 #else
   pthread_join(nativeThread, 0);
 #endif
+}
+
+void Thread::CallRun(Thread* thread)
+{
+  thread->Run();
+  if (thread->m_deleteSelfOnFinish)
+    delete thread;
 }

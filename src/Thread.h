@@ -56,17 +56,20 @@ namespace AdblockPlus
   class Thread
   {
   public:
+    explicit Thread(bool deleteSelfOnFinish = false);
     virtual ~Thread();
     virtual void Run() = 0;
     void Start();
     void Join();
-
+  private:
+    static void CallRun(Thread* thread);
   private:
 #ifdef WIN32
     HANDLE nativeThread;
 #else
     pthread_t nativeThread;
 #endif
+    bool m_deleteSelfOnFinish;
   };
 }
 

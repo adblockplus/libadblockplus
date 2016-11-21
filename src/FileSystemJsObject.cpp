@@ -34,7 +34,7 @@ namespace
   {
   public:
     IoThread(JsEnginePtr jsEngine, JsValuePtr callback)
-      : jsEngine(jsEngine), fileSystem(jsEngine->GetFileSystem()),
+      : Thread(true), jsEngine(jsEngine), fileSystem(jsEngine->GetFileSystem()),
         callback(callback)
     {
     }
@@ -79,7 +79,6 @@ namespace
       JsValueList params;
       params.push_back(result);
       callback->Call(params);
-      delete this;
     }
 
   private:
@@ -118,7 +117,6 @@ namespace
       JsValueList params;
       params.push_back(errorValue);
       callback->Call(params);
-      delete this;
     }
 
   private:
@@ -156,7 +154,6 @@ namespace
       JsValueList params;
       params.push_back(errorValue);
       callback->Call(params);
-      delete this;
     }
 
   private:
@@ -194,7 +191,6 @@ namespace
       JsValueList params;
       params.push_back(errorValue);
       callback->Call(params);
-      delete this;
     }
 
   private:
@@ -239,7 +235,6 @@ namespace
       JsValueList params;
       params.push_back(result);
       callback->Call(params);
-      delete this;
     }
 
   private:
