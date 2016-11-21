@@ -309,7 +309,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
 
   ParseResponseHeaders(hRequest, &result);
 
-  std::auto_ptr<char> outBuffer;
+  std::unique_ptr<char[]> outBuffer;
   DWORD downloadSize, downloaded;
 
   // Download the actual response
