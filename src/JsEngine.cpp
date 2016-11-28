@@ -91,11 +91,14 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo, cons
 
   result->context.reset(new v8::Persistent<v8::Context>(result->GetIsolate(),
     v8::Context::New(result->GetIsolate())));
-  v8::Local<v8::Object> globalContext = v8::Local<v8::Context>::New(
-    result->GetIsolate(), *result->context)->Global();
-  result->globalJsObject = JsValuePtr(new JsValue(result, globalContext));
-  AdblockPlus::GlobalJsObject::Setup(result, appInfo, result->globalJsObject);
+  AdblockPlus::GlobalJsObject::Setup(result, appInfo, result->GetGlobalObject());
   return result;
+}
+
+AdblockPlus::JsValuePtr AdblockPlus::JsEngine::GetGlobalObject()
+{
+  JsContext context(shared_from_this());
+  return JsValuePtr(new JsValue(shared_from_this(), context.GetV8Context()->Global()));
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& source,
@@ -244,8 +247,8 @@ void AdblockPlus::JsEngine::SetLogSystem(AdblockPlus::LogSystemPtr val)
 void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name, 
                                               AdblockPlus::JsValuePtr value)
 {
-  if (!globalJsObject)
+  auto global = GetGlobalObject();
+  if (!global)
     throw std::runtime_error("Global object cannot be null");
-
-  globalJsObject->SetProperty(name, value);
+  global->SetProperty(name, value);
 }

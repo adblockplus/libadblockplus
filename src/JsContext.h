@@ -28,10 +28,16 @@ namespace AdblockPlus
   public:
     explicit JsContext(const JsEnginePtr jsEngine);
 
+    v8::Local<v8::Context> GetV8Context() const
+    {
+      return context;
+    }
+
   private:
     const v8::Locker locker;
     const v8::Isolate::Scope isolateScope;
     const v8::HandleScope handleScope;
+    const v8::Local<v8::Context> context;
     const v8::Context::Scope contextScope;
   };
 }

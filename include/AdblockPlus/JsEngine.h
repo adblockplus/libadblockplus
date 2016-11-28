@@ -253,6 +253,8 @@ namespace AdblockPlus
   private:
     explicit JsEngine(const ScopedV8IsolatePtr& isolate);
 
+    JsValuePtr GetGlobalObject();
+
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.
     ScopedV8IsolatePtr isolate;
@@ -262,7 +264,6 @@ namespace AdblockPlus
     LogSystemPtr logSystem;
     std::unique_ptr<v8::Persistent<v8::Context>> context;
     EventMap eventCallbacks;
-    JsValuePtr globalJsObject;
   };
 }
 
