@@ -16,6 +16,9 @@
  */
 
 #include "BaseJsTest.h"
+#include <thread>
+
+using namespace AdblockPlus;
 
 namespace
 {
@@ -110,6 +113,58 @@ namespace
 
   // Workaround for https://issues.adblockplus.org/ticket/1397.
   void NoOpUpdaterCallback(const std::string&) {}
+
+  class FilterEngineWithFreshFolder : public ::testing::Test
+  {
+  protected:
+    FileSystemPtr fileSystem;
+    std::weak_ptr<JsEngine> weakJsEngine;
+
+    void SetUp() override
+    {
+      fileSystem.reset(new DefaultFileSystem());
+      // Since there is neither in memory FS nor functionality to work with
+      // directories use the hack: manually clean the directory.
+      removeFileIfExists("patterns.ini");
+      removeFileIfExists("prefs.json");
+    }
+    JsEnginePtr createJsEngine(const AppInfo& appInfo = AppInfo())
+    {
+      auto jsEngine = JsEngine::New(appInfo);
+      weakJsEngine = jsEngine;
+      jsEngine->SetFileSystem(fileSystem);
+      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest()));
+      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem()));
+      return jsEngine;
+    }
+    void TearDown() override
+    {
+      removeFileIfExists("patterns.ini");
+      removeFileIfExists("prefs.json");
+      fileSystem.reset();
+    }
+    void removeFileIfExists(const std::string& path)
+    {
+      // Hack: allow IO to finish currently running operations, in particular
+      // writing into files. Otherwise we get "Permission denied".
+      auto safeRemove = [this, &path]()->bool
+      {
+        try
+        {
+          if (fileSystem->Stat(path).exists)
+            fileSystem->Remove(path);
+          return true;
+        }
+        catch (...)
+        {
+          return false;
+        }
+      };
+      int i = 5;
+      while ((i-- > 0 && weakJsEngine.lock()) || !safeRemove())
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
+  };
 }
 
 TEST_F(FilterEngineTest, FilterCreation)
@@ -532,4 +587,42 @@ TEST_F(FilterEngineTest, ElemhideWhitelisting)
   ASSERT_FALSE(filterEngine->IsElemhideWhitelisted(
       "http://example.co.uk",
       documentUrls1));
+}
+
+TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
+{
+  AppInfo appInfo;
+  appInfo.locale = "zh";
+  const std::string langSubscriptionUrl = "https://easylist-downloads.adblockplus.org/easylistchina+easylist.txt";
+  auto jsEngine = createJsEngine(appInfo);
+  auto filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine));
+  const auto subscriptions = filterEngine->GetListedSubscriptions();
+  ASSERT_EQ(2u, subscriptions.size());
+  const auto aaUrl = filterEngine->GetPref("subscriptions_exceptionsurl")->AsString();
+  SubscriptionPtr aaSubscription;
+  SubscriptionPtr langSubscription;
+  if (subscriptions[0]->GetProperty("url")->AsString() == aaUrl)
+  {
+    aaSubscription = subscriptions[0];
+    langSubscription = subscriptions[1];
+  }
+  else if (subscriptions[1]->GetProperty("url")->AsString() == aaUrl)
+  {
+    aaSubscription = subscriptions[1];
+    langSubscription = subscriptions[0];
+  }
+  ASSERT_NE(nullptr, aaSubscription);
+  ASSERT_NE(nullptr, langSubscription);
+  EXPECT_EQ(aaUrl, aaSubscription->GetProperty("url")->AsString());
+  EXPECT_EQ(langSubscriptionUrl, langSubscription->GetProperty("url")->AsString());
+}
+
+TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
+{
+  auto jsEngine = createJsEngine();
+  FilterEngine::Prefs preSettings;
+  preSettings["first_run_subscription_auto_select"] = jsEngine->NewValue(false);
+  auto filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine, preSettings));
+  const auto subscriptions = filterEngine->GetListedSubscriptions();
+  EXPECT_EQ(0u, subscriptions.size());
 }
