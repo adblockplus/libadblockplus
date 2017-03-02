@@ -138,6 +138,8 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ReceiveData);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseText);
+    // Request compressed data. Using any supported aglorithm
+    curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, ReceiveHeader);
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerData);
 

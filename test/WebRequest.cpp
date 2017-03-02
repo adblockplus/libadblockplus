@@ -89,6 +89,9 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
   ASSERT_EQ(200, jsEngine->Evaluate("foo.responseStatus")->AsInt());
   ASSERT_EQ("[Adblock Plus ", jsEngine->Evaluate("foo.responseText.substr(0, 14)")->AsString());
   ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)")->AsString());
+#if defined(HAVE_CURL)
+  ASSERT_EQ("gzip", jsEngine->Evaluate("foo.responseHeaders['content-encoding'].substr(0, 4)")->AsString());
+#endif
   ASSERT_TRUE(jsEngine->Evaluate("foo.responseHeaders['location']")->IsUndefined());
 }
 
