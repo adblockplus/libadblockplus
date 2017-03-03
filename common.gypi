@@ -12,9 +12,13 @@
     ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
        or OS=="netbsd" or OS=="android"', {
       'target_defaults': {
+        # V8 headers cause a build error on recent gcc.
+        # Adding -fpermissive to solve this.
+        # See https://issues.adblockplus.org/ticket/4950
+        # We might be able to do without after upgrading V8.
         'cflags': [ '-Wall', '-W', '-Wno-unused-parameter',
                     '-Wnon-virtual-dtor', '-pthread', '-fno-rtti',
-                    '-pedantic', '-std=c++0x', '-fexceptions', ],
+                    '-pedantic', '-std=c++0x', '-fexceptions', '-fpermissive' ],
         'cflags!': [ '-Werror', ],
         'ldflags': [ '-pthread', ],
       },
