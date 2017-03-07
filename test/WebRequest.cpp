@@ -26,15 +26,28 @@ namespace
   public:
     AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
     {
+      lastRequestHeaders.clear();
+      for (auto header : requestHeaders)
+      {
+        lastRequestHeaders.insert(header.first);
+      }
+
       AdblockPlus::Sleep(50);
 
       AdblockPlus::ServerResponse result;
       result.status = NS_OK;
       result.responseStatus = 123;
       result.responseHeaders.push_back(std::pair<std::string, std::string>("Foo", "Bar"));
-      result.responseText = url + "\n" + requestHeaders[0].first + "\n" + requestHeaders[0].second;
+      result.responseText = url + "\n";
+      if (!requestHeaders.empty())
+      {
+        result.responseText += requestHeaders[0].first + "\n" + requestHeaders[0].second;
+      }
       return result;
     }
+
+    // mutable. Very Ugly. But we are testing and need to change this in GET which is const.
+    mutable std::set<std::string> lastRequestHeaders;
   };
 
   template<class T>
@@ -51,6 +64,28 @@ namespace
 
   typedef WebRequestTest<MockWebRequest> MockWebRequestTest;
   typedef WebRequestTest<AdblockPlus::DefaultWebRequest> DefaultWebRequestTest;
+  typedef WebRequestTest<MockWebRequest> XMLHttpRequestTest;
+
+  void ResetTestXHR(const AdblockPlus::JsEnginePtr& jsEngine)
+  {
+    jsEngine->Evaluate("\
+      var result;\
+      var request = new XMLHttpRequest();\
+      request.open('GET', 'https://easylist-downloads.adblockplus.org/easylist.txt');\
+      request.overrideMimeType('text/plain');\
+      request.addEventListener('load', function() {result = request.responseText;}, false);\
+      request.addEventListener('error', function() {result = 'error';}, false);\
+    ");
+  }
+
+  void WaitForVariable(const std::string& variable, const AdblockPlus::JsEnginePtr& jsEngine)
+  {
+    do
+    {
+      AdblockPlus::Sleep(60);
+    } while (jsEngine->Evaluate(variable)->IsUndefined());
+  }
+
 }
 
 TEST_F(MockWebRequestTest, BadCall)
@@ -80,10 +115,7 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
   // This URL should redirect to easylist-downloads.adblockplus.org and we
   // should get the actual filter list back.
   jsEngine->Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
-  do
-  {
-    AdblockPlus::Sleep(200);
-  } while (jsEngine->Evaluate("this.foo")->IsUndefined());
+  WaitForVariable("this.foo", jsEngine);
   ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)")->AsString());
   ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
   ASSERT_EQ(200, jsEngine->Evaluate("foo.responseStatus")->AsInt());
@@ -99,34 +131,26 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
   AdblockPlus::FilterEngine filterEngine(jsEngine);
 
+  ResetTestXHR(jsEngine);
   jsEngine->Evaluate("\
-    var result;\
-    var request = new XMLHttpRequest();\
-    request.open('GET', 'https://easylist-downloads.adblockplus.org/easylist.txt');\
     request.setRequestHeader('X', 'Y');\
     request.setRequestHeader('X2', 'Y2');\
-    request.overrideMimeType('text/plain');\
-    request.addEventListener('load', function() {result = request.responseText;}, false);\
-    request.addEventListener('error', function() {result = 'error';}, false);\
     request.send(null);");
-  do
-  {
-    AdblockPlus::Sleep(200);
-  } while (jsEngine->Evaluate("result")->IsUndefined());
+  WaitForVariable("result", jsEngine);
   ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("request.channel.status")->AsInt());
   ASSERT_EQ(200, jsEngine->Evaluate("request.status")->AsInt());
   ASSERT_EQ("[Adblock Plus ", jsEngine->Evaluate("result.substr(0, 14)")->AsString());
   ASSERT_EQ("text/plain", jsEngine->Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)")->AsString());
+#if defined(HAVE_CURL)
+  ASSERT_EQ("gzip", jsEngine->Evaluate("request.getResponseHeader('Content-Encoding').substr(0, 4)")->AsString());
+#endif
   ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Location')")->IsNull());
 }
 #else
 TEST_F(DefaultWebRequestTest, DummyWebRequest)
 {
   jsEngine->Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
-  do
-  {
-    AdblockPlus::Sleep(200);
-  } while (jsEngine->Evaluate("this.foo")->IsUndefined());
+  WaitForVariable("this.foo", jsEngine);
   ASSERT_EQ(AdblockPlus::WebRequest::NS_ERROR_FAILURE, jsEngine->Evaluate("foo.status")->AsInt());
   ASSERT_EQ(0, jsEngine->Evaluate("foo.responseStatus")->AsInt());
   ASSERT_EQ("", jsEngine->Evaluate("foo.responseText")->AsString());
@@ -137,19 +161,11 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
   AdblockPlus::FilterEngine filterEngine(jsEngine);
 
+  ResetTestXHR(jsEngine);
   jsEngine->Evaluate("\
-    var result;\
-    var request = new XMLHttpRequest();\
-    request.open('GET', 'https://easylist-downloads.adblockplus.org/easylist.txt');\
     request.setRequestHeader('X', 'Y');\
-    request.overrideMimeType('text/plain');\
-    request.addEventListener('load', function() {result = request.responseText;}, false);\
-    request.addEventListener('error', function() {result = 'error';}, false);\
     request.send(null);");
-  do
-  {
-    AdblockPlus::Sleep(200);
-  } while (jsEngine->Evaluate("result")->IsUndefined());
+  WaitForVariable("result", jsEngine);
   ASSERT_EQ(AdblockPlus::WebRequest::NS_ERROR_FAILURE, jsEngine->Evaluate("request.channel.status")->AsInt());
   ASSERT_EQ(0, jsEngine->Evaluate("request.status")->AsInt());
   ASSERT_EQ("error", jsEngine->Evaluate("result")->AsString());
@@ -157,3 +173,118 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 }
 
 #endif
+
+namespace
+{
+  class CatchLogSystem : public AdblockPlus::LogSystem
+  {
+  public:
+    AdblockPlus::LogSystem::LogLevel lastLogLevel;
+    std::string lastMessage;
+
+    CatchLogSystem()
+      : AdblockPlus::LogSystem(),
+        lastLogLevel(AdblockPlus::LogSystem::LOG_LEVEL_TRACE)
+    {
+    }
+
+    void operator()(AdblockPlus::LogSystem::LogLevel logLevel,
+        const std::string& message, const std::string&)
+    {
+      lastLogLevel = logLevel;
+      lastMessage = message;
+    }
+
+    void clear()
+    {
+      lastLogLevel = AdblockPlus::LogSystem::LOG_LEVEL_TRACE;
+      lastMessage.clear();
+    }
+  };
+
+  typedef std::shared_ptr<CatchLogSystem> CatchLogSystemPtr;
+}
+
+TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
+{
+  auto catchLogSystem = CatchLogSystemPtr(new CatchLogSystem);
+  jsEngine->SetLogSystem(catchLogSystem);
+
+  AdblockPlus::FilterEngine filterEngine(jsEngine);
+  auto webRequest =
+    std::static_pointer_cast<MockWebRequest>(jsEngine->GetWebRequest());
+
+  ASSERT_TRUE(webRequest);
+
+  const std::string msg = "Attempt to set a forbidden header was denied: ";
+
+  // The test will check that console.warn has been called when the
+  // header is rejected. While this is an implementation detail, we
+  // have no other way to check this
+
+  // test 'Accept-Encoding' is rejected
+  catchLogSystem->clear();
+  ResetTestXHR(jsEngine);
+  jsEngine->Evaluate("\
+    request.setRequestHeader('Accept-Encoding', 'gzip');\nrequest.send();");
+  EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
+  EXPECT_EQ(msg + "Accept-Encoding", catchLogSystem->lastMessage);
+  WaitForVariable("result", jsEngine);
+  EXPECT_TRUE(webRequest->lastRequestHeaders.cend() ==
+              webRequest->lastRequestHeaders.find("Accept-Encoding"));
+
+  // test 'DNT' is rejected
+  catchLogSystem->clear();
+  ResetTestXHR(jsEngine);
+  jsEngine->Evaluate("\
+    request.setRequestHeader('DNT', '1');\nrequest.send();");
+  EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
+  EXPECT_EQ(msg + "DNT", catchLogSystem->lastMessage);
+  WaitForVariable("result", jsEngine);
+  EXPECT_TRUE(webRequest->lastRequestHeaders.cend() ==
+              webRequest->lastRequestHeaders.find("DNT"));
+
+  // test random 'X' header is accepted
+  catchLogSystem->clear();
+  ResetTestXHR(jsEngine);
+  jsEngine->Evaluate("\
+    request.setRequestHeader('X', 'y');\nrequest.send();");
+  EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, catchLogSystem->lastLogLevel);
+  EXPECT_EQ("", catchLogSystem->lastMessage);
+  WaitForVariable("result", jsEngine);
+  EXPECT_FALSE(webRequest->lastRequestHeaders.cend() ==
+               webRequest->lastRequestHeaders.find("X"));
+
+  // test /^Proxy-/ is rejected.
+  catchLogSystem->clear();
+  ResetTestXHR(jsEngine);
+  jsEngine->Evaluate("\
+    request.setRequestHeader('Proxy-foo', 'bar');\nrequest.send();");
+  EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
+  EXPECT_EQ(msg + "Proxy-foo", catchLogSystem->lastMessage);
+  WaitForVariable("result", jsEngine);
+  EXPECT_TRUE(webRequest->lastRequestHeaders.cend() ==
+              webRequest->lastRequestHeaders.find("Proxy-foo"));
+
+  // test /^Sec-/ is rejected.
+  catchLogSystem->clear();
+  ResetTestXHR(jsEngine);
+  jsEngine->Evaluate("\
+    request.setRequestHeader('Sec-foo', 'bar');\nrequest.send();");
+  EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
+  EXPECT_EQ(msg + "Sec-foo", catchLogSystem->lastMessage);
+  WaitForVariable("result", jsEngine);
+  EXPECT_TRUE(webRequest->lastRequestHeaders.cend() ==
+              webRequest->lastRequestHeaders.find("Sec-foo"));
+
+  // test 'Security' is accepted.
+  catchLogSystem->clear();
+  ResetTestXHR(jsEngine);
+  jsEngine->Evaluate("\
+    request.setRequestHeader('Security', 'theater');\nrequest.send();");
+  EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, catchLogSystem->lastLogLevel);
+  EXPECT_EQ("", catchLogSystem->lastMessage);
+  WaitForVariable("result", jsEngine);
+  EXPECT_FALSE(webRequest->lastRequestHeaders.cend() ==
+               webRequest->lastRequestHeaders.find("Security"));
+}
