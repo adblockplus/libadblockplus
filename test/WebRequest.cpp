@@ -57,8 +57,8 @@ namespace
     void SetUp()
     {
       BaseJsTest::SetUp();
-      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new T));
-      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
+      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new T()));
+      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem()));
     }
   };
 
@@ -207,7 +207,7 @@ namespace
 
 TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
 {
-  auto catchLogSystem = CatchLogSystemPtr(new CatchLogSystem);
+  auto catchLogSystem = CatchLogSystemPtr(new CatchLogSystem());
   jsEngine->SetLogSystem(catchLogSystem);
 
   AdblockPlus::FilterEngine filterEngine(jsEngine);
