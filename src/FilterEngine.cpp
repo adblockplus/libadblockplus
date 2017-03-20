@@ -23,6 +23,8 @@
 #include <AdblockPlus.h>
 #include "JsContext.h"
 #include "Thread.h"
+#include <mutex>
+#include <condition_variable>
 
 using namespace AdblockPlus;
 
@@ -134,34 +136,85 @@ bool Subscription::operator==(const Subscription& subscription) const
   return GetProperty("url")->AsString() == subscription.GetProperty("url")->AsString();
 }
 
-FilterEngine::FilterEngine(JsEnginePtr jsEngine,
-                           const FilterEngine::Prefs& preconfiguredPrefs)
-    : jsEngine(jsEngine), initialized(false), firstRun(false), updateCheckId(0)
+namespace
 {
-  jsEngine->SetEventCallback("_init", std::bind(&FilterEngine::InitDone,
-      this, std::placeholders::_1));
-
+  class Sync
   {
-    // Lock the JS engine while we are loading scripts, no timeouts should fire
-    // until we are done.
-    const JsContext context(jsEngine);
-
-    // Set the preconfigured prefs
-    JsValuePtr preconfiguredPrefsObject = jsEngine->NewObject();
-    for (FilterEngine::Prefs::const_iterator it = preconfiguredPrefs.begin();
-         it != preconfiguredPrefs.end(); it++)
+  public:
+    Sync()
+      :initialized(false)
     {
-      preconfiguredPrefsObject->SetProperty(it->first, it->second);
-    }
-    jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
-    // Load adblockplus scripts
-    for (int i = 0; !jsSources[i].empty(); i += 2)
-      jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
-  }
 
-  // TODO: This should really be implemented via a conditional variable
-  while (!initialized)
-    ::Sleep(10);
+    }
+    void Wait()
+    {
+      std::unique_lock<std::mutex> lock(mutex);
+      while (!initialized)
+        cv.wait(lock);
+    }
+    void Set()
+    {
+      {
+        std::unique_lock<std::mutex> lock(mutex);
+        initialized = true;
+      }
+      cv.notify_all();
+    }
+  private:
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool initialized;
+  };
+}
+
+FilterEngine::FilterEngine(const JsEnginePtr& jsEngine)
+  : jsEngine(jsEngine), firstRun(false), updateCheckId(0)
+{
+}
+
+void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
+  const FilterEngine::OnCreatedCallback& onCreated,
+  const FilterEngine::CreationParameters& params)
+{
+  FilterEnginePtr filterEngine(new FilterEngine(jsEngine));
+  auto sync = std::make_shared<Sync>();
+  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated, sync](JsValueList& params)
+  {
+    filterEngine->firstRun = params.size() && params[0]->AsBool();
+    sync->Set();
+    onCreated(filterEngine);
+    jsEngine->RemoveEventCallback("_init");
+  });
+
+  // Lock the JS engine while we are loading scripts, no timeouts should fire
+  // until we are done.
+  const JsContext context(jsEngine);
+
+  // Set the preconfigured prefs
+  JsValuePtr preconfiguredPrefsObject = jsEngine->NewObject();
+  for (FilterEngine::Prefs::const_iterator it = params.preconfiguredPrefs.begin();
+    it != params.preconfiguredPrefs.end(); it++)
+  {
+    preconfiguredPrefsObject->SetProperty(it->first, it->second);
+  }
+  jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
+  // Load adblockplus scripts
+  for (int i = 0; !jsSources[i].empty(); i += 2)
+    jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+}
+
+FilterEnginePtr FilterEngine::Create(const JsEnginePtr& jsEngine,
+  const FilterEngine::CreationParameters& params)
+{
+  FilterEnginePtr retValue;
+  Sync sync;
+  CreateAsync(jsEngine, [&retValue, &sync](const FilterEnginePtr& filterEngine)
+  {
+    retValue = filterEngine;
+    sync.Set();
+  }, params);
+  sync.Wait();
+  return retValue;
 }
 
 namespace
@@ -211,13 +264,6 @@ FilterEngine::ContentType FilterEngine::StringToContentType(const std::string& c
       return it->first;
   }
   throw std::invalid_argument("Cannot convert argument to ContentType");
-}
-
-void FilterEngine::InitDone(JsValueList& params)
-{
-  jsEngine->RemoveEventCallback("_init");
-  initialized = true;
-  firstRun = params.size() && params[0]->AsBool();
 }
 
 bool FilterEngine::IsFirstRun() const

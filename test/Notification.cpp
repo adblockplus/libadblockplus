@@ -37,7 +37,7 @@ namespace
       jsEngine->SetFileSystem(FileSystemPtr(new LazyFileSystem()));
       jsEngine->SetWebRequest(WebRequestPtr(new LazyWebRequest()));
       jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
-      filterEngine.reset(new FilterEngine(jsEngine));
+      filterEngine = FilterEngine::Create(jsEngine);
     }
 
     void AddNotification(const std::string& notification)

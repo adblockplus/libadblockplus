@@ -85,9 +85,9 @@ namespace
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
       jsEngine->SetFileSystem(fileSystemPtr);
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
-
-      filterEngine.reset(
-        new AdblockPlus::FilterEngine(jsEngine, preconfiguredPrefs));
+      AdblockPlus::FilterEngine::CreationParameters createParams;
+      createParams.preconfiguredPrefs = preconfiguredPrefs;
+      filterEngine = AdblockPlus::FilterEngine::Create(jsEngine, createParams);
     }
   };
 }

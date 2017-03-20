@@ -77,7 +77,7 @@ namespace
       jsEngine->SetEventCallback("updateAvailable",
           std::bind(&UpdateCheckTest::EventCallback, this, std::placeholders::_1));
 
-      filterEngine.reset(new AdblockPlus::FilterEngine(jsEngine));
+      filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
 
     void ForceUpdateCheck()

@@ -135,7 +135,10 @@ respectively.
 
 With the `JsEngine` instance created, you can create a `FilterEngine` instance:
 
-    FilterEngine filterEngine(jsEngine);
+    auto filterEngine = FilterEngine::Create(jsEngine);
+
+Please also pay attention to asynchronous version of factory method
+FilterEngine::CreateAsync and to optional creationParameters.
 
 When initialised, `FilterEngine` will automatically select a suitable ad
 blocking subscription based on `AppInfo::locale` and download the filters for

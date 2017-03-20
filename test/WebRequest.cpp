@@ -129,7 +129,7 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
 
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
-  AdblockPlus::FilterEngine filterEngine(jsEngine);
+  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
 
   ResetTestXHR(jsEngine);
   jsEngine->Evaluate("\
@@ -159,7 +159,7 @@ TEST_F(DefaultWebRequestTest, DummyWebRequest)
 
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
-  AdblockPlus::FilterEngine filterEngine(jsEngine);
+  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
 
   ResetTestXHR(jsEngine);
   jsEngine->Evaluate("\
@@ -210,7 +210,7 @@ TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
   auto catchLogSystem = CatchLogSystemPtr(new CatchLogSystem());
   jsEngine->SetLogSystem(catchLogSystem);
 
-  AdblockPlus::FilterEngine filterEngine(jsEngine);
+  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
   auto webRequest =
     std::static_pointer_cast<MockWebRequest>(jsEngine->GetWebRequest());
 

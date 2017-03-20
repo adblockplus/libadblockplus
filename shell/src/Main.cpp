@@ -62,15 +62,15 @@ int main()
     appInfo.applicationVersion = "1.0";
     appInfo.locale = "en-US";
     AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
-    AdblockPlus::FilterEngine filterEngine(jsEngine);
+    auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
 
     CommandMap commands;
     Add(commands, new GcCommand(jsEngine));
     Add(commands, new HelpCommand(commands));
-    Add(commands, new FiltersCommand(filterEngine));
-    Add(commands, new SubscriptionsCommand(filterEngine));
-    Add(commands, new MatchesCommand(filterEngine));
-    Add(commands, new PrefsCommand(filterEngine));
+    Add(commands, new FiltersCommand(*filterEngine));
+    Add(commands, new SubscriptionsCommand(*filterEngine));
+    Add(commands, new MatchesCommand(*filterEngine));
+    Add(commands, new PrefsCommand(*filterEngine));
 
     std::string commandLine;
     while (ReadCommandLine(commandLine))

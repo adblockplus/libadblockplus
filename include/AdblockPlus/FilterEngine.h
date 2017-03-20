@@ -29,6 +29,7 @@
 namespace AdblockPlus
 {
   class FilterEngine;
+  typedef std::shared_ptr<FilterEngine> FilterEnginePtr;
 
   /**
    * Wrapper for an Adblock Plus filter object.
@@ -213,15 +214,40 @@ namespace AdblockPlus
     typedef std::function<void(const NotificationPtr&)> ShowNotificationCallback;
 
     /**
-     * Constructor.
+     * FilterEngine creation parameters.
+     */
+    struct CreationParameters
+    {
+      /**
+       * `AdblockPlus::FilterEngine::Prefs` name - value list of preconfigured
+       * prefs.
+       */
+      Prefs preconfiguredPrefs;
+    };
+
+    /**
+    * Callback type invoked when FilterEngine is created.
+    */
+    typedef std::function<void(const FilterEnginePtr&)> OnCreatedCallback;
+
+    /**
+     * Asynchronously constructs FilterEngine.
      * @param jsEngine `JsEngine` instance used to run JavaScript code
      *        internally.
-     * @param preconfiguredPrefs `AdblockPlus::FilterEngine::Prefs`
-     *        name-value list of preconfigured prefs.
+     * @param onCreated A callback which is called when FilterEngine is ready
+     *        for use.
+     * @param parameters optional creation parameters.
      */
-    explicit FilterEngine(JsEnginePtr jsEngine, 
-        const Prefs& preconfiguredPrefs = Prefs()
-      );
+    static void CreateAsync(const JsEnginePtr& jsEngine,
+      const OnCreatedCallback& onCreated,
+      const CreationParameters& parameters = CreationParameters());
+
+    /**
+     * Synchronous interface to construct FilterEngine. For details see
+     * asynchronous version CreateAsync.
+     */
+    static FilterEnginePtr Create(const JsEnginePtr& jsEngine,
+      const CreationParameters& params = CreationParameters());
 
     /**
      * Retrieves the `JsEngine` instance associated with this `FilterEngine`
@@ -442,12 +468,12 @@ namespace AdblockPlus
 
   private:
     JsEnginePtr jsEngine;
-    bool initialized;
     bool firstRun;
     int updateCheckId;
     static const std::map<ContentType, std::string> contentTypes;
 
-    void InitDone(JsValueList& params);
+    explicit FilterEngine(const JsEnginePtr& jsEngine);
+
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,
                                const std::string& documentUrl) const;

@@ -22,8 +22,6 @@ using namespace AdblockPlus;
 
 namespace
 {
-  typedef std::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
-
   class VeryLazyFileSystem : public LazyFileSystem
   {
   public:
@@ -45,7 +43,7 @@ namespace
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new FileSystem));
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LogSystem));
-      filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine));
+      filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
   };
 
@@ -92,7 +90,7 @@ namespace
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
       mockWebRequest = new MockWebRequest;
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(mockWebRequest));
-      filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine));
+      filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
   };
 
@@ -495,7 +493,7 @@ TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
 {
   int timesCalled = 0;
   MockFilterChangeCallback mockFilterChangeCallback(timesCalled);
-
+  std::this_thread::sleep_for(std::chrono::milliseconds(200));
   filterEngine->SetFilterChangeCallback(mockFilterChangeCallback);
   filterEngine->GetFilter("foo")->AddToList();
   EXPECT_EQ(1, timesCalled);
@@ -595,7 +593,7 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
   appInfo.locale = "zh";
   const std::string langSubscriptionUrl = "https://easylist-downloads.adblockplus.org/easylistchina+easylist.txt";
   auto jsEngine = createJsEngine(appInfo);
-  auto filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine));
+  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   ASSERT_EQ(2u, subscriptions.size());
   const auto aaUrl = filterEngine->GetPref("subscriptions_exceptionsurl")->AsString();
@@ -620,9 +618,9 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
 TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
 {
   auto jsEngine = createJsEngine();
-  FilterEngine::Prefs preSettings;
-  preSettings["first_run_subscription_auto_select"] = jsEngine->NewValue(false);
-  auto filterEngine = FilterEnginePtr(new AdblockPlus::FilterEngine(jsEngine, preSettings));
+  FilterEngine::CreationParameters createParams;
+  createParams.preconfiguredPrefs["first_run_subscription_auto_select"] = jsEngine->NewValue(false);
+  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine, createParams);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   EXPECT_EQ(0u, subscriptions.size());
 }
