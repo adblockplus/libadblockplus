@@ -198,7 +198,7 @@ TEST_F(NotificationTest, NoLinks)
   AddNotification("{ id: 'id'}");
   NotificationPtr notification = PeekNotification();
   ASSERT_TRUE(notification);
-  EXPECT_EQ(0, notification->GetLinks().size());
+  EXPECT_EQ(0u, notification->GetLinks().size());
 }
 
 TEST_F(NotificationTest, Links)
@@ -207,7 +207,7 @@ TEST_F(NotificationTest, Links)
   NotificationPtr notification = PeekNotification();
   ASSERT_TRUE(notification);
   std::vector<std::string> notificationLinks = notification->GetLinks();
-  ASSERT_EQ(2, notificationLinks.size());
+  ASSERT_EQ(2u, notificationLinks.size());
   EXPECT_EQ("link1", notificationLinks[0]);
   EXPECT_EQ("link2", notificationLinks[1]);
 }

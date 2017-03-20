@@ -23,7 +23,7 @@ TEST(ReferrerMappingTest, EmptyReferrerChain)
   AdblockPlus::ReferrerMapping referrerMapping;
   std::vector<std::string> referrerChain =
     referrerMapping.BuildReferrerChain("first");
-  ASSERT_EQ(1, referrerChain.size());
+  ASSERT_EQ(1u, referrerChain.size());
   ASSERT_EQ("first", referrerChain[0]);
 }
 
@@ -33,7 +33,7 @@ TEST(ReferrerMappingTest, TwoElementReferrerChain)
   referrerMapping.Add("second", "first");
   std::vector<std::string> referrerChain =
     referrerMapping.BuildReferrerChain("second");
-  ASSERT_EQ(2, referrerChain.size());
+  ASSERT_EQ(2u, referrerChain.size());
   ASSERT_EQ("first", referrerChain[0]);
   ASSERT_EQ("second", referrerChain[1]);
 }
@@ -52,7 +52,7 @@ TEST(ReferrerMappingTest, TenElementReferrerChain)
   referrerMapping.Add("tenth", "ninth");
   std::vector<std::string> referrerChain =
     referrerMapping.BuildReferrerChain("tenth");
-  ASSERT_EQ(10, referrerChain.size());
+  ASSERT_EQ(10u, referrerChain.size());
   ASSERT_EQ("first", referrerChain[0]);
   ASSERT_EQ("second", referrerChain[1]);
   ASSERT_EQ("third", referrerChain[2]);
@@ -76,7 +76,7 @@ TEST(ReferrerMappingTest, CacheOnlyFiveUrls)
   referrerMapping.Add("seventh", "sixth");
   std::vector<std::string> referrerChain =
     referrerMapping.BuildReferrerChain("seventh");
-  ASSERT_EQ(6, referrerChain.size());
+  ASSERT_EQ(6u, referrerChain.size());
   ASSERT_EQ("second", referrerChain[0]);
   ASSERT_EQ("third", referrerChain[1]);
   ASSERT_EQ("fourth", referrerChain[2]);

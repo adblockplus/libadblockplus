@@ -124,7 +124,7 @@ TEST_F(MockWebRequestTest, ConnectionIsAllowedOnJsEngine)
   jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
   ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
   AdblockPlus::Sleep(200);
-  EXPECT_EQ(1u, isConnectionAllowedCalledTimes);
+  EXPECT_EQ(1, isConnectionAllowedCalledTimes);
   EXPECT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
   EXPECT_EQ(123, jsEngine->Evaluate("foo.responseStatus")->AsInt());
   EXPECT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText")->AsString());
@@ -142,7 +142,7 @@ TEST_F(MockWebRequestTest, ConnectionIsNotAllowedOnJsEngine)
   jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
   ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
   AdblockPlus::Sleep(200);
-  EXPECT_EQ(1u, isConnectionAllowedCalledTimes);
+  EXPECT_EQ(1, isConnectionAllowedCalledTimes);
   EXPECT_EQ(AdblockPlus::WebRequest::NS_ERROR_CONNECTION_REFUSED, jsEngine->Evaluate("foo.status")->AsInt());
   EXPECT_EQ(0, jsEngine->Evaluate("foo.responseStatus")->AsInt());
   EXPECT_EQ("", jsEngine->Evaluate("foo.responseText")->AsString());
