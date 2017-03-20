@@ -144,10 +144,9 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerData);
 
     struct curl_slist* headerList = 0;
-    for (HeaderList::const_iterator it = requestHeaders.begin();
-      it != requestHeaders.end(); ++it)
+    for (const auto& header : requestHeaders)
     {
-      headerList = curl_slist_append(headerList, (it->first + ": " + it->second).c_str());
+      headerList = curl_slist_append(headerList, (header.first + ": " + header.second).c_str());
     }
     if (headerList)
       curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
@@ -155,11 +154,9 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
     result.status = ConvertErrorCode(curl_easy_perform(curl));
     result.responseStatus = headerData.status;
     result.responseText = responseText.str();
-    for (std::vector<std::string>::iterator it = headerData.headers.begin();
-        it != headerData.headers.end(); ++it)
+    for (const auto& header : headerData.headers)
     {
       // Parse header name and value out of something like "Foo: bar"
-      std::string header = *it;
       size_t colonPos = header.find(':');
       if (colonPos != std::string::npos)
       {

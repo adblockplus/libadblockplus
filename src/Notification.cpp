@@ -93,10 +93,9 @@ std::vector<std::string> Notification::GetLinks() const
     return retValue;
   }
   JsValueList urlLinksList = jsLinks->AsList();
-  for (JsValueList::const_iterator linkIterator = urlLinksList.begin();
-    linkIterator != urlLinksList.end(); ++linkIterator)
+  for (const auto& link : urlLinksList)
   {
-    retValue.push_back((*linkIterator)->AsString());
+    retValue.push_back(link->AsString());
   }
   return retValue;
 }

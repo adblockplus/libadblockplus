@@ -275,11 +275,10 @@ FilterEngine::ContentType FilterEngine::StringToContentType(const std::string& c
 {
   std::string contentTypeUpper = contentType;
   std::transform(contentType.begin(), contentType.end(), contentTypeUpper.begin(), ::toupper);
-  for (ContentTypeMap::const_iterator it = contentTypes.begin();
-       it != contentTypes.end(); it++)
+  for (const auto& contentType : contentTypes)
   {
-    if (it->second == contentTypeUpper)
-      return it->first;
+    if (contentType.second == contentTypeUpper)
+      return contentType.first;
   }
   throw std::invalid_argument("Cannot convert argument to ContentType");
 }
@@ -378,9 +377,7 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     return CheckFilterMatch(url, contentTypeMask, "");
 
   std::string lastDocumentUrl = documentUrls.front();
-  for (std::vector<std::string>::const_iterator it = documentUrls.begin();
-       it != documentUrls.end(); it++) {
-    const std::string documentUrl = *it;
+  for (const auto& documentUrl : documentUrls) {
     AdblockPlus::FilterPtr match = CheckFilterMatch(documentUrl,
                                                     CONTENT_TYPE_DOCUMENT,
                                                     lastDocumentUrl);
@@ -427,8 +424,8 @@ std::vector<std::string> FilterEngine::GetElementHidingSelectors(const std::stri
   params.push_back(jsEngine->NewValue(domain));
   JsValueList result = func->Call(params)->AsList();
   std::vector<std::string> selectors;
-  for (JsValueList::iterator it = result.begin(); it != result.end(); ++it)
-    selectors.push_back((*it)->AsString());
+  for (const auto& r: result)
+    selectors.push_back(r->AsString());
   return selectors;
 }
 

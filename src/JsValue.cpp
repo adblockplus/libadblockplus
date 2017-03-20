@@ -139,8 +139,8 @@ std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(UnwrapValue());
   JsValueList properties = JsValuePtr(new JsValue(jsEngine, object->GetOwnPropertyNames()))->AsList();
   std::vector<std::string> result;
-  for (JsValueList::iterator it = properties.begin(); it != properties.end(); ++it)
-    result.push_back((*it)->AsString());
+  for (const auto& property : properties)
+    result.push_back(property->AsString());
   return result;
 }
 
@@ -222,8 +222,8 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsValueList& params, Js
   v8::Local<v8::Object> thisObj = v8::Local<v8::Object>::Cast(thisPtr->UnwrapValue());
 
   std::vector<v8::Handle<v8::Value>> argv;
-  for (JsValueList::const_iterator it = params.begin(); it != params.end(); ++it)
-    argv.push_back((*it)->UnwrapValue());
+  for (const auto& param : params)
+    argv.push_back(param->UnwrapValue());
 
   const v8::TryCatch tryCatch;
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(UnwrapValue());

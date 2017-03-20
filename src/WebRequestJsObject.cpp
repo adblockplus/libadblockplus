@@ -41,10 +41,8 @@ namespace
           throw std::runtime_error("Second argument to GET must be an object");
 
         std::vector<std::string> properties = headersObj->GetOwnPropertyNames();
-        for (std::vector<std::string>::iterator it = properties.begin();
-            it != properties.end(); ++it)
+        for (const auto& header : properties)
         {
-          std::string header = *it;
           std::string headerValue = headersObj->GetProperty(header)->AsString();
           if (header.length() && headerValue.length())
             headers.push_back(std::pair<std::string, std::string>(header, headerValue));
@@ -77,10 +75,9 @@ namespace
       resultObject->SetProperty("responseText", result.responseText);
 
       AdblockPlus::JsValuePtr headersObject = jsEngine->NewObject();
-      for (AdblockPlus::HeaderList::iterator it = result.responseHeaders.begin();
-        it != result.responseHeaders.end(); ++it)
+      for (const auto& header : result.responseHeaders)
       {
-        headersObject->SetProperty(it->first, it->second);
+        headersObject->SetProperty(header.first, header.second);
       }
       resultObject->SetProperty("responseHeaders", headersObject);
 
