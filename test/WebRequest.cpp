@@ -18,6 +18,10 @@
 #include <sstream>
 #include "BaseJsTest.h"
 #include "../src/Thread.h"
+#include <atomic>
+#include <mutex>
+
+using namespace AdblockPlus;
 
 namespace
 {
@@ -107,6 +111,198 @@ TEST_F(MockWebRequestTest, SuccessfulRequest)
   ASSERT_EQ(123, jsEngine->Evaluate("foo.responseStatus")->AsInt());
   ASSERT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText")->AsString());
   ASSERT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+}
+
+TEST_F(MockWebRequestTest, ConnectionIsAllowedOnJsEngine)
+{
+  std::atomic<int> isConnectionAllowedCalledTimes(0);
+  jsEngine->SetIsConnectionAllowedCallback([&isConnectionAllowedCalledTimes]()->bool
+  {
+    ++isConnectionAllowedCalledTimes;
+    return true;
+  });
+  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
+  AdblockPlus::Sleep(200);
+  EXPECT_EQ(1u, isConnectionAllowedCalledTimes);
+  EXPECT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
+  EXPECT_EQ(123, jsEngine->Evaluate("foo.responseStatus")->AsInt());
+  EXPECT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText")->AsString());
+  EXPECT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+}
+
+TEST_F(MockWebRequestTest, ConnectionIsNotAllowedOnJsEngine)
+{
+  std::atomic<int> isConnectionAllowedCalledTimes(0);
+  jsEngine->SetIsConnectionAllowedCallback([&isConnectionAllowedCalledTimes]()->bool
+  {
+    ++isConnectionAllowedCalledTimes;
+    return false;
+  });
+  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
+  AdblockPlus::Sleep(200);
+  EXPECT_EQ(1u, isConnectionAllowedCalledTimes);
+  EXPECT_EQ(AdblockPlus::WebRequest::NS_ERROR_CONNECTION_REFUSED, jsEngine->Evaluate("foo.status")->AsInt());
+  EXPECT_EQ(0, jsEngine->Evaluate("foo.responseStatus")->AsInt());
+  EXPECT_EQ("", jsEngine->Evaluate("foo.responseText")->AsString());
+  EXPECT_EQ("{}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+}
+
+namespace
+{
+  class SyncStrings
+  {
+  public:
+    void Add(const std::string* value)
+    {
+      std::lock_guard<std::mutex> lock(mutex);
+      strings.emplace_back(!!value, value ? *value : "");
+    }
+    std::vector<std::pair<bool, std::string>> GetStrings() const
+    {
+      std::lock_guard<std::mutex> lock(mutex);
+      return strings;
+    }
+    void Clear()
+    {
+      std::lock_guard<std::mutex> lock(mutex);
+      strings.clear();
+    }
+  private:
+    mutable std::mutex mutex;
+    std::vector<std::pair<bool, std::string>> strings;
+  };
+}
+
+TEST_F(MockWebRequestTest, ConnectionIsAllowedOnFilterEngine1)
+{
+  FilterEngine::CreationParameters createParams;
+  std::string predefinedAllowedConnectionType = "non-metered";
+  createParams.preconfiguredPrefs.emplace("allowed_connection_type", jsEngine->NewValue(predefinedAllowedConnectionType));
+  auto receivedConnectionTypes = std::make_shared<SyncStrings>();
+  createParams.isConnectionAllowedCallback = [receivedConnectionTypes](const std::string* allowedConnectionType)->bool {
+    receivedConnectionTypes->Add(allowedConnectionType);
+    return true;
+  };
+  auto filterEngine = FilterEngine::Create(jsEngine, createParams);
+  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
+  AdblockPlus::Sleep(200);
+  auto receivedConnectionTypesStrings = receivedConnectionTypes->GetStrings();
+  EXPECT_FALSE(receivedConnectionTypesStrings.empty());
+  for (const auto& connectionType : receivedConnectionTypesStrings)
+  {
+    EXPECT_TRUE(connectionType.first);
+    EXPECT_EQ(predefinedAllowedConnectionType, connectionType.second);
+  }
+  EXPECT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
+  EXPECT_EQ(123, jsEngine->Evaluate("foo.responseStatus")->AsInt());
+  EXPECT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText")->AsString());
+  EXPECT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+}
+
+TEST_F(MockWebRequestTest, ConnectionIsAllowedOnFilterEngine2)
+{
+  FilterEngine::CreationParameters createParams;
+  auto receivedConnectionTypes = std::make_shared<SyncStrings>();
+  createParams.isConnectionAllowedCallback = [receivedConnectionTypes](const std::string* allowedConnectionType)->bool {
+    receivedConnectionTypes->Add(allowedConnectionType);
+    return true;
+  };
+  auto filterEngine = FilterEngine::Create(jsEngine, createParams);
+  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
+  AdblockPlus::Sleep(200);
+  auto receivedConnectionTypesStrings = receivedConnectionTypes->GetStrings();
+  EXPECT_FALSE(receivedConnectionTypesStrings.empty());
+  for (const auto& connectionType : receivedConnectionTypesStrings)
+  {
+    EXPECT_FALSE(connectionType.first);
+  }
+  EXPECT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
+  EXPECT_EQ(123, jsEngine->Evaluate("foo.responseStatus")->AsInt());
+  EXPECT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText")->AsString());
+  EXPECT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+}
+
+TEST_F(MockWebRequestTest, ConnectionIsAllowedOnFilterEngine3)
+{
+  // initially allowed connection type is not defined
+  FilterEngine::CreationParameters createParams;
+  auto receivedConnectionTypes = std::make_shared<SyncStrings>();
+  createParams.isConnectionAllowedCallback = [receivedConnectionTypes](const std::string* allowedConnectionType)->bool {
+    receivedConnectionTypes->Add(allowedConnectionType);
+    return true;
+  };
+  auto filterEngine = FilterEngine::Create(jsEngine, createParams);
+
+  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
+  AdblockPlus::Sleep(200);
+  auto receivedConnectionTypesStrings = receivedConnectionTypes->GetStrings();
+  EXPECT_FALSE(receivedConnectionTypesStrings.empty());
+  for (const auto& connectionType : receivedConnectionTypesStrings)
+  {
+    EXPECT_FALSE(connectionType.first);
+  }
+  EXPECT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
+  EXPECT_EQ(123, jsEngine->Evaluate("foo.responseStatus")->AsInt());
+  EXPECT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText")->AsString());
+  EXPECT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+
+  // set allowed connection type
+  std::string allowedConnectionType = "test-connection";
+  filterEngine->SetAllowedConnectionType(&allowedConnectionType);
+  receivedConnectionTypes->Clear();
+  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  AdblockPlus::Sleep(200);
+  receivedConnectionTypesStrings = receivedConnectionTypes->GetStrings();
+  EXPECT_FALSE(receivedConnectionTypesStrings.empty());
+  for (const auto& connectionType : receivedConnectionTypesStrings)
+  {
+    EXPECT_TRUE(connectionType.first);
+    EXPECT_EQ(allowedConnectionType, connectionType.second);
+  }
+
+  // remove allowed connection type
+  filterEngine->SetAllowedConnectionType(nullptr);
+  receivedConnectionTypes->Clear();
+  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  AdblockPlus::Sleep(200);
+  receivedConnectionTypesStrings = receivedConnectionTypes->GetStrings();
+  EXPECT_FALSE(receivedConnectionTypesStrings.empty());
+  for (const auto& connectionType : receivedConnectionTypesStrings)
+  {
+    EXPECT_FALSE(connectionType.first);
+  }
+}
+
+TEST_F(MockWebRequestTest, ConnectionIsNotAllowedOnFilterEngine)
+{
+  FilterEngine::CreationParameters createParams;
+  std::string predefinedAllowedConnectionType = "non-metered";
+  createParams.preconfiguredPrefs.emplace("allowed_connection_type", jsEngine->NewValue(predefinedAllowedConnectionType));
+  auto receivedConnectionTypes = std::make_shared<SyncStrings>();
+  createParams.isConnectionAllowedCallback = [receivedConnectionTypes](const std::string* allowedConnectionType)->bool {
+    receivedConnectionTypes->Add(allowedConnectionType);
+    return false;
+  };
+  auto filterEngine = FilterEngine::Create(jsEngine, createParams);
+  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
+  AdblockPlus::Sleep(200);
+  auto receivedConnectionTypesStrings = receivedConnectionTypes->GetStrings();
+  EXPECT_FALSE(receivedConnectionTypesStrings.empty());
+  for (const auto& connectionType : receivedConnectionTypesStrings)
+  {
+    EXPECT_TRUE(connectionType.first);
+    EXPECT_EQ(predefinedAllowedConnectionType, connectionType.second);
+  }
+  EXPECT_EQ(AdblockPlus::WebRequest::NS_ERROR_CONNECTION_REFUSED, jsEngine->Evaluate("foo.status")->AsInt());
+  EXPECT_EQ(0, jsEngine->Evaluate("foo.responseStatus")->AsInt());
+  EXPECT_EQ("", jsEngine->Evaluate("foo.responseText")->AsString());
+  EXPECT_EQ("{}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
 }
 
 #if defined(HAVE_CURL) || defined(_WIN32)

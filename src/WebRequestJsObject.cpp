@@ -56,9 +56,18 @@ namespace
         throw std::runtime_error("Third argument to GET must be a function");
     }
 
+    AdblockPlus::ServerResponse NotAllowedResponse()
+    {
+      AdblockPlus::ServerResponse result;
+      result.status = AdblockPlus::WebRequest::NS_ERROR_CONNECTION_REFUSED;
+      result.responseStatus = 0;
+      return result;
+    }
+
     void Run()
     {
-      AdblockPlus::ServerResponse result = jsEngine->GetWebRequest()->GET(url, headers);
+      AdblockPlus::ServerResponse result = jsEngine->IsConnectionAllowed() ?
+        jsEngine->GetWebRequest()->GET(url, headers) : NotAllowedResponse();
 
       AdblockPlus::JsContext context(jsEngine);
 

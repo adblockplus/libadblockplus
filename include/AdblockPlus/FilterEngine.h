@@ -214,6 +214,12 @@ namespace AdblockPlus
     typedef std::function<void(const NotificationPtr&)> ShowNotificationCallback;
 
     /**
+     * Callback function returning false when current connection is not
+     * allowedConnectionType, e.g. because it is a metered connection.
+     */
+    typedef std::function<bool(const std::string* allowedConnectionType)> IsConnectionAllowedCallback;
+
+    /**
      * FilterEngine creation parameters.
      */
     struct CreationParameters
@@ -223,6 +229,12 @@ namespace AdblockPlus
        * prefs.
        */
       Prefs preconfiguredPrefs;
+      /**
+       * `AdblockPlus::FilterEngine::IsConnectionAllowedCallback` a callback
+       * checking whether the request from Adblock Plus should be blocked on
+       * the current connection.
+       */
+      IsConnectionAllowedCallback isConnectionAllowedCallback;
     };
 
     /**
@@ -437,6 +449,20 @@ namespace AdblockPlus
      * Removes the callback invoked when the filters change.
      */
     void RemoveFilterChangeCallback();
+
+    /**
+     * Stores the value indicating what connection types are allowed, it is
+     * passed to CreateParameters::isConnectionAllowed callback.
+     * @param value Stored value. nullptr means removing of any previously
+     *        stored value.
+     */
+    void SetAllowedConnectionType(const std::string* value);
+
+    /**
+      * Retrieves previously stored allowed connection type.
+      * @return Preference value, or `nullptr` if it doesn't exist.
+      */
+    std::unique_ptr<std::string> GetAllowedConnectionType();
 
     /**
      * Compares two version strings in

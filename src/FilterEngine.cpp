@@ -178,9 +178,27 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
 {
   FilterEnginePtr filterEngine(new FilterEngine(jsEngine));
   auto sync = std::make_shared<Sync>();
-  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated, sync](JsValueList& params)
+  auto isConnectionAllowedCallback = params.isConnectionAllowedCallback;
+  if (isConnectionAllowedCallback)
+    jsEngine->SetIsConnectionAllowedCallback([sync, jsEngine]()->bool
+    {
+      sync->Wait();
+      return jsEngine->IsConnectionAllowed();
+    });
+  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated, sync, isConnectionAllowedCallback](JsValueList& params)
   {
     filterEngine->firstRun = params.size() && params[0]->AsBool();
+    if (isConnectionAllowedCallback)
+    {
+      std::weak_ptr<FilterEngine> weakFilterEngine = filterEngine;
+      jsEngine->SetIsConnectionAllowedCallback([weakFilterEngine, isConnectionAllowedCallback]()->bool
+      {
+        auto filterEngine = weakFilterEngine.lock();
+        if (!filterEngine)
+          return false;
+        return isConnectionAllowedCallback(filterEngine->GetAllowedConnectionType().get());
+      });
+    }
     sync->Set();
     onCreated(filterEngine);
     jsEngine->RemoveEventCallback("_init");
@@ -427,7 +445,8 @@ void FilterEngine::SetPref(const std::string& pref, JsValuePtr value)
   JsValuePtr func = jsEngine->Evaluate("API.setPref");
   JsValueList params;
   params.push_back(jsEngine->NewValue(pref));
-  params.push_back(value);
+  if (value)
+    params.push_back(value);
   func->Call(params);
 }
 
@@ -492,6 +511,19 @@ void FilterEngine::SetFilterChangeCallback(FilterEngine::FilterChangeCallback ca
 void FilterEngine::RemoveFilterChangeCallback()
 {
   jsEngine->RemoveEventCallback("filterChange");
+}
+
+void FilterEngine::SetAllowedConnectionType(const std::string* value)
+{
+  SetPref("allowed_connection_type", value ? jsEngine->NewValue(*value) : nullptr);
+}
+
+std::unique_ptr<std::string> FilterEngine::GetAllowedConnectionType()
+{
+   auto prefValue = GetPref("allowed_connection_type");
+   if (prefValue->IsUndefined())
+     return nullptr;
+   return std::unique_ptr<std::string>(new std::string(prefValue->AsString()));
 }
 
 void FilterEngine::FilterChanged(FilterEngine::FilterChangeCallback callback, JsValueList& params)

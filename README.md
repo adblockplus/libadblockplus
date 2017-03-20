@@ -220,6 +220,10 @@ using
 What libadblockplus clients typically do with this is to generate a CSS style
 sheet that is injected into each page.
 
+### Disabling network requests from Adblock Plus on current connection
+At any moment you can call [`FilterEngine::SetAllowedConnectionType`](https://adblockplus.org/docs/libadblockplus/class_adblock_plus_1_1_filter_engine.html#a4bee602fb50abcb945d3f19468fd8893) to change the settings indicating what connection types are allowed in your application. However to have it working you should also pass a callback function into factory method of FilterEngine. This callback is being called before each request and the value of argument is earlier passed string into `FilterEngine::SetAllowedConnectionType`, what allows to query the system and check whether the current connection is in accordance with earlier stored value in settings.
+For example, you can pass "not_metered" into [`FilterEngine::SetAllowedConnectionType`](https://adblockplus.org/docs/libadblockplus/class_adblock_plus_1_1_filter_engine.html#a4bee602fb50abcb945d3f19468fd8893) and on each request you can check whether the current connection is "not_metered" and return true or false from you implementation of callback [`AdblockPlus::FilterEngine::CreateParameters::isConnectionAllowed`](https://adblockplus.org/docs/libadblockplus/structAdblockPlus_1_1FilterEngine_1_1CreateParameters.html#a86f427300972d3f98bb6d4108301a526).
+
 Shell
 -----
 

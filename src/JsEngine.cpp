@@ -228,6 +228,26 @@ void AdblockPlus::JsEngine::SetWebRequest(AdblockPlus::WebRequestPtr val)
   webRequest = val;
 }
 
+void AdblockPlus::JsEngine::SetIsConnectionAllowedCallback(const IsConnectionAllowedCallback& callback)
+{
+  std::lock_guard<std::mutex> lock(isConnectionAllowedMutex);
+  isConnectionAllowed = callback;
+}
+
+bool AdblockPlus::JsEngine::IsConnectionAllowed()
+{
+  // The call of isConnectionAllowed can be very expensive and it makes a
+  // little sense to block execution of JavaScript for it. Currently this
+  // method is called from a thread of web request, so let only this thread be
+  // blocked by the call of the callback.
+  IsConnectionAllowedCallback localCopy;
+  {
+    std::lock_guard<std::mutex> lock(isConnectionAllowedMutex);
+    localCopy = isConnectionAllowed;
+  }
+  return !localCopy || localCopy();
+}
+
 AdblockPlus::LogSystemPtr AdblockPlus::JsEngine::GetLogSystem()
 {
   if (!logSystem)
