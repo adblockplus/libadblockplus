@@ -284,6 +284,7 @@ namespace AdblockPlus
     LogSystemPtr logSystem;
     std::unique_ptr<v8::Persistent<v8::Context>> context;
     EventMap eventCallbacks;
+    std::mutex eventCallbacksMutex;
     std::mutex isConnectionAllowedMutex;
     IsConnectionAllowedCallback isConnectionAllowed;
   };
