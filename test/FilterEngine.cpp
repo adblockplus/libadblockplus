@@ -94,24 +94,6 @@ namespace
     }
   };
 
-  struct MockUpdateAvailableCallback
-  {
-    MockUpdateAvailableCallback(int& timesCalled) : timesCalled(timesCalled) {}
-
-    void operator()(const std::string&)
-    {
-      timesCalled++;
-    }
-
-  private:
-    // We currently cannot store timesCalled in the functor, see:
-    // https://issues.adblockplus.org/ticket/1378.
-    int& timesCalled;
-  };
-
-  // Workaround for https://issues.adblockplus.org/ticket/1397.
-  void NoOpUpdaterCallback(const std::string&) {}
-
   class FilterEngineWithFreshFolder : public ::testing::Test
   {
   protected:
@@ -516,17 +498,39 @@ TEST_F(UpdaterTest, SetRemoveUpdateAvailableCallback)
 }";
 
   int timesCalled = 0;
-  MockUpdateAvailableCallback mockUpdateAvailableCallback(timesCalled);
-
-  filterEngine->SetUpdateAvailableCallback(mockUpdateAvailableCallback);
-  filterEngine->ForceUpdateCheck(&NoOpUpdaterCallback);
+  filterEngine->SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
+  {
+    ++timesCalled;
+  });
+  filterEngine->ForceUpdateCheck();
   AdblockPlus::Sleep(100);
-  ASSERT_EQ(1, timesCalled);
+  EXPECT_EQ(1, timesCalled);
 
   filterEngine->RemoveUpdateAvailableCallback();
-  filterEngine->ForceUpdateCheck(&NoOpUpdaterCallback);
+  filterEngine->ForceUpdateCheck();
   AdblockPlus::Sleep(100);
-  ASSERT_EQ(1, timesCalled);
+  EXPECT_EQ(1, timesCalled);
+}
+
+TEST_F(UpdaterTest, ForceUpdateCheck)
+{
+  mockWebRequest->response.status = 0;
+  mockWebRequest->response.responseStatus = 200;
+  mockWebRequest->response.responseText = "\
+{\
+  \"test\": {\
+    \"version\": \"1.0.2\",\
+    \"url\": \"https://downloads.adblockplus.org/test-1.0.2.tar.gz?update\"\
+  }\
+}";
+
+  int called = 0; // 0 - not  called; 1 - once, no error; 2 - error
+  filterEngine->ForceUpdateCheck([&called](const std::string& error)->void
+  {
+    called = error.empty() ? 1 : 2;
+  });
+  AdblockPlus::Sleep(100);
+  EXPECT_EQ(1, called);
 }
 
 TEST_F(FilterEngineTest, DocumentWhitelisting)

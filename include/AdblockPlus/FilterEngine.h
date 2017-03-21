@@ -437,7 +437,7 @@ namespace AdblockPlus
      *        available or not - to react to updates being available, use
      *        `FilterEngine::SetUpdateAvailableCallback()`.
      */
-    void ForceUpdateCheck(UpdateCheckDoneCallback callback);
+    void ForceUpdateCheck(const UpdateCheckDoneCallback& callback = UpdateCheckDoneCallback());
 
     /**
      * Sets the callback invoked when the filters change.

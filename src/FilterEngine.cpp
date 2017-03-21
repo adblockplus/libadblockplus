@@ -479,17 +479,17 @@ void FilterEngine::UpdateAvailable(
 }
 
 void FilterEngine::ForceUpdateCheck(
-    FilterEngine::UpdateCheckDoneCallback callback)
+    const FilterEngine::UpdateCheckDoneCallback& callback)
 {
-  std::string eventName = "_updateCheckDone";
-  eventName += ++updateCheckId;
-
-  jsEngine->SetEventCallback(eventName, std::bind(&FilterEngine::UpdateCheckDone,
-      this, eventName, callback, std::placeholders::_1));
-
   JsValuePtr func = jsEngine->Evaluate("API.forceUpdateCheck");
   JsValueList params;
-  params.push_back(jsEngine->NewValue(eventName));
+  if (callback)
+  {
+    std::string eventName = "_updateCheckDone" + std::to_string(++updateCheckId);
+    jsEngine->SetEventCallback(eventName, std::bind(&FilterEngine::UpdateCheckDone,
+      this, eventName, callback, std::placeholders::_1));
+    params.push_back(jsEngine->NewValue(eventName));
+  }
   func->Call(params);
 }
 
