@@ -252,10 +252,9 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
 
   // Set the preconfigured prefs
   auto preconfiguredPrefsObject = jsEngine->NewObject();
-  for (FilterEngine::Prefs::const_iterator it = params.preconfiguredPrefs.begin();
-    it != params.preconfiguredPrefs.end(); it++)
+  for (const auto& pref : params.preconfiguredPrefs)
   {
-    preconfiguredPrefsObject.SetProperty(it->first, it->second);
+    preconfiguredPrefsObject.SetProperty(pref.first, pref.second);
   }
   jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
   // Load adblockplus scripts
@@ -347,8 +346,8 @@ std::vector<Filter> FilterEngine::GetListedFilters() const
   JsValue func = jsEngine->Evaluate("API.getListedFilters");
   JsValueList values = func.Call().AsList();
   std::vector<Filter> result;
-  for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(Filter(std::move(*it)));
+  for (auto& value : values)
+    result.push_back(Filter(std::move(value)));
   return result;
 }
 
@@ -357,8 +356,8 @@ std::vector<Subscription> FilterEngine::GetListedSubscriptions() const
   JsValue func = jsEngine->Evaluate("API.getListedSubscriptions");
   JsValueList values = func.Call().AsList();
   std::vector<Subscription> result;
-  for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(Subscription(std::move(*it)));
+  for (auto& value : values)
+    result.push_back(Subscription(std::move(value)));
   return result;
 }
 
@@ -367,8 +366,8 @@ std::vector<Subscription> FilterEngine::FetchAvailableSubscriptions() const
   JsValue func = jsEngine->Evaluate("API.getRecommendedSubscriptions");
   JsValueList values = func.Call().AsList();
   std::vector<Subscription> result;
-  for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(Subscription(std::move(*it)));
+  for (auto& value : values)
+    result.push_back(Subscription(std::move(value)));
   return result;
 }
 
