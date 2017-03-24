@@ -117,6 +117,11 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
 void AdblockPlus::JsEngine::SetEventCallback(const std::string& eventName,
     AdblockPlus::JsEngine::EventCallback callback)
 {
+  if (!callback)
+  {
+    RemoveEventCallback(eventName);
+    return;
+  }
   std::lock_guard<std::mutex> lock(eventCallbacksMutex);
   eventCallbacks[eventName] = callback;
 }
