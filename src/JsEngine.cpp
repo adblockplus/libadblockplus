@@ -105,7 +105,7 @@ void JsEngine::CallTimerTask(TimerTaskInfos::const_iterator timerTaskInfoIterato
 {
   const JsContext context(shared_from_this());
   JsValue callback(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), *timerTaskInfoIterator->arguments[0]));
-  JsValueList callbackArgs;
+  JsConstValueList callbackArgs;
   for (int i = 2; i < timerTaskInfoIterator->arguments.size(); i++)
     callbackArgs.emplace_back(new JsValue(shared_from_this(),
     v8::Local<v8::Value>::New(GetIsolate(), *timerTaskInfoIterator->arguments[i])));
