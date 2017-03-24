@@ -20,6 +20,7 @@
 
 #include <functional>
 #include <map>
+#include <list>
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
@@ -270,6 +271,21 @@ namespace AdblockPlus
       return isolate->Get();
     }
 
+    // Private functionality required to implement timers.
+    struct TimerTaskInfo
+    {
+      ~TimerTaskInfo();
+      int delay;
+      std::vector<std::unique_ptr<v8::Persistent<v8::Value>>> arguments;
+    };
+    typedef std::list<TimerTaskInfo> TimerTaskInfos;
+    struct TimerTask
+    {
+      std::weak_ptr<JsEngine> weakJsEngine;
+      TimerTaskInfos::const_iterator taskInfoIterator;
+    };
+    TimerTask CreateTimerTask(const v8::Arguments& arguments);
+    void CallTimerTask(TimerTaskInfos::const_iterator taskInfoIterator);
   private:
     explicit JsEngine(const ScopedV8IsolatePtr& isolate);
 
@@ -287,6 +303,7 @@ namespace AdblockPlus
     std::mutex eventCallbacksMutex;
     std::mutex isConnectionAllowedMutex;
     IsConnectionAllowedCallback isConnectionAllowed;
+    TimerTaskInfos timerTaskInfos;
   };
 }
 

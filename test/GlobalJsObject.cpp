@@ -55,3 +55,13 @@ TEST_F(GlobalJsObjectTest, SetMultipleTimeouts)
   AdblockPlus::Sleep(200);
   ASSERT_EQ("1,2", jsEngine->Evaluate("this.foo")->AsString());
 }
+
+TEST_F(GlobalJsObjectTest, TimeoutDoesNotKeepJsEngine)
+{
+  jsEngine->Evaluate("setTimeout(function() {}, 50000)");
+  EXPECT_EQ(1u, jsEngine.use_count()); // check that counter is still 1
+  AdblockPlus::Sleep(200);
+  std::weak_ptr<AdblockPlus::JsEngine> weakJsEngine = jsEngine;
+  jsEngine.reset();
+  EXPECT_FALSE(weakJsEngine.lock());
+}

@@ -36,33 +36,20 @@ namespace
   class TimeoutThread : public Thread
   {
   public:
-    TimeoutThread(JsValueList& arguments)
-      : Thread(true)
+    TimeoutThread(const JsEngine::TimerTask& timerTask)
+      : Thread(true), timerTask(timerTask)
     {
-      if (arguments.size() < 2)
-        throw std::runtime_error("setTimeout requires at least 2 parameters");
-
-      if (!arguments[0]->IsFunction())
-        throw std::runtime_error(
-          "First argument to setTimeout must be a function");
-
-      function = arguments[0];
-      delay = arguments[1]->AsInt();
-      for (size_t i = 2; i < arguments.size(); i++)
-        functionArguments.push_back(arguments[i]);
     }
 
     void Run()
     {
-      Sleep(delay);
-
-      function->Call(functionArguments);
+      Sleep(timerTask.taskInfoIterator->delay);
+      if (auto jsEngine = timerTask.weakJsEngine.lock())
+        jsEngine->CallTimerTask(timerTask.taskInfoIterator);
     }
 
   private:
-    JsValuePtr function;
-    int delay;
-    JsValueList functionArguments;
+    JsEngine::TimerTask timerTask;
   };
 
   v8::Handle<v8::Value> SetTimeoutCallback(const v8::Arguments& arguments)
@@ -70,10 +57,8 @@ namespace
     TimeoutThread* timeoutThread;
     try
     {
-      AdblockPlus::JsValueList converted =
-          AdblockPlus::JsEngine::FromArguments(arguments)
-          ->ConvertArguments(arguments);
-      timeoutThread = new TimeoutThread(converted);
+      auto jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+      timeoutThread = new TimeoutThread(jsEngine->CreateTimerTask(arguments));
     }
     catch (const std::exception& e)
     {
