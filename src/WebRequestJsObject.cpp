@@ -81,7 +81,7 @@ namespace
       }
       resultObject->SetProperty("responseHeaders", headersObject);
 
-      AdblockPlus::JsValueList params;
+      AdblockPlus::JsConstValueList params;
       params.push_back(resultObject);
       callback->Call(params);
     }

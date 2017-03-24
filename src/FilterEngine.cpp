@@ -37,7 +37,7 @@ Filter::Filter(JsValue&& value)
     throw std::runtime_error("JavaScript value is not an object");
 }
 
-Filter::Type Filter::GetType()
+Filter::Type Filter::GetType() const
 {
   std::string className = GetClass();
   if (className == "BlockingFilter")
@@ -54,28 +54,22 @@ Filter::Type Filter::GetType()
     return TYPE_INVALID;
 }
 
-bool Filter::IsListed()
+bool Filter::IsListed() const
 {
   JsValuePtr func = jsEngine->Evaluate("API.isListedFilter");
-  JsValueList params;
-  params.push_back(shared_from_this());
-  return func->Call(params)->AsBool();
+  return func->Call(shared_from_this())->AsBool();
 }
 
 void Filter::AddToList()
 {
   JsValuePtr func = jsEngine->Evaluate("API.addFilterToList");
-  JsValueList params;
-  params.push_back(shared_from_this());
-  func->Call(params);
+  func->Call(shared_from_this());
 }
 
 void Filter::RemoveFromList()
 {
   JsValuePtr func = jsEngine->Evaluate("API.removeFilterFromList");
-  JsValueList params;
-  params.push_back(shared_from_this());
-  func->Call(params);
+  func->Call(shared_from_this());
 }
 
 bool Filter::operator==(const Filter& filter) const
@@ -90,44 +84,34 @@ Subscription::Subscription(JsValue&& value)
     throw std::runtime_error("JavaScript value is not an object");
 }
 
-bool Subscription::IsListed()
+bool Subscription::IsListed() const
 {
   JsValuePtr func = jsEngine->Evaluate("API.isListedSubscription");
-  JsValueList params;
-  params.push_back(shared_from_this());
-  return func->Call(params)->AsBool();
+  return func->Call(shared_from_this())->AsBool();
 }
 
 void Subscription::AddToList()
 {
   JsValuePtr func = jsEngine->Evaluate("API.addSubscriptionToList");
-  JsValueList params;
-  params.push_back(shared_from_this());
-  func->Call(params);
+  func->Call(shared_from_this());
 }
 
 void Subscription::RemoveFromList()
 {
   JsValuePtr func = jsEngine->Evaluate("API.removeSubscriptionFromList");
-  JsValueList params;
-  params.push_back(shared_from_this());
-  func->Call(params);
+  func->Call(shared_from_this());
 }
 
 void Subscription::UpdateFilters()
 {
   JsValuePtr func = jsEngine->Evaluate("API.updateSubscription");
-  JsValueList params;
-  params.push_back(shared_from_this());
-  func->Call(params);
+  func->Call(shared_from_this());
 }
 
-bool Subscription::IsUpdating()
+bool Subscription::IsUpdating() const
 {
   JsValuePtr func = jsEngine->Evaluate("API.isSubscriptionUpdating");
-  JsValueList params;
-  params.push_back(shared_from_this());
-  JsValuePtr result = func->Call(params);
+  JsValuePtr result = func->Call(shared_from_this());
   return result->AsBool();
 }
 
@@ -288,20 +272,16 @@ bool FilterEngine::IsFirstRun() const
   return firstRun;
 }
 
-FilterPtr FilterEngine::GetFilter(const std::string& text)
+FilterPtr FilterEngine::GetFilter(const std::string& text) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.getFilterFromText");
-  JsValueList params;
-  params.push_back(jsEngine->NewValue(text));
-  return FilterPtr(new Filter(std::move(*func->Call(params))));
+  return FilterPtr(new Filter(std::move(*func->Call(jsEngine->NewValue(text)))));
 }
 
-SubscriptionPtr FilterEngine::GetSubscription(const std::string& url)
+SubscriptionPtr FilterEngine::GetSubscription(const std::string& url) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.getSubscriptionFromUrl");
-  JsValueList params;
-  params.push_back(jsEngine->NewValue(url));
-  return SubscriptionPtr(new Subscription(std::move(*func->Call(params))));
+  return SubscriptionPtr(new Subscription(std::move(*func->Call(jsEngine->NewValue(url)))));
 }
 
 std::vector<FilterPtr> FilterEngine::GetListedFilters() const
@@ -337,7 +317,7 @@ std::vector<SubscriptionPtr> FilterEngine::FetchAvailableSubscriptions() const
 void FilterEngine::ShowNextNotification(const std::string& url)
 {
   JsValuePtr func = jsEngine->Evaluate("API.showNextNotification");
-  JsValueList params;
+  JsConstValueList params;
   if (!url.empty())
   {
     params.push_back(jsEngine->NewValue(url));
@@ -406,7 +386,7 @@ AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
     const std::string& documentUrl) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.checkFilterMatch");
-  JsValueList params;
+  JsConstValueList params;
   params.push_back(jsEngine->NewValue(url));
   params.push_back(jsEngine->NewValue(contentTypeMask));
   params.push_back(jsEngine->NewValue(documentUrl));
@@ -420,9 +400,7 @@ AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
 std::vector<std::string> FilterEngine::GetElementHidingSelectors(const std::string& domain) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.getElementHidingSelectors");
-  JsValueList params;
-  params.push_back(jsEngine->NewValue(domain));
-  JsValueList result = func->Call(params)->AsList();
+  JsValueList result = func->Call(jsEngine->NewValue(domain))->AsList();
   std::vector<std::string> selectors;
   for (const auto& r: result)
     selectors.push_back(r->AsString());
@@ -432,27 +410,23 @@ std::vector<std::string> FilterEngine::GetElementHidingSelectors(const std::stri
 JsValuePtr FilterEngine::GetPref(const std::string& pref) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.getPref");
-  JsValueList params;
-  params.push_back(jsEngine->NewValue(pref));
-  return func->Call(params);
+  return func->Call(jsEngine->NewValue(pref));
 }
 
 void FilterEngine::SetPref(const std::string& pref, JsValuePtr value)
 {
   JsValuePtr func = jsEngine->Evaluate("API.setPref");
-  JsValueList params;
+  JsConstValueList params;
   params.push_back(jsEngine->NewValue(pref));
   if (value)
     params.push_back(value);
   func->Call(params);
 }
 
-std::string FilterEngine::GetHostFromURL(const std::string& url)
+std::string FilterEngine::GetHostFromURL(const std::string& url) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.getHostFromUrl");
-  JsValueList params;
-  params.push_back(jsEngine->NewValue(url));
-  return func->Call(params)->AsString();
+  return func->Call(jsEngine->NewValue(url))->AsString();
 }
 
 void FilterEngine::SetUpdateAvailableCallback(
@@ -479,7 +453,7 @@ void FilterEngine::ForceUpdateCheck(
     const FilterEngine::UpdateCheckDoneCallback& callback)
 {
   JsValuePtr func = jsEngine->Evaluate("API.forceUpdateCheck");
-  JsValueList params;
+  JsConstValueList params;
   if (callback)
   {
     std::string eventName = "_updateCheckDone" + std::to_string(++updateCheckId);
@@ -515,7 +489,7 @@ void FilterEngine::SetAllowedConnectionType(const std::string* value)
   SetPref("allowed_connection_type", value ? jsEngine->NewValue(*value) : nullptr);
 }
 
-std::unique_ptr<std::string> FilterEngine::GetAllowedConnectionType()
+std::unique_ptr<std::string> FilterEngine::GetAllowedConnectionType() const
 {
    auto prefValue = GetPref("allowed_connection_type");
    if (prefValue->IsUndefined())
@@ -544,9 +518,9 @@ void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
 }
 
 
-int FilterEngine::CompareVersions(const std::string& v1, const std::string& v2)
+int FilterEngine::CompareVersions(const std::string& v1, const std::string& v2) const
 {
-  JsValueList params;
+  JsConstValueList params;
   params.push_back(jsEngine->NewValue(v1));
   params.push_back(jsEngine->NewValue(v2));
   JsValuePtr func = jsEngine->Evaluate("API.compareVersions");

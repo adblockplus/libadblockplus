@@ -205,7 +205,7 @@ std::string AdblockPlus::JsValue::GetClass() const
   return Utils::FromV8String(obj->GetConstructorName());
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsValueList& params, JsValuePtr thisPtr) const
+AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsConstValueList& params, JsValuePtr thisPtr) const
 {
   if (!IsFunction())
     throw new std::runtime_error("Attempting to call a non-function");
@@ -236,10 +236,9 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsValueList& params, Js
   return JsValuePtr(new JsValue(jsEngine, result));
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsValue& arg) const
+AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsConstValuePtr& arg) const
 {
-  const JsContext context(jsEngine);
-  JsValueList params;
-  params.push_back(JsValuePtr(new JsValue(arg.jsEngine, arg.UnwrapValue())));
+  JsConstValueList params;
+  params.push_back(arg);
   return Call(params);
 }

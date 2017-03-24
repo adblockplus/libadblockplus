@@ -76,7 +76,7 @@ namespace
       JsValuePtr result = jsEngine->NewObject();
       result->SetProperty("content", content);
       result->SetProperty("error", error);
-      JsValueList params;
+      JsConstValueList params;
       params.push_back(result);
       callback->Call(params);
     }
@@ -114,7 +114,7 @@ namespace
 
       const JsContext context(jsEngine);
       JsValuePtr errorValue = jsEngine->NewValue(error);
-      JsValueList params;
+      JsConstValueList params;
       params.push_back(errorValue);
       callback->Call(params);
     }
@@ -151,7 +151,7 @@ namespace
 
       const JsContext context(jsEngine);
       JsValuePtr errorValue = jsEngine->NewValue(error);
-      JsValueList params;
+      JsConstValueList params;
       params.push_back(errorValue);
       callback->Call(params);
     }
@@ -188,7 +188,7 @@ namespace
 
       const JsContext context(jsEngine);
       JsValuePtr errorValue = jsEngine->NewValue(error);
-      JsValueList params;
+      JsConstValueList params;
       params.push_back(errorValue);
       callback->Call(params);
     }
@@ -232,7 +232,7 @@ namespace
       result->SetProperty("lastModified", statResult.lastModified);
       result->SetProperty("error", error);
 
-      JsValueList params;
+      JsConstValueList params;
       params.push_back(result);
       callback->Call(params);
     }

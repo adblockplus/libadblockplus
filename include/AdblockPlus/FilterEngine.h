@@ -52,13 +52,13 @@ namespace AdblockPlus
      * Retrieves the type of this filter.
      * @return Type of this filter.
      */
-    Type GetType();
+    Type GetType() const;
 
     /**
      * Checks whether this filter has been added to the list of custom filters.
      * @return `true` if this filter has been added.
      */
-    bool IsListed();
+    bool IsListed() const;
 
     /**
      * Adds this filter to the list of custom filters.
@@ -95,7 +95,7 @@ namespace AdblockPlus
      * Checks if this subscription has been added to the list of subscriptions.
      * @return `true` if this subscription has been added.
      */
-    bool IsListed();
+    bool IsListed() const;
 
     /**
      * Adds this subscription to the list of subscriptions.
@@ -117,7 +117,7 @@ namespace AdblockPlus
      * Checks if the subscription is currently being updated.
      * @return `true` if the subscription is currently being updated.
      */
-    bool IsUpdating();
+    bool IsUpdating() const;
 
     bool operator==(const Subscription& subscription) const;
 
@@ -279,14 +279,14 @@ namespace AdblockPlus
      *        see https://adblockplus.org/en/filters.
      * @return New `Filter` instance.
      */
-    FilterPtr GetFilter(const std::string& text);
+    FilterPtr GetFilter(const std::string& text) const;
 
     /**
      * Retrieves a subscription object for the supplied URL.
      * @param url Subscription URL.
      * @return New `Subscription` instance.
      */
-    SubscriptionPtr GetSubscription(const std::string& url);
+    SubscriptionPtr GetSubscription(const std::string& url) const;
 
     /**
      * Retrieves the list of custom filters.
@@ -411,7 +411,7 @@ namespace AdblockPlus
      * @param url URL to extract the host from.
      * @return Extracted host.
      */
-    std::string GetHostFromURL(const std::string& url);
+    std::string GetHostFromURL(const std::string& url) const;
 
     /**
      * Sets the callback invoked when an application update becomes available.
@@ -462,7 +462,7 @@ namespace AdblockPlus
       * Retrieves previously stored allowed connection type.
       * @return Preference value, or `nullptr` if it doesn't exist.
       */
-    std::unique_ptr<std::string> GetAllowedConnectionType();
+    std::unique_ptr<std::string> GetAllowedConnectionType() const;
 
     /**
      * Compares two version strings in
@@ -474,7 +474,7 @@ namespace AdblockPlus
      *         - A negative number if `v1` is less than `v2`.
      *         - A positive number if `v1` is greater than `v2`.
      */
-    int CompareVersions(const std::string& v1, const std::string& v2);
+    int CompareVersions(const std::string& v1, const std::string& v2) const;
 
     /**
      * Retrieves the `ContentType` for the supplied string.
