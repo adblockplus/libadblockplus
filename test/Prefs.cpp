@@ -74,6 +74,7 @@ namespace
     {
       fileSystem = new TestFileSystem();
       fileSystemPtr.reset(fileSystem);
+      jsEngine = CreateJsEngine();
 
       Reset();
     }
@@ -81,7 +82,8 @@ namespace
     void Reset(const AdblockPlus::FilterEngine::Prefs& preconfiguredPrefs =
                AdblockPlus::FilterEngine::Prefs())
     {
-      jsEngine = CreateJsEngine();
+      if (!jsEngine)
+        jsEngine = CreateJsEngine();
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
       jsEngine->SetFileSystem(fileSystemPtr);
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
@@ -197,6 +199,7 @@ TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
 
   ASSERT_FALSE(fileSystem->prefsContents.empty());
 
+  jsEngine.reset();
   Reset(preconfiguredPrefs);
 
   ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page")->IsBool());
