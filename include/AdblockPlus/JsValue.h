@@ -26,6 +26,7 @@
 namespace v8
 {
   class Value;
+  class Object;
   template<class T> class Handle;
   template<class T> class Local;
   template<class T> class Persistent;
@@ -123,7 +124,7 @@ namespace AdblockPlus
      * @param thisPtr Optional `this` value.
      * @return Value returned by the function.
      */
-    JsValuePtr Call(const JsConstValueList& params = JsConstValueList(),
+    JsValue Call(const JsConstValueList& params = JsConstValueList(),
         AdblockPlus::JsValuePtr thisPtr = AdblockPlus::JsValuePtr()) const;
 
     /**
@@ -132,7 +133,7 @@ namespace AdblockPlus
      * @param arg A single required parameter.
      * @return Value returned by the function.
      */
-    JsValuePtr Call(const JsConstValuePtr& arg) const;
+    JsValue Call(const JsValue& arg) const;
 
     v8::Local<v8::Value> UnwrapValue() const;
   protected:
@@ -140,6 +141,10 @@ namespace AdblockPlus
   private:
     JsValue(JsEnginePtr jsEngine, v8::Handle<v8::Value> value);
     void SetProperty(const std::string& name, v8::Handle<v8::Value> val);
+    // Parameter args is not const because a pointer to its internal arrays is
+    // passed to v8::Function::Call but the latter does not expect a const pointer.
+    JsValue Call(std::vector<v8::Handle<v8::Value>>& args, v8::Local<v8::Object> thisObj) const;
+
     std::unique_ptr<v8::Persistent<v8::Value>> value;
   };
 }

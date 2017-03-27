@@ -22,6 +22,8 @@
 #include "JsError.h"
 #include "Utils.h"
 
+using namespace AdblockPlus;
+
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
       v8::Handle<v8::Value> value)
     : jsEngine(jsEngine),
@@ -205,40 +207,46 @@ std::string AdblockPlus::JsValue::GetClass() const
   return Utils::FromV8String(obj->GetConstructorName());
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsConstValueList& params, JsValuePtr thisPtr) const
+JsValue JsValue::Call(const JsConstValueList& params, JsValuePtr thisPtr) const
 {
-  if (!IsFunction())
-    throw new std::runtime_error("Attempting to call a non-function");
-
   const JsContext context(jsEngine);
-  if (!thisPtr)
-  {
-    v8::Local<v8::Context> localContext = v8::Local<v8::Context>::New(
-      jsEngine->GetIsolate(), *jsEngine->context);
-    thisPtr = JsValuePtr(new JsValue(jsEngine, localContext->Global()));
-  }
-  if (!thisPtr->IsObject())
-    throw new std::runtime_error("`this` pointer has to be an object");
-  v8::Local<v8::Object> thisObj = v8::Local<v8::Object>::Cast(thisPtr->UnwrapValue());
+  v8::Local<v8::Object> thisObj = thisPtr ?
+    v8::Local<v8::Object>::Cast(thisPtr->UnwrapValue()) :
+    context.GetV8Context()->Global();
 
   std::vector<v8::Handle<v8::Value>> argv;
   for (const auto& param : params)
     argv.push_back(param->UnwrapValue());
 
+  return Call(argv, thisObj);
+}
+
+JsValue JsValue::Call(const JsValue& arg) const
+{
+  const JsContext context(jsEngine);
+
+  std::vector<v8::Handle<v8::Value>> argv;
+  argv.push_back(arg.UnwrapValue());
+
+  return Call(argv, context.GetV8Context()->Global());
+}
+
+JsValue JsValue::Call(std::vector<v8::Handle<v8::Value>>& args, v8::Local<v8::Object> thisObj) const
+{
+  if (!IsFunction())
+    throw new std::runtime_error("Attempting to call a non-function");
+  if (!thisObj->IsObject())
+    throw new std::runtime_error("`this` pointer has to be an object");
+
+  const JsContext context(jsEngine);
+
   const v8::TryCatch tryCatch;
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(UnwrapValue());
-  v8::Local<v8::Value> result = func->Call(thisObj, argv.size(),
-      argv.size() ? &argv.front() : 0);
+  v8::Local<v8::Value> result = func->Call(thisObj, args.size(),
+    args.size() ? &args[0] : nullptr);
 
   if (tryCatch.HasCaught())
     throw JsError(tryCatch.Exception(), tryCatch.Message());
 
-  return JsValuePtr(new JsValue(jsEngine, result));
-}
-
-AdblockPlus::JsValuePtr AdblockPlus::JsValue::Call(const JsConstValuePtr& arg) const
-{
-  JsConstValueList params;
-  params.push_back(arg);
-  return Call(params);
+  return JsValue(jsEngine, result);
 }
