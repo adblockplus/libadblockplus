@@ -35,10 +35,13 @@
       'third_party/v8/include',
     ],
     'sources': [
+      'include/AdblockPlus/ITimer.h',
       'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
       'src/DefaultLogSystem.cpp',
       'src/DefaultFileSystem.cpp',
+      'src/DefaultTimer.cpp',
+      'src/DefaultTimer.h',
       'src/FileSystemJsObject.cpp',
       'src/FilterEngine.cpp',
       'src/GlobalJsObject.cpp',

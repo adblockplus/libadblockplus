@@ -20,6 +20,7 @@
 #include "JsContext.h"
 #include "JsError.h"
 #include "Utils.h"
+#include "DefaultTimer.h"
 
 namespace
 {
@@ -66,6 +67,11 @@ namespace
 
 using namespace AdblockPlus;
 
+TimerPtr AdblockPlus::CreateDefaultTimer()
+{
+  return TimerPtr(new DefaultTimer());
+}
+
 AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
 {
   V8Initializer::Init();
@@ -78,49 +84,57 @@ AdblockPlus::ScopedV8Isolate::~ScopedV8Isolate()
   isolate = nullptr;
 }
 
-JsEngine::TimerTaskInfo::~TimerTaskInfo()
+JsEngine::TimerTask::~TimerTask()
 {
   for (auto& arg : arguments)
     arg->Dispose();
 }
 
-JsEngine::TimerTask JsEngine::CreateTimerTask(const v8::Arguments& arguments)
+void JsEngine::ScheduleTimer(const v8::Arguments& arguments)
 {
+  auto jsEngine = FromArguments(arguments);
   if (arguments.Length() < 2)
     throw std::runtime_error("setTimeout requires at least 2 parameters");
 
   if (!arguments[0]->IsFunction())
     throw std::runtime_error("First argument to setTimeout must be a function");
 
-  auto timerTaskInfoIterator = timerTaskInfos.emplace(timerTaskInfos.end());
-  timerTaskInfoIterator->delay = arguments[1]->IntegerValue();
+  auto timerTaskIterator = jsEngine->timerTasks.emplace(jsEngine->timerTasks.end());
 
   for (int i = 0; i < arguments.Length(); i++)
-    timerTaskInfoIterator->arguments.emplace_back(new v8::Persistent<v8::Value>(GetIsolate(), arguments[i]));
-  TimerTask retValue = { shared_from_this(), timerTaskInfoIterator };
-  return retValue;
+    timerTaskIterator->arguments.emplace_back(new v8::Persistent<v8::Value>(jsEngine->GetIsolate(), arguments[i]));
+
+  std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
+  jsEngine->timer->SetTimer(std::chrono::milliseconds(arguments[1]->IntegerValue()), [weakJsEngine, timerTaskIterator]
+  {
+    if (auto jsEngine = weakJsEngine.lock())
+      jsEngine->CallTimerTask(timerTaskIterator);
+  });
 }
 
-void JsEngine::CallTimerTask(TimerTaskInfos::const_iterator timerTaskInfoIterator)
+void JsEngine::CallTimerTask(TimerTasks::const_iterator timerTaskIterator)
 {
   const JsContext context(shared_from_this());
-  JsValue callback(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), *timerTaskInfoIterator->arguments[0]));
+  JsValue callback(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), *timerTaskIterator->arguments[0]));
   JsConstValueList callbackArgs;
-  for (int i = 2; i < timerTaskInfoIterator->arguments.size(); i++)
+  for (int i = 2; i < timerTaskIterator->arguments.size(); i++)
     callbackArgs.emplace_back(new JsValue(shared_from_this(),
-    v8::Local<v8::Value>::New(GetIsolate(), *timerTaskInfoIterator->arguments[i])));
+    v8::Local<v8::Value>::New(GetIsolate(), *timerTaskIterator->arguments[i])));
   callback.Call(callbackArgs);
-  timerTaskInfos.erase(timerTaskInfoIterator);
+  timerTasks.erase(timerTaskIterator);
 }
 
-AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate)
+AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer)
   : isolate(isolate)
+  , timer(std::move(timer))
 {
 }
 
-AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo, const ScopedV8IsolatePtr& isolate)
+AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
+  TimerPtr timer,
+  const ScopedV8IsolatePtr& isolate)
 {
-  JsEnginePtr result(new JsEngine(isolate));
+  JsEnginePtr result(new JsEngine(isolate, std::move(timer)));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());

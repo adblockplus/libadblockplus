@@ -33,39 +33,17 @@ using namespace AdblockPlus;
 
 namespace
 {
-  class TimeoutThread : public Thread
-  {
-  public:
-    TimeoutThread(const JsEngine::TimerTask& timerTask)
-      : Thread(true), timerTask(timerTask)
-    {
-    }
-
-    void Run()
-    {
-      Sleep(timerTask.taskInfoIterator->delay);
-      if (auto jsEngine = timerTask.weakJsEngine.lock())
-        jsEngine->CallTimerTask(timerTask.taskInfoIterator);
-    }
-
-  private:
-    JsEngine::TimerTask timerTask;
-  };
-
   v8::Handle<v8::Value> SetTimeoutCallback(const v8::Arguments& arguments)
   {
-    TimeoutThread* timeoutThread;
     try
     {
-      auto jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-      timeoutThread = new TimeoutThread(jsEngine->CreateTimerTask(arguments));
+      AdblockPlus::JsEngine::ScheduleTimer(arguments);
     }
     catch (const std::exception& e)
     {
       v8::Isolate* isolate = arguments.GetIsolate();
       return v8::ThrowException(Utils::ToV8String(isolate, e.what()));
     }
-    timeoutThread->Start();
 
     // We should actually return the timer ID here, which could be
     // used via clearTimeout(). But since we don't seem to need

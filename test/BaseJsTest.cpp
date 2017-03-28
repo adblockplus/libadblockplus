@@ -20,5 +20,5 @@
 AdblockPlus::JsEnginePtr CreateJsEngine(const AdblockPlus::AppInfo& appInfo)
 {
   static AdblockPlus::ScopedV8IsolatePtr isolate = std::make_shared<AdblockPlus::ScopedV8Isolate>();
-  return AdblockPlus::JsEngine::New(appInfo, isolate);
+  return AdblockPlus::JsEngine::New(appInfo, AdblockPlus::CreateDefaultTimer(), isolate);
 }

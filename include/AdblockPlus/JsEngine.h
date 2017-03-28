@@ -30,6 +30,7 @@
 #include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/WebRequest.h>
+#include <AdblockPlus/ITimer.h>
 
 namespace v8
 {
@@ -49,6 +50,11 @@ namespace AdblockPlus
    * Shared smart pointer to a `JsEngine` instance.
    */
   typedef std::shared_ptr<JsEngine> JsEnginePtr;
+
+  /**
+   * A factory to construct DefaultTimer.
+   */
+  TimerPtr CreateDefaultTimer();
 
   /**
    * Scope based isolate manager. Creates a new isolate instance on
@@ -103,11 +109,14 @@ namespace AdblockPlus
     /**
      * Creates a new JavaScript engine instance.
      * @param appInfo Information about the app.
+     * @param timer Implementation of timer.
      * @param isolate v8::Isolate wrapper. This parameter should be considered
      *        as a temporary hack for tests, it will go away. Issue #3593.
      * @return New `JsEngine` instance.
      */
-    static JsEnginePtr New(const AppInfo& appInfo = AppInfo(), const ScopedV8IsolatePtr& isolate = ScopedV8IsolatePtr(new ScopedV8Isolate()));
+    static JsEnginePtr New(const AppInfo& appInfo = AppInfo(),
+      TimerPtr timer = CreateDefaultTimer(),
+      const ScopedV8IsolatePtr& isolate = ScopedV8IsolatePtr(new ScopedV8Isolate()));
 
     /**
      * Registers the callback function for an event.
@@ -195,6 +204,13 @@ namespace AdblockPlus
      */
     static JsEnginePtr FromArguments(const v8::Arguments& arguments);
 
+    /*
+     * Private functionality required to implement timers.
+     * @param arguments `v8::Arguments` is the arguments received in C++
+     * callback associated for global setTimeout method.
+     */
+    static void ScheduleTimer(const v8::Arguments& arguments);
+
     /**
      * Converts v8 arguments to `JsValue` objects.
      * @param arguments `v8::Arguments` object containing the arguments to
@@ -271,23 +287,16 @@ namespace AdblockPlus
       return isolate->Get();
     }
 
-    // Private functionality required to implement timers.
-    struct TimerTaskInfo
-    {
-      ~TimerTaskInfo();
-      int delay;
-      std::vector<std::unique_ptr<v8::Persistent<v8::Value>>> arguments;
-    };
-    typedef std::list<TimerTaskInfo> TimerTaskInfos;
+  private:
     struct TimerTask
     {
-      std::weak_ptr<JsEngine> weakJsEngine;
-      TimerTaskInfos::const_iterator taskInfoIterator;
+      ~TimerTask();
+      std::vector<std::unique_ptr<v8::Persistent<v8::Value>>> arguments;
     };
-    TimerTask CreateTimerTask(const v8::Arguments& arguments);
-    void CallTimerTask(TimerTaskInfos::const_iterator taskInfoIterator);
-  private:
-    explicit JsEngine(const ScopedV8IsolatePtr& isolate);
+    typedef std::list<TimerTask> TimerTasks;
+    void CallTimerTask(TimerTasks::const_iterator timerTaskIterator);
+
+    explicit JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer);
 
     JsValuePtr GetGlobalObject();
 
@@ -303,7 +312,8 @@ namespace AdblockPlus
     std::mutex eventCallbacksMutex;
     std::mutex isConnectionAllowedMutex;
     IsConnectionAllowedCallback isConnectionAllowed;
-    TimerTaskInfos timerTaskInfos;
+    TimerTasks timerTasks;
+    TimerPtr timer;
   };
 }
 
