@@ -485,13 +485,13 @@ void FilterEngine::RemoveFilterChangeCallback()
 
 void FilterEngine::SetAllowedConnectionType(const std::string* value)
 {
-  SetPref("allowed_connection_type", value ? jsEngine->NewValue(*value) : nullptr);
+  SetPref("allowed_connection_type", value ? jsEngine->NewValue(*value) : jsEngine->NewValue(""));
 }
 
 std::unique_ptr<std::string> FilterEngine::GetAllowedConnectionType() const
 {
    auto prefValue = GetPref("allowed_connection_type");
-   if (prefValue->IsUndefined())
+   if (prefValue->AsString().empty())
      return nullptr;
    return std::unique_ptr<std::string>(new std::string(prefValue->AsString()));
 }
