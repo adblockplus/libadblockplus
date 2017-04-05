@@ -22,7 +22,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <queue>
-#include <atomic>
 #include <thread>
 
 namespace AdblockPlus
@@ -53,7 +52,7 @@ namespace AdblockPlus
     std::mutex mutex;
     std::condition_variable conditionVariable;
     TimerUnits timers;
-    std::atomic<bool> shouldThreadStop;
+    bool shouldThreadStop;
     std::thread m_thread;
   };
 }

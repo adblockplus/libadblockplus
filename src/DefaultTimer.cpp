@@ -30,7 +30,10 @@ DefaultTimer::DefaultTimer()
 
 DefaultTimer::~DefaultTimer()
 {
-  shouldThreadStop = true;
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    shouldThreadStop = true;
+  }
   conditionVariable.notify_one();
   if (m_thread.joinable())
     m_thread.join();
@@ -48,7 +51,7 @@ void DefaultTimer::SetTimer(const std::chrono::milliseconds& timeout, const Time
 
 void DefaultTimer::ThreadFunc()
 {
-  while (!shouldThreadStop)
+  while (true)
   {
     std::unique_lock<std::mutex> lock(mutex);
     if (timers.empty())
@@ -79,5 +82,7 @@ void DefaultTimer::ThreadFunc()
       }
       lock.lock();
     }
+    if (shouldThreadStop)
+      return;
   }
 }
