@@ -728,23 +728,22 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
   auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   ASSERT_EQ(2u, subscriptions.size());
-  const auto aaUrl = filterEngine->GetPref("subscriptions_exceptionsurl")->AsString();
   SubscriptionPtr aaSubscription;
   SubscriptionPtr langSubscription;
-  if (subscriptions[0]->GetProperty("url")->AsString() == aaUrl)
+  if (subscriptions[0]->IsAA())
   {
     aaSubscription = subscriptions[0];
     langSubscription = subscriptions[1];
   }
-  else if (subscriptions[1]->GetProperty("url")->AsString() == aaUrl)
+  else if (subscriptions[1]->IsAA())
   {
     aaSubscription = subscriptions[1];
     langSubscription = subscriptions[0];
   }
   ASSERT_NE(nullptr, aaSubscription);
   ASSERT_NE(nullptr, langSubscription);
-  EXPECT_EQ(aaUrl, aaSubscription->GetProperty("url")->AsString());
   EXPECT_EQ(langSubscriptionUrl, langSubscription->GetProperty("url")->AsString());
+  EXPECT_TRUE(filterEngine->IsAAEnabled());
 }
 
 TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
@@ -755,6 +754,257 @@ TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
   auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine, createParams);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   EXPECT_EQ(0u, subscriptions.size());
+  EXPECT_FALSE(filterEngine->IsAAEnabled());
+}
+
+namespace AA_ApiTest
+{
+  const std::string kOtherSubscriptionUrl = "https://non-existing-subscription.txt";
+  enum class AAStatus
+  {
+    absent,
+    enabled,
+    disabled_present
+  };
+
+  ::std::ostream& operator<<(std::ostream& os, AAStatus aaStatus)
+  {
+    switch (aaStatus)
+    {
+    case AAStatus::absent:
+      os << "absent";
+      break;
+    case AAStatus::enabled:
+      os << "enabled";
+      break;
+    case AAStatus::disabled_present:
+      os << "disabled_present";
+      break;
+    default:
+      ;
+    }
+    return os;
+  }
+
+  enum class Action
+  {
+    disable, enable, remove
+  };
+
+  ::std::ostream& operator<<(std::ostream& os, Action action)
+  {
+    switch (action)
+    {
+    case Action::disable:
+      os << "disable";
+      break;
+    case Action::enable:
+      os << "enable";
+      break;
+    case Action::remove:
+      os << "remove";
+      break;
+    default:
+      ;
+    }
+    return os;
+  }
+
+  struct Parameters
+  {
+    AAStatus initialAAStatus;
+    Action action;
+    AAStatus expectedAAStatus;
+    Parameters(AAStatus aaStatus, Action action)
+    {
+      // if `expect` is not called then no effect is expected, initialize it now
+      initialAAStatus = expectedAAStatus = aaStatus;
+      this->action = action;
+    }
+    Parameters& expect(AAStatus aaStatus)
+    {
+      expectedAAStatus = aaStatus;
+      return *this;
+    }
+    // it's merely to satisfy compiler (std::tuple requires default ctr) and
+    // testing internals even calls it.
+    Parameters()
+    {
+    }
+  };
+
+  // human readable printing for failed tests
+  ::std::ostream& operator<<(::std::ostream& os, const Parameters& params)
+  {
+    os << "initial AA: " << params.initialAAStatus
+       << " action: " << params.action
+       << " expected AA: " << params.expectedAAStatus;
+    return os;
+  }
+  class Test : public FilterEngineTest
+             , public ::testing::WithParamInterface<::testing::tuple<Parameters, /*number of other subscriptions*/uint8_t>>
+  {
+  public:
+    static std::vector<Parameters> VaryPossibleCases()
+    {
+      // AA API test matrix
+      // each column but other-subs is about AA subscription
+      // enabled exists other-subs action  => expected
+      //                                   => everywhere no effect on other subs
+      // 1.
+      // false   false  false      disable => no effect
+      // false   false  false      enable  => add and enable
+      //
+      // false   false  true       disable => no effect
+      // false   false  true       enable  => add and enable
+      // 2.
+      // false   true   false      disable => no effect
+      // false   true   false      enable  => enable
+      //
+      // false   true   true       disable => no effect
+      // false   true   true       enable  => enable
+      // 3.
+      // true    true   false      disable => disable
+      // ture    true   false      enable  => no effect
+      //
+      // true    true   true       disable => disable
+      // ture    true   true       enable  => no effect
+      // 4.
+      // false   true   false      remove  => remove
+      // false   true   true       remove  => remove
+      // ture    true   false      remove  => remove
+      // ture    true   true       remove  => remove
+      std::vector<Parameters> retValue;
+      // 1.
+      retValue.emplace_back(Parameters(AAStatus::absent, Action::disable));
+      retValue.emplace_back(Parameters(AAStatus::absent, Action::enable).expect(AAStatus::enabled));
+      // 2.
+      retValue.emplace_back(Parameters(AAStatus::disabled_present, Action::disable));
+      retValue.emplace_back(Parameters(AAStatus::disabled_present, Action::enable).expect(AAStatus::enabled));
+      // 3.
+      retValue.emplace_back(Parameters(AAStatus::enabled, Action::disable).expect(AAStatus::disabled_present));
+      retValue.emplace_back(Parameters(AAStatus::enabled, Action::enable));
+      // 4.
+      retValue.emplace_back(Parameters(AAStatus::disabled_present, Action::remove).expect(AAStatus::absent));
+      retValue.emplace_back(Parameters(AAStatus::enabled, Action::remove).expect(AAStatus::absent));
+      // since AA should not affect other subscriptions, the number of other
+      // subscriptions is not specified here, it goes as another item in test parameters tuple.
+      return retValue;
+    }
+  protected:
+    void init(AAStatus aaStatus, uint8_t otherSubscriptionsNumber)
+    {
+      // for the sake of simplicity test only with one suplimentary subscription
+      ASSERT_TRUE(otherSubscriptionsNumber == 0u || otherSubscriptionsNumber == 1u);
+
+      // this method also tests the result of intermediate steps.
+
+      {
+        // no subscription (because of preconfigured prefs.json and patterns.ini),
+        // though it should be enabled by default in a non-test environment, it's tested in
+        // corresponding tests.
+        const auto subscriptions = filterEngine->GetListedSubscriptions();
+        EXPECT_EQ(0u, subscriptions.size()); // no any subscription including AA
+        EXPECT_FALSE(filterEngine->IsAAEnabled());
+      }
+      if (otherSubscriptionsNumber == 1u)
+      {
+        auto subscription = filterEngine->GetSubscription(kOtherSubscriptionUrl);
+        ASSERT_TRUE(subscription);
+        subscription->AddToList();
+        const auto subscriptions = filterEngine->GetListedSubscriptions();
+        ASSERT_EQ(1u, subscriptions.size());
+        EXPECT_FALSE(subscriptions[0]->IsAA());
+        EXPECT_EQ(kOtherSubscriptionUrl, subscriptions[0]->GetProperty("url")->AsString());
+      }
+      if (isAASatusPresent(aaStatus))
+      {
+        filterEngine->SetAAEnabled(true); // add AA by enabling it
+        if (aaStatus == AAStatus::disabled_present)
+        {
+          filterEngine->SetAAEnabled(false);
+        }
+        testSubscriptionState(aaStatus, otherSubscriptionsNumber);
+      }
+    }
+    bool isAASatusPresent(AAStatus aaStatus)
+    {
+      return aaStatus != AAStatus::absent;
+    }
+    void testSubscriptionState(AAStatus aaStatus, int otherSubscriptionsNumber)
+    {
+      if (aaStatus == AAStatus::enabled)
+        EXPECT_TRUE(filterEngine->IsAAEnabled());
+      else
+        EXPECT_FALSE(filterEngine->IsAAEnabled());
+
+      SubscriptionPtr aaSubscription;
+      SubscriptionPtr otherSubscription;
+      const auto subscriptions = filterEngine->GetListedSubscriptions();
+      for (const auto& subscription : subscriptions)
+      {
+        (subscription->IsAA() ? aaSubscription : otherSubscription) = subscription;
+      }
+      if (otherSubscriptionsNumber == 1u)
+      {
+        if (isAASatusPresent(aaStatus))
+        {
+          EXPECT_EQ(2u, subscriptions.size());
+          EXPECT_TRUE(aaSubscription);
+          EXPECT_TRUE(otherSubscription);
+        }
+        else
+        {
+          EXPECT_EQ(1u, subscriptions.size());
+          EXPECT_FALSE(aaSubscription);
+          EXPECT_TRUE(otherSubscription);
+        }
+      }
+      else if (otherSubscriptionsNumber == 0u)
+      {
+        if (isAASatusPresent(aaStatus))
+        {
+          EXPECT_EQ(1u, subscriptions.size());
+          EXPECT_TRUE(aaSubscription);
+          EXPECT_FALSE(otherSubscription);
+        }
+        else
+        {
+          EXPECT_EQ(0u, subscriptions.size());
+        }
+      }
+    }
+  };
+
+  INSTANTIATE_TEST_CASE_P(AA_ApiTests, Test,
+    ::testing::Combine(::testing::ValuesIn(Test::VaryPossibleCases()), ::testing::Values<uint8_t>(0, 1)));
+
+  TEST_P(Test, VaryPossibleCases) {
+    const auto parameter = ::testing::get<0>(GetParam());
+    uint8_t otherSubscriptionsNumber = ::testing::get<1>(GetParam());
+    init(parameter.initialAAStatus, otherSubscriptionsNumber);
+
+    if (parameter.action == Action::enable)
+      filterEngine->SetAAEnabled(true);
+    else if (parameter.action == Action::disable)
+      filterEngine->SetAAEnabled(false);
+    else if (parameter.action == Action::remove)
+    {
+      SubscriptionPtr aaSubscription;
+      for (const auto& subscription : filterEngine->GetListedSubscriptions())
+      {
+        if (subscription->IsAA())
+        {
+          aaSubscription = subscription;
+          break;
+        }
+      }
+      ASSERT_TRUE(aaSubscription);
+      aaSubscription->RemoveFromList();
+    }
+
+    testSubscriptionState(parameter.expectedAAStatus, otherSubscriptionsNumber);
+  }
 }
 
 TEST_F(FilterEngineIsAllowedConnectionTest, AbsentCallbackAllowsUpdating)
