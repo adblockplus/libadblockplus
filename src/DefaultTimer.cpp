@@ -63,7 +63,8 @@ void DefaultTimer::ThreadFunc()
     }
     else
     {
-      conditionVariable.wait_until(lock, timers.top().fireAt);
+      auto fireAt = timers.top().fireAt;
+      conditionVariable.wait_until(lock, fireAt);
     }
     // execute all expired timers and remove them
     while (!shouldThreadStop && !timers.empty() && timers.top().fireAt <= std::chrono::steady_clock::now())
