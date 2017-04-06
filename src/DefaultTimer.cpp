@@ -43,9 +43,11 @@ void DefaultTimer::SetTimer(const std::chrono::milliseconds& timeout, const Time
 {
   if (!timerCallback)
     return;
-  std::lock_guard<std::mutex> lock(mutex);
-  TimerUnit timer = { std::chrono::steady_clock::now() + timeout, timerCallback };
-  timers.push(timer);
+  {
+    std::lock_guard<std::mutex> lock(mutex);
+    TimerUnit timer = { std::chrono::steady_clock::now() + timeout, timerCallback };
+    timers.push(timer);
+  }
   conditionVariable.notify_one();
 }
 
