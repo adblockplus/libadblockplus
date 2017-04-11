@@ -222,7 +222,7 @@ namespace AdblockPlus
     /**
      * @see `SetFileSystem()`.
      */
-    FileSystemPtr GetFileSystem();
+    FileSystemPtr GetFileSystem() const;
 
     /**
      * Sets the `FileSystem` implementation used for all file I/O.
@@ -235,7 +235,7 @@ namespace AdblockPlus
     /**
      * @see `SetWebRequest()`.
      */
-    WebRequestPtr GetWebRequest();
+    WebRequestPtr GetWebRequest() const;
 
     /**
      * Sets the `WebRequest` implementation used for XMLHttpRequests.
@@ -256,12 +256,12 @@ namespace AdblockPlus
      * Checks whether current connection is allowed. If
      * IsConnectionAllowedCallback is not set then then it returns true.
      */
-    bool IsConnectionAllowed();
+    bool IsConnectionAllowed() const;
 
     /**
      * @see `SetLogSystem()`.
      */
-    LogSystemPtr GetLogSystem();
+    LogSystemPtr GetLogSystem() const;
 
     /**
      * Sets the `LogSystem` implementation used for logging (e.g. to handle
@@ -310,7 +310,7 @@ namespace AdblockPlus
     std::unique_ptr<v8::Persistent<v8::Context>> context;
     EventMap eventCallbacks;
     std::mutex eventCallbacksMutex;
-    std::mutex isConnectionAllowedMutex;
+    mutable std::mutex isConnectionAllowedMutex;
     IsConnectionAllowedCallback isConnectionAllowed;
     TimerTasks timerTasks;
     TimerPtr timer;

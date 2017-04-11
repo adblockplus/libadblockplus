@@ -126,6 +126,9 @@ void JsEngine::CallTimerTask(TimerTasks::const_iterator timerTaskIterator)
 
 AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer)
   : isolate(isolate)
+  , fileSystem(new DefaultFileSystem())
+  , webRequest(new DefaultWebRequest())
+  , logSystem(new DefaultLogSystem())
   , timer(std::move(timer))
 {
 }
@@ -262,10 +265,8 @@ AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Argum
   return list;
 }
 
-AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetFileSystem()
+AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetFileSystem() const
 {
-  if (!fileSystem)
-    fileSystem.reset(new DefaultFileSystem());
   return fileSystem;
 }
 
@@ -277,10 +278,8 @@ void AdblockPlus::JsEngine::SetFileSystem(AdblockPlus::FileSystemPtr val)
   fileSystem = val;
 }
 
-AdblockPlus::WebRequestPtr AdblockPlus::JsEngine::GetWebRequest()
+AdblockPlus::WebRequestPtr AdblockPlus::JsEngine::GetWebRequest() const
 {
-  if (!webRequest)
-    webRequest.reset(new DefaultWebRequest());
   return webRequest;
 }
 
@@ -298,7 +297,7 @@ void AdblockPlus::JsEngine::SetIsConnectionAllowedCallback(const IsConnectionAll
   isConnectionAllowed = callback;
 }
 
-bool AdblockPlus::JsEngine::IsConnectionAllowed()
+bool AdblockPlus::JsEngine::IsConnectionAllowed() const
 {
   // The call of isConnectionAllowed can be very expensive and it makes a
   // little sense to block execution of JavaScript for it. Currently this
@@ -312,10 +311,8 @@ bool AdblockPlus::JsEngine::IsConnectionAllowed()
   return !localCopy || localCopy();
 }
 
-AdblockPlus::LogSystemPtr AdblockPlus::JsEngine::GetLogSystem()
+AdblockPlus::LogSystemPtr AdblockPlus::JsEngine::GetLogSystem() const
 {
-  if (!logSystem)
-    logSystem.reset(new DefaultLogSystem());
   return logSystem;
 }
 
@@ -328,7 +325,7 @@ void AdblockPlus::JsEngine::SetLogSystem(AdblockPlus::LogSystemPtr val)
 }
 
 
-void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name, 
+void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name,
                                               AdblockPlus::JsValuePtr value)
 {
   auto global = GetGlobalObject();

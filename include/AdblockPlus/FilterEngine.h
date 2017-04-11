@@ -342,7 +342,7 @@ namespace AdblockPlus
      * next notification to be shown.
      * @param url URL to match notifications to (optional).
      */
-    void ShowNextNotification(const std::string& url = std::string());
+    void ShowNextNotification(const std::string& url = std::string()) const;
 
     /**
      * Sets the callback invoked when a notification should be shown.
@@ -534,12 +534,12 @@ namespace AdblockPlus
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,
                                const std::string& documentUrl) const;
-    void UpdateAvailable(UpdateAvailableCallback callback, JsValueList& params);
+    void UpdateAvailable(UpdateAvailableCallback callback, JsValueList& params) const;
     void UpdateCheckDone(const std::string& eventName,
                          UpdateCheckDoneCallback callback, JsValueList& params);
-    void FilterChanged(FilterChangeCallback callback, JsValueList& params);
+    void FilterChanged(FilterChangeCallback callback, JsValueList& params) const;
     void ShowNotification(const ShowNotificationCallback& callback,
-      const JsValueList& params);
+      const JsValueList& params) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
       ContentTypeMask contentTypeMask, const std::string& documentUrl) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,

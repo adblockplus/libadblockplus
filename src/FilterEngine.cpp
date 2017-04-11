@@ -333,7 +333,7 @@ std::string FilterEngine::GetAAUrl() const
   return GetPref("subscriptions_exceptionsurl")->AsString();
 }
 
-void FilterEngine::ShowNextNotification(const std::string& url)
+void FilterEngine::ShowNextNotification(const std::string& url) const
 {
   JsValuePtr func = jsEngine->Evaluate("API.showNextNotification");
   JsConstValueList params;
@@ -462,7 +462,7 @@ void FilterEngine::RemoveUpdateAvailableCallback()
 }
 
 void FilterEngine::UpdateAvailable(
-    FilterEngine::UpdateAvailableCallback callback, JsValueList& params)
+    FilterEngine::UpdateAvailableCallback callback, JsValueList& params) const
 {
   if (params.size() >= 1 && !params[0]->IsNull())
     callback(params[0]->AsString());
@@ -516,7 +516,7 @@ std::unique_ptr<std::string> FilterEngine::GetAllowedConnectionType() const
    return std::unique_ptr<std::string>(new std::string(prefValue->AsString()));
 }
 
-void FilterEngine::FilterChanged(FilterEngine::FilterChangeCallback callback, JsValueList& params)
+void FilterEngine::FilterChanged(FilterEngine::FilterChangeCallback callback, JsValueList& params) const
 {
   std::string action(params.size() >= 1 && !params[0]->IsNull() ? params[0]->AsString() : "");
   JsValuePtr item(params.size() >= 2 ? params[1] : jsEngine->NewValue(false));
@@ -524,7 +524,7 @@ void FilterEngine::FilterChanged(FilterEngine::FilterChangeCallback callback, Js
 }
 
 void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
-                                         const JsValueList& params)
+                                         const JsValueList& params) const
 {
   if (params.size() < 1)
     return;
