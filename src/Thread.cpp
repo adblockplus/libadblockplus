@@ -23,7 +23,7 @@
 
 using namespace AdblockPlus;
 
-void AdblockPlus::Sleep(const int millis)
+void AdblockPlus::Sleep(int millis)
 {
 #ifdef WIN32
   ::Sleep(millis);

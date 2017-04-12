@@ -81,7 +81,7 @@ namespace AdblockPlus
      * @param data Input stream with the data to write.
      */
     virtual void Write(const std::string& path,
-                       std::shared_ptr<std::istream> data) = 0;
+                       std::istream& data) = 0;
 
     /**
      * Moves a file (i.e.\ renames it).

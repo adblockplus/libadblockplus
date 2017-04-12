@@ -86,7 +86,7 @@ namespace
           std::bind(&UpdateCheckTest::UpdateCallback, this, std::placeholders::_1));
     }
 
-    void EventCallback(AdblockPlus::JsValueList& params)
+    void EventCallback(const AdblockPlus::JsValueList& params)
     {
       eventCallbackCalled = true;
       eventCallbackParams = params;

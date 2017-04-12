@@ -37,12 +37,12 @@ namespace
       return LazyFileSystem::Read(path);
     }
 
-    void Write(const std::string& path, std::shared_ptr<std::istream> content)
+    void Write(const std::string& path, std::istream& content)
     {
       if (path == "prefs.json")
       {
         std::stringstream ss;
-        ss << content->rdbuf();
+        ss << content.rdbuf();
         prefsContents = ss.str();
       }
       else

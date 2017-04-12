@@ -112,7 +112,7 @@ void JsEngine::ScheduleTimer(const v8::Arguments& arguments)
   });
 }
 
-void JsEngine::CallTimerTask(TimerTasks::const_iterator timerTaskIterator)
+void JsEngine::CallTimerTask(const TimerTasks::const_iterator& timerTaskIterator)
 {
   const JsContext context(shared_from_this());
   JsValue callback(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), *timerTaskIterator->arguments[0]));
@@ -145,7 +145,7 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
 
   result->context.reset(new v8::Persistent<v8::Context>(result->GetIsolate(),
     v8::Context::New(result->GetIsolate())));
-  AdblockPlus::GlobalJsObject::Setup(result, appInfo, result->GetGlobalObject());
+  AdblockPlus::GlobalJsObject::Setup(*result, appInfo, result->GetGlobalObject());
   return result;
 }
 
@@ -169,7 +169,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
 }
 
 void AdblockPlus::JsEngine::SetEventCallback(const std::string& eventName,
-    AdblockPlus::JsEngine::EventCallback callback)
+    const AdblockPlus::JsEngine::EventCallback& callback)
 {
   if (!callback)
   {
@@ -186,7 +186,7 @@ void AdblockPlus::JsEngine::RemoveEventCallback(const std::string& eventName)
   eventCallbacks.erase(eventName);
 }
 
-void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, AdblockPlus::JsValueList& params)
+void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, const AdblockPlus::JsValueList& params)
 {
   EventCallback callback;
   {
@@ -231,7 +231,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewObject()
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewCallback(
-    v8::InvocationCallback callback)
+    const v8::InvocationCallback& callback)
 {
   const JsContext context(shared_from_this());
 
@@ -270,7 +270,7 @@ AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetFileSystem() const
   return fileSystem;
 }
 
-void AdblockPlus::JsEngine::SetFileSystem(AdblockPlus::FileSystemPtr val)
+void AdblockPlus::JsEngine::SetFileSystem(const AdblockPlus::FileSystemPtr& val)
 {
   if (!val)
     throw std::runtime_error("FileSystem cannot be null");
@@ -283,7 +283,7 @@ AdblockPlus::WebRequestPtr AdblockPlus::JsEngine::GetWebRequest() const
   return webRequest;
 }
 
-void AdblockPlus::JsEngine::SetWebRequest(AdblockPlus::WebRequestPtr val)
+void AdblockPlus::JsEngine::SetWebRequest(const AdblockPlus::WebRequestPtr& val)
 {
   if (!val)
     throw std::runtime_error("WebRequest cannot be null");
@@ -316,7 +316,7 @@ AdblockPlus::LogSystemPtr AdblockPlus::JsEngine::GetLogSystem() const
   return logSystem;
 }
 
-void AdblockPlus::JsEngine::SetLogSystem(AdblockPlus::LogSystemPtr val)
+void AdblockPlus::JsEngine::SetLogSystem(const AdblockPlus::LogSystemPtr& val)
 {
   if (!val)
     throw std::runtime_error("LogSystem cannot be null");
@@ -326,7 +326,7 @@ void AdblockPlus::JsEngine::SetLogSystem(AdblockPlus::LogSystemPtr val)
 
 
 void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name,
-                                              AdblockPlus::JsValuePtr value)
+                                              const AdblockPlus::JsValuePtr& value)
 {
   auto global = GetGlobalObject();
   if (!global)

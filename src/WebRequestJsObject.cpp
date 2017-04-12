@@ -29,7 +29,7 @@ namespace
   class WebRequestThread : public AdblockPlus::Thread
   {
   public:
-    WebRequestThread(AdblockPlus::JsEnginePtr jsEngine, AdblockPlus::JsValueList& arguments)
+    WebRequestThread(const AdblockPlus::JsEnginePtr& jsEngine, const AdblockPlus::JsValueList& arguments)
         : Thread(true), jsEngine(jsEngine), url(arguments[0]->AsString())
     {
       if (!url.length())
@@ -116,8 +116,8 @@ namespace
 }
 
 AdblockPlus::JsValuePtr AdblockPlus::WebRequestJsObject::Setup(
-    AdblockPlus::JsEnginePtr jsEngine, AdblockPlus::JsValuePtr obj)
+    AdblockPlus::JsEngine& jsEngine, const AdblockPlus::JsValuePtr& obj)
 {
-  obj->SetProperty("GET", jsEngine->NewCallback(::GETCallback));
+  obj->SetProperty("GET", jsEngine.NewCallback(::GETCallback));
   return obj;
 }

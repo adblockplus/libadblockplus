@@ -68,18 +68,18 @@ namespace
   }
 }
 
-JsValuePtr GlobalJsObject::Setup(JsEnginePtr jsEngine, const AppInfo& appInfo,
-    JsValuePtr obj)
+JsValuePtr GlobalJsObject::Setup(JsEngine& jsEngine, const AppInfo& appInfo,
+    const JsValuePtr& obj)
 {
-  obj->SetProperty("setTimeout", jsEngine->NewCallback(::SetTimeoutCallback));
-  obj->SetProperty("_triggerEvent", jsEngine->NewCallback(::TriggerEventCallback));
+  obj->SetProperty("setTimeout", jsEngine.NewCallback(::SetTimeoutCallback));
+  obj->SetProperty("_triggerEvent", jsEngine.NewCallback(::TriggerEventCallback));
   obj->SetProperty("_fileSystem",
-      FileSystemJsObject::Setup(jsEngine, jsEngine->NewObject()));
+      FileSystemJsObject::Setup(jsEngine, jsEngine.NewObject()));
   obj->SetProperty("_webRequest",
-      WebRequestJsObject::Setup(jsEngine, jsEngine->NewObject()));
+      WebRequestJsObject::Setup(jsEngine, jsEngine.NewObject()));
   obj->SetProperty("console",
-      ConsoleJsObject::Setup(jsEngine, jsEngine->NewObject()));
+      ConsoleJsObject::Setup(jsEngine, jsEngine.NewObject()));
   obj->SetProperty("_appInfo",
-      AppInfoJsObject::Setup(jsEngine, appInfo, jsEngine->NewObject()));
+      AppInfoJsObject::Setup(appInfo, jsEngine.NewObject()));
   return obj;
 }

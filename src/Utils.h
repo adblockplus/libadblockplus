@@ -30,12 +30,12 @@ namespace AdblockPlus
   namespace Utils
   {
     std::string Slurp(std::istream& stream);
-    std::string FromV8String(v8::Handle<v8::Value> value);
+    std::string FromV8String(const v8::Handle<v8::Value>& value);
     v8::Local<v8::String> ToV8String(v8::Isolate* isolate, const std::string& str);
 
     // Code for templated function has to be in a header file, can't be in .cpp
     template<class T>
-    T TrimString(T text)
+    T TrimString(const T& text)
     {
       // Via http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
       T trimmed(text);

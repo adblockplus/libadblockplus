@@ -38,7 +38,7 @@ namespace AdblockPlus
   {
   public:
     std::shared_ptr<std::istream> Read(const std::string& path) const;
-    void Write(const std::string& path, std::shared_ptr<std::istream> data);
+    void Write(const std::string& path, std::istream& data);
     void Move(const std::string& fromPath, const std::string& toPath);
     void Remove(const std::string& path);
     StatResult Stat(const std::string& path) const;

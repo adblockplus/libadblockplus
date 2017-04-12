@@ -50,14 +50,14 @@ namespace
       return std::shared_ptr<std::istream>(stream);
     }
 
-    void Write(const std::string& path, std::shared_ptr<std::istream> data)
+    void Write(const std::string& path, std::istream& data)
     {
       if (!success)
         throw std::runtime_error("Unable to write to " + path);
       lastWrittenPath = path;
 
       std::stringstream content;
-      content << data->rdbuf();
+      content << data.rdbuf();
       lastWrittenContent = content.str();
     }
 

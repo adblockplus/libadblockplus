@@ -34,7 +34,7 @@ std::string Utils::Slurp(std::istream& stream)
   return content.str();
 }
 
-std::string Utils::FromV8String(v8::Handle<v8::Value> value)
+std::string Utils::FromV8String(const v8::Handle<v8::Value>& value)
 {
   v8::String::Utf8Value stringValue(value);
   if (stringValue.length())

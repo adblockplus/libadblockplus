@@ -93,7 +93,7 @@ namespace AdblockPlus
     /**
      * Event callback function.
      */
-    typedef std::function<void(JsValueList& params)> EventCallback;
+    typedef std::function<void(const JsValueList& params)> EventCallback;
 
     /**
     * Callback function returning false when current connection is not allowed
@@ -124,7 +124,7 @@ namespace AdblockPlus
      *        general purpose event handling mechanism.
      * @param callback Event callback function.
      */
-    void SetEventCallback(const std::string& eventName, EventCallback callback);
+    void SetEventCallback(const std::string& eventName, const EventCallback& callback);
 
     /**
      * Removes the callback function for an event.
@@ -137,7 +137,7 @@ namespace AdblockPlus
      * @param eventName Event name.
      * @param params Event parameters.
      */
-    void TriggerEvent(const std::string& eventName, JsValueList& params);
+    void TriggerEvent(const std::string& eventName, const JsValueList& params);
 
     /**
      * Evaluates a JavaScript expression.
@@ -192,7 +192,7 @@ namespace AdblockPlus
      *        the current `JsEngine`.
      * @return New `JsValue` instance.
      */
-    JsValuePtr NewCallback(v8::InvocationCallback callback);
+    JsValuePtr NewCallback(const v8::InvocationCallback& callback);
 
     /**
      * Returns a `JsEngine` instance contained in a `v8::Arguments` object.
@@ -230,7 +230,7 @@ namespace AdblockPlus
      * instance by default, which might be sufficient.
      * @param The `FileSystem` instance to use.
      */
-    void SetFileSystem(FileSystemPtr val);
+    void SetFileSystem(const FileSystemPtr& val);
 
     /**
      * @see `SetWebRequest()`.
@@ -243,7 +243,7 @@ namespace AdblockPlus
      * instance by default, which might be sufficient.
      * @param The `WebRequest` instance to use.
      */
-    void SetWebRequest(WebRequestPtr val);
+    void SetWebRequest(const WebRequestPtr& val);
 
     /**
     * Registers the callback function to check whether current connection is
@@ -270,14 +270,14 @@ namespace AdblockPlus
      * instance by default, which might be sufficient.
      * @param The `LogSystem` instance to use.
      */
-    void SetLogSystem(LogSystemPtr val);
+    void SetLogSystem(const LogSystemPtr& val);
 
     /**
      * Sets a global property that can be accessed by all the scripts.
      * @param name Name of the property to set.
      * @param value Value of the property to set.
      */
-    void SetGlobalProperty(const std::string& name, AdblockPlus::JsValuePtr value);
+    void SetGlobalProperty(const std::string& name, const AdblockPlus::JsValuePtr& value);
 
     /**
      * Returns a pointer to associated v8::Isolate.
@@ -294,7 +294,7 @@ namespace AdblockPlus
       std::vector<std::unique_ptr<v8::Persistent<v8::Value>>> arguments;
     };
     typedef std::list<TimerTask> TimerTasks;
-    void CallTimerTask(TimerTasks::const_iterator timerTaskIterator);
+    void CallTimerTask(const TimerTasks::const_iterator& timerTaskIterator);
 
     explicit JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer);
 

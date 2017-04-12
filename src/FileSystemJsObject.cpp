@@ -99,8 +99,8 @@ namespace
       std::string error;
       try
       {
-        std::shared_ptr<std::iostream> stream(new std::stringstream);
-        *stream << content;
+        std::stringstream stream;
+        stream << content;
         fileSystem->Write(path, stream);
       }
       catch (std::exception& e)
@@ -349,13 +349,13 @@ namespace
 }
 
 
-JsValuePtr FileSystemJsObject::Setup(JsEnginePtr jsEngine, JsValuePtr obj)
+JsValuePtr FileSystemJsObject::Setup(JsEngine& jsEngine, const JsValuePtr& obj)
 {
-  obj->SetProperty("read", jsEngine->NewCallback(::ReadCallback));
-  obj->SetProperty("write", jsEngine->NewCallback(::WriteCallback));
-  obj->SetProperty("move", jsEngine->NewCallback(::MoveCallback));
-  obj->SetProperty("remove", jsEngine->NewCallback(::RemoveCallback));
-  obj->SetProperty("stat", jsEngine->NewCallback(::StatCallback));
-  obj->SetProperty("resolve", jsEngine->NewCallback(::ResolveCallback));
+  obj->SetProperty("read", jsEngine.NewCallback(::ReadCallback));
+  obj->SetProperty("write", jsEngine.NewCallback(::WriteCallback));
+  obj->SetProperty("move", jsEngine.NewCallback(::MoveCallback));
+  obj->SetProperty("remove", jsEngine.NewCallback(::RemoveCallback));
+  obj->SetProperty("stat", jsEngine.NewCallback(::StatCallback));
+  obj->SetProperty("resolve", jsEngine.NewCallback(::ResolveCallback));
   return obj;
 }

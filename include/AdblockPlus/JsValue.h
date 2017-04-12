@@ -125,7 +125,7 @@ namespace AdblockPlus
      * @return Value returned by the function.
      */
     JsValue Call(const JsConstValueList& params = JsConstValueList(),
-        AdblockPlus::JsValuePtr thisPtr = AdblockPlus::JsValuePtr()) const;
+        const AdblockPlus::JsValuePtr& thisPtr = AdblockPlus::JsValuePtr()) const;
 
     /**
      * Invokes the value as a function (see `IsFunction()`) with single

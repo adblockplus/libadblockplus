@@ -26,7 +26,7 @@
 
 namespace AdblockPlus
 {
-  void Sleep(const int millis);
+  void Sleep(int millis);
 
   class Mutex
   {

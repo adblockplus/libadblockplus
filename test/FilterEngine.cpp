@@ -66,7 +66,7 @@ namespace
   {
     MockFilterChangeCallback(int& timesCalled) : timesCalled(timesCalled) {}
 
-    void operator()(const std::string&, const AdblockPlus::JsValuePtr)
+    void operator()(const std::string&, const AdblockPlus::JsValue&)
     {
       timesCalled++;
     }

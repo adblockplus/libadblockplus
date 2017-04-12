@@ -206,7 +206,7 @@ namespace AdblockPlus
      * for the full list).
      * The second parameter is the filter/subscription object affected, if any.
      */
-    typedef std::function<void(const std::string&, const JsValuePtr)> FilterChangeCallback;
+    typedef std::function<void(const std::string&, const JsValue&)> FilterChangeCallback;
 
     /**
      * Container of name-value pairs representing a set of preferences.
@@ -435,7 +435,7 @@ namespace AdblockPlus
      * @param pref Preference name.
      * @param value New value of the preference.
      */
-    void SetPref(const std::string& pref, JsValuePtr value);
+    void SetPref(const std::string& pref, const JsValuePtr& value);
 
     /**
      * Extracts the host from a URL.
@@ -448,7 +448,7 @@ namespace AdblockPlus
      * Sets the callback invoked when an application update becomes available.
      * @param callback Callback to invoke.
      */
-    void SetUpdateAvailableCallback(UpdateAvailableCallback callback);
+    void SetUpdateAvailableCallback(const UpdateAvailableCallback& callback);
 
     /**
      * Removes the callback invoked when an application update becomes
@@ -474,7 +474,7 @@ namespace AdblockPlus
      * Sets the callback invoked when the filters change.
      * @param callback Callback to invoke.
      */
-    void SetFilterChangeCallback(FilterChangeCallback callback);
+    void SetFilterChangeCallback(const FilterChangeCallback& callback);
 
     /**
      * Removes the callback invoked when the filters change.
@@ -534,10 +534,10 @@ namespace AdblockPlus
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,
                                const std::string& documentUrl) const;
-    void UpdateAvailable(UpdateAvailableCallback callback, JsValueList& params) const;
+    void UpdateAvailable(const UpdateAvailableCallback& callback, const JsValueList& params) const;
     void UpdateCheckDone(const std::string& eventName,
-                         UpdateCheckDoneCallback callback, JsValueList& params);
-    void FilterChanged(FilterChangeCallback callback, JsValueList& params) const;
+                         const UpdateCheckDoneCallback& callback, const JsValueList& params);
+    void FilterChanged(const FilterChangeCallback& callback, const JsValueList& params) const;
     void ShowNotification(const ShowNotificationCallback& callback,
       const JsValueList& params) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,

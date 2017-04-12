@@ -24,8 +24,8 @@
 
 namespace
 {
-  std::string ExceptionToString(const v8::Handle<v8::Value> exception,
-      const v8::Handle<v8::Message> message)
+  std::string ExceptionToString(const v8::Handle<v8::Value>& exception,
+      const v8::Handle<v8::Message>& message)
   {
     std::stringstream error;
     error << *v8::String::Utf8Value(exception);
@@ -45,8 +45,8 @@ namespace AdblockPlus
   class JsError : public std::runtime_error
   {
   public:
-    JsError(const v8::Handle<v8::Value> exception,
-            const v8::Handle<v8::Message> message);
+    JsError(const v8::Handle<v8::Value>& exception,
+            const v8::Handle<v8::Message>& message);
   };
 }
 

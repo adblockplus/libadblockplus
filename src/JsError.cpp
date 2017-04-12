@@ -17,8 +17,8 @@
 
 #include "JsError.h"
 
-AdblockPlus::JsError::JsError(const v8::Handle<v8::Value> exception,
-    const v8::Handle<v8::Message> message)
+AdblockPlus::JsError::JsError(const v8::Handle<v8::Value>& exception,
+    const v8::Handle<v8::Message>& message)
   : std::runtime_error(ExceptionToString(exception, message))
 {
 }

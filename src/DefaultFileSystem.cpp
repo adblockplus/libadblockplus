@@ -76,10 +76,10 @@ DefaultFileSystem::Read(const std::string& path) const
 }
 
 void DefaultFileSystem::Write(const std::string& path,
-                              std::shared_ptr<std::istream> data)
+                              std::istream& data)
 {
   std::ofstream file(NormalizePath(path).c_str(), std::ios_base::out | std::ios_base::binary);
-  file << Utils::Slurp(*data);
+  file << Utils::Slurp(data);
 }
 
 void DefaultFileSystem::Move(const std::string& fromPath,

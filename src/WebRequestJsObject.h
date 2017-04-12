@@ -27,7 +27,7 @@ namespace AdblockPlus
 
   namespace WebRequestJsObject
   {
-    JsValuePtr Setup(JsEnginePtr jsEngine, JsValuePtr obj);
+    JsValuePtr Setup(JsEngine& jsEngine, const JsValuePtr& obj);
   }
 }
 

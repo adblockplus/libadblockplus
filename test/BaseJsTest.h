@@ -40,7 +40,7 @@ public:
     throw std::runtime_error("Not implemented");
   }
 
-  void Write(const std::string& path, std::shared_ptr<std::istream> content)
+  void Write(const std::string& path, std::istream& content)
   {
     throw std::runtime_error("Not implemented");
   }
@@ -89,7 +89,7 @@ public:
     return std::shared_ptr<std::istream>(new std::istringstream(dummyData));
   }
 
-  void Write(const std::string& path, std::shared_ptr<std::istream> content)
+  void Write(const std::string& path, std::istream& content)
   {
   }
 

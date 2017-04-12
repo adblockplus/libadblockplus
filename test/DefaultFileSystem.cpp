@@ -26,8 +26,8 @@ namespace
   void WriteString(AdblockPlus::FileSystem& fileSystem,
                    const std::string& content)
   {
-    std::shared_ptr<std::stringstream> input(new std::stringstream);
-    *input << content;
+    std::stringstream input;
+    input << content;
     fileSystem.Write(testPath, input);
   }
 }

@@ -207,7 +207,7 @@ std::string AdblockPlus::JsValue::GetClass() const
   return Utils::FromV8String(obj->GetConstructorName());
 }
 
-JsValue JsValue::Call(const JsConstValueList& params, JsValuePtr thisPtr) const
+JsValue JsValue::Call(const JsConstValueList& params, const JsValuePtr& thisPtr) const
 {
   const JsContext context(jsEngine);
   v8::Local<v8::Object> thisObj = thisPtr ?

@@ -23,8 +23,7 @@
 
 using namespace AdblockPlus;
 
-JsValuePtr AppInfoJsObject::Setup(JsEnginePtr jsEngine, const AppInfo& appInfo,
-    JsValuePtr obj)
+JsValuePtr AppInfoJsObject::Setup(const AppInfo& appInfo, const JsValuePtr& obj)
 {
   obj->SetProperty("version", appInfo.version);
   obj->SetProperty("name", appInfo.name);
