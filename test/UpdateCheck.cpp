@@ -54,7 +54,7 @@ namespace
     FilterEnginePtr filterEngine;
 
     bool eventCallbackCalled;
-    AdblockPlus::JsValueList eventCallbackParams;
+    AdblockPlus::JsConstValueList eventCallbackParams;
     bool updateCallbackCalled;
     std::string updateError;
 
@@ -86,7 +86,7 @@ namespace
           std::bind(&UpdateCheckTest::UpdateCallback, this, std::placeholders::_1));
     }
 
-    void EventCallback(const AdblockPlus::JsValueList& params)
+    void EventCallback(const AdblockPlus::JsConstValueList& params)
     {
       eventCallbackCalled = true;
       eventCallbackParams = params;

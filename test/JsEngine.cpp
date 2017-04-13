@@ -67,9 +67,9 @@ TEST_F(JsEngineTest, ValueCreation)
 TEST_F(JsEngineTest, EventCallbacks)
 {
   bool callbackCalled = false;
-  AdblockPlus::JsValueList callbackParams;
+  AdblockPlus::JsConstValueList callbackParams;
   auto Callback = [&callbackCalled, & callbackParams](
-    const AdblockPlus::JsValueList& params)
+    const AdblockPlus::JsConstValueList& params)
   {
     callbackCalled = true;
     callbackParams = params;

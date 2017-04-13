@@ -534,12 +534,12 @@ namespace AdblockPlus
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,
                                const std::string& documentUrl) const;
-    void UpdateAvailable(const UpdateAvailableCallback& callback, const JsValueList& params) const;
+    void UpdateAvailable(const UpdateAvailableCallback& callback, const JsConstValueList& params) const;
     void UpdateCheckDone(const std::string& eventName,
-                         const UpdateCheckDoneCallback& callback, const JsValueList& params);
-    void FilterChanged(const FilterChangeCallback& callback, const JsValueList& params) const;
+                         const UpdateCheckDoneCallback& callback, const JsConstValueList& params);
+    void FilterChanged(const FilterChangeCallback& callback, const JsConstValueList& params) const;
     void ShowNotification(const ShowNotificationCallback& callback,
-      const JsValueList& params) const;
+      const JsConstValueList& param) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
       ContentTypeMask contentTypeMask, const std::string& documentUrl) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,

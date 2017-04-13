@@ -93,7 +93,7 @@ namespace AdblockPlus
     /**
      * Event callback function.
      */
-    typedef std::function<void(const JsValueList& params)> EventCallback;
+    typedef std::function<void(const JsConstValueList& params)> EventCallback;
 
     /**
     * Callback function returning false when current connection is not allowed
@@ -137,7 +137,7 @@ namespace AdblockPlus
      * @param eventName Event name.
      * @param params Event parameters.
      */
-    void TriggerEvent(const std::string& eventName, const JsValueList& params);
+    void TriggerEvent(const std::string& eventName, const JsConstValueList& params);
 
     /**
      * Evaluates a JavaScript expression.
@@ -215,9 +215,9 @@ namespace AdblockPlus
      * Converts v8 arguments to `JsValue` objects.
      * @param arguments `v8::Arguments` object containing the arguments to
      *        convert.
-     * @return List of arguments converted to `JsValue` objects.
+     * @return List of arguments converted to `const JsValue` objects.
      */
-    JsValueList ConvertArguments(const v8::Arguments& arguments);
+    JsConstValueList ConvertArguments(const v8::Arguments& arguments);
 
     /**
      * @see `SetFileSystem()`.

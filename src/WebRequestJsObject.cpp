@@ -29,14 +29,14 @@ namespace
   class WebRequestThread : public AdblockPlus::Thread
   {
   public:
-    WebRequestThread(const AdblockPlus::JsEnginePtr& jsEngine, const AdblockPlus::JsValueList& arguments)
+    WebRequestThread(const AdblockPlus::JsEnginePtr& jsEngine, const AdblockPlus::JsConstValueList& arguments)
         : Thread(true), jsEngine(jsEngine), url(arguments[0]->AsString())
     {
       if (!url.length())
         throw std::runtime_error("Invalid string passed as first argument to GET");
 
       {
-        AdblockPlus::JsValuePtr headersObj = arguments[1];
+        AdblockPlus::JsConstValuePtr headersObj = arguments[1];
         if (!headersObj->IsObject())
           throw std::runtime_error("Second argument to GET must be an object");
 
@@ -90,7 +90,7 @@ namespace
     AdblockPlus::JsEnginePtr jsEngine;
     std::string url;
     AdblockPlus::HeaderList headers;
-    AdblockPlus::JsValuePtr callback;
+    AdblockPlus::JsConstValuePtr callback;
   };
 
   v8::Handle<v8::Value> GETCallback(const v8::Arguments& arguments)
@@ -99,7 +99,7 @@ namespace
     try
     {
       AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-      AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+      AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
       if (converted.size() != 3u)
         throw std::runtime_error("GET requires exactly 3 arguments");
       thread = new WebRequestThread(jsEngine, converted);

@@ -136,6 +136,12 @@ namespace AdblockPlus
     JsValue Call(const JsValue& arg) const;
 
     v8::Local<v8::Value> UnwrapValue() const;
+
+    /**
+     * Creates a new `JsValue` wrapper for the same JavaScript value.
+     * @return Value new `JsValue`
+     */
+    JsValue Clone() const;
   protected:
     JsEnginePtr jsEngine;
   private:

@@ -234,7 +234,7 @@ namespace
         capturedConnectionTypes.Add(allowedConnectionType);
         return isConnectionAllowed;
       };
-      jsEngine->SetEventCallback("filterChange", [this](const JsValueList& params/*action, item*/)
+      jsEngine->SetEventCallback("filterChange", [this](const JsConstValueList& params/*action, item*/)
       {
         ASSERT_EQ(2u, params.size());
         if (params[0]->AsString() == "subscription.downloadStatus")

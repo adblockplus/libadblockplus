@@ -33,7 +33,7 @@ namespace
   class IoThread : public Thread
   {
   public:
-    IoThread(JsEnginePtr jsEngine, JsValuePtr callback)
+    IoThread(const JsEnginePtr& jsEngine, const JsConstValuePtr& callback)
       : Thread(true), jsEngine(jsEngine), fileSystem(jsEngine->GetFileSystem()),
         callback(callback)
     {
@@ -42,13 +42,13 @@ namespace
   protected:
     JsEnginePtr jsEngine;
     FileSystemPtr fileSystem;
-    JsValuePtr callback;
+    JsConstValuePtr callback;
   };
 
   class ReadThread : public IoThread
   {
   public:
-    ReadThread(JsEnginePtr jsEngine, JsValuePtr callback,
+    ReadThread(const JsEnginePtr& jsEngine, const JsConstValuePtr& callback,
                const std::string& path)
       : IoThread(jsEngine, callback), path(path)
     {
@@ -88,7 +88,7 @@ namespace
   class WriteThread : public IoThread
   {
   public:
-    WriteThread(JsEnginePtr jsEngine, JsValuePtr callback,
+    WriteThread(const JsEnginePtr& jsEngine, const JsConstValuePtr& callback,
                 const std::string& path, const std::string& content)
       : IoThread(jsEngine, callback), path(path), content(content)
     {
@@ -127,7 +127,7 @@ namespace
   class MoveThread : public IoThread
   {
   public:
-    MoveThread(JsEnginePtr jsEngine, JsValuePtr callback,
+    MoveThread(const JsEnginePtr& jsEngine, const JsConstValuePtr& callback,
                const std::string& fromPath, const std::string& toPath)
       : IoThread(jsEngine, callback), fromPath(fromPath), toPath(toPath)
     {
@@ -164,7 +164,7 @@ namespace
   class RemoveThread : public IoThread
   {
   public:
-    RemoveThread(JsEnginePtr jsEngine, JsValuePtr callback,
+    RemoveThread(const JsEnginePtr& jsEngine, const JsConstValuePtr& callback,
                  const std::string& path)
       : IoThread(jsEngine, callback), path(path)
     {
@@ -201,7 +201,7 @@ namespace
   class StatThread : public IoThread
   {
   public:
-    StatThread(JsEnginePtr jsEngine, JsValuePtr callback,
+    StatThread(const JsEnginePtr& jsEngine, const JsConstValuePtr& callback,
                const std::string& path)
       : IoThread(jsEngine, callback), path(path)
     {
@@ -244,7 +244,7 @@ namespace
   v8::Handle<v8::Value> ReadCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 2)
@@ -262,7 +262,7 @@ namespace
   v8::Handle<v8::Value> WriteCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 3)
@@ -280,7 +280,7 @@ namespace
   v8::Handle<v8::Value> MoveCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 3)
@@ -298,7 +298,7 @@ namespace
   v8::Handle<v8::Value> RemoveCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 2)
@@ -316,7 +316,7 @@ namespace
   v8::Handle<v8::Value> StatCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 2)
@@ -334,7 +334,7 @@ namespace
   v8::Handle<v8::Value> ResolveCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
     if (converted.size() != 1)

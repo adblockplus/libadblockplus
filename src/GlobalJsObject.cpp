@@ -54,7 +54,7 @@ namespace
   v8::Handle<v8::Value> TriggerEventCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
     if (converted.size() < 1)
     {
       v8::Isolate* isolate = arguments.GetIsolate();

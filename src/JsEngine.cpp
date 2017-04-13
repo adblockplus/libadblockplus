@@ -186,7 +186,7 @@ void AdblockPlus::JsEngine::RemoveEventCallback(const std::string& eventName)
   eventCallbacks.erase(eventName);
 }
 
-void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, const AdblockPlus::JsValueList& params)
+void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, const AdblockPlus::JsConstValueList& params)
 {
   EventCallback callback;
   {
@@ -256,10 +256,10 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::Argument
   return result;
 }
 
-AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Arguments& arguments)
+AdblockPlus::JsConstValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Arguments& arguments)
 {
   const JsContext context(shared_from_this());
-  JsValueList list;
+  JsConstValueList list;
   for (int i = 0; i < arguments.Length(); i++)
     list.push_back(JsValuePtr(new JsValue(shared_from_this(), arguments[i])));
   return list;

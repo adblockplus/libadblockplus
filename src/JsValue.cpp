@@ -173,6 +173,11 @@ v8::Local<v8::Value> AdblockPlus::JsValue::UnwrapValue() const
   return v8::Local<v8::Value>::New(jsEngine->GetIsolate(), *value);
 }
 
+JsValue AdblockPlus::JsValue::Clone() const
+{
+  return JsValue(jsEngine, UnwrapValue());
+}
+
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::string& val)
 {
   const JsContext context(jsEngine);

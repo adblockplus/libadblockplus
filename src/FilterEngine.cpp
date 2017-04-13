@@ -173,7 +173,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       sync->Wait();
       return jsEngine->IsConnectionAllowed();
     });
-  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated, sync, isConnectionAllowedCallback](const JsValueList& params)
+  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated, sync, isConnectionAllowedCallback](const JsConstValueList& params)
   {
     filterEngine->firstRun = params.size() && params[0]->AsBool();
     if (isConnectionAllowedCallback)
@@ -462,7 +462,7 @@ void FilterEngine::RemoveUpdateAvailableCallback()
 }
 
 void FilterEngine::UpdateAvailable(
-    const FilterEngine::UpdateAvailableCallback& callback, const JsValueList& params) const
+    const FilterEngine::UpdateAvailableCallback& callback, const JsConstValueList& params) const
 {
   if (params.size() >= 1 && !params[0]->IsNull())
     callback(params[0]->AsString());
@@ -484,7 +484,7 @@ void FilterEngine::ForceUpdateCheck(
 }
 
 void FilterEngine::UpdateCheckDone(const std::string& eventName,
-    const FilterEngine::UpdateCheckDoneCallback& callback, const JsValueList& params)
+    const FilterEngine::UpdateCheckDoneCallback& callback, const JsConstValueList& params)
 {
   jsEngine->RemoveEventCallback(eventName);
 
@@ -516,15 +516,15 @@ std::unique_ptr<std::string> FilterEngine::GetAllowedConnectionType() const
    return std::unique_ptr<std::string>(new std::string(prefValue->AsString()));
 }
 
-void FilterEngine::FilterChanged(const FilterEngine::FilterChangeCallback& callback, const JsValueList& params) const
+void FilterEngine::FilterChanged(const FilterEngine::FilterChangeCallback& callback, const JsConstValueList& params) const
 {
   std::string action(params.size() >= 1 && !params[0]->IsNull() ? params[0]->AsString() : "");
-  JsValuePtr item(params.size() >= 2 ? params[1] : jsEngine->NewValue(false));
+  JsConstValuePtr item(params.size() >= 2 ? params[1] : jsEngine->NewValue(false));
   callback(action, *item);
 }
 
 void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
-                                         const JsValueList& params) const
+                                         const JsConstValueList& params) const
 {
   if (params.size() < 1)
     return;
@@ -533,7 +533,7 @@ void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
   {
     return;
   }
-  callback(NotificationPtr(new Notification(std::move(*params[0]))));
+  callback(NotificationPtr(new Notification(params[0]->Clone())));
 }
 
 
