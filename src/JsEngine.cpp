@@ -231,7 +231,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewObject()
   return JsValuePtr(new JsValue(shared_from_this(), v8::Object::New()));
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewCallback(
+AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(
     const v8::InvocationCallback& callback)
 {
   const JsContext context(shared_from_this());
@@ -242,7 +242,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewCallback(
       new std::weak_ptr<JsEngine>(shared_from_this());
   v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(callback,
       v8::External::New(data));
-  return JsValuePtr(new JsValue(shared_from_this(), templ->GetFunction()));
+  return JsValue(shared_from_this(), templ->GetFunction());
 }
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::Arguments& arguments)

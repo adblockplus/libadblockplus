@@ -118,6 +118,6 @@ namespace
 AdblockPlus::JsValue& AdblockPlus::WebRequestJsObject::Setup(
     AdblockPlus::JsEngine& jsEngine, AdblockPlus::JsValue& obj)
 {
-  obj.SetProperty("GET", *jsEngine.NewCallback(::GETCallback));
+  obj.SetProperty("GET", jsEngine.NewCallback(::GETCallback));
   return obj;
 }

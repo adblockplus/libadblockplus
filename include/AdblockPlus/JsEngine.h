@@ -192,7 +192,7 @@ namespace AdblockPlus
      *        the current `JsEngine`.
      * @return New `JsValue` instance.
      */
-    JsValuePtr NewCallback(const v8::InvocationCallback& callback);
+    JsValue NewCallback(const v8::InvocationCallback& callback);
 
     /**
      * Returns a `JsEngine` instance contained in a `v8::Arguments` object.

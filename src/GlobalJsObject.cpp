@@ -71,8 +71,8 @@ namespace
 JsValue& GlobalJsObject::Setup(JsEngine& jsEngine, const AppInfo& appInfo,
     JsValue& obj)
 {
-  obj.SetProperty("setTimeout", *jsEngine.NewCallback(::SetTimeoutCallback));
-  obj.SetProperty("_triggerEvent", *jsEngine.NewCallback(::TriggerEventCallback));
+  obj.SetProperty("setTimeout", jsEngine.NewCallback(::SetTimeoutCallback));
+  obj.SetProperty("_triggerEvent", jsEngine.NewCallback(::TriggerEventCallback));
   obj.SetProperty("_fileSystem",
       FileSystemJsObject::Setup(jsEngine, *jsEngine.NewObject()));
   obj.SetProperty("_webRequest",

@@ -351,11 +351,11 @@ namespace
 
 JsValue& FileSystemJsObject::Setup(JsEngine& jsEngine, JsValue& obj)
 {
-  obj.SetProperty("read", *jsEngine.NewCallback(::ReadCallback));
-  obj.SetProperty("write", *jsEngine.NewCallback(::WriteCallback));
-  obj.SetProperty("move", *jsEngine.NewCallback(::MoveCallback));
-  obj.SetProperty("remove", *jsEngine.NewCallback(::RemoveCallback));
-  obj.SetProperty("stat", *jsEngine.NewCallback(::StatCallback));
-  obj.SetProperty("resolve", *jsEngine.NewCallback(::ResolveCallback));
+  obj.SetProperty("read", jsEngine.NewCallback(::ReadCallback));
+  obj.SetProperty("write", jsEngine.NewCallback(::WriteCallback));
+  obj.SetProperty("move", jsEngine.NewCallback(::MoveCallback));
+  obj.SetProperty("remove", jsEngine.NewCallback(::RemoveCallback));
+  obj.SetProperty("stat", jsEngine.NewCallback(::StatCallback));
+  obj.SetProperty("resolve", jsEngine.NewCallback(::ResolveCallback));
   return obj;
 }
