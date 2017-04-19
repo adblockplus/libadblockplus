@@ -29,12 +29,12 @@ namespace
     for (SubscriptionList::const_iterator it = subscriptions.begin();
          it != subscriptions.end(); it++)
     {
-      std::cout << (*it)->GetProperty("title")->AsString();
-      std::cout << " - " << (*it)->GetProperty("url")->AsString();
-      if (!(*it)->GetProperty("author")->IsUndefined())
-        std::cout << " - " << (*it)->GetProperty("author")->AsString();
-      if (!(*it)->GetProperty("specialization")->IsUndefined())
-        std::cout << " - " << (*it)->GetProperty("specialization")->AsString();
+      std::cout << (*it)->GetProperty("title").AsString();
+      std::cout << " - " << (*it)->GetProperty("url").AsString();
+      if (!(*it)->GetProperty("author").IsUndefined())
+        std::cout << " - " << (*it)->GetProperty("author").AsString();
+      if (!(*it)->GetProperty("specialization").IsUndefined())
+        std::cout << " - " << (*it)->GetProperty("specialization").AsString();
       std::cout << std::endl;
     }
   }

@@ -27,7 +27,7 @@ namespace AdblockPlus
 
   namespace AppInfoJsObject
   {
-    JsValuePtr Setup(const AppInfo& appInfo, const JsValuePtr& obj);
+    JsValue& Setup(const AppInfo& appInfo, JsValue& obj);
   }
 }
 

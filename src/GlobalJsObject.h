@@ -28,7 +28,7 @@ namespace AdblockPlus
 
   namespace GlobalJsObject
   {
-    JsValuePtr Setup(JsEngine& jsEngine, const AppInfo& appInfo, const JsValuePtr& obj);
+    JsValue& Setup(JsEngine& jsEngine, const AppInfo& appInfo, JsValue& obj);
   }
 }
 

@@ -53,9 +53,9 @@ void MatchesCommand::operator()(const std::string& arguments)
   if (!match)
     std::cout << "No match" << std::endl;
   else if (match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
-    std::cout << "Whitelisted by " << match->GetProperty("text")->AsString() << std::endl;
+    std::cout << "Whitelisted by " << match->GetProperty("text").AsString() << std::endl;
   else
-    std::cout << "Blocked by " << match->GetProperty("text")->AsString() << std::endl;
+    std::cout << "Blocked by " << match->GetProperty("text").AsString() << std::endl;
 }
 
 std::string MatchesCommand::GetDescription() const

@@ -43,7 +43,7 @@ namespace
         std::vector<std::string> properties = headersObj->GetOwnPropertyNames();
         for (const auto& header : properties)
         {
-          std::string headerValue = headersObj->GetProperty(header)->AsString();
+          std::string headerValue = headersObj->GetProperty(header).AsString();
           if (header.length() && headerValue.length())
             headers.push_back(std::pair<std::string, std::string>(header, headerValue));
         }
@@ -79,7 +79,7 @@ namespace
       {
         headersObject->SetProperty(header.first, header.second);
       }
-      resultObject->SetProperty("responseHeaders", headersObject);
+      resultObject->SetProperty("responseHeaders", *headersObject);
 
       AdblockPlus::JsConstValueList params;
       params.push_back(resultObject);
@@ -115,9 +115,9 @@ namespace
   }
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::WebRequestJsObject::Setup(
-    AdblockPlus::JsEngine& jsEngine, const AdblockPlus::JsValuePtr& obj)
+AdblockPlus::JsValue& AdblockPlus::WebRequestJsObject::Setup(
+    AdblockPlus::JsEngine& jsEngine, AdblockPlus::JsValue& obj)
 {
-  obj->SetProperty("GET", jsEngine.NewCallback(::GETCallback));
+  obj.SetProperty("GET", *jsEngine.NewCallback(::GETCallback));
   return obj;
 }

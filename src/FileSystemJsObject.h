@@ -27,7 +27,7 @@ namespace AdblockPlus
 
   namespace FileSystemJsObject
   {
-    JsValuePtr Setup(JsEngine& jsEngine, const JsValuePtr& obj);
+    JsValue& Setup(JsEngine& jsEngine, JsValue& obj);
   }
 }
 

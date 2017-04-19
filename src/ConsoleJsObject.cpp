@@ -104,14 +104,14 @@ namespace
   }
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::ConsoleJsObject::Setup(
-    AdblockPlus::JsEngine& jsEngine, const AdblockPlus::JsValuePtr& obj)
+AdblockPlus::JsValue& AdblockPlus::ConsoleJsObject::Setup(
+    AdblockPlus::JsEngine& jsEngine, AdblockPlus::JsValue& obj)
 {
-  obj->SetProperty("log", jsEngine.NewCallback(::LogCallback));
-  obj->SetProperty("debug", jsEngine.NewCallback(::DebugCallback));
-  obj->SetProperty("info", jsEngine.NewCallback(::InfoCallback));
-  obj->SetProperty("warn", jsEngine.NewCallback(::WarnCallback));
-  obj->SetProperty("error", jsEngine.NewCallback(::ErrorCallback));
-  obj->SetProperty("trace", jsEngine.NewCallback(::TraceCallback));
+  obj.SetProperty("log", *jsEngine.NewCallback(::LogCallback));
+  obj.SetProperty("debug", *jsEngine.NewCallback(::DebugCallback));
+  obj.SetProperty("info", *jsEngine.NewCallback(::InfoCallback));
+  obj.SetProperty("warn", *jsEngine.NewCallback(::WarnCallback));
+  obj.SetProperty("error", *jsEngine.NewCallback(::ErrorCallback));
+  obj.SetProperty("trace", *jsEngine.NewCallback(::TraceCallback));
   return obj;
 }

@@ -64,22 +64,22 @@ Notification::Notification(JsValue&& jsValue)
 
 NotificationType Notification::GetType() const
 {
-  return StringToNotificationType(GetProperty("type")->AsString());
+  return StringToNotificationType(GetProperty("type").AsString());
 }
 
 NotificationTexts Notification::GetTexts() const
 {
   JsValue jsTexts = jsEngine->Evaluate("API.getNotificationTexts")->Call(*this);
   NotificationTexts notificationTexts;
-  JsValuePtr jsTitle = jsTexts.GetProperty("title");
-  if (jsTitle->IsString())
+  JsValue jsTitle = jsTexts.GetProperty("title");
+  if (jsTitle.IsString())
   {
-    notificationTexts.title = jsTitle->AsString();
+    notificationTexts.title = jsTitle.AsString();
   }
-  JsValuePtr jsMessage = jsTexts.GetProperty("message");
-  if (jsMessage->IsString())
+  JsValue jsMessage = jsTexts.GetProperty("message");
+  if (jsMessage.IsString())
   {
-    notificationTexts.message = jsMessage->AsString();
+    notificationTexts.message = jsMessage.AsString();
   }
   return notificationTexts;
 }
@@ -87,12 +87,12 @@ NotificationTexts Notification::GetTexts() const
 std::vector<std::string> Notification::GetLinks() const
 {
   std::vector<std::string> retValue;
-  JsValuePtr jsLinks = GetProperty("links");
-  if (!jsLinks->IsArray())
+  JsValue jsLinks = GetProperty("links");
+  if (!jsLinks.IsArray())
   {
     return retValue;
   }
-  JsValueList urlLinksList = jsLinks->AsList();
+  JsValueList urlLinksList = jsLinks.AsList();
   for (const auto& link : urlLinksList)
   {
     retValue.push_back(link->AsString());
@@ -102,5 +102,5 @@ std::vector<std::string> Notification::GetLinks() const
 
 void Notification::MarkAsShown()
 {
-  jsEngine->Evaluate("API.markNotificationAsShown")->Call(*GetProperty("id"));
+  jsEngine->Evaluate("API.markNotificationAsShown")->Call(GetProperty("id"));
 }

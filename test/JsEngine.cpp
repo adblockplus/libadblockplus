@@ -128,7 +128,7 @@ TEST(NewJsEngineTest, CallbackGetSet)
 TEST(NewJsEngineTest, GlobalPropertyTest)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  jsEngine->SetGlobalProperty("foo", jsEngine->NewValue("bar"));
+  jsEngine->SetGlobalProperty("foo", *jsEngine->NewValue("bar"));
   AdblockPlus::JsValuePtr foo = jsEngine->Evaluate("foo");
   ASSERT_TRUE(foo->IsString());
   ASSERT_EQ(foo->AsString(), "bar");

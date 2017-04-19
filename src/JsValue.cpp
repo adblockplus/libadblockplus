@@ -147,7 +147,7 @@ std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
 }
 
 
-AdblockPlus::JsValuePtr AdblockPlus::JsValue::GetProperty(const std::string& name) const
+AdblockPlus::JsValue AdblockPlus::JsValue::GetProperty(const std::string& name) const
 {
   if (!IsObject())
     throw new std::runtime_error("Attempting to get property of a non-object");
@@ -155,7 +155,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsValue::GetProperty(const std::string& nam
   const JsContext context(jsEngine);
   v8::Local<v8::String> property = Utils::ToV8String(jsEngine->GetIsolate(), name);
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
-  return JsValuePtr(new JsValue(jsEngine, obj->Get(property)));
+  return JsValue(jsEngine, obj->Get(property));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Handle<v8::Value> val)
@@ -190,10 +190,10 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)
   SetProperty(name, v8::Number::New(jsEngine->GetIsolate(), val));
 }
 
-void AdblockPlus::JsValue::SetProperty(const std::string& name, const JsValuePtr& val)
+void AdblockPlus::JsValue::SetProperty(const std::string& name, const JsValue& val)
 {
   const JsContext context(jsEngine);
-  SetProperty(name, val->UnwrapValue());
+  SetProperty(name, val.UnwrapValue());
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)

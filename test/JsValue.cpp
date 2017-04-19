@@ -153,11 +153,11 @@ TEST_F(JsValueTest, ObjectValue)
   ASSERT_EQ(123, value->AsInt());
   ASSERT_TRUE(value->AsBool());
   ASSERT_ANY_THROW(value->AsList());
-  ASSERT_EQ(2, value->GetProperty("x")->AsInt());
+  ASSERT_EQ(2, value->GetProperty("x").AsInt());
   value->SetProperty("x", 12);
-  ASSERT_EQ(12, value->GetProperty("x")->AsInt());
-  value->SetProperty("x", jsEngine->NewValue(15));
-  ASSERT_EQ(15, value->GetProperty("x")->AsInt());
+  ASSERT_EQ(12, value->GetProperty("x").AsInt());
+  value->SetProperty("x", *jsEngine->NewValue(15));
+  ASSERT_EQ(15, value->GetProperty("x").AsInt());
   ASSERT_EQ("Foo", value->GetClass());
   ASSERT_EQ(3u, value->GetOwnPropertyNames().size());
   ASSERT_ANY_THROW(value->Call());
@@ -178,7 +178,7 @@ TEST_F(JsValueTest, ArrayValue)
   ASSERT_TRUE(value->AsBool());
   ASSERT_EQ(3u, value->AsList().size());
   ASSERT_EQ(8, value->AsList()[1]->AsInt());
-  ASSERT_EQ(3, value->GetProperty("length")->AsInt());
+  ASSERT_EQ(3, value->GetProperty("length").AsInt());
   ASSERT_EQ("Array", value->GetClass());
   ASSERT_ANY_THROW(value->Call());
 }
@@ -196,7 +196,7 @@ TEST_F(JsValueTest, FunctionValue)
   ASSERT_TRUE(value->IsFunction());
   ASSERT_TRUE(value->AsBool());
   ASSERT_ANY_THROW(value->AsList());
-  ASSERT_EQ(2, value->GetProperty("length")->AsInt());
+  ASSERT_EQ(2, value->GetProperty("length").AsInt());
 
   AdblockPlus::JsValuePtr thisPtr = jsEngine->Evaluate("({x:2})");
   AdblockPlus::JsConstValueList params;

@@ -74,7 +74,7 @@ void Filter::RemoveFromList()
 
 bool Filter::operator==(const Filter& filter) const
 {
-  return GetProperty("text")->AsString() == filter.GetProperty("text")->AsString();
+  return GetProperty("text").AsString() == filter.GetProperty("text").AsString();
 }
 
 Subscription::Subscription(JsValue&& value)
@@ -121,7 +121,7 @@ bool Subscription::IsAA() const
 
 bool Subscription::operator==(const Subscription& subscription) const
 {
-  return GetProperty("url")->AsString() == subscription.GetProperty("url")->AsString();
+  return GetProperty("url").AsString() == subscription.GetProperty("url").AsString();
 }
 
 namespace
@@ -201,9 +201,9 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
   for (FilterEngine::Prefs::const_iterator it = params.preconfiguredPrefs.begin();
     it != params.preconfiguredPrefs.end(); it++)
   {
-    preconfiguredPrefsObject->SetProperty(it->first, it->second);
+    preconfiguredPrefsObject->SetProperty(it->first, *it->second);
   }
-  jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
+  jsEngine->SetGlobalProperty("_preconfiguredPrefs", *preconfiguredPrefsObject);
   // Load adblockplus scripts
   for (int i = 0; !jsSources[i].empty(); i += 2)
     jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);

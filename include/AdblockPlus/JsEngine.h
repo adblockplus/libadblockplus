@@ -277,7 +277,7 @@ namespace AdblockPlus
      * @param name Name of the property to set.
      * @param value Value of the property to set.
      */
-    void SetGlobalProperty(const std::string& name, const AdblockPlus::JsValuePtr& value);
+    void SetGlobalProperty(const std::string& name, const AdblockPlus::JsValue& value);
 
     /**
      * Returns a pointer to associated v8::Isolate.
@@ -298,7 +298,7 @@ namespace AdblockPlus
 
     explicit JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer);
 
-    JsValuePtr GetGlobalObject();
+    JsValue GetGlobalObject();
 
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.

@@ -54,7 +54,7 @@ namespace
           type = "(unknown type)";
           break;
       }
-      std::cout << (*it)->GetProperty("text")->AsString() << " - " <<
+      std::cout << (*it)->GetProperty("text").AsString() << " - " <<
           type << std::endl;
     }
   }
