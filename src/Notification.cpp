@@ -69,7 +69,7 @@ NotificationType Notification::GetType() const
 
 NotificationTexts Notification::GetTexts() const
 {
-  JsValue jsTexts = jsEngine->Evaluate("API.getNotificationTexts")->Call(*this);
+  JsValue jsTexts = jsEngine->Evaluate("API.getNotificationTexts").Call(*this);
   NotificationTexts notificationTexts;
   JsValue jsTitle = jsTexts.GetProperty("title");
   if (jsTitle.IsString())
@@ -102,5 +102,5 @@ std::vector<std::string> Notification::GetLinks() const
 
 void Notification::MarkAsShown()
 {
-  jsEngine->Evaluate("API.markNotificationAsShown")->Call(GetProperty("id"));
+  jsEngine->Evaluate("API.markNotificationAsShown").Call(GetProperty("id"));
 }

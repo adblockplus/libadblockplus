@@ -122,7 +122,7 @@ namespace
     do
     {
       AdblockPlus::Sleep(60);
-    } while (jsEngine->Evaluate(variable)->IsUndefined());
+    } while (jsEngine->Evaluate(variable).IsUndefined());
   }
 
 }
@@ -140,12 +140,12 @@ TEST_F(MockWebRequestTest, BadCall)
 TEST_F(MockWebRequestTest, SuccessfulRequest)
 {
   jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
-  ASSERT_TRUE(jsEngine->Evaluate("this.foo")->IsUndefined());
+  ASSERT_TRUE(jsEngine->Evaluate("this.foo").IsUndefined());
   AdblockPlus::Sleep(200);
-  ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
-  ASSERT_EQ(123, jsEngine->Evaluate("foo.responseStatus")->AsInt());
-  ASSERT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText")->AsString());
-  ASSERT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+  ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status").AsInt());
+  ASSERT_EQ(123, jsEngine->Evaluate("foo.responseStatus").AsInt());
+  ASSERT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText").AsString());
+  ASSERT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
 }
 
 #if defined(HAVE_CURL) || defined(_WIN32)
@@ -155,15 +155,15 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
   // should get the actual filter list back.
   jsEngine->Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   WaitForVariable("this.foo", jsEngine);
-  ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)")->AsString());
-  ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status")->AsInt());
-  ASSERT_EQ(200, jsEngine->Evaluate("foo.responseStatus")->AsInt());
-  ASSERT_EQ("[Adblock Plus ", jsEngine->Evaluate("foo.responseText.substr(0, 14)")->AsString());
-  ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)")->AsString());
+  ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
+  ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("foo.status").AsInt());
+  ASSERT_EQ(200, jsEngine->Evaluate("foo.responseStatus").AsInt());
+  ASSERT_EQ("[Adblock Plus ", jsEngine->Evaluate("foo.responseText.substr(0, 14)").AsString());
+  ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
 #if defined(HAVE_CURL)
-  ASSERT_EQ("gzip", jsEngine->Evaluate("foo.responseHeaders['content-encoding'].substr(0, 4)")->AsString());
+  ASSERT_EQ("gzip", jsEngine->Evaluate("foo.responseHeaders['content-encoding'].substr(0, 4)").AsString());
 #endif
-  ASSERT_TRUE(jsEngine->Evaluate("foo.responseHeaders['location']")->IsUndefined());
+  ASSERT_TRUE(jsEngine->Evaluate("foo.responseHeaders['location']").IsUndefined());
 }
 
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
@@ -176,24 +176,24 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
     request.setRequestHeader('X2', 'Y2');\
     request.send(null);");
   WaitForVariable("result", jsEngine);
-  ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("request.channel.status")->AsInt());
-  ASSERT_EQ(200, jsEngine->Evaluate("request.status")->AsInt());
-  ASSERT_EQ("[Adblock Plus ", jsEngine->Evaluate("result.substr(0, 14)")->AsString());
-  ASSERT_EQ("text/plain", jsEngine->Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)")->AsString());
+  ASSERT_EQ(AdblockPlus::WebRequest::NS_OK, jsEngine->Evaluate("request.channel.status").AsInt());
+  ASSERT_EQ(200, jsEngine->Evaluate("request.status").AsInt());
+  ASSERT_EQ("[Adblock Plus ", jsEngine->Evaluate("result.substr(0, 14)").AsString());
+  ASSERT_EQ("text/plain", jsEngine->Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)").AsString());
 #if defined(HAVE_CURL)
-  ASSERT_EQ("gzip", jsEngine->Evaluate("request.getResponseHeader('Content-Encoding').substr(0, 4)")->AsString());
+  ASSERT_EQ("gzip", jsEngine->Evaluate("request.getResponseHeader('Content-Encoding').substr(0, 4)").AsString());
 #endif
-  ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Location')")->IsNull());
+  ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Location')").IsNull());
 }
 #else
 TEST_F(DefaultWebRequestTest, DummyWebRequest)
 {
   jsEngine->Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   WaitForVariable("this.foo", jsEngine);
-  ASSERT_EQ(AdblockPlus::WebRequest::NS_ERROR_FAILURE, jsEngine->Evaluate("foo.status")->AsInt());
-  ASSERT_EQ(0, jsEngine->Evaluate("foo.responseStatus")->AsInt());
-  ASSERT_EQ("", jsEngine->Evaluate("foo.responseText")->AsString());
-  ASSERT_EQ("{}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)")->AsString());
+  ASSERT_EQ(AdblockPlus::WebRequest::NS_ERROR_FAILURE, jsEngine->Evaluate("foo.status").AsInt());
+  ASSERT_EQ(0, jsEngine->Evaluate("foo.responseStatus").AsInt());
+  ASSERT_EQ("", jsEngine->Evaluate("foo.responseText").AsString());
+  ASSERT_EQ("{}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
 }
 
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
@@ -205,10 +205,10 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
     request.setRequestHeader('X', 'Y');\
     request.send(null);");
   WaitForVariable("result", jsEngine);
-  ASSERT_EQ(AdblockPlus::WebRequest::NS_ERROR_FAILURE, jsEngine->Evaluate("request.channel.status")->AsInt());
-  ASSERT_EQ(0, jsEngine->Evaluate("request.status")->AsInt());
-  ASSERT_EQ("error", jsEngine->Evaluate("result")->AsString());
-  ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Content-Type')")->IsNull());
+  ASSERT_EQ(AdblockPlus::WebRequest::NS_ERROR_FAILURE, jsEngine->Evaluate("request.channel.status").AsInt());
+  ASSERT_EQ(0, jsEngine->Evaluate("request.status").AsInt());
+  ASSERT_EQ("error", jsEngine->Evaluate("result").AsString());
+  ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Content-Type')").IsNull());
 }
 
 #endif

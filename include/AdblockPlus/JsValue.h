@@ -40,11 +40,6 @@ namespace AdblockPlus
   typedef std::shared_ptr<JsEngine> JsEnginePtr;
 
   /**
-   * Shared smart pointer to a `JsValue` instance.
-   */
-  typedef std::shared_ptr<JsValue> JsValuePtr;
-
-  /**
    * List of JavaScript values.
    */
   typedef std::vector<AdblockPlus::JsValue> JsValueList;
@@ -122,11 +117,17 @@ namespace AdblockPlus
     /**
      * Invokes the value as a function (see `IsFunction()`).
      * @param params Optional list of parameters.
-     * @param thisPtr Optional `this` value.
      * @return Value returned by the function.
      */
-    JsValue Call(const JsValueList& params = JsValueList(),
-        const AdblockPlus::JsValuePtr& thisPtr = AdblockPlus::JsValuePtr()) const;
+    JsValue Call(const JsValueList& params = JsValueList()) const;
+
+    /**
+     * Invokes the value as a method (see `IsFunction()`).
+     * @param params list of parameters.
+     * @param thisPtr `this` value.
+     * @return Value returned by the function.
+     */
+    JsValue Call(const JsValueList& params, const AdblockPlus::JsValue& thisValue) const;
 
     /**
      * Invokes the value as a function (see `IsFunction()`) with single

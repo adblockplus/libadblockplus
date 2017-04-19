@@ -28,22 +28,22 @@ TEST(AppInfoJsObjectTest, AllProperties)
   appInfo.locale = "2";
   appInfo.developmentBuild = true;
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
-  ASSERT_EQ("1", jsEngine->Evaluate("_appInfo.version")->AsString());
-  ASSERT_EQ("3", jsEngine->Evaluate("_appInfo.name")->AsString());
-  ASSERT_EQ("4", jsEngine->Evaluate("_appInfo.application")->AsString());
-  ASSERT_EQ("5", jsEngine->Evaluate("_appInfo.applicationVersion")->AsString());
-  ASSERT_EQ("2", jsEngine->Evaluate("_appInfo.locale")->AsString());
-  ASSERT_TRUE(jsEngine->Evaluate("_appInfo.developmentBuild")->AsBool());
+  ASSERT_EQ("1", jsEngine->Evaluate("_appInfo.version").AsString());
+  ASSERT_EQ("3", jsEngine->Evaluate("_appInfo.name").AsString());
+  ASSERT_EQ("4", jsEngine->Evaluate("_appInfo.application").AsString());
+  ASSERT_EQ("5", jsEngine->Evaluate("_appInfo.applicationVersion").AsString());
+  ASSERT_EQ("2", jsEngine->Evaluate("_appInfo.locale").AsString());
+  ASSERT_TRUE(jsEngine->Evaluate("_appInfo.developmentBuild").AsBool());
 }
 
 TEST(AppInfoJsObjectTest, DefaultPropertyValues)
 {
   AdblockPlus::AppInfo appInfo;
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
-  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.version")->AsString());
-  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.name")->AsString());
-  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.application")->AsString());
-  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.applicationVersion")->AsString());
-  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.locale")->AsString());
-  ASSERT_FALSE(jsEngine->Evaluate("_appInfo.developmentBuild")->AsBool());
+  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.version").AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.name").AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.application").AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.applicationVersion").AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("_appInfo.locale").AsString());
+  ASSERT_FALSE(jsEngine->Evaluate("_appInfo.developmentBuild").AsBool());
 }

@@ -225,12 +225,20 @@ std::string AdblockPlus::JsValue::GetClass() const
   return Utils::FromV8String(obj->GetConstructorName());
 }
 
-JsValue JsValue::Call(const JsValueList& params, const JsValuePtr& thisPtr) const
+JsValue JsValue::Call(const JsValueList& params) const
 {
   const JsContext context(jsEngine);
-  v8::Local<v8::Object> thisObj = thisPtr ?
-    v8::Local<v8::Object>::Cast(thisPtr->UnwrapValue()) :
-    context.GetV8Context()->Global();
+  std::vector<v8::Handle<v8::Value>> argv;
+  for (const auto& param : params)
+    argv.push_back(param.UnwrapValue());
+
+  return Call(argv, context.GetV8Context()->Global());
+}
+
+JsValue JsValue::Call(const JsValueList& params, const JsValue& thisValue) const
+{
+  const JsContext context(jsEngine);
+  v8::Local<v8::Object> thisObj = v8::Local<v8::Object>::Cast(thisValue.UnwrapValue());
 
   std::vector<v8::Handle<v8::Value>> argv;
   for (const auto& param : params)

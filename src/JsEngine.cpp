@@ -156,7 +156,7 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::GetGlobalObject()
   return JsValue(shared_from_this(), context.GetV8Context()->Global());
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& source,
+AdblockPlus::JsValue AdblockPlus::JsEngine::Evaluate(const std::string& source,
     const std::string& filename)
 {
   const JsContext context(shared_from_this());
@@ -166,7 +166,7 @@ AdblockPlus::JsValuePtr AdblockPlus::JsEngine::Evaluate(const std::string& sourc
   CheckTryCatch(tryCatch);
   v8::Local<v8::Value> result = script->Run();
   CheckTryCatch(tryCatch);
-  return JsValuePtr(new JsValue(shared_from_this(), result));
+  return JsValue(shared_from_this(), result);
 }
 
 void AdblockPlus::JsEngine::SetEventCallback(const std::string& eventName,

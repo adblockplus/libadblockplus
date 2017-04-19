@@ -29,9 +29,9 @@ namespace
 TEST_F(JsEngineTest, Evaluate)
 {
   jsEngine->Evaluate("function hello() { return 'Hello'; }");
-  AdblockPlus::JsValuePtr result = jsEngine->Evaluate("hello()");
-  ASSERT_TRUE(result->IsString());
-  ASSERT_EQ("Hello", result->AsString());
+  auto result = jsEngine->Evaluate("hello()");
+  ASSERT_TRUE(result.IsString());
+  ASSERT_EQ("Hello", result.AsString());
 }
 
 TEST_F(JsEngineTest, RuntimeExceptionIsThrown)
@@ -71,7 +71,7 @@ namespace {
     AdblockPlus::JsValueList params;
     params.push_back(v1);
     params.push_back(v2);
-    return jsEngine.Evaluate("f = function(a, b) { return a == b };")->Call(params).AsBool();
+    return jsEngine.Evaluate("f = function(a, b) { return a == b };").Call(params).AsBool();
   }
 
 }
@@ -189,8 +189,8 @@ TEST(NewJsEngineTest, GlobalPropertyTest)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
   jsEngine->SetGlobalProperty("foo", jsEngine->NewValue("bar"));
-  AdblockPlus::JsValuePtr foo = jsEngine->Evaluate("foo");
-  ASSERT_TRUE(foo->IsString());
-  ASSERT_EQ(foo->AsString(), "bar");
+  auto foo = jsEngine->Evaluate("foo");
+  ASSERT_TRUE(foo.IsString());
+  ASSERT_EQ(foo.AsString(), "bar");
 }
 

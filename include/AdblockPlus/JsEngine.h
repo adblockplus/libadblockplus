@@ -146,7 +146,7 @@ namespace AdblockPlus
      *        messages.
      * @return Result of the evaluated expression.
      */
-    JsValuePtr Evaluate(const std::string& source,
+    JsValue Evaluate(const std::string& source,
         const std::string& filename = "");
 
     /**

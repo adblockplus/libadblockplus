@@ -103,8 +103,8 @@ namespace
   {
     jsEngine->Evaluate("_fileSystem.read('', function(r) {result = r})");
     AdblockPlus::Sleep(50);
-    content = jsEngine->Evaluate("result.content")->AsString();
-    error = jsEngine->Evaluate("result.error")->AsString();
+    content = jsEngine->Evaluate("result.content").AsString();
+    error = jsEngine->Evaluate("result.error").AsString();
   }
 
   typedef std::shared_ptr<MockFileSystem> MockFileSystemPtr;
@@ -155,7 +155,7 @@ TEST_F(FileSystemJsObjectTest, Write)
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->lastWrittenPath);
   ASSERT_EQ("bar", mockFileSystem->lastWrittenContent);
-  ASSERT_EQ("", jsEngine->Evaluate("error")->AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, WriteIllegalArguments)
@@ -169,7 +169,7 @@ TEST_F(FileSystemJsObjectTest, WriteError)
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(50);
-  ASSERT_NE("", jsEngine->Evaluate("error")->AsString());
+  ASSERT_NE("", jsEngine->Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, Move)
@@ -178,7 +178,7 @@ TEST_F(FileSystemJsObjectTest, Move)
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->movedFrom);
   ASSERT_EQ("bar", mockFileSystem->movedTo);
-  ASSERT_EQ("", jsEngine->Evaluate("error")->AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, MoveIllegalArguments)
@@ -192,7 +192,7 @@ TEST_F(FileSystemJsObjectTest, MoveError)
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(50);
-  ASSERT_NE("", jsEngine->Evaluate("error")->AsString());
+  ASSERT_NE("", jsEngine->Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, Remove)
@@ -200,7 +200,7 @@ TEST_F(FileSystemJsObjectTest, Remove)
   jsEngine->Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->removedPath);
-  ASSERT_EQ("", jsEngine->Evaluate("error")->AsString());
+  ASSERT_EQ("", jsEngine->Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, RemoveIllegalArguments)
@@ -214,7 +214,7 @@ TEST_F(FileSystemJsObjectTest, RemoveError)
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
   AdblockPlus::Sleep(50);
-  ASSERT_NE("", jsEngine->Evaluate("error")->AsString());
+  ASSERT_NE("", jsEngine->Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, Stat)
@@ -226,11 +226,11 @@ TEST_F(FileSystemJsObjectTest, Stat)
   jsEngine->Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->statPath);
-  ASSERT_EQ("", jsEngine->Evaluate("result.error")->AsString());
-  ASSERT_TRUE(jsEngine->Evaluate("result.exists")->AsBool());
-  ASSERT_FALSE(jsEngine->Evaluate("result.isDirectory")->AsBool());
-  ASSERT_TRUE(jsEngine->Evaluate("result.isFile")->AsBool());
-  ASSERT_EQ(1337, jsEngine->Evaluate("result.lastModified")->AsInt());
+  ASSERT_EQ("", jsEngine->Evaluate("result.error").AsString());
+  ASSERT_TRUE(jsEngine->Evaluate("result.exists").AsBool());
+  ASSERT_FALSE(jsEngine->Evaluate("result.isDirectory").AsBool());
+  ASSERT_TRUE(jsEngine->Evaluate("result.isFile").AsBool());
+  ASSERT_EQ(1337, jsEngine->Evaluate("result.lastModified").AsInt());
 }
 
 TEST_F(FileSystemJsObjectTest, StatIllegalArguments)
@@ -244,5 +244,5 @@ TEST_F(FileSystemJsObjectTest, StatError)
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
   AdblockPlus::Sleep(50);
-  ASSERT_NE("", jsEngine->Evaluate("result.error")->AsString());
+  ASSERT_NE("", jsEngine->Evaluate("result.error").AsString());
 }

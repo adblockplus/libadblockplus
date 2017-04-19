@@ -120,8 +120,8 @@ TEST_F(UpdateCheckTest, RequestFailure)
   ASSERT_FALSE(updateError.empty());
 
   std::string expectedUrl(filterEngine->GetPref("update_url_release").AsString());
-  std::string platform = jsEngine->Evaluate("require('info').platform")->AsString();
-  std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion")->AsString();
+  std::string platform = jsEngine->Evaluate("require('info').platform").AsString();
+  std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion").AsString();
 
   FindAndReplace(expectedUrl, "%NAME%", appInfo.name);
   FindAndReplace(expectedUrl, "%TYPE%", "1");   // manual update
@@ -159,8 +159,8 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   ASSERT_TRUE(updateError.empty());
 
   std::string expectedUrl(filterEngine->GetPref("update_url_devbuild").AsString());
-  std::string platform = jsEngine->Evaluate("require('info').platform")->AsString();
-  std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion")->AsString();
+  std::string platform = jsEngine->Evaluate("require('info').platform").AsString();
+  std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion").AsString();
 
   FindAndReplace(expectedUrl, "%NAME%", appInfo.name);
   FindAndReplace(expectedUrl, "%TYPE%", "1");   // manual update
