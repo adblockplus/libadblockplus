@@ -48,6 +48,7 @@ AdblockPlus::JsValue::~JsValue()
 {
   if (value)
   {
+    const JsContext context(jsEngine);
     value->Dispose();
     value.reset();
   }
