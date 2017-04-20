@@ -22,7 +22,7 @@
 
 namespace
 {
-  typedef std::vector<AdblockPlus::FilterPtr> FilterList;
+  typedef std::vector<AdblockPlus::Filter> FilterList;
 
   void ShowFilterList(const FilterList& filters)
   {
@@ -30,7 +30,7 @@ namespace
          it != filters.end(); it++)
     {
       std::string type;
-      switch ((*it)->GetType())
+      switch (it->GetType())
       {
         case AdblockPlus::Filter::TYPE_BLOCKING:
           type = "blocking";
@@ -54,7 +54,7 @@ namespace
           type = "(unknown type)";
           break;
       }
-      std::cout << (*it)->GetProperty("text").AsString() << " - " <<
+      std::cout << it->GetProperty("text").AsString() << " - " <<
           type << std::endl;
     }
   }
@@ -115,17 +115,17 @@ void FiltersCommand::ShowFilters()
 
 void FiltersCommand::AddFilter(const std::string& text)
 {
-  AdblockPlus::FilterPtr filter = filterEngine.GetFilter(text);
-  filter->AddToList();
+  AdblockPlus::Filter filter = filterEngine.GetFilter(text);
+  filter.AddToList();
 }
 
 void FiltersCommand::RemoveFilter(const std::string& text)
 {
-  AdblockPlus::FilterPtr filter = filterEngine.GetFilter(text);
-  if (!filter->IsListed())
+  AdblockPlus::Filter filter = filterEngine.GetFilter(text);
+  if (!filter.IsListed())
   {
     std::cout << "No such filter '" << text << "'" << std::endl;
     return;
   }
-  filter->RemoveFromList();
+  filter.RemoveFromList();
 }

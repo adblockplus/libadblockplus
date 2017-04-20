@@ -276,10 +276,10 @@ bool FilterEngine::IsFirstRun() const
   return firstRun;
 }
 
-FilterPtr FilterEngine::GetFilter(const std::string& text) const
+Filter FilterEngine::GetFilter(const std::string& text) const
 {
   JsValue func = jsEngine->Evaluate("API.getFilterFromText");
-  return FilterPtr(new Filter(func.Call(jsEngine->NewValue(text))));
+  return Filter(func.Call(jsEngine->NewValue(text)));
 }
 
 SubscriptionPtr FilterEngine::GetSubscription(const std::string& url) const
@@ -288,13 +288,13 @@ SubscriptionPtr FilterEngine::GetSubscription(const std::string& url) const
   return SubscriptionPtr(new Subscription(func.Call(jsEngine->NewValue(url))));
 }
 
-std::vector<FilterPtr> FilterEngine::GetListedFilters() const
+std::vector<Filter> FilterEngine::GetListedFilters() const
 {
   JsValue func = jsEngine->Evaluate("API.getListedFilters");
   JsValueList values = func.Call().AsList();
-  std::vector<FilterPtr> result;
+  std::vector<Filter> result;
   for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(FilterPtr(new Filter(std::move(*it))));
+    result.push_back(Filter(std::move(*it)));
   return result;
 }
 

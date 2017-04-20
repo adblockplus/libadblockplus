@@ -139,7 +139,7 @@ namespace AdblockPlus
   /**
    * Shared smart pointer to a `Filter` instance.
    */
-  typedef std::shared_ptr<Filter> FilterPtr;
+  typedef std::unique_ptr<Filter> FilterPtr;
 
   /**
    * Shared smart pointer to a `Subscription` instance.
@@ -285,7 +285,7 @@ namespace AdblockPlus
      *        see https://adblockplus.org/en/filters.
      * @return New `Filter` instance.
      */
-    FilterPtr GetFilter(const std::string& text) const;
+    Filter GetFilter(const std::string& text) const;
 
     /**
      * Retrieves a subscription object for the supplied URL.
@@ -298,7 +298,7 @@ namespace AdblockPlus
      * Retrieves the list of custom filters.
      * @return List of custom filters.
      */
-    std::vector<FilterPtr> GetListedFilters() const;
+    std::vector<Filter> GetListedFilters() const;
 
     /**
      * Retrieves all subscriptions.
