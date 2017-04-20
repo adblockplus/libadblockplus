@@ -30,14 +30,14 @@ namespace
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     const AdblockPlus::JsContext context(jsEngine);
-    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     std::stringstream message;
     for (size_t i = 0; i < converted.size(); i++)
     {
       if (i > 0)
         message << " ";
-      message << converted[i]->AsString();
+      message << converted[i].AsString();
     }
 
     std::stringstream source;
@@ -79,7 +79,7 @@ namespace
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     const AdblockPlus::JsContext context(jsEngine);
-    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     std::stringstream traceback;
     v8::Local<v8::StackTrace> frames = v8::StackTrace::CurrentStackTrace(100);

@@ -41,20 +41,20 @@ void PrefsCommand::operator()(const std::string& arguments)
     std::string pref;
     argumentStream >> pref;
 
-    AdblockPlus::JsValuePtr value = filterEngine.GetPref(pref);
-    if (value->IsUndefined())
+    auto value = filterEngine.GetPref(pref);
+    if (value.IsUndefined())
       std::cout << "No such preference" << std::endl;
     else
     {
-      if (value->IsString())
+      if (value.IsString())
         std::cout << "(string) ";
-      else if (value->IsNumber())
+      else if (value.IsNumber())
         std::cout << "(number) ";
-      else if (value->IsBool())
+      else if (value.IsBool())
         std::cout << "(bool) ";
       else
         std::cout << "(unknown type) ";
-      std::cout << value->AsString() << std::endl;
+      std::cout << value.AsString() << std::endl;
     }
   }
   else if (action == "set")
@@ -62,22 +62,22 @@ void PrefsCommand::operator()(const std::string& arguments)
     std::string pref;
     argumentStream >> pref;
 
-    AdblockPlus::JsValuePtr current = filterEngine.GetPref(pref);
-    if (current->IsUndefined())
+    auto current = filterEngine.GetPref(pref);
+    if (current.IsUndefined())
       std::cout << "No such preference" << std::endl;
-    else if (current->IsString())
+    else if (current.IsString())
     {
       std::string value;
       std::getline(argumentStream, value);
       filterEngine.SetPref(pref, filterEngine.GetJsEngine()->NewValue(value));
     }
-    else if (current->IsNumber())
+    else if (current.IsNumber())
     {
       int64_t value;
       argumentStream >> value;
       filterEngine.SetPref(pref, filterEngine.GetJsEngine()->NewValue(value));
     }
-    else if (current->IsBool())
+    else if (current.IsBool())
     {
       bool value;
       argumentStream >> value;

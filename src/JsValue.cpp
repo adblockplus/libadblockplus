@@ -37,6 +37,13 @@ AdblockPlus::JsValue::JsValue(AdblockPlus::JsValue&& src)
 {
 }
 
+AdblockPlus::JsValue::JsValue(const JsValue& src)
+  : jsEngine(src.jsEngine)
+{
+  const JsContext context(src.jsEngine);
+  value.reset(new v8::Persistent<v8::Value>(src.jsEngine->GetIsolate(), *src.value));
+}
+
 AdblockPlus::JsValue::~JsValue()
 {
   if (value)
@@ -44,6 +51,17 @@ AdblockPlus::JsValue::~JsValue()
     value->Dispose();
     value.reset();
   }
+}
+
+JsValue& AdblockPlus::JsValue::operator=(const JsValue& src)
+{
+  const JsContext context(src.jsEngine);
+  if (value)
+    value->Dispose();
+  jsEngine = src.jsEngine;
+  value.reset(new v8::Persistent<v8::Value>(src.jsEngine->GetIsolate(), *src.value));
+
+  return *this;
 }
 
 bool AdblockPlus::JsValue::IsUndefined() const
@@ -127,7 +145,7 @@ AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
   for (uint32_t i = 0; i < length; i++)
   {
     v8::Local<v8::Value> item = array->Get(i);
-    result.push_back(JsValuePtr(new JsValue(jsEngine, item)));
+    result.push_back(JsValue(jsEngine, item));
   }
   return result;
 }
@@ -139,10 +157,10 @@ std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
 
   const JsContext context(jsEngine);
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(UnwrapValue());
-  JsValueList properties = JsValuePtr(new JsValue(jsEngine, object->GetOwnPropertyNames()))->AsList();
+  JsValueList properties = JsValue(jsEngine, object->GetOwnPropertyNames()).AsList();
   std::vector<std::string> result;
   for (const auto& property : properties)
-    result.push_back(property->AsString());
+    result.push_back(property.AsString());
   return result;
 }
 
@@ -171,11 +189,6 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Handle<v8::V
 v8::Local<v8::Value> AdblockPlus::JsValue::UnwrapValue() const
 {
   return v8::Local<v8::Value>::New(jsEngine->GetIsolate(), *value);
-}
-
-JsValue AdblockPlus::JsValue::Clone() const
-{
-  return JsValue(jsEngine, UnwrapValue());
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::string& val)
@@ -212,7 +225,7 @@ std::string AdblockPlus::JsValue::GetClass() const
   return Utils::FromV8String(obj->GetConstructorName());
 }
 
-JsValue JsValue::Call(const JsConstValueList& params, const JsValuePtr& thisPtr) const
+JsValue JsValue::Call(const JsValueList& params, const JsValuePtr& thisPtr) const
 {
   const JsContext context(jsEngine);
   v8::Local<v8::Object> thisObj = thisPtr ?
@@ -221,7 +234,7 @@ JsValue JsValue::Call(const JsConstValueList& params, const JsValuePtr& thisPtr)
 
   std::vector<v8::Handle<v8::Value>> argv;
   for (const auto& param : params)
-    argv.push_back(param->UnwrapValue());
+    argv.push_back(param.UnwrapValue());
 
   return Call(argv, thisObj);
 }

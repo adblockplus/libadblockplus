@@ -43,13 +43,11 @@ namespace AdblockPlus
    * Shared smart pointer to a `JsValue` instance.
    */
   typedef std::shared_ptr<JsValue> JsValuePtr;
-  typedef std::shared_ptr<const JsValue> JsConstValuePtr;
 
   /**
    * List of JavaScript values.
    */
-  typedef std::vector<AdblockPlus::JsValuePtr> JsValueList;
-  typedef std::vector<AdblockPlus::JsConstValuePtr> JsConstValueList;
+  typedef std::vector<AdblockPlus::JsValue> JsValueList;
 
   /**
    * Wrapper for JavaScript values.
@@ -60,7 +58,10 @@ namespace AdblockPlus
     friend class JsEngine;
   public:
     JsValue(JsValue&& src);
+    JsValue(const JsValue& src);
     virtual ~JsValue();
+
+    JsValue& operator=(const JsValue& src);
 
     bool IsUndefined() const;
     bool IsNull() const;
@@ -124,7 +125,7 @@ namespace AdblockPlus
      * @param thisPtr Optional `this` value.
      * @return Value returned by the function.
      */
-    JsValue Call(const JsConstValueList& params = JsConstValueList(),
+    JsValue Call(const JsValueList& params = JsValueList(),
         const AdblockPlus::JsValuePtr& thisPtr = AdblockPlus::JsValuePtr()) const;
 
     /**
@@ -137,11 +138,6 @@ namespace AdblockPlus
 
     v8::Local<v8::Value> UnwrapValue() const;
 
-    /**
-     * Creates a new `JsValue` wrapper for the same JavaScript value.
-     * @return Value new `JsValue`
-     */
-    JsValue Clone() const;
   protected:
     JsEnginePtr jsEngine;
   private:

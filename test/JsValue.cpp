@@ -156,7 +156,7 @@ TEST_F(JsValueTest, ObjectValue)
   ASSERT_EQ(2, value->GetProperty("x").AsInt());
   value->SetProperty("x", 12);
   ASSERT_EQ(12, value->GetProperty("x").AsInt());
-  value->SetProperty("x", *jsEngine->NewValue(15));
+  value->SetProperty("x", jsEngine->NewValue(15));
   ASSERT_EQ(15, value->GetProperty("x").AsInt());
   ASSERT_EQ("Foo", value->GetClass());
   ASSERT_EQ(3u, value->GetOwnPropertyNames().size());
@@ -177,7 +177,7 @@ TEST_F(JsValueTest, ArrayValue)
   ASSERT_EQ("5,8,12", value->AsString());
   ASSERT_TRUE(value->AsBool());
   ASSERT_EQ(3u, value->AsList().size());
-  ASSERT_EQ(8, value->AsList()[1]->AsInt());
+  ASSERT_EQ(8, value->AsList()[1].AsInt());
   ASSERT_EQ(3, value->GetProperty("length").AsInt());
   ASSERT_EQ("Array", value->GetClass());
   ASSERT_ANY_THROW(value->Call());
@@ -199,7 +199,7 @@ TEST_F(JsValueTest, FunctionValue)
   ASSERT_EQ(2, value->GetProperty("length").AsInt());
 
   AdblockPlus::JsValuePtr thisPtr = jsEngine->Evaluate("({x:2})");
-  AdblockPlus::JsConstValueList params;
+  AdblockPlus::JsValueList params;
   params.push_back(jsEngine->NewValue(5));
   params.push_back(jsEngine->NewValue("xyz"));
   ASSERT_EQ("2/5/xyz", value->Call(params, thisPtr).AsString());
@@ -208,7 +208,7 @@ TEST_F(JsValueTest, FunctionValue)
 TEST_F(JsValueTest, JsValueCallSingleArg)
 {
   auto func = jsEngine->Evaluate("(function(arg) {return arg * 2;})");
-  EXPECT_EQ(10, func->Call(*jsEngine->NewValue(5)).AsInt());
+  EXPECT_EQ(10, func->Call(jsEngine->NewValue(5)).AsInt());
 }
 
 TEST_F(JsValueTest, ThrowingCoversion)

@@ -228,20 +228,20 @@ namespace
       exampleSubscriptionResponse.status = WebRequest::NS_OK;
       exampleSubscriptionResponse.responseText = "[Adblock Plus 2.0]\n||example.com";
       webRequest->responses.emplace(subscriptionUrlPrefix, exampleSubscriptionResponse);
-      createParams.preconfiguredPrefs["first_run_subscription_auto_select"] = jsEngine->NewValue(false);
+      createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));
       isConnectionAllowed = true;
       createParams.isConnectionAllowedCallback = [this](const std::string* allowedConnectionType)->bool{
         capturedConnectionTypes.Add(allowedConnectionType);
         return isConnectionAllowed;
       };
-      jsEngine->SetEventCallback("filterChange", [this](const JsConstValueList& params/*action, item*/)
+      jsEngine->SetEventCallback("filterChange", [this](const JsValueList& params/*action, item*/)
       {
         ASSERT_EQ(2u, params.size());
-        if (params[0]->AsString() == "subscription.downloadStatus")
+        if (params[0].AsString() == "subscription.downloadStatus")
         {
           {
             std::lock_guard<std::mutex> lock(downloadStatusChanged.mutex);
-            downloadStatusChanged.url = params[1]->GetProperty("url").AsString();
+            downloadStatusChanged.url = params[1].GetProperty("url").AsString();
           }
           downloadStatusChanged.cv.notify_one();
         }
@@ -750,7 +750,7 @@ TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
 {
   auto jsEngine = createJsEngine();
   FilterEngine::CreationParameters createParams;
-  createParams.preconfiguredPrefs["first_run_subscription_auto_select"] = jsEngine->NewValue(false);
+  createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));
   auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine, createParams);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   EXPECT_EQ(0u, subscriptions.size());
@@ -1040,7 +1040,8 @@ TEST_F(FilterEngineIsAllowedConnectionTest, NotAllowingCallbackDoesNotAllowUpdat
 TEST_F(FilterEngineIsAllowedConnectionTest, PredefinedAllowedConnectionTypeIsPassedToCallback)
 {
   std::string predefinedAllowedConnectionType = "non-metered";
-  createParams.preconfiguredPrefs["allowed_connection_type"] = jsEngine->NewValue(predefinedAllowedConnectionType);
+  createParams.preconfiguredPrefs.insert(std::make_pair("allowed_connection_type",
+    jsEngine->NewValue(predefinedAllowedConnectionType)));
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription->GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription->GetProperty("filters").AsList().size());
@@ -1057,7 +1058,8 @@ TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCa
   // checks.
   {
     std::string predefinedAllowedConnectionType = "non-metered";
-    createParams.preconfiguredPrefs["allowed_connection_type"] = jsEngine->NewValue(predefinedAllowedConnectionType);
+    createParams.preconfiguredPrefs.insert(std::make_pair(
+      "allowed_connection_type", jsEngine->NewValue(predefinedAllowedConnectionType)));
     auto subscription = EnsureExampleSubscriptionAndForceUpdate();
     EXPECT_EQ("synchronize_ok", subscription->GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription->GetProperty("filters").AsList().size());

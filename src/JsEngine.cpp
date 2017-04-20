@@ -116,10 +116,10 @@ void JsEngine::CallTimerTask(const TimerTasks::const_iterator& timerTaskIterator
 {
   const JsContext context(shared_from_this());
   JsValue callback(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), *timerTaskIterator->arguments[0]));
-  JsConstValueList callbackArgs;
+  JsValueList callbackArgs;
   for (int i = 2; i < timerTaskIterator->arguments.size(); i++)
-    callbackArgs.emplace_back(new JsValue(shared_from_this(),
-    v8::Local<v8::Value>::New(GetIsolate(), *timerTaskIterator->arguments[i])));
+    callbackArgs.emplace_back(JsValue(shared_from_this(),
+      v8::Local<v8::Value>::New(GetIsolate(), *timerTaskIterator->arguments[i])));
   callback.Call(callbackArgs);
   timerTasks.erase(timerTaskIterator);
 }
@@ -187,7 +187,7 @@ void AdblockPlus::JsEngine::RemoveEventCallback(const std::string& eventName)
   eventCallbacks.erase(eventName);
 }
 
-void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, const AdblockPlus::JsConstValueList& params)
+void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, const AdblockPlus::JsValueList& params)
 {
   EventCallback callback;
   {
@@ -205,30 +205,28 @@ void AdblockPlus::JsEngine::Gc()
   while (!v8::V8::IdleNotification());
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(const std::string& val)
+AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(const std::string& val)
 {
   const JsContext context(shared_from_this());
-  return JsValuePtr(new JsValue(shared_from_this(),
-    Utils::ToV8String(GetIsolate(), val)));
+  return JsValue(shared_from_this(), Utils::ToV8String(GetIsolate(), val));
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(int64_t val)
+AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(int64_t val)
 {
   const JsContext context(shared_from_this());
-  return JsValuePtr(new JsValue(shared_from_this(),
-    v8::Number::New(GetIsolate(), val)));
+  return JsValue(shared_from_this(), v8::Number::New(GetIsolate(), val));
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewValue(bool val)
+AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(bool val)
 {
   const JsContext context(shared_from_this());
-  return JsValuePtr(new JsValue(shared_from_this(), v8::Boolean::New(val)));
+  return JsValue(shared_from_this(), v8::Boolean::New(val));
 }
 
-AdblockPlus::JsValuePtr AdblockPlus::JsEngine::NewObject()
+AdblockPlus::JsValue AdblockPlus::JsEngine::NewObject()
 {
   const JsContext context(shared_from_this());
-  return JsValuePtr(new JsValue(shared_from_this(), v8::Object::New()));
+  return JsValue(shared_from_this(), v8::Object::New());
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(
@@ -257,12 +255,12 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::Argument
   return result;
 }
 
-AdblockPlus::JsConstValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Arguments& arguments)
+AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Arguments& arguments)
 {
   const JsContext context(shared_from_this());
-  JsConstValueList list;
+  JsValueList list;
   for (int i = 0; i < arguments.Length(); i++)
-    list.push_back(JsValuePtr(new JsValue(shared_from_this(), arguments[i])));
+    list.push_back(JsValue(shared_from_this(), arguments[i]));
   return list;
 }
 

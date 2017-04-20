@@ -54,7 +54,7 @@ namespace
     FilterEnginePtr filterEngine;
 
     bool eventCallbackCalled;
-    AdblockPlus::JsConstValueList eventCallbackParams;
+    AdblockPlus::JsValueList eventCallbackParams;
     bool updateCallbackCalled;
     std::string updateError;
 
@@ -86,7 +86,7 @@ namespace
           std::bind(&UpdateCheckTest::UpdateCallback, this, std::placeholders::_1));
     }
 
-    void EventCallback(const AdblockPlus::JsConstValueList& params)
+    void EventCallback(const AdblockPlus::JsValueList& params)
     {
       eventCallbackCalled = true;
       eventCallbackParams = params;
@@ -119,7 +119,7 @@ TEST_F(UpdateCheckTest, RequestFailure)
   ASSERT_TRUE(updateCallbackCalled);
   ASSERT_FALSE(updateError.empty());
 
-  std::string expectedUrl(filterEngine->GetPref("update_url_release")->AsString());
+  std::string expectedUrl(filterEngine->GetPref("update_url_release").AsString());
   std::string platform = jsEngine->Evaluate("require('info').platform")->AsString();
   std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion")->AsString();
 
@@ -154,11 +154,11 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
 
   ASSERT_TRUE(eventCallbackCalled);
   ASSERT_EQ(1u, eventCallbackParams.size());
-  ASSERT_EQ("https://foo.bar/", eventCallbackParams[0]->AsString());
+  ASSERT_EQ("https://foo.bar/", eventCallbackParams[0].AsString());
   ASSERT_TRUE(updateCallbackCalled);
   ASSERT_TRUE(updateError.empty());
 
-  std::string expectedUrl(filterEngine->GetPref("update_url_devbuild")->AsString());
+  std::string expectedUrl(filterEngine->GetPref("update_url_devbuild").AsString());
   std::string platform = jsEngine->Evaluate("require('info').platform")->AsString();
   std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion")->AsString();
 
@@ -193,7 +193,7 @@ TEST_F(UpdateCheckTest, ApplicationUpdateAvailable)
 
   ASSERT_TRUE(eventCallbackCalled);
   ASSERT_EQ(1u, eventCallbackParams.size());
-  ASSERT_EQ("https://foo.bar/", eventCallbackParams[0]->AsString());
+  ASSERT_EQ("https://foo.bar/", eventCallbackParams[0].AsString());
   ASSERT_TRUE(updateCallbackCalled);
   ASSERT_TRUE(updateError.empty());
 }

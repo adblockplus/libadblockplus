@@ -54,15 +54,15 @@ namespace
   v8::Handle<v8::Value> TriggerEventCallback(const v8::Arguments& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
+    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
     if (converted.size() < 1)
     {
       v8::Isolate* isolate = arguments.GetIsolate();
       return v8::ThrowException(Utils::ToV8String(isolate,
       "_triggerEvent expects at least one parameter"));
     }
-    std::string eventName = converted.front()->AsString();
-    converted.erase(converted.begin());
+    std::string eventName = converted.front().AsString();
+    converted.erase(converted.cbegin());
     jsEngine->TriggerEvent(eventName, converted);
     return v8::Undefined();
   }
@@ -73,13 +73,13 @@ JsValue& GlobalJsObject::Setup(JsEngine& jsEngine, const AppInfo& appInfo,
 {
   obj.SetProperty("setTimeout", jsEngine.NewCallback(::SetTimeoutCallback));
   obj.SetProperty("_triggerEvent", jsEngine.NewCallback(::TriggerEventCallback));
-  obj.SetProperty("_fileSystem",
-      FileSystemJsObject::Setup(jsEngine, *jsEngine.NewObject()));
-  obj.SetProperty("_webRequest",
-      WebRequestJsObject::Setup(jsEngine, *jsEngine.NewObject()));
-  obj.SetProperty("console",
-      ConsoleJsObject::Setup(jsEngine, *jsEngine.NewObject()));
-  obj.SetProperty("_appInfo",
-      AppInfoJsObject::Setup(appInfo, *jsEngine.NewObject()));
+  auto value = jsEngine.NewObject();
+  obj.SetProperty("_fileSystem", FileSystemJsObject::Setup(jsEngine, value));
+  value = jsEngine.NewObject();
+  obj.SetProperty("_webRequest", WebRequestJsObject::Setup(jsEngine, value));
+  value = jsEngine.NewObject();
+  obj.SetProperty("console", ConsoleJsObject::Setup(jsEngine, value));
+  value = jsEngine.NewObject();
+  obj.SetProperty("_appInfo", AppInfoJsObject::Setup(appInfo, value));
   return obj;
 }

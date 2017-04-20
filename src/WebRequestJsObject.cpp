@@ -29,28 +29,28 @@ namespace
   class WebRequestThread : public AdblockPlus::Thread
   {
   public:
-    WebRequestThread(const AdblockPlus::JsEnginePtr& jsEngine, const AdblockPlus::JsConstValueList& arguments)
-        : Thread(true), jsEngine(jsEngine), url(arguments[0]->AsString())
+    WebRequestThread(const AdblockPlus::JsEnginePtr& jsEngine, const AdblockPlus::JsValueList& arguments)
+      : Thread(true), jsEngine(jsEngine), url(arguments[0].AsString()),
+        callback(arguments[2])
     {
       if (!url.length())
         throw std::runtime_error("Invalid string passed as first argument to GET");
 
       {
-        AdblockPlus::JsConstValuePtr headersObj = arguments[1];
-        if (!headersObj->IsObject())
+        const AdblockPlus::JsValue& headersObj = arguments[1];
+        if (!headersObj.IsObject())
           throw std::runtime_error("Second argument to GET must be an object");
 
-        std::vector<std::string> properties = headersObj->GetOwnPropertyNames();
+        std::vector<std::string> properties = headersObj.GetOwnPropertyNames();
         for (const auto& header : properties)
         {
-          std::string headerValue = headersObj->GetProperty(header).AsString();
+          std::string headerValue = headersObj.GetProperty(header).AsString();
           if (header.length() && headerValue.length())
             headers.push_back(std::pair<std::string, std::string>(header, headerValue));
         }
       }
 
-      callback = arguments[2];
-      if (!callback->IsFunction())
+      if (!callback.IsFunction())
         throw std::runtime_error("Third argument to GET must be a function");
     }
 
@@ -69,28 +69,28 @@ namespace
 
       AdblockPlus::JsContext context(jsEngine);
 
-      AdblockPlus::JsValuePtr resultObject = jsEngine->NewObject();
-      resultObject->SetProperty("status", result.status);
-      resultObject->SetProperty("responseStatus", result.responseStatus);
-      resultObject->SetProperty("responseText", result.responseText);
+      auto resultObject = jsEngine->NewObject();
+      resultObject.SetProperty("status", result.status);
+      resultObject.SetProperty("responseStatus", result.responseStatus);
+      resultObject.SetProperty("responseText", result.responseText);
 
-      AdblockPlus::JsValuePtr headersObject = jsEngine->NewObject();
+      auto headersObject = jsEngine->NewObject();
       for (const auto& header : result.responseHeaders)
       {
-        headersObject->SetProperty(header.first, header.second);
+        headersObject.SetProperty(header.first, header.second);
       }
-      resultObject->SetProperty("responseHeaders", *headersObject);
+      resultObject.SetProperty("responseHeaders", headersObject);
 
-      AdblockPlus::JsConstValueList params;
+      AdblockPlus::JsValueList params;
       params.push_back(resultObject);
-      callback->Call(params);
+      callback.Call(params);
     }
 
   private:
     AdblockPlus::JsEnginePtr jsEngine;
     std::string url;
     AdblockPlus::HeaderList headers;
-    AdblockPlus::JsConstValuePtr callback;
+    AdblockPlus::JsValue callback;
   };
 
   v8::Handle<v8::Value> GETCallback(const v8::Arguments& arguments)
@@ -99,7 +99,7 @@ namespace
     try
     {
       AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-      AdblockPlus::JsConstValueList converted = jsEngine->ConvertArguments(arguments);
+      AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
       if (converted.size() != 3u)
         throw std::runtime_error("GET requires exactly 3 arguments");
       thread = new WebRequestThread(jsEngine, converted);

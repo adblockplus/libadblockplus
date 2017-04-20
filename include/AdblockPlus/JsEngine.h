@@ -93,7 +93,7 @@ namespace AdblockPlus
     /**
      * Event callback function.
      */
-    typedef std::function<void(const JsConstValueList& params)> EventCallback;
+    typedef std::function<void(const JsValueList& params)> EventCallback;
 
     /**
     * Callback function returning false when current connection is not allowed
@@ -137,7 +137,7 @@ namespace AdblockPlus
      * @param eventName Event name.
      * @param params Event parameters.
      */
-    void TriggerEvent(const std::string& eventName, const JsConstValueList& params);
+    void TriggerEvent(const std::string& eventName, const JsValueList& params);
 
     /**
      * Evaluates a JavaScript expression.
@@ -160,19 +160,19 @@ namespace AdblockPlus
      * @param val Value to convert.
      * @return New `JsValue` instance.
      */
-    JsValuePtr NewValue(const std::string& val);
-    JsValuePtr NewValue(int64_t val);
-    JsValuePtr NewValue(bool val);
-    inline JsValuePtr NewValue(const char* val)
+    JsValue NewValue(const std::string& val);
+    JsValue NewValue(int64_t val);
+    JsValue NewValue(bool val);
+    inline JsValue NewValue(const char* val)
     {
       return NewValue(std::string(val));
     }
-    inline JsValuePtr NewValue(int val)
+    inline JsValue NewValue(int val)
     {
       return NewValue(static_cast<int64_t>(val));
     }
 #ifdef __APPLE__
-    inline JsValuePtr NewValue(long val)
+    inline JsValue NewValue(long val)
     {
       return NewValue(static_cast<int64_t>(val));
     }
@@ -183,7 +183,7 @@ namespace AdblockPlus
      * Creates a new JavaScript object.
      * @return New `JsValue` instance.
      */
-    JsValuePtr NewObject();
+    JsValue NewObject();
 
     /**
      * Creates a JavaScript function that invokes a C++ callback.
@@ -217,7 +217,7 @@ namespace AdblockPlus
      *        convert.
      * @return List of arguments converted to `const JsValue` objects.
      */
-    JsConstValueList ConvertArguments(const v8::Arguments& arguments);
+    JsValueList ConvertArguments(const v8::Arguments& arguments);
 
     /**
      * @see `SetFileSystem()`.

@@ -211,7 +211,7 @@ namespace AdblockPlus
     /**
      * Container of name-value pairs representing a set of preferences.
      */
-    typedef std::map<std::string, AdblockPlus::JsValuePtr> Prefs;
+    typedef std::map<std::string, AdblockPlus::JsValue> Prefs;
 
     /**
      * Callback type invoked when a new notification should be shown.
@@ -428,14 +428,14 @@ namespace AdblockPlus
      * @param pref Preference name.
      * @return Preference value, or `null` if it doesn't exist.
      */
-    JsValuePtr GetPref(const std::string& pref) const;
+    JsValue GetPref(const std::string& pref) const;
 
     /**
      * Sets a preference value.
      * @param pref Preference name.
      * @param value New value of the preference.
      */
-    void SetPref(const std::string& pref, const JsValuePtr& value);
+    void SetPref(const std::string& pref, const JsValue& value);
 
     /**
      * Extracts the host from a URL.
@@ -534,12 +534,12 @@ namespace AdblockPlus
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,
                                const std::string& documentUrl) const;
-    void UpdateAvailable(const UpdateAvailableCallback& callback, const JsConstValueList& params) const;
+    void UpdateAvailable(const UpdateAvailableCallback& callback, const JsValueList& params) const;
     void UpdateCheckDone(const std::string& eventName,
-                         const UpdateCheckDoneCallback& callback, const JsConstValueList& params);
-    void FilterChanged(const FilterChangeCallback& callback, const JsConstValueList& params) const;
+                         const UpdateCheckDoneCallback& callback, const JsValueList& params);
+    void FilterChanged(const FilterChangeCallback& callback, const JsValueList& params) const;
     void ShowNotification(const ShowNotificationCallback& callback,
-      const JsConstValueList& param) const;
+      const JsValueList& param) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
       ContentTypeMask contentTypeMask, const std::string& documentUrl) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,

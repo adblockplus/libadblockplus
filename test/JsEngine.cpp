@@ -17,6 +17,7 @@
 
 #include <stdexcept>
 #include "BaseJsTest.h"
+#include "../src/JsContext.h"
 
 namespace
 {
@@ -45,31 +46,90 @@ TEST_F(JsEngineTest, CompileTimeExceptionIsThrown)
 
 TEST_F(JsEngineTest, ValueCreation)
 {
-  AdblockPlus::JsValuePtr value;
-
-  value = jsEngine->NewValue("foo");
-  ASSERT_TRUE(value->IsString());
-  ASSERT_EQ("foo", value->AsString());
+  auto value = jsEngine->NewValue("foo");
+  ASSERT_TRUE(value.IsString());
+  ASSERT_EQ("foo", value.AsString());
 
   value = jsEngine->NewValue(12345678901234);
-  ASSERT_TRUE(value->IsNumber());
-  ASSERT_EQ(12345678901234, value->AsInt());
+  ASSERT_TRUE(value.IsNumber());
+  ASSERT_EQ(12345678901234, value.AsInt());
 
   value = jsEngine->NewValue(true);
-  ASSERT_TRUE(value->IsBool());
-  ASSERT_TRUE(value->AsBool());
+  ASSERT_TRUE(value.IsBool());
+  ASSERT_TRUE(value.AsBool());
 
   value = jsEngine->NewObject();
-  ASSERT_TRUE(value->IsObject());
-  ASSERT_EQ(0u, value->GetOwnPropertyNames().size());
+  ASSERT_TRUE(value.IsObject());
+  ASSERT_EQ(0u, value.GetOwnPropertyNames().size());
+}
+
+namespace {
+
+  bool IsSame(AdblockPlus::JsEngine& jsEngine,
+              const AdblockPlus::JsValue& v1, const AdblockPlus::JsValue& v2)
+  {
+    AdblockPlus::JsValueList params;
+    params.push_back(v1);
+    params.push_back(v2);
+    return jsEngine.Evaluate("f = function(a, b) { return a == b };")->Call(params).AsBool();
+  }
+
+}
+
+TEST_F(JsEngineTest, ValueCopy)
+{
+  {
+    auto value = jsEngine->NewValue("foo");
+    ASSERT_TRUE(value.IsString());
+    ASSERT_EQ("foo", value.AsString());
+
+    AdblockPlus::JsValue value2(value);
+    ASSERT_TRUE(value2.IsString());
+    ASSERT_EQ("foo", value2.AsString());
+
+    ASSERT_TRUE(IsSame(*jsEngine, value, value2));
+  }
+  {
+    auto value = jsEngine->NewValue(12345678901234);
+    ASSERT_TRUE(value.IsNumber());
+    ASSERT_EQ(12345678901234, value.AsInt());
+
+    AdblockPlus::JsValue value2(value);
+    ASSERT_TRUE(value2.IsNumber());
+    ASSERT_EQ(12345678901234, value2.AsInt());
+
+    ASSERT_TRUE(IsSame(*jsEngine, value, value2));
+  }
+  {
+    auto value = jsEngine->NewValue(true);
+    ASSERT_TRUE(value.IsBool());
+    ASSERT_TRUE(value.AsBool());
+
+    AdblockPlus::JsValue value2(value);
+    ASSERT_TRUE(value2.IsBool());
+    ASSERT_TRUE(value2.AsBool());
+
+    ASSERT_TRUE(IsSame(*jsEngine, value, value2));
+  }
+  {
+    auto value = jsEngine->NewObject();
+    ASSERT_TRUE(value.IsObject());
+    ASSERT_EQ(0u, value.GetOwnPropertyNames().size());
+
+    AdblockPlus::JsValue value2(value);
+    ASSERT_TRUE(value2.IsObject());
+    ASSERT_EQ(0u, value2.GetOwnPropertyNames().size());
+
+    ASSERT_TRUE(IsSame(*jsEngine, value, value2));
+  }
 }
 
 TEST_F(JsEngineTest, EventCallbacks)
 {
   bool callbackCalled = false;
-  AdblockPlus::JsConstValueList callbackParams;
+  AdblockPlus::JsValueList callbackParams;
   auto Callback = [&callbackCalled, & callbackParams](
-    const AdblockPlus::JsConstValueList& params)
+    const AdblockPlus::JsValueList& params)
   {
     callbackCalled = true;
     callbackParams = params;
@@ -86,9 +146,9 @@ TEST_F(JsEngineTest, EventCallbacks)
   jsEngine->Evaluate("_triggerEvent('foobar', 1, 'x', true)");
   ASSERT_TRUE(callbackCalled);
   ASSERT_EQ(callbackParams.size(), 3u);
-  ASSERT_EQ(callbackParams[0]->AsInt(), 1);
-  ASSERT_EQ(callbackParams[1]->AsString(), "x");
-  ASSERT_TRUE(callbackParams[2]->AsBool());
+  ASSERT_EQ(callbackParams[0].AsInt(), 1);
+  ASSERT_EQ(callbackParams[1].AsString(), "x");
+  ASSERT_TRUE(callbackParams[2].AsBool());
 
   // Trigger a different event
   callbackCalled = false;
@@ -128,7 +188,7 @@ TEST(NewJsEngineTest, CallbackGetSet)
 TEST(NewJsEngineTest, GlobalPropertyTest)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-  jsEngine->SetGlobalProperty("foo", *jsEngine->NewValue("bar"));
+  jsEngine->SetGlobalProperty("foo", jsEngine->NewValue("bar"));
   AdblockPlus::JsValuePtr foo = jsEngine->Evaluate("foo");
   ASSERT_TRUE(foo->IsString());
   ASSERT_EQ(foo->AsString(), "bar");
