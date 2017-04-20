@@ -194,7 +194,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
 
   // Lock the JS engine while we are loading scripts, no timeouts should fire
   // until we are done.
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
 
   // Set the preconfigured prefs
   auto preconfiguredPrefsObject = jsEngine->NewObject();

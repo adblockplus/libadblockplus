@@ -67,7 +67,7 @@ namespace
       AdblockPlus::ServerResponse result = jsEngine->IsConnectionAllowed() ?
         jsEngine->GetWebRequest()->GET(url, headers) : NotAllowedResponse();
 
-      AdblockPlus::JsContext context(jsEngine);
+      AdblockPlus::JsContext context(*jsEngine);
 
       auto resultObject = jsEngine->NewObject();
       resultObject.SetProperty("status", result.status);

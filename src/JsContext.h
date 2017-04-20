@@ -26,7 +26,7 @@ namespace AdblockPlus
   class JsContext
   {
   public:
-    explicit JsContext(const JsEnginePtr& jsEngine);
+    explicit JsContext(JsEngine& jsEngine);
 
     v8::Local<v8::Context> GetV8Context() const
     {

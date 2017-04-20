@@ -40,7 +40,7 @@ AdblockPlus::JsValue::JsValue(AdblockPlus::JsValue&& src)
 AdblockPlus::JsValue::JsValue(const JsValue& src)
   : jsEngine(src.jsEngine)
 {
-  const JsContext context(src.jsEngine);
+  const JsContext context(*src.jsEngine);
   value.reset(new v8::Persistent<v8::Value>(src.jsEngine->GetIsolate(), *src.value));
 }
 
@@ -48,7 +48,7 @@ AdblockPlus::JsValue::~JsValue()
 {
   if (value)
   {
-    const JsContext context(jsEngine);
+    const JsContext context(*jsEngine);
     value->Dispose();
     value.reset();
   }
@@ -56,7 +56,7 @@ AdblockPlus::JsValue::~JsValue()
 
 JsValue& AdblockPlus::JsValue::operator=(const JsValue& src)
 {
-  const JsContext context(src.jsEngine);
+  const JsContext context(*src.jsEngine);
   if (value)
     value->Dispose();
   jsEngine = src.jsEngine;
@@ -67,70 +67,70 @@ JsValue& AdblockPlus::JsValue::operator=(const JsValue& src)
 
 bool AdblockPlus::JsValue::IsUndefined() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   return UnwrapValue()->IsUndefined();
 }
 
 bool AdblockPlus::JsValue::IsNull() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   return UnwrapValue()->IsNull();
 }
 
 bool AdblockPlus::JsValue::IsString() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   v8::Local<v8::Value> value = UnwrapValue();
   return value->IsString() || value->IsStringObject();
 }
 
 bool AdblockPlus::JsValue::IsNumber() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   v8::Local<v8::Value> value = UnwrapValue();
   return value->IsNumber() || value->IsNumberObject();
 }
 
 bool AdblockPlus::JsValue::IsBool() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   v8::Local<v8::Value> value = UnwrapValue();
   return value->IsBoolean() || value->IsBooleanObject();
 }
 
 bool AdblockPlus::JsValue::IsObject() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   return UnwrapValue()->IsObject();
 }
 
 bool AdblockPlus::JsValue::IsArray() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   return UnwrapValue()->IsArray();
 }
 
 bool AdblockPlus::JsValue::IsFunction() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   return UnwrapValue()->IsFunction();
 }
 
 std::string AdblockPlus::JsValue::AsString() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   return Utils::FromV8String(UnwrapValue());
 }
 
 int64_t AdblockPlus::JsValue::AsInt() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   return UnwrapValue()->IntegerValue();
 }
 
 bool AdblockPlus::JsValue::AsBool() const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   return UnwrapValue()->BooleanValue();
 }
 
@@ -139,7 +139,7 @@ AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
   if (!IsArray())
     throw std::runtime_error("Cannot convert a non-array to list");
 
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   JsValueList result;
   v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(UnwrapValue());
   uint32_t length = array->Length();
@@ -156,7 +156,7 @@ std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
   if (!IsObject())
     throw new std::runtime_error("Attempting to get propert list for a non-object");
 
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(UnwrapValue());
   JsValueList properties = JsValue(jsEngine, object->GetOwnPropertyNames()).AsList();
   std::vector<std::string> result;
@@ -171,7 +171,7 @@ AdblockPlus::JsValue AdblockPlus::JsValue::GetProperty(const std::string& name) 
   if (!IsObject())
     throw new std::runtime_error("Attempting to get property of a non-object");
 
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   v8::Local<v8::String> property = Utils::ToV8String(jsEngine->GetIsolate(), name);
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
   return JsValue(jsEngine, obj->Get(property));
@@ -194,25 +194,25 @@ v8::Local<v8::Value> AdblockPlus::JsValue::UnwrapValue() const
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::string& val)
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   SetProperty(name, Utils::ToV8String(jsEngine->GetIsolate(), val));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   SetProperty(name, v8::Number::New(jsEngine->GetIsolate(), val));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const JsValue& val)
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   SetProperty(name, val.UnwrapValue());
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   SetProperty(name, v8::Boolean::New(val));
 }
 
@@ -221,14 +221,14 @@ std::string AdblockPlus::JsValue::GetClass() const
   if (!IsObject())
     throw new std::runtime_error("Cannot get constructor of a non-object");
 
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
   return Utils::FromV8String(obj->GetConstructorName());
 }
 
 JsValue JsValue::Call(const JsValueList& params) const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   std::vector<v8::Handle<v8::Value>> argv;
   for (const auto& param : params)
     argv.push_back(param.UnwrapValue());
@@ -238,7 +238,7 @@ JsValue JsValue::Call(const JsValueList& params) const
 
 JsValue JsValue::Call(const JsValueList& params, const JsValue& thisValue) const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
   v8::Local<v8::Object> thisObj = v8::Local<v8::Object>::Cast(thisValue.UnwrapValue());
 
   std::vector<v8::Handle<v8::Value>> argv;
@@ -250,7 +250,7 @@ JsValue JsValue::Call(const JsValueList& params, const JsValue& thisValue) const
 
 JsValue JsValue::Call(const JsValue& arg) const
 {
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
 
   std::vector<v8::Handle<v8::Value>> argv;
   argv.push_back(arg.UnwrapValue());
@@ -265,7 +265,7 @@ JsValue JsValue::Call(std::vector<v8::Handle<v8::Value>>& args, v8::Local<v8::Ob
   if (!thisObj->IsObject())
     throw new std::runtime_error("`this` pointer has to be an object");
 
-  const JsContext context(jsEngine);
+  const JsContext context(*jsEngine);
 
   const v8::TryCatch tryCatch;
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(UnwrapValue());

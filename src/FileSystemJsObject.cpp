@@ -72,7 +72,7 @@ namespace
         error =  "Unknown error while reading from " + path;
       }
 
-      const JsContext context(jsEngine);
+      const JsContext context(*jsEngine);
       auto result = jsEngine->NewObject();
       result.SetProperty("content", content);
       result.SetProperty("error", error);
@@ -112,7 +112,7 @@ namespace
         error = "Unknown error while writing to " + path;
       }
 
-      const JsContext context(jsEngine);
+      const JsContext context(*jsEngine);
       auto errorValue = jsEngine->NewValue(error);
       JsValueList params;
       params.push_back(errorValue);
@@ -149,7 +149,7 @@ namespace
         error = "Unknown error while moving " + fromPath + " to " + toPath;
       }
 
-      const JsContext context(jsEngine);
+      const JsContext context(*jsEngine);
       auto errorValue = jsEngine->NewValue(error);
       JsValueList params;
       params.push_back(errorValue);
@@ -186,7 +186,7 @@ namespace
         error = "Unknown error while removing " + path;
       }
 
-      const JsContext context(jsEngine);
+      const JsContext context(*jsEngine);
       auto errorValue = jsEngine->NewValue(error);
       JsValueList params;
       params.push_back(errorValue);
@@ -224,7 +224,7 @@ namespace
         error = "Unknown error while calling stat on " + path;
       }
 
-      const JsContext context(jsEngine);
+      const JsContext context(*jsEngine);
       auto result = jsEngine->NewObject();
       result.SetProperty("exists", statResult.exists);
       result.SetProperty("isFile", statResult.isFile);
