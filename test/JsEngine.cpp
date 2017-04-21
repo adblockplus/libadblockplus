@@ -17,7 +17,6 @@
 
 #include <stdexcept>
 #include "BaseJsTest.h"
-#include "../src/JsContext.h"
 
 namespace
 {
