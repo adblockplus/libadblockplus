@@ -77,11 +77,33 @@ bool Filter::operator==(const Filter& filter) const
   return GetProperty("text").AsString() == filter.GetProperty("text").AsString();
 }
 
+Subscription::Subscription(const Subscription& src)
+  : JsValue(src)
+{
+}
+
+Subscription::Subscription(Subscription&& src)
+  : JsValue(std::move(src))
+{
+}
+
 Subscription::Subscription(JsValue&& value)
     : JsValue(std::move(value))
 {
   if (!IsObject())
     throw std::runtime_error("JavaScript value is not an object");
+}
+
+Subscription& Subscription::operator=(const Subscription& src)
+{
+  static_cast<JsValue&>(*this) = src;
+  return *this;
+}
+
+Subscription& Subscription::operator=(Subscription&& src)
+{
+  static_cast<JsValue&>(*this) = std::move(src);
+  return *this;
 }
 
 bool Subscription::IsListed() const
@@ -282,10 +304,10 @@ Filter FilterEngine::GetFilter(const std::string& text) const
   return Filter(func.Call(jsEngine->NewValue(text)));
 }
 
-SubscriptionPtr FilterEngine::GetSubscription(const std::string& url) const
+Subscription FilterEngine::GetSubscription(const std::string& url) const
 {
   JsValue func = jsEngine->Evaluate("API.getSubscriptionFromUrl");
-  return SubscriptionPtr(new Subscription(func.Call(jsEngine->NewValue(url))));
+  return Subscription(func.Call(jsEngine->NewValue(url)));
 }
 
 std::vector<Filter> FilterEngine::GetListedFilters() const
@@ -298,23 +320,23 @@ std::vector<Filter> FilterEngine::GetListedFilters() const
   return result;
 }
 
-std::vector<SubscriptionPtr> FilterEngine::GetListedSubscriptions() const
+std::vector<Subscription> FilterEngine::GetListedSubscriptions() const
 {
   JsValue func = jsEngine->Evaluate("API.getListedSubscriptions");
   JsValueList values = func.Call().AsList();
-  std::vector<SubscriptionPtr> result;
+  std::vector<Subscription> result;
   for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(SubscriptionPtr(new Subscription(std::move(*it))));
+    result.push_back(Subscription(std::move(*it)));
   return result;
 }
 
-std::vector<SubscriptionPtr> FilterEngine::FetchAvailableSubscriptions() const
+std::vector<Subscription> FilterEngine::FetchAvailableSubscriptions() const
 {
   JsValue func = jsEngine->Evaluate("API.getRecommendedSubscriptions");
   JsValueList values = func.Call().AsList();
-  std::vector<SubscriptionPtr> result;
+  std::vector<Subscription> result;
   for (JsValueList::iterator it = values.begin(); it != values.end(); it++)
-    result.push_back(SubscriptionPtr(new Subscription(std::move(*it))));
+    result.push_back(Subscription(std::move(*it)));
   return result;
 }
 

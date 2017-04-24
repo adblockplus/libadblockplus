@@ -22,19 +22,19 @@
 
 namespace
 {
-  typedef std::vector<AdblockPlus::SubscriptionPtr> SubscriptionList;
+  typedef std::vector<AdblockPlus::Subscription> SubscriptionList;
 
   void ShowSubscriptionList(const SubscriptionList& subscriptions)
   {
     for (SubscriptionList::const_iterator it = subscriptions.begin();
          it != subscriptions.end(); it++)
     {
-      std::cout << (*it)->GetProperty("title").AsString();
-      std::cout << " - " << (*it)->GetProperty("url").AsString();
-      if (!(*it)->GetProperty("author").IsUndefined())
-        std::cout << " - " << (*it)->GetProperty("author").AsString();
-      if (!(*it)->GetProperty("specialization").IsUndefined())
-        std::cout << " - " << (*it)->GetProperty("specialization").AsString();
+      std::cout << it->GetProperty("title").AsString();
+      std::cout << " - " << it->GetProperty("url").AsString();
+      if (!it->GetProperty("author").IsUndefined())
+        std::cout << " - " << it->GetProperty("author").AsString();
+      if (!it->GetProperty("specialization").IsUndefined())
+        std::cout << " - " << it->GetProperty("specialization").AsString();
       std::cout << std::endl;
     }
   }
@@ -103,29 +103,29 @@ void SubscriptionsCommand::ShowSubscriptions()
 void SubscriptionsCommand::AddSubscription(const std::string& url,
                                            const std::string& title)
 {
-  AdblockPlus::SubscriptionPtr subscription = filterEngine.GetSubscription(url);
+  AdblockPlus::Subscription subscription = filterEngine.GetSubscription(url);
   if (title.size())
-    subscription->SetProperty("title", title);
-  subscription->AddToList();
+    subscription.SetProperty("title", title);
+  subscription.AddToList();
 }
 
 void SubscriptionsCommand::RemoveSubscription(const std::string& url)
 {
-  AdblockPlus::SubscriptionPtr subscription = filterEngine.GetSubscription(url);
-  if (!subscription->IsListed())
+  AdblockPlus::Subscription subscription = filterEngine.GetSubscription(url);
+  if (!subscription.IsListed())
   {
     std::cout << "No subscription with URL '" << url << "'" << std::endl;
     return;
   }
-  subscription->RemoveFromList();
+  subscription.RemoveFromList();
 }
 
 void SubscriptionsCommand::UpdateSubscriptions()
 {
-  const SubscriptionList& subscriptions = filterEngine.GetListedSubscriptions();
-  for (SubscriptionList::const_iterator it = subscriptions.begin();
+  SubscriptionList subscriptions = filterEngine.GetListedSubscriptions();
+  for (SubscriptionList::iterator it = subscriptions.begin();
        it != subscriptions.end(); it++)
-    (*it)->UpdateFilters();
+    it->UpdateFilters();
 }
 
 void SubscriptionsCommand::FetchSubscriptions()

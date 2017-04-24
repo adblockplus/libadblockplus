@@ -248,15 +248,15 @@ namespace
       });
     }
 
-    SubscriptionPtr EnsureExampleSubscriptionAndForceUpdate(const std::string& apppendToUrl = std::string())
+    Subscription EnsureExampleSubscriptionAndForceUpdate(const std::string& apppendToUrl = std::string())
     {
       if (!filterEngine)
         filterEngine = FilterEngine::Create(jsEngine, createParams);
       auto subscriptionUrl = subscriptionUrlPrefix + apppendToUrl;
       auto subscription = filterEngine->GetSubscription(subscriptionUrl);
-      EXPECT_EQ(0u, subscription->GetProperty("filters").AsList().size()) << subscriptionUrl;
-      EXPECT_TRUE(subscription->GetProperty("downloadStatus").IsNull()) << subscriptionUrl;
-      subscription->UpdateFilters();
+      EXPECT_EQ(0u, subscription.GetProperty("filters").AsList().size()) << subscriptionUrl;
+      EXPECT_TRUE(subscription.GetProperty("downloadStatus").IsNull()) << subscriptionUrl;
+      subscription.UpdateFilters();
       {
         std::unique_lock<std::mutex> lock(downloadStatusChanged.mutex);
         downloadStatusChanged.cv.wait_for(lock,
@@ -329,47 +329,47 @@ TEST_F(FilterEngineTest, AddRemoveFilters)
 
 TEST_F(FilterEngineTest, SubscriptionProperties)
 {
-  AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription("foo");
+  AdblockPlus::Subscription subscription = filterEngine->GetSubscription("foo");
 
-  ASSERT_TRUE(subscription->GetProperty("stringFoo").IsUndefined());
-  ASSERT_TRUE(subscription->GetProperty("intFoo").IsUndefined());
-  ASSERT_TRUE(subscription->GetProperty("boolFoo").IsUndefined());
+  ASSERT_TRUE(subscription.GetProperty("stringFoo").IsUndefined());
+  ASSERT_TRUE(subscription.GetProperty("intFoo").IsUndefined());
+  ASSERT_TRUE(subscription.GetProperty("boolFoo").IsUndefined());
 
-  subscription->SetProperty("stringFoo", "y");
-  subscription->SetProperty("intFoo", 24);
-  subscription->SetProperty("boolFoo", true);
-  ASSERT_EQ("y", subscription->GetProperty("stringFoo").AsString());
-  ASSERT_EQ(24, subscription->GetProperty("intFoo").AsInt());
-  ASSERT_TRUE(subscription->GetProperty("boolFoo").AsBool());
+  subscription.SetProperty("stringFoo", "y");
+  subscription.SetProperty("intFoo", 24);
+  subscription.SetProperty("boolFoo", true);
+  ASSERT_EQ("y", subscription.GetProperty("stringFoo").AsString());
+  ASSERT_EQ(24, subscription.GetProperty("intFoo").AsInt());
+  ASSERT_TRUE(subscription.GetProperty("boolFoo").AsBool());
 }
 
 TEST_F(FilterEngineTest, AddRemoveSubscriptions)
 {
   ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
-  AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription("foo");
+  AdblockPlus::Subscription subscription = filterEngine->GetSubscription("foo");
   ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_FALSE(subscription->IsListed());
-  subscription->AddToList();
+  ASSERT_FALSE(subscription.IsListed());
+  subscription.AddToList();
   ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[0]);
-  ASSERT_TRUE(subscription->IsListed());
-  subscription->AddToList();
+  ASSERT_EQ(subscription, filterEngine->GetListedSubscriptions()[0]);
+  ASSERT_TRUE(subscription.IsListed());
+  subscription.AddToList();
   ASSERT_EQ(1u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_EQ(*subscription, *filterEngine->GetListedSubscriptions()[0]);
-  ASSERT_TRUE(subscription->IsListed());
-  subscription->RemoveFromList();
+  ASSERT_EQ(subscription, filterEngine->GetListedSubscriptions()[0]);
+  ASSERT_TRUE(subscription.IsListed());
+  subscription.RemoveFromList();
   ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_FALSE(subscription->IsListed());
-  subscription->RemoveFromList();
+  ASSERT_FALSE(subscription.IsListed());
+  subscription.RemoveFromList();
   ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());
-  ASSERT_FALSE(subscription->IsListed());
+  ASSERT_FALSE(subscription.IsListed());
 }
 
 TEST_F(FilterEngineTest, SubscriptionUpdates)
 {
-  AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription("foo");
-  ASSERT_FALSE(subscription->IsUpdating());
-  subscription->UpdateFilters();
+  AdblockPlus::Subscription subscription = filterEngine->GetSubscription("foo");
+  ASSERT_FALSE(subscription.IsUpdating());
+  subscription.UpdateFilters();
 }
 
 TEST_F(FilterEngineTest, Matches)
@@ -728,17 +728,17 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
   auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   ASSERT_EQ(2u, subscriptions.size());
-  SubscriptionPtr aaSubscription;
-  SubscriptionPtr langSubscription;
-  if (subscriptions[0]->IsAA())
+  std::unique_ptr<Subscription> aaSubscription;
+  std::unique_ptr<Subscription> langSubscription;
+  if (subscriptions[0].IsAA())
   {
-    aaSubscription = subscriptions[0];
-    langSubscription = subscriptions[1];
+    aaSubscription.reset(new Subscription(subscriptions[0]));
+    langSubscription.reset(new Subscription(subscriptions[1]));
   }
-  else if (subscriptions[1]->IsAA())
+  else if (subscriptions[1].IsAA())
   {
-    aaSubscription = subscriptions[1];
-    langSubscription = subscriptions[0];
+    aaSubscription.reset(new Subscription(subscriptions[1]));
+    langSubscription.reset(new Subscription(subscriptions[0]));
   }
   ASSERT_NE(nullptr, aaSubscription);
   ASSERT_NE(nullptr, langSubscription);
@@ -910,12 +910,11 @@ namespace AA_ApiTest
       if (otherSubscriptionsNumber == 1u)
       {
         auto subscription = filterEngine->GetSubscription(kOtherSubscriptionUrl);
-        ASSERT_TRUE(subscription);
-        subscription->AddToList();
+        subscription.AddToList();
         const auto subscriptions = filterEngine->GetListedSubscriptions();
         ASSERT_EQ(1u, subscriptions.size());
-        EXPECT_FALSE(subscriptions[0]->IsAA());
-        EXPECT_EQ(kOtherSubscriptionUrl, subscriptions[0]->GetProperty("url").AsString());
+        EXPECT_FALSE(subscriptions[0].IsAA());
+        EXPECT_EQ(kOtherSubscriptionUrl, subscriptions[0].GetProperty("url").AsString());
       }
       if (isAASatusPresent(aaStatus))
       {
@@ -938,12 +937,13 @@ namespace AA_ApiTest
       else
         EXPECT_FALSE(filterEngine->IsAAEnabled());
 
-      SubscriptionPtr aaSubscription;
-      SubscriptionPtr otherSubscription;
-      const auto subscriptions = filterEngine->GetListedSubscriptions();
-      for (const auto& subscription : subscriptions)
+      std::unique_ptr<Subscription> aaSubscription;
+      std::unique_ptr<Subscription> otherSubscription;
+      auto subscriptions = filterEngine->GetListedSubscriptions();
+      for (auto& subscription : subscriptions)
       {
-        (subscription->IsAA() ? aaSubscription : otherSubscription) = subscription;
+        (subscription.IsAA() ? aaSubscription : otherSubscription) =
+          std::unique_ptr<Subscription>(new Subscription(std::move(subscription)));
       }
       if (otherSubscriptionsNumber == 1u)
       {
@@ -990,12 +990,12 @@ namespace AA_ApiTest
       filterEngine->SetAAEnabled(false);
     else if (parameter.action == Action::remove)
     {
-      SubscriptionPtr aaSubscription;
-      for (const auto& subscription : filterEngine->GetListedSubscriptions())
+      std::unique_ptr<Subscription> aaSubscription;
+      for (auto& subscription : filterEngine->GetListedSubscriptions())
       {
-        if (subscription->IsAA())
+        if (subscription.IsAA())
         {
-          aaSubscription = subscription;
+          aaSubscription.reset(new Subscription(std::move(subscription)));
           break;
         }
       }
@@ -1011,16 +1011,16 @@ TEST_F(FilterEngineIsAllowedConnectionTest, AbsentCallbackAllowsUpdating)
 {
   createParams.isConnectionAllowedCallback = FilterEngine::IsConnectionAllowedCallback();
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
-  EXPECT_EQ("synchronize_ok", subscription->GetProperty("downloadStatus").AsString());
-  EXPECT_EQ(1u, subscription->GetProperty("filters").AsList().size());
+  EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
+  EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
 }
 
 TEST_F(FilterEngineIsAllowedConnectionTest, AllowingCallbackAllowsUpdating)
 {
   // no stored allowed_connection_type preference
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
-  EXPECT_EQ("synchronize_ok", subscription->GetProperty("downloadStatus").AsString());
-  EXPECT_EQ(1u, subscription->GetProperty("filters").AsList().size());
+  EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
+  EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
   auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
   ASSERT_EQ(1u, capturedConnectionTypes.size());
   EXPECT_FALSE(capturedConnectionTypes[0].first);
@@ -1031,8 +1031,8 @@ TEST_F(FilterEngineIsAllowedConnectionTest, NotAllowingCallbackDoesNotAllowUpdat
   isConnectionAllowed = false;
   // no stored allowed_connection_type preference
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
-  EXPECT_EQ("synchronize_connection_error", subscription->GetProperty("downloadStatus").AsString());
-  EXPECT_EQ(0u, subscription->GetProperty("filters").AsList().size());
+  EXPECT_EQ("synchronize_connection_error", subscription.GetProperty("downloadStatus").AsString());
+  EXPECT_EQ(0u, subscription.GetProperty("filters").AsList().size());
   auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
   EXPECT_EQ(1u, capturedConnectionTypes.size());
 }
@@ -1043,8 +1043,8 @@ TEST_F(FilterEngineIsAllowedConnectionTest, PredefinedAllowedConnectionTypeIsPas
   createParams.preconfiguredPrefs.insert(std::make_pair("allowed_connection_type",
     jsEngine->NewValue(predefinedAllowedConnectionType)));
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
-  EXPECT_EQ("synchronize_ok", subscription->GetProperty("downloadStatus").AsString());
-  EXPECT_EQ(1u, subscription->GetProperty("filters").AsList().size());
+  EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
+  EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
   auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
   ASSERT_EQ(1u, capturedConnectionTypes.size());
   EXPECT_TRUE(capturedConnectionTypes[0].first);
@@ -1061,8 +1061,8 @@ TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCa
     createParams.preconfiguredPrefs.insert(std::make_pair(
       "allowed_connection_type", jsEngine->NewValue(predefinedAllowedConnectionType)));
     auto subscription = EnsureExampleSubscriptionAndForceUpdate();
-    EXPECT_EQ("synchronize_ok", subscription->GetProperty("downloadStatus").AsString());
-    EXPECT_EQ(1u, subscription->GetProperty("filters").AsList().size());
+    EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
+    EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
     auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_TRUE(capturedConnectionTypes[0].first);
@@ -1073,12 +1073,12 @@ TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCa
     // set no value
     filterEngine->SetAllowedConnectionType(nullptr);
     auto subscription = EnsureExampleSubscriptionAndForceUpdate("subA");
-    EXPECT_EQ("synchronize_ok", subscription->GetProperty("downloadStatus").AsString());
-    EXPECT_EQ(1u, subscription->GetProperty("filters").AsList().size());
+    EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
+    EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
     auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_FALSE(capturedConnectionTypes[0].first);
-    subscription->RemoveFromList();
+    subscription.RemoveFromList();
     this->capturedConnectionTypes.Clear();
   }
   capturedConnectionTypes.Clear();
@@ -1087,8 +1087,8 @@ TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCa
     std::string testConnection = "test connection";
     filterEngine->SetAllowedConnectionType(&testConnection);
     auto subscription = EnsureExampleSubscriptionAndForceUpdate("subB");
-    EXPECT_EQ("synchronize_ok", subscription->GetProperty("downloadStatus").AsString());
-    EXPECT_EQ(1u, subscription->GetProperty("filters").AsList().size());
+    EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
+    EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
     auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_TRUE(capturedConnectionTypes[0].first);

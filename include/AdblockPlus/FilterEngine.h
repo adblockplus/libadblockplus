@@ -88,7 +88,28 @@ namespace AdblockPlus
    */
   class Subscription : public JsValue
   {
+    friend class FilterEngine;
   public:
+    /**
+     * Copy constructor
+     */
+    Subscription(const Subscription& src);
+
+    /**
+     * Move constructor
+     */
+    Subscription(Subscription&& src);
+
+    /**
+     * Assignment operator
+     */
+    Subscription& operator=(const Subscription& src);
+
+    /**
+     * Move assignment operator
+     */
+    Subscription& operator=(Subscription&& src);
+
     /**
      * Checks if this subscription has been added to the list of subscriptions.
      * @return `true` if this subscription has been added.
@@ -125,6 +146,7 @@ namespace AdblockPlus
 
     bool operator==(const Subscription& subscription) const;
 
+  protected:
     /**
      * Creates a wrapper for an existing JavaScript subscription object.
      * Normally you shouldn't call this directly, but use
@@ -138,11 +160,6 @@ namespace AdblockPlus
    * A smart pointer to a `Filter` instance.
    */
   typedef std::unique_ptr<Filter> FilterPtr;
-
-  /**
-   * Shared smart pointer to a `Subscription` instance.
-   */
-  typedef std::shared_ptr<Subscription> SubscriptionPtr;
 
   /**
    * Main component of libadblockplus.
@@ -290,7 +307,7 @@ namespace AdblockPlus
      * @param url Subscription URL.
      * @return New `Subscription` instance.
      */
-    SubscriptionPtr GetSubscription(const std::string& url) const;
+    Subscription GetSubscription(const std::string& url) const;
 
     /**
      * Retrieves the list of custom filters.
@@ -302,13 +319,13 @@ namespace AdblockPlus
      * Retrieves all subscriptions.
      * @return List of subscriptions.
      */
-    std::vector<SubscriptionPtr> GetListedSubscriptions() const;
+    std::vector<Subscription> GetListedSubscriptions() const;
 
     /**
      * Retrieves all recommended subscriptions.
      * @return List of recommended subscriptions.
      */
-    std::vector<SubscriptionPtr> FetchAvailableSubscriptions() const;
+    std::vector<Subscription> FetchAvailableSubscriptions() const;
 
     /**
      * Ensures that the Acceptable Ads subscription is enabled or disabled.
