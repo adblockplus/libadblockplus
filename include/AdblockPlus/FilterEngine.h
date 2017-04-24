@@ -232,7 +232,7 @@ namespace AdblockPlus
      * Callback type invoked when a new notification should be shown.
      * The parameter is the Notification object to be shown.
      */
-    typedef std::function<void(const NotificationPtr&)> ShowNotificationCallback;
+    typedef std::function<void(Notification&)> ShowNotificationCallback;
 
     /**
      * Callback function returning false when current connection is not

@@ -48,21 +48,16 @@ namespace
       "})();");
     }
 
-    NotificationPtr PeekNotification(const std::string& url = std::string())
+    std::unique_ptr<Notification> PeekNotification(const std::string& url = std::string())
     {
-      NotificationPtr retValue;
-      filterEngine->SetShowNotificationCallback(std::bind(
-        &NotificationTest::NotificationAvailableCallback,
-        std::placeholders::_1, std::ref(retValue)));
+      std::unique_ptr<Notification> retValue;
+      filterEngine->SetShowNotificationCallback(
+        [&retValue](Notification& notification) {
+          retValue.reset(new Notification(std::move(notification)));
+        });
       filterEngine->ShowNextNotification(url);
       filterEngine->RemoveShowNotificationCallback();
       return retValue;
-    }
-
-    static void NotificationAvailableCallback(const NotificationPtr& src, NotificationPtr& dst)
-    {
-      EXPECT_TRUE(src);
-      dst = src;
     }
   };
 
@@ -114,20 +109,15 @@ namespace
       jsEngine->SetWebRequest(std::shared_ptr<MockWebRequest>(
         new MockWebRequest(responseJsonText)));
       jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
-      filterEngine.reset(new FilterEngine(jsEngine));
+      filterEngine = FilterEngine::Create(jsEngine);
       filterEngine->SetShowNotificationCallback(
-        std::bind(&NotificationMockWebRequestTest::OnNotification,
-        this, std::placeholders::_1));
-    }
-
-    void OnNotification(const NotificationPtr& notification)
-    {
-      isNotificationCallbackCalled = true;
-      ASSERT_TRUE(notification);
-      EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_INFORMATION, notification->GetType());
-      EXPECT_EQ("Title", notification->GetTexts().title);
-      EXPECT_EQ("message", notification->GetTexts().message);
-      notification->MarkAsShown();
+        [this](Notification& notification) {
+          isNotificationCallbackCalled = true;
+          EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_INFORMATION, notification.GetType());
+          EXPECT_EQ("Title", notification.GetTexts().title);
+          EXPECT_EQ("message", notification.GetTexts().message);
+          notification.MarkAsShown();
+        });
     }
   };
 #endif
@@ -153,7 +143,7 @@ TEST_F(NotificationTest, AddNotification)
       "title: 'testTitle',"
       "message: 'testMessage',"
     "}");
-  NotificationPtr notification = PeekNotification();
+  auto notification = PeekNotification();
   ASSERT_TRUE(notification);
   EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_CRITICAL, notification->GetType());
   EXPECT_EQ("testTitle", notification->GetTexts().title);
@@ -170,7 +160,7 @@ TEST_F(NotificationTest, FilterByUrl)
     "urlFilters:['||www.de$document']"
   "}");
 
-  NotificationPtr notification = PeekNotification();
+  auto notification = PeekNotification();
   ASSERT_TRUE(notification);
   EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_CRITICAL, notification->GetType());
 
@@ -187,7 +177,7 @@ TEST_F(NotificationTest, MarkAsShown)
 {
   AddNotification("{ id: 'id', type: 'question' }");
   EXPECT_TRUE(PeekNotification());
-  NotificationPtr notification = PeekNotification();
+  auto notification = PeekNotification();
   ASSERT_TRUE(notification);
   notification->MarkAsShown();
   EXPECT_FALSE(PeekNotification());
@@ -196,7 +186,7 @@ TEST_F(NotificationTest, MarkAsShown)
 TEST_F(NotificationTest, NoLinks)
 {
   AddNotification("{ id: 'id'}");
-  NotificationPtr notification = PeekNotification();
+  auto notification = PeekNotification();
   ASSERT_TRUE(notification);
   EXPECT_EQ(0u, notification->GetLinks().size());
 }
@@ -204,7 +194,7 @@ TEST_F(NotificationTest, NoLinks)
 TEST_F(NotificationTest, Links)
 {
   AddNotification("{ id: 'id', links: ['link1', 'link2'] }");
-  NotificationPtr notification = PeekNotification();
+  auto notification = PeekNotification();
   ASSERT_TRUE(notification);
   std::vector<std::string> notificationLinks = notification->GetLinks();
   ASSERT_EQ(2u, notificationLinks.size());

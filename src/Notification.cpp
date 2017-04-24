@@ -57,9 +57,31 @@ namespace
   }
 }
 
+Notification::Notification(const Notification& src)
+  : JsValue(src)
+{
+}
+
+Notification::Notification(Notification&& src)
+  : JsValue(std::move(src))
+{
+}
+
 Notification::Notification(JsValue&& jsValue)
   : JsValue(std::move(jsValue))
 {
+}
+
+Notification& Notification::operator=(const Notification& src)
+{
+  static_cast<JsValue&>(*this) = src;
+  return *this;
+}
+
+Notification& Notification::operator=(Notification&& src)
+{
+  static_cast<JsValue&>(*this) = std::move(src);
+  return *this;
 }
 
 NotificationType Notification::GetType() const

@@ -554,7 +554,8 @@ void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
   {
     return;
   }
-  callback(NotificationPtr(new Notification(JsValue(params[0]))));
+  auto notification = Notification(JsValue(params[0]));
+  callback(notification);
 }
 
 
