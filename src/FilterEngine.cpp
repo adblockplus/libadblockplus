@@ -37,6 +37,28 @@ Filter::Filter(JsValue&& value)
     throw std::runtime_error("JavaScript value is not an object");
 }
 
+Filter::Filter(const Filter& src)
+  : JsValue(src)
+{
+}
+
+Filter::Filter(Filter&& src)
+  : JsValue(std::move(src))
+{
+}
+
+Filter& Filter::operator=(const Filter& src)
+{
+  static_cast<JsValue&>(*this) = src;
+  return *this;
+}
+
+Filter& Filter::operator=(Filter&& src)
+{
+  static_cast<JsValue&>(*this) = std::move(src);
+  return *this;
+}
+
 Filter::Type Filter::GetType() const
 {
   std::string className = GetClass();

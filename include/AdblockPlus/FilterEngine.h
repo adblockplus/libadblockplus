@@ -39,7 +39,13 @@ namespace AdblockPlus
    */
   class Filter : public JsValue
   {
+    friend class FilterEngine;
   public:
+    Filter(const Filter& src);
+    Filter(Filter&& src);
+    Filter& operator=(const Filter& src);
+    Filter& operator=(Filter&& src);
+
     /**
      * Filter types, see https://adblockplus.org/en/filters.
      */
@@ -71,6 +77,7 @@ namespace AdblockPlus
 
     bool operator==(const Filter& filter) const;
 
+  protected:
     /**
      * Creates a wrapper for an existing JavaScript filter object.
      * Normally you shouldn't call this directly, but use
