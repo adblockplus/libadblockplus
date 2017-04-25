@@ -137,7 +137,7 @@ namespace AdblockPlus
   };
 
   /**
-   * Shared smart pointer to a `Filter` instance.
+   * A smart pointer to a `Filter` instance.
    */
   typedef std::unique_ptr<Filter> FilterPtr;
 
