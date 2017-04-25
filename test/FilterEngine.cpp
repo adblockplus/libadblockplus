@@ -942,8 +942,8 @@ namespace AA_ApiTest
       auto subscriptions = filterEngine->GetListedSubscriptions();
       for (auto& subscription : subscriptions)
       {
-        (subscription.IsAA() ? aaSubscription : otherSubscription) =
-          std::unique_ptr<Subscription>(new Subscription(std::move(subscription)));
+        auto& dstSubscription = subscription.IsAA() ? aaSubscription : otherSubscription;
+        dstSubscription.reset(new Subscription(std::move(subscription)));
       }
       if (otherSubscriptionsNumber == 1u)
       {
