@@ -48,8 +48,7 @@ namespace AdblockPlus
   /**
    * Wrapper for an Adblock Plus notification object.
    */
-  class Notification: public JsValue,
-                      public std::enable_shared_from_this<Notification>
+  class Notification: public JsValue
   {
     friend class FilterEngine;
   protected:

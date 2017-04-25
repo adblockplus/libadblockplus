@@ -37,8 +37,7 @@ namespace AdblockPlus
    * [filter properties](https://adblockplus.org/jsdoc/adblockpluscore/Filter.html),
    * use `GetProperty()` to retrieve them by name.
    */
-  class Filter : public JsValue,
-                 public std::enable_shared_from_this<Filter>
+  class Filter : public JsValue
   {
   public:
     /**
@@ -87,8 +86,7 @@ namespace AdblockPlus
    * [subscription properties](https://adblockplus.org/jsdoc/adblockpluscore/Subscription.html),
    * use `GetProperty()` to retrieve them by name.
    */
-  class Subscription : public JsValue,
-                       public std::enable_shared_from_this<Subscription>
+  class Subscription : public JsValue
   {
   public:
     /**
