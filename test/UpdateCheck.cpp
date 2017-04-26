@@ -19,6 +19,8 @@
 
 #include "BaseJsTest.h"
 
+using namespace AdblockPlus;
+
 namespace
 {
   typedef std::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
@@ -74,8 +76,11 @@ namespace
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
       jsEngine->SetWebRequest(webRequestPtr);
-      jsEngine->SetEventCallback("updateAvailable",
-          std::bind(&UpdateCheckTest::EventCallback, this, std::placeholders::_1));
+      jsEngine->SetEventCallback("updateAvailable", [this](JsValueList&& params)
+      {
+        eventCallbackCalled = true;
+        eventCallbackParams = std::move(params);
+      });
 
       filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
@@ -84,12 +89,6 @@ namespace
     {
       filterEngine->ForceUpdateCheck(
           std::bind(&UpdateCheckTest::UpdateCallback, this, std::placeholders::_1));
-    }
-
-    void EventCallback(const AdblockPlus::JsValueList& params)
-    {
-      eventCallbackCalled = true;
-      eventCallbackParams = params;
     }
 
     void UpdateCallback(const std::string& error)

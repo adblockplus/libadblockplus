@@ -62,19 +62,6 @@ namespace
   typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
   typedef FilterEngineTestGeneric<VeryLazyFileSystem, LazyLogSystem> FilterEngineTestNoData;
 
-  struct MockFilterChangeCallback
-  {
-    MockFilterChangeCallback(int& timesCalled) : timesCalled(timesCalled) {}
-
-    void operator()(const std::string&, const AdblockPlus::JsValue&)
-    {
-      timesCalled++;
-    }
-
-  private:
-    int& timesCalled;
-  };
-
   class UpdaterTest : public ::testing::Test
   {
   protected:
@@ -234,7 +221,7 @@ namespace
         capturedConnectionTypes.Add(allowedConnectionType);
         return isConnectionAllowed;
       };
-      jsEngine->SetEventCallback("filterChange", [this](const JsValueList& params/*action, item*/)
+      jsEngine->SetEventCallback("filterChange", [this](JsValueList&& params/*action, item*/)
       {
         ASSERT_EQ(2u, params.size());
         if (params[0].AsString() == "subscription.downloadStatus")
@@ -602,9 +589,11 @@ TEST_F(FilterEngineTestNoData, FirstRunFlag)
 TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
 {
   int timesCalled = 0;
-  MockFilterChangeCallback mockFilterChangeCallback(timesCalled);
   std::this_thread::sleep_for(std::chrono::milliseconds(200));
-  filterEngine->SetFilterChangeCallback(mockFilterChangeCallback);
+  filterEngine->SetFilterChangeCallback([&timesCalled](const std::string&, AdblockPlus::JsValue&&)
+  {
+    timesCalled++;
+  });
   filterEngine->GetFilter("foo").AddToList();
   EXPECT_EQ(1, timesCalled);
 

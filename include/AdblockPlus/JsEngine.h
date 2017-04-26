@@ -93,7 +93,7 @@ namespace AdblockPlus
     /**
      * Event callback function.
      */
-    typedef std::function<void(const JsValueList& params)> EventCallback;
+    typedef std::function<void(JsValueList&& params)> EventCallback;
 
     /**
     * Callback function returning false when current connection is not allowed
@@ -137,7 +137,7 @@ namespace AdblockPlus
      * @param eventName Event name.
      * @param params Event parameters.
      */
-    void TriggerEvent(const std::string& eventName, const JsValueList& params);
+    void TriggerEvent(const std::string& eventName, JsValueList&& params);
 
     /**
      * Evaluates a JavaScript expression.

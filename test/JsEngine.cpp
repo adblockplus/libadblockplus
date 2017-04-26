@@ -18,6 +18,8 @@
 #include <stdexcept>
 #include "BaseJsTest.h"
 
+using namespace AdblockPlus;
+
 namespace
 {
   class JsEngineTest : public BaseJsTest
@@ -127,11 +129,10 @@ TEST_F(JsEngineTest, EventCallbacks)
 {
   bool callbackCalled = false;
   AdblockPlus::JsValueList callbackParams;
-  auto Callback = [&callbackCalled, & callbackParams](
-    const AdblockPlus::JsValueList& params)
+  auto Callback = [&callbackCalled, &callbackParams](JsValueList&& params)
   {
     callbackCalled = true;
-    callbackParams = params;
+    callbackParams = move(params);
   };
 
   // Trigger event without a callback

@@ -63,7 +63,7 @@ namespace
     }
     std::string eventName = converted.front().AsString();
     converted.erase(converted.cbegin());
-    jsEngine->TriggerEvent(eventName, converted);
+    jsEngine->TriggerEvent(eventName, move(converted));
     return v8::Undefined();
   }
 }

@@ -52,7 +52,7 @@ namespace
     {
       std::unique_ptr<Notification> retValue;
       filterEngine->SetShowNotificationCallback(
-        [&retValue](Notification& notification) {
+        [&retValue](Notification&& notification) {
           retValue.reset(new Notification(std::move(notification)));
         });
       filterEngine->ShowNextNotification(url);
@@ -111,7 +111,7 @@ namespace
       jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
       filterEngine = FilterEngine::Create(jsEngine);
       filterEngine->SetShowNotificationCallback(
-        [this](Notification& notification) {
+        [this](Notification&& notification) {
           isNotificationCallbackCalled = true;
           EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_INFORMATION, notification.GetType());
           EXPECT_EQ("Title", notification.GetTexts().title);

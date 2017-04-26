@@ -228,7 +228,7 @@ namespace AdblockPlus
      * for the full list).
      * The second parameter is the filter/subscription object affected, if any.
      */
-    typedef std::function<void(const std::string&, const JsValue&)> FilterChangeCallback;
+    typedef std::function<void(const std::string&, JsValue&&)> FilterChangeCallback;
 
     /**
      * Container of name-value pairs representing a set of preferences.
@@ -239,7 +239,7 @@ namespace AdblockPlus
      * Callback type invoked when a new notification should be shown.
      * The parameter is the Notification object to be shown.
      */
-    typedef std::function<void(Notification&)> ShowNotificationCallback;
+    typedef std::function<void(Notification&&)> ShowNotificationCallback;
 
     /**
      * Callback function returning false when current connection is not
@@ -556,12 +556,7 @@ namespace AdblockPlus
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,
                                const std::string& documentUrl) const;
-    void UpdateAvailable(const UpdateAvailableCallback& callback, const JsValueList& params) const;
-    void UpdateCheckDone(const std::string& eventName,
-                         const UpdateCheckDoneCallback& callback, const JsValueList& params);
-    void FilterChanged(const FilterChangeCallback& callback, const JsValueList& params) const;
-    void ShowNotification(const ShowNotificationCallback& callback,
-      const JsValueList& param) const;
+    void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
       ContentTypeMask contentTypeMask, const std::string& documentUrl) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,

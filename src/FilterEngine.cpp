@@ -217,7 +217,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       sync->Wait();
       return jsEngine->IsConnectionAllowed();
     });
-  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated, sync, isConnectionAllowedCallback](const JsValueList& params)
+  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated, sync, isConnectionAllowedCallback](JsValueList&& params)
   {
     filterEngine->firstRun = params.size() && params[0].AsBool();
     if (isConnectionAllowedCallback)
@@ -388,14 +388,18 @@ void FilterEngine::ShowNextNotification(const std::string& url) const
   func.Call(params);
 }
 
-void FilterEngine::SetShowNotificationCallback(const ShowNotificationCallback& value)
+void FilterEngine::SetShowNotificationCallback(const ShowNotificationCallback& callback)
 {
-  if (!value)
+  if (!callback)
     return;
 
-  jsEngine->SetEventCallback("_showNotification",
-    std::bind(&FilterEngine::ShowNotification, this, value,
-              std::placeholders::_1));
+  jsEngine->SetEventCallback("_showNotification", [this, callback](JsValueList&& params)
+  {
+    if (params.size() < 1 || !params[0].IsObject())
+      return;
+
+    callback(Notification(std::move(params[0])));
+  });
 }
 
 void FilterEngine::RemoveShowNotificationCallback()
@@ -494,21 +498,16 @@ std::string FilterEngine::GetHostFromURL(const std::string& url) const
 void FilterEngine::SetUpdateAvailableCallback(
     const FilterEngine::UpdateAvailableCallback& callback)
 {
-  jsEngine->SetEventCallback("updateAvailable",
-      std::bind(&FilterEngine::UpdateAvailable, this, callback,
-                std::placeholders::_1));
+  jsEngine->SetEventCallback("updateAvailable", [this, callback](JsValueList&& params)
+  {
+    if (params.size() >= 1 && !params[0].IsNull())
+      callback(params[0].AsString());
+  });
 }
 
 void FilterEngine::RemoveUpdateAvailableCallback()
 {
   jsEngine->RemoveEventCallback("updateAvailable");
-}
-
-void FilterEngine::UpdateAvailable(
-    const FilterEngine::UpdateAvailableCallback& callback, const JsValueList& params) const
-{
-  if (params.size() >= 1 && !params[0].IsNull())
-    callback(params[0].AsString());
 }
 
 void FilterEngine::ForceUpdateCheck(
@@ -519,26 +518,23 @@ void FilterEngine::ForceUpdateCheck(
   if (callback)
   {
     std::string eventName = "_updateCheckDone" + std::to_string(++updateCheckId);
-    jsEngine->SetEventCallback(eventName, std::bind(&FilterEngine::UpdateCheckDone,
-      this, eventName, callback, std::placeholders::_1));
+    jsEngine->SetEventCallback(eventName, [this, eventName, callback](JsValueList&& params)
+    {
+      std::string error(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
+      callback(error);
+      jsEngine->RemoveEventCallback(eventName);
+    });
     params.push_back(jsEngine->NewValue(eventName));
   }
   func.Call(params);
 }
 
-void FilterEngine::UpdateCheckDone(const std::string& eventName,
-    const FilterEngine::UpdateCheckDoneCallback& callback, const JsValueList& params)
+void FilterEngine::SetFilterChangeCallback(const FilterChangeCallback& callback)
 {
-  jsEngine->RemoveEventCallback(eventName);
-
-  std::string error(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
-  callback(error);
-}
-
-void FilterEngine::SetFilterChangeCallback(const FilterEngine::FilterChangeCallback& callback)
-{
-  jsEngine->SetEventCallback("filterChange", std::bind(&FilterEngine::FilterChanged,
-      this, callback, std::placeholders::_1));
+  jsEngine->SetEventCallback("filterChange", [this, callback](JsValueList&& params)
+  {
+    this->FilterChanged(callback, move(params));
+  });
 }
 
 void FilterEngine::RemoveFilterChangeCallback()
@@ -559,27 +555,12 @@ std::unique_ptr<std::string> FilterEngine::GetAllowedConnectionType() const
    return std::unique_ptr<std::string>(new std::string(prefValue.AsString()));
 }
 
-void FilterEngine::FilterChanged(const FilterEngine::FilterChangeCallback& callback, const JsValueList& params) const
+void FilterEngine::FilterChanged(const FilterEngine::FilterChangeCallback& callback, JsValueList&& params) const
 {
   std::string action(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
   JsValue item(params.size() >= 2 ? params[1] : jsEngine->NewValue(false));
-  callback(action, item);
+  callback(action, std::move(item));
 }
-
-void FilterEngine::ShowNotification(const ShowNotificationCallback& callback,
-                                         const JsValueList& params) const
-{
-  if (params.size() < 1)
-    return;
-
-  if (!params[0].IsObject())
-  {
-    return;
-  }
-  auto notification = Notification(JsValue(params[0]));
-  callback(notification);
-}
-
 
 int FilterEngine::CompareVersions(const std::string& v1, const std::string& v2) const
 {
