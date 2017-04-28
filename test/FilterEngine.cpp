@@ -49,7 +49,7 @@ namespace
   protected:
     FilterEnginePtr filterEngine;
 
-    void SetUp()
+    void SetUp() override
     {
       BaseJsTest::SetUp();
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new FileSystem));
