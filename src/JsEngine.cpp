@@ -84,10 +84,10 @@ AdblockPlus::ScopedV8Isolate::~ScopedV8Isolate()
   isolate = nullptr;
 }
 
-JsEngine::TimerTask::~TimerTask()
+JsEngine::JsWeakValuesList::~JsWeakValuesList()
 {
-  for (auto& arg : arguments)
-    arg->Dispose();
+  for (auto& value : values)
+    value->Dispose();
 }
 
 void JsEngine::ScheduleTimer(const v8::Arguments& arguments)
@@ -99,29 +99,25 @@ void JsEngine::ScheduleTimer(const v8::Arguments& arguments)
   if (!arguments[0]->IsFunction())
     throw std::runtime_error("First argument to setTimeout must be a function");
 
-  auto timerTaskIterator = jsEngine->timerTasks.emplace(jsEngine->timerTasks.end());
-
-  for (int i = 0; i < arguments.Length(); i++)
-    timerTaskIterator->arguments.emplace_back(new v8::Persistent<v8::Value>(jsEngine->GetIsolate(), arguments[i]));
+  auto jsValueArguments = jsEngine->ConvertArguments(arguments);
+  auto timerParamsID = jsEngine->StoreJsValues(jsValueArguments);
 
   std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-  jsEngine->timer->SetTimer(std::chrono::milliseconds(arguments[1]->IntegerValue()), [weakJsEngine, timerTaskIterator]
+  jsEngine->timer->SetTimer(std::chrono::milliseconds(arguments[1]->IntegerValue()), [weakJsEngine, timerParamsID]
   {
     if (auto jsEngine = weakJsEngine.lock())
-      jsEngine->CallTimerTask(timerTaskIterator);
+      jsEngine->CallTimerTask(timerParamsID);
   });
 }
 
-void JsEngine::CallTimerTask(const TimerTasks::const_iterator& timerTaskIterator)
+void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
 {
-  const JsContext context(*this);
-  JsValue callback(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), *timerTaskIterator->arguments[0]));
-  JsValueList callbackArgs;
-  for (int i = 2; i < timerTaskIterator->arguments.size(); i++)
-    callbackArgs.emplace_back(JsValue(shared_from_this(),
-      v8::Local<v8::Value>::New(GetIsolate(), *timerTaskIterator->arguments[i])));
-  callback.Call(callbackArgs);
-  timerTasks.erase(timerTaskIterator);
+  auto timerParams = TakeJsValues(timerParamsID);
+  JsValue callback = std::move(timerParams[0]);
+
+  timerParams.erase(timerParams.begin()); // remove callback placeholder
+  timerParams.erase(timerParams.begin()); // remove timeout param
+  callback.Call(timerParams);
 }
 
 AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer)
@@ -253,6 +249,42 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::Argument
   if (!result)
     throw std::runtime_error("Oops, our JsEngine is gone, how did that happen?");
   return result;
+}
+
+JsEngine::JsWeakValuesID JsEngine::StoreJsValues(const JsValueList& values)
+{
+  JsWeakValuesLists::iterator it;
+  {
+    std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
+    it = jsWeakValuesLists.emplace(jsWeakValuesLists.end());
+  }
+  {
+    JsContext context(*this);
+    for (const auto& value : values)
+    {
+      it->values.emplace_back(new v8::Persistent<v8::Value>(GetIsolate(), value.UnwrapValue()));
+    }
+  }
+  JsWeakValuesID retValue;
+  retValue.iterator = it;
+  return retValue;
+}
+
+JsValueList JsEngine::TakeJsValues(const JsWeakValuesID& id)
+{
+  JsValueList retValue;
+  {
+    JsContext context(*this);
+    for (const auto& v8Value : id.iterator->values)
+    {
+      retValue.emplace_back(JsValue(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), *v8Value)));
+    }
+  }
+  {
+    std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
+    jsWeakValuesLists.erase(id.iterator);
+  }
+  return retValue;
 }
 
 AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Arguments& arguments)
