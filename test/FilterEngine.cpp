@@ -57,6 +57,11 @@ namespace
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LogSystem));
       filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
+    void TearDown() override
+    {
+      // Workaround for issue 5198
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
   };
 
   typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
