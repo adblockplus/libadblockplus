@@ -335,6 +335,47 @@ TEST_F(FilterEngineTest, SubscriptionProperties)
   ASSERT_TRUE(subscription.GetProperty("boolFoo").AsBool());
 }
 
+TEST_F(FilterEngineTest, AddedSubscriptionIsEnabled)
+{
+  AdblockPlus::Subscription subscription = filterEngine->GetSubscription("foo");
+  EXPECT_FALSE(subscription.IsDisabled());
+}
+
+TEST_F(FilterEngineTest, DisablingSubscriptionDisablesItAndFiresEvent)
+{
+  AdblockPlus::Subscription subscription = filterEngine->GetSubscription("foo");
+  int eventFiredCounter = 0;
+  filterEngine->SetFilterChangeCallback([&eventFiredCounter](const std::string& eventName, JsValue&& subscriptionObject)
+  {
+    if (eventName != "subscription.disabled" || subscriptionObject.GetProperty("url").AsString() != "foo")
+      return;
+    ++eventFiredCounter;
+  });
+  EXPECT_FALSE(subscription.IsDisabled());
+  subscription.SetDisabled(true);
+  EXPECT_EQ(1, eventFiredCounter);
+  EXPECT_TRUE(subscription.IsDisabled());
+}
+
+TEST_F(FilterEngineTest, EnablingSubscriptionEnablesItAndFiresEvent)
+{
+  AdblockPlus::Subscription subscription = filterEngine->GetSubscription("foo");
+  EXPECT_FALSE(subscription.IsDisabled());
+  subscription.SetDisabled(true);
+  EXPECT_TRUE(subscription.IsDisabled());
+
+  int eventFiredCounter = 0;
+  filterEngine->SetFilterChangeCallback([&eventFiredCounter](const std::string& eventName, JsValue&& subscriptionObject)
+  {
+    if (eventName != "subscription.disabled" || subscriptionObject.GetProperty("url").AsString() != "foo")
+      return;
+    ++eventFiredCounter;
+  });
+  subscription.SetDisabled(false);
+  EXPECT_EQ(1, eventFiredCounter);
+  EXPECT_FALSE(subscription.IsDisabled());
+}
+
 TEST_F(FilterEngineTest, AddRemoveSubscriptions)
 {
   ASSERT_EQ(0u, filterEngine->GetListedSubscriptions().size());

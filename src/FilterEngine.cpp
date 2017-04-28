@@ -134,6 +134,16 @@ bool Subscription::IsListed() const
   return func.Call(*this).AsBool();
 }
 
+bool Subscription::IsDisabled() const
+{
+  return GetProperty("disabled").AsBool();
+}
+
+void Subscription::SetDisabled(bool value)
+{
+  return SetProperty("disabled", value);
+}
+
 void Subscription::AddToList()
 {
   JsValue func = jsEngine->Evaluate("API.addSubscriptionToList");

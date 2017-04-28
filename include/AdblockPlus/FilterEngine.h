@@ -118,6 +118,19 @@ namespace AdblockPlus
     Subscription& operator=(Subscription&& src);
 
     /**
+     * Checks if the subscription is disabled.
+     * @return `true` if this subscription is disabled.
+     */
+    bool IsDisabled() const;
+
+    /**
+     * Allows to enable or disable current subscription.
+     * @param `value` disabling the subscription if true and enabling if false.
+     *        If the previous state was the same then it has no effect.
+     */
+    void SetDisabled(bool value);
+
+    /**
      * Checks if this subscription has been added to the list of subscriptions.
      * @return `true` if this subscription has been added.
      */
