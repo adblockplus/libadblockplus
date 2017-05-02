@@ -196,19 +196,25 @@ namespace
     MockWebRequest* webRequest;
     std::string subscriptionUrlPrefix;
     FilterEngine::CreationParameters createParams;
-    SyncStrings capturedConnectionTypes;
-    bool isConnectionAllowed;
-    FilterEnginePtr filterEngine;
-
-    struct
+    // HACK: it's a shared pointer to keep it available in
+    // isConnectionAllowedCallback after destroying of the test.
+    struct SharedData
     {
-      std::string url;
-      std::mutex mutex;
-      std::condition_variable cv;
-    } downloadStatusChanged;
+      SyncStrings capturedConnectionTypes;
+      bool isConnectionAllowed;
+      struct
+      {
+        std::string url;
+        std::mutex mutex;
+        std::condition_variable cv;
+      } downloadStatusChanged;
+    };
+    std::shared_ptr<SharedData> data;
+    FilterEnginePtr filterEngine;
 
     void SetUp()
     {
+      data = std::make_shared<SharedData>();
       BaseJsTest::SetUp();
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem()));
       jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(webRequest = new MockWebRequest()));
@@ -221,41 +227,44 @@ namespace
       exampleSubscriptionResponse.responseText = "[Adblock Plus 2.0]\n||example.com";
       webRequest->responses.emplace(subscriptionUrlPrefix, exampleSubscriptionResponse);
       createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));
-      isConnectionAllowed = true;
-      createParams.isConnectionAllowedCallback = [this](const std::string* allowedConnectionType)->bool{
-        capturedConnectionTypes.Add(allowedConnectionType);
-        return isConnectionAllowed;
+      data->isConnectionAllowed = true;
+      auto closure = data;
+      createParams.isConnectionAllowedCallback = [closure](const std::string* allowedConnectionType)->bool{
+        closure->capturedConnectionTypes.Add(allowedConnectionType);
+        return closure->isConnectionAllowed;
       };
-      jsEngine->SetEventCallback("filterChange", [this](JsValueList&& params/*action, item*/)
-      {
-        ASSERT_EQ(2u, params.size());
-        if (params[0].AsString() == "subscription.downloadStatus")
-        {
-          {
-            std::lock_guard<std::mutex> lock(downloadStatusChanged.mutex);
-            downloadStatusChanged.url = params[1].GetProperty("url").AsString();
-          }
-          downloadStatusChanged.cv.notify_one();
-        }
-      });
     }
 
     Subscription EnsureExampleSubscriptionAndForceUpdate(const std::string& apppendToUrl = std::string())
     {
       if (!filterEngine)
+      {
         filterEngine = FilterEngine::Create(jsEngine, createParams);
+        auto closure = data;
+        filterEngine->SetFilterChangeCallback([closure](const std::string& action, JsValue&& item)
+        {
+          if (action == "subscription.downloadStatus")
+          {
+            {
+              std::lock_guard<std::mutex> lock(closure->downloadStatusChanged.mutex);
+              closure->downloadStatusChanged.url = item.GetProperty("url").AsString();
+            }
+            closure->downloadStatusChanged.cv.notify_one();
+          }
+        });
+      }
       auto subscriptionUrl = subscriptionUrlPrefix + apppendToUrl;
       auto subscription = filterEngine->GetSubscription(subscriptionUrl);
       EXPECT_EQ(0u, subscription.GetProperty("filters").AsList().size()) << subscriptionUrl;
       EXPECT_TRUE(subscription.GetProperty("downloadStatus").IsNull()) << subscriptionUrl;
       subscription.UpdateFilters();
       {
-        std::unique_lock<std::mutex> lock(downloadStatusChanged.mutex);
-        downloadStatusChanged.cv.wait_for(lock,
-          /*don't block tests forever*/std::chrono::seconds(5),
+        std::unique_lock<std::mutex> lock(data->downloadStatusChanged.mutex);
+        data->downloadStatusChanged.cv.wait_for(lock,
+          /*don't block tests forever*/std::chrono::seconds(300),
           [this, subscriptionUrl]()->bool
         {
-          return subscriptionUrl == downloadStatusChanged.url;
+          return subscriptionUrl == data->downloadStatusChanged.url;
         });
         // Basically it's enough to wait only for downloadStatus although there
         // is still some JS code being executed. Any following attempt to work
@@ -1056,19 +1065,19 @@ TEST_F(FilterEngineIsAllowedConnectionTest, AllowingCallbackAllowsUpdating)
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-  auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
+  auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
   ASSERT_EQ(1u, capturedConnectionTypes.size());
   EXPECT_FALSE(capturedConnectionTypes[0].first);
 }
 
 TEST_F(FilterEngineIsAllowedConnectionTest, NotAllowingCallbackDoesNotAllowUpdating)
 {
-  isConnectionAllowed = false;
+  data->isConnectionAllowed = false;
   // no stored allowed_connection_type preference
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_connection_error", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(0u, subscription.GetProperty("filters").AsList().size());
-  auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
+  auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
   EXPECT_EQ(1u, capturedConnectionTypes.size());
 }
 
@@ -1080,7 +1089,7 @@ TEST_F(FilterEngineIsAllowedConnectionTest, PredefinedAllowedConnectionTypeIsPas
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-  auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
+  auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
   ASSERT_EQ(1u, capturedConnectionTypes.size());
   EXPECT_TRUE(capturedConnectionTypes[0].first);
   EXPECT_EQ(predefinedAllowedConnectionType, capturedConnectionTypes[0].second);
@@ -1098,25 +1107,25 @@ TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCa
     auto subscription = EnsureExampleSubscriptionAndForceUpdate();
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-    auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
+    auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_TRUE(capturedConnectionTypes[0].first);
     EXPECT_EQ(predefinedAllowedConnectionType, capturedConnectionTypes[0].second);
   }
-  capturedConnectionTypes.Clear();
+  data->capturedConnectionTypes.Clear();
   {
     // set no value
     filterEngine->SetAllowedConnectionType(nullptr);
     auto subscription = EnsureExampleSubscriptionAndForceUpdate("subA");
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-    auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
+    auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_FALSE(capturedConnectionTypes[0].first);
     subscription.RemoveFromList();
-    this->capturedConnectionTypes.Clear();
+    data->capturedConnectionTypes.Clear();
   }
-  capturedConnectionTypes.Clear();
+  data->capturedConnectionTypes.Clear();
   {
     // set some value
     std::string testConnection = "test connection";
@@ -1124,7 +1133,7 @@ TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCa
     auto subscription = EnsureExampleSubscriptionAndForceUpdate("subB");
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-    auto capturedConnectionTypes = this->capturedConnectionTypes.GetStrings();
+    auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_TRUE(capturedConnectionTypes[0].first);
     EXPECT_EQ(testConnection, capturedConnectionTypes[0].second);

@@ -102,12 +102,6 @@ namespace AdblockPlus
     typedef std::function<void(JsValueList&& params)> EventCallback;
 
     /**
-    * Callback function returning false when current connection is not allowed
-    * e.g. because it is a metered connection.
-    */
-    typedef std::function<bool()> IsConnectionAllowedCallback;
-
-    /**
      * Maps events to callback functions.
      */
     typedef std::map<std::string, EventCallback> EventMap;
@@ -282,19 +276,6 @@ namespace AdblockPlus
     void SetWebRequest(const WebRequestPtr& val);
 
     /**
-    * Registers the callback function to check whether current connection is
-    * allowed for network requests.
-    * @param callback callback function.
-    */
-    void SetIsConnectionAllowedCallback(const IsConnectionAllowedCallback& callback);
-
-    /**
-     * Checks whether current connection is allowed. If
-     * IsConnectionAllowedCallback is not set then then it returns true.
-     */
-    bool IsConnectionAllowed() const;
-
-    /**
      * @see `SetLogSystem()`.
      */
     LogSystemPtr GetLogSystem() const;
@@ -340,8 +321,6 @@ namespace AdblockPlus
     std::unique_ptr<v8::Persistent<v8::Context>> context;
     EventMap eventCallbacks;
     std::mutex eventCallbacksMutex;
-    mutable std::mutex isConnectionAllowedMutex;
-    IsConnectionAllowedCallback isConnectionAllowed;
     JsWeakValuesLists jsWeakValuesLists;
     std::mutex jsWeakValuesListsMutex;
     TimerPtr timer;

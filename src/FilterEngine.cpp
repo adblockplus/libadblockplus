@@ -19,6 +19,8 @@
 #include <cctype>
 #include <functional>
 #include <string>
+#include <cassert>
+#include <thread>
 
 #include <AdblockPlus.h>
 #include "JsContext.h"
@@ -219,29 +221,50 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
   const FilterEngine::CreationParameters& params)
 {
   FilterEnginePtr filterEngine(new FilterEngine(jsEngine));
-  auto sync = std::make_shared<Sync>();
-  auto isConnectionAllowedCallback = params.isConnectionAllowedCallback;
-  if (isConnectionAllowedCallback)
-    jsEngine->SetIsConnectionAllowedCallback([sync, jsEngine]()->bool
-    {
-      sync->Wait();
-      return jsEngine->IsConnectionAllowed();
-    });
-  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated, sync, isConnectionAllowedCallback](JsValueList&& params)
   {
-    filterEngine->firstRun = params.size() && params[0].AsBool();
-    if (isConnectionAllowedCallback)
-    {
-      std::weak_ptr<FilterEngine> weakFilterEngine = filterEngine;
-      jsEngine->SetIsConnectionAllowedCallback([weakFilterEngine, isConnectionAllowedCallback]()->bool
+    // TODO: replace weakFilterEngine by this when it's possible to control the
+    // execution time of the asynchronous part below.
+    std::weak_ptr<FilterEngine> weakFilterEngine = filterEngine;
+    auto isConnectionAllowedCallback = params.isConnectionAllowedCallback;
+    jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [weakFilterEngine, isConnectionAllowedCallback](JsValueList&& params){
+      auto filterEngine = weakFilterEngine.lock();
+      if (!filterEngine)
+        return;
+      auto jsEngine = filterEngine->GetJsEngine();
+
+      // param[0] - nullable string Prefs.allowed_connection_type
+      // param[1] - function(Boolean)
+      bool areArgumentsValid = params.size() == 2 && (params[0].IsNull() || params[0].IsString()) && params[1].IsFunction();
+      assert(areArgumentsValid && "Invalid argument: there should be two args and the second one should be a function");
+      if (!areArgumentsValid)
+        return;
+      if (!isConnectionAllowedCallback)
+      {
+        params[1].Call(jsEngine->NewValue(true));
+        return;
+      }
+      auto valuesID = jsEngine->StoreJsValues(params);
+      auto callJsCallback = [weakFilterEngine, valuesID](bool isAllowed)
       {
         auto filterEngine = weakFilterEngine.lock();
         if (!filterEngine)
-          return false;
-        return isConnectionAllowedCallback(filterEngine->GetAllowedConnectionType().get());
-      });
-    }
-    sync->Set();
+          return;
+        auto jsEngine = filterEngine->GetJsEngine();
+        auto jsParams = jsEngine->TakeJsValues(valuesID);
+        jsParams[1].Call(jsEngine->NewValue(isAllowed));
+      };
+      std::shared_ptr<std::string> allowedConnectionType = params[0].IsString() ? std::make_shared<std::string>(params[0].AsString()) : nullptr;
+      // temporary hack with thread:
+      std::thread([isConnectionAllowedCallback, allowedConnectionType, callJsCallback]
+      {
+        callJsCallback(isConnectionAllowedCallback(allowedConnectionType.get()));
+      }).detach();
+    });
+  }
+  
+  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated](JsValueList&& params)
+  {
+    filterEngine->firstRun = params.size() && params[0].AsBool();
     onCreated(filterEngine);
     jsEngine->RemoveEventCallback("_init");
   });
@@ -249,7 +272,6 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
   // Lock the JS engine while we are loading scripts, no timeouts should fire
   // until we are done.
   const JsContext context(*jsEngine);
-
   // Set the preconfigured prefs
   auto preconfiguredPrefsObject = jsEngine->NewObject();
   for (const auto& pref : params.preconfiguredPrefs)
