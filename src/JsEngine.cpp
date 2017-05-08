@@ -72,6 +72,11 @@ TimerPtr AdblockPlus::CreateDefaultTimer()
   return TimerPtr(new DefaultTimer());
 }
 
+WebRequestPtr AdblockPlus::CreateDefaultWebRequest()
+{
+  return WebRequestPtr(new DefaultWebRequest(std::make_shared<DefaultWebRequestSync>()));
+}
+
 AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
 {
   V8Initializer::Init();
@@ -120,20 +125,21 @@ void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
   callback.Call(timerParams);
 }
 
-AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer)
+AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate,
+  TimerPtr timer, WebRequestPtr webRequest)
   : isolate(isolate)
   , fileSystem(new DefaultFileSystem())
-  , webRequest(new DefaultWebRequest())
   , logSystem(new DefaultLogSystem())
   , timer(std::move(timer))
+  , webRequest(std::move(webRequest))
 {
 }
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
-  TimerPtr timer,
+  TimerPtr timer, WebRequestPtr webRequest,
   const ScopedV8IsolatePtr& isolate)
 {
-  JsEnginePtr result(new JsEngine(isolate, std::move(timer)));
+  JsEnginePtr result(new JsEngine(isolate, std::move(timer), std::move(webRequest)));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
@@ -309,17 +315,12 @@ void AdblockPlus::JsEngine::SetFileSystem(const AdblockPlus::FileSystemPtr& val)
   fileSystem = val;
 }
 
-WebRequestSharedPtr AdblockPlus::JsEngine::GetWebRequest() const
-{
-  return webRequest;
-}
-
 void AdblockPlus::JsEngine::SetWebRequest(const AdblockPlus::WebRequestSharedPtr& val)
 {
   if (!val)
     throw std::runtime_error("WebRequest cannot be null");
 
-  webRequest = val;
+  webRequestLegacy = val;
 }
 
 AdblockPlus::LogSystemPtr AdblockPlus::JsEngine::GetLogSystem() const

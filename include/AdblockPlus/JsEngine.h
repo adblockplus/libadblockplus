@@ -57,6 +57,11 @@ namespace AdblockPlus
   TimerPtr CreateDefaultTimer();
 
   /**
+   * A factory to construct DefaultWebRequest.
+   */
+  WebRequestPtr CreateDefaultWebRequest();
+
+  /**
    * Scope based isolate manager. Creates a new isolate instance on
    * constructing and disposes it on destructing.
    */
@@ -120,12 +125,14 @@ namespace AdblockPlus
      * Creates a new JavaScript engine instance.
      * @param appInfo Information about the app.
      * @param timer Implementation of timer.
+     * @param webRequest Implementation of web request.
      * @param isolate v8::Isolate wrapper. This parameter should be considered
      *        as a temporary hack for tests, it will go away. Issue #3593.
      * @return New `JsEngine` instance.
      */
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo(),
       TimerPtr timer = CreateDefaultTimer(),
+      WebRequestPtr webRequest = CreateDefaultWebRequest(),
       const ScopedV8IsolatePtr& isolate = ScopedV8IsolatePtr(new ScopedV8Isolate()));
 
     /**
@@ -241,6 +248,13 @@ namespace AdblockPlus
      */
     static void ScheduleTimer(const v8::Arguments& arguments);
 
+    /*
+     * Private functionality required to implement web requests.
+     * @param arguments `v8::Arguments` is the arguments received in C++
+     * callback associated for global GET method.
+     */
+    static void ScheduleWebRequest(const v8::Arguments& arguments);
+
     /**
      * Converts v8 arguments to `JsValue` objects.
      * @param arguments `v8::Arguments` object containing the arguments to
@@ -263,10 +277,6 @@ namespace AdblockPlus
     void SetFileSystem(const FileSystemPtr& val);
 
     /**
-     * @see `SetWebRequest()`.
-     */
-    WebRequestSharedPtr GetWebRequest() const;
-
     /**
      * Sets the `WebRequest` implementation used for XMLHttpRequests.
      * Setting this is optional, the engine will use a `DefaultWebRequest`
@@ -307,7 +317,7 @@ namespace AdblockPlus
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
-    explicit JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer);
+    explicit JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer, WebRequestPtr webRequest);
 
     JsValue GetGlobalObject();
 
@@ -316,7 +326,6 @@ namespace AdblockPlus
     ScopedV8IsolatePtr isolate;
 
     FileSystemPtr fileSystem;
-    WebRequestSharedPtr webRequest;
     LogSystemPtr logSystem;
     std::unique_ptr<v8::Persistent<v8::Context>> context;
     EventMap eventCallbacks;
@@ -324,6 +333,8 @@ namespace AdblockPlus
     JsWeakValuesLists jsWeakValuesLists;
     std::mutex jsWeakValuesListsMutex;
     TimerPtr timer;
+    WebRequestPtr webRequest;
+    WebRequestSharedPtr webRequestLegacy;
   };
 }
 

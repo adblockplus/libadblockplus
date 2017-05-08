@@ -27,9 +27,20 @@ namespace AdblockPlus
    * on other platforms. A dummy implementation that always reports failure is
    * used if libcurl is not available.
    */
-  class DefaultWebRequest : public WebRequest
+  class DefaultWebRequestSync : public WebRequest
   {
     ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const;
+  };
+
+  class DefaultWebRequest : public IWebRequest
+  {
+  public:
+    explicit DefaultWebRequest(const WebRequestSharedPtr& syncImpl);
+    ~DefaultWebRequest();
+
+    void GET(const std::string& url, const HeaderList& requestHeaders, const GetCallback& getCallback) override;
+  private:
+    WebRequestSharedPtr syncImpl;
   };
 }
 

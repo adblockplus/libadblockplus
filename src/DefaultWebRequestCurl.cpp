@@ -41,33 +41,33 @@ namespace
     switch (code)
     {
       case CURLE_OK:
-        return AdblockPlus::WebRequest::NS_OK;
+        return AdblockPlus::IWebRequest::NS_OK;
       case CURLE_FAILED_INIT:
-        return AdblockPlus::WebRequest::NS_ERROR_NOT_INITIALIZED;
+        return AdblockPlus::IWebRequest::NS_ERROR_NOT_INITIALIZED;
       case CURLE_UNSUPPORTED_PROTOCOL:
-        return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
+        return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
       case CURLE_URL_MALFORMAT:
-        return AdblockPlus::WebRequest::NS_ERROR_MALFORMED_URI;
+        return AdblockPlus::IWebRequest::NS_ERROR_MALFORMED_URI;
       case CURLE_COULDNT_RESOLVE_PROXY:
-        return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROXY_HOST;
+        return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_PROXY_HOST;
       case CURLE_COULDNT_RESOLVE_HOST:
-        return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_HOST;
+        return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_HOST;
       case CURLE_COULDNT_CONNECT:
-        return AdblockPlus::WebRequest::NS_ERROR_CONNECTION_REFUSED;
+        return AdblockPlus::IWebRequest::NS_ERROR_CONNECTION_REFUSED;
       case CURLE_OUT_OF_MEMORY:
-        return AdblockPlus::WebRequest::NS_ERROR_OUT_OF_MEMORY;
+        return AdblockPlus::IWebRequest::NS_ERROR_OUT_OF_MEMORY;
       case CURLE_OPERATION_TIMEDOUT:
-        return AdblockPlus::WebRequest::NS_ERROR_NET_TIMEOUT;
+        return AdblockPlus::IWebRequest::NS_ERROR_NET_TIMEOUT;
       case CURLE_TOO_MANY_REDIRECTS:
-        return AdblockPlus::WebRequest::NS_ERROR_REDIRECT_LOOP;
+        return AdblockPlus::IWebRequest::NS_ERROR_REDIRECT_LOOP;
       case CURLE_GOT_NOTHING:
-        return AdblockPlus::WebRequest::NS_ERROR_NO_CONTENT;
+        return AdblockPlus::IWebRequest::NS_ERROR_NO_CONTENT;
       case CURLE_SEND_ERROR:
-        return AdblockPlus::WebRequest::NS_ERROR_NET_RESET;
+        return AdblockPlus::IWebRequest::NS_ERROR_NET_RESET;
       case CURLE_RECV_ERROR:
-        return AdblockPlus::WebRequest::NS_ERROR_NET_RESET;
+        return AdblockPlus::IWebRequest::NS_ERROR_NET_RESET;
       default:
-        return AdblockPlus::WebRequest::NS_CUSTOM_ERROR_BASE + code;
+        return AdblockPlus::IWebRequest::NS_CUSTOM_ERROR_BASE + code;
     }
   }
 
@@ -122,11 +122,11 @@ namespace
   }
 }
 
-AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
+AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequestSync::GET(
     const std::string& url, const HeaderList& requestHeaders) const
 {
   AdblockPlus::ServerResponse result;
-  result.status = NS_ERROR_NOT_INITIALIZED;
+  result.status = IWebRequest::NS_ERROR_NOT_INITIALIZED;
   result.responseStatus = 0;
 
   CURL *curl = curl_easy_init();

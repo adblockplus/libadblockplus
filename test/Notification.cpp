@@ -77,7 +77,7 @@ namespace
         return ServerResponse();
       }
       ServerResponse serverResponse;
-      serverResponse.status = NS_OK;
+      serverResponse.status = IWebRequest::NS_OK;
       serverResponse.responseStatus = 200;
       serverResponse.responseText = responseText;
       return serverResponse;

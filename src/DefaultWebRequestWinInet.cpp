@@ -47,22 +47,22 @@ long WindowsErrorToGeckoError(DWORD err)
   switch (err)
   {
   case ERROR_INVALID_HANDLE:
-    return AdblockPlus::WebRequest::NS_ERROR_NOT_INITIALIZED;
+    return AdblockPlus::IWebRequest::NS_ERROR_NOT_INITIALIZED;
   case ERROR_OUTOFMEMORY:
-    return AdblockPlus::WebRequest::NS_ERROR_OUT_OF_MEMORY;
+    return AdblockPlus::IWebRequest::NS_ERROR_OUT_OF_MEMORY;
   case ERROR_WINHTTP_UNRECOGNIZED_SCHEME:
-    return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
+    return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
   case ERROR_WINHTTP_CONNECTION_ERROR:
-    return AdblockPlus::WebRequest::NS_ERROR_NET_INTERRUPT;
+    return AdblockPlus::IWebRequest::NS_ERROR_NET_INTERRUPT;
   case ERROR_WINHTTP_INVALID_URL:
-    return AdblockPlus::WebRequest::NS_ERROR_MALFORMED_URI;
+    return AdblockPlus::IWebRequest::NS_ERROR_MALFORMED_URI;
   case ERROR_WINHTTP_TIMEOUT:
-    return AdblockPlus::WebRequest::NS_ERROR_NET_TIMEOUT;
+    return AdblockPlus::IWebRequest::NS_ERROR_NET_TIMEOUT;
   case ERROR_WINHTTP_NAME_NOT_RESOLVED:
-    return AdblockPlus::WebRequest::NS_ERROR_UNKNOWN_HOST;
+    return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_HOST;
 
   default:
-    return AdblockPlus::WebRequest::NS_CUSTOM_ERROR_BASE + err;
+    return AdblockPlus::IWebRequest::NS_CUSTOM_ERROR_BASE + err;
   }
 }
 
@@ -184,15 +184,15 @@ void ParseResponseHeaders(HINTERNET hRequest, AdblockPlus::ServerResponse* resul
     throw std::exception("Can't parse the status code");
   }
   std::wistringstream(statusStr) >> result->responseStatus;
-  result->status = AdblockPlus::DefaultWebRequest::NS_OK;
+  result->status = AdblockPlus::IWebRequest::NS_OK;
 
 }
 
-AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
+AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequestSync::GET(
   const std::string& url, const HeaderList& requestHeaders) const
 {
   AdblockPlus::ServerResponse result;
-  result.status = NS_ERROR_FAILURE;
+  result.status = IWebRequest::NS_ERROR_FAILURE;
   result.responseStatus = 0;
 
   HRESULT hr;
@@ -328,7 +328,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
     if (!outBuffer.get())
     {
       //Out of memory?
-      result.status = NS_ERROR_OUT_OF_MEMORY;
+      result.status = IWebRequest::NS_ERROR_OUT_OF_MEMORY;
       break;
     }
     else

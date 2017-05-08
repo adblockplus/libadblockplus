@@ -17,11 +17,11 @@
 
 #include <AdblockPlus/DefaultWebRequest.h>
 
-AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequest::GET(
+AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequestSync::GET(
     const std::string& url, const HeaderList& requestHeaders) const
 {
   AdblockPlus::ServerResponse result;
-  result.status = NS_ERROR_FAILURE;
+  result.status = IWebRequest::NS_ERROR_FAILURE;
   result.responseStatus = 0;
   return result;
 }

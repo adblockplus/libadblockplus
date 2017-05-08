@@ -15,11 +15,27 @@
 * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "BaseJsTest.h"
+#include <AdblockPlus/DefaultWebRequest.h>
+#include <thread>
 
-AdblockPlus::JsEnginePtr CreateJsEngine(const AdblockPlus::AppInfo& appInfo,
-  AdblockPlus::WebRequestPtr webRequest)
+using namespace AdblockPlus;
+
+DefaultWebRequest::DefaultWebRequest(const WebRequestSharedPtr& syncImpl)
+  : syncImpl(syncImpl)
 {
-  static AdblockPlus::ScopedV8IsolatePtr isolate = std::make_shared<AdblockPlus::ScopedV8Isolate>();
-  return AdblockPlus::JsEngine::New(appInfo, AdblockPlus::CreateDefaultTimer(), std::move(webRequest), isolate);
+
+}
+
+DefaultWebRequest::~DefaultWebRequest()
+{
+
+}
+
+void DefaultWebRequest::GET(const std::string& url, const HeaderList& requestHeaders, const GetCallback& getCallback)
+{
+  auto syncImplCapture = syncImpl;
+  std::thread([syncImplCapture, url, requestHeaders, getCallback]
+  {
+    getCallback(syncImplCapture->GET(url, requestHeaders));
+  }).detach();
 }

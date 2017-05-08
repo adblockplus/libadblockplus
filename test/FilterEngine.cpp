@@ -222,7 +222,7 @@ namespace
       subscriptionUrlPrefix = "http://example";
       ServerResponse exampleSubscriptionResponse;
       exampleSubscriptionResponse.responseStatus = 200;
-      exampleSubscriptionResponse.status = WebRequest::NS_OK;
+      exampleSubscriptionResponse.status = IWebRequest::NS_OK;
       exampleSubscriptionResponse.responseText = "[Adblock Plus 2.0]\n||example.com";
       webRequest->responses.emplace(subscriptionUrlPrefix, exampleSubscriptionResponse);
       createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));

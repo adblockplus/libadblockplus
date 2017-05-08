@@ -67,10 +67,14 @@ public:
 
 };
 
-class ThrowingWebRequest : public AdblockPlus::WebRequest
+class ThrowingWebRequest : public AdblockPlus::IWebRequest, public AdblockPlus::WebRequest
 {
 public:
-  AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
+  AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const override
+  {
+    throw std::runtime_error("Unexpected GET: " + url);
+  }
+  void GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders, const GetCallback&) override
   {
     throw std::runtime_error("Unexpected GET: " + url);
   }
@@ -138,7 +142,8 @@ public:
   }
 };
 
-AdblockPlus::JsEnginePtr CreateJsEngine(const AdblockPlus::AppInfo& appInfo = AdblockPlus::AppInfo());
+AdblockPlus::JsEnginePtr CreateJsEngine(const AdblockPlus::AppInfo& appInfo = AdblockPlus::AppInfo(),
+  AdblockPlus::WebRequestPtr webRequest = AdblockPlus::WebRequestPtr(new ThrowingWebRequest()));
 
 class BaseJsTest : public ::testing::Test
 {
