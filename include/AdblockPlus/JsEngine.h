@@ -265,7 +265,7 @@ namespace AdblockPlus
     /**
      * @see `SetWebRequest()`.
      */
-    WebRequestPtr GetWebRequest() const;
+    WebRequestSharedPtr GetWebRequest() const;
 
     /**
      * Sets the `WebRequest` implementation used for XMLHttpRequests.
@@ -273,7 +273,7 @@ namespace AdblockPlus
      * instance by default, which might be sufficient.
      * @param The `WebRequest` instance to use.
      */
-    void SetWebRequest(const WebRequestPtr& val);
+    void SetWebRequest(const WebRequestSharedPtr& val);
 
     /**
      * @see `SetLogSystem()`.
@@ -316,7 +316,7 @@ namespace AdblockPlus
     ScopedV8IsolatePtr isolate;
 
     FileSystemPtr fileSystem;
-    WebRequestPtr webRequest;
+    WebRequestSharedPtr webRequest;
     LogSystemPtr logSystem;
     std::unique_ptr<v8::Persistent<v8::Context>> context;
     EventMap eventCallbacks;

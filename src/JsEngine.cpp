@@ -309,12 +309,12 @@ void AdblockPlus::JsEngine::SetFileSystem(const AdblockPlus::FileSystemPtr& val)
   fileSystem = val;
 }
 
-AdblockPlus::WebRequestPtr AdblockPlus::JsEngine::GetWebRequest() const
+WebRequestSharedPtr AdblockPlus::JsEngine::GetWebRequest() const
 {
   return webRequest;
 }
 
-void AdblockPlus::JsEngine::SetWebRequest(const AdblockPlus::WebRequestPtr& val)
+void AdblockPlus::JsEngine::SetWebRequest(const AdblockPlus::WebRequestSharedPtr& val)
 {
   if (!val)
     throw std::runtime_error("WebRequest cannot be null");

@@ -108,7 +108,7 @@ namespace AdblockPlus
   /**
    * Shared smart pointer to a `WebRequest` instance.
    */
-  typedef std::shared_ptr<WebRequest> WebRequestPtr;
+  typedef std::shared_ptr<WebRequest> WebRequestSharedPtr;
 }
 
 #endif

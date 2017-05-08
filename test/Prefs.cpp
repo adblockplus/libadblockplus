@@ -82,7 +82,7 @@ namespace
       jsEngine = CreateJsEngine();
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
       jsEngine->SetFileSystem(fileSystemPtr);
-      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
+      jsEngine->SetWebRequest(std::make_shared<LazyWebRequest>());
     }
 
     FilterEnginePtr CreateFilterEngine(const AdblockPlus::FilterEngine::Prefs& preconfiguredPrefs =

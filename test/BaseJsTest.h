@@ -150,7 +150,7 @@ protected:
     jsEngine = CreateJsEngine();
     jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new ThrowingLogSystem));
     jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new ThrowingFileSystem));
-    jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new ThrowingWebRequest));
+    jsEngine->SetWebRequest(std::make_shared<ThrowingWebRequest>());
   }
 };
 

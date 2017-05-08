@@ -51,7 +51,7 @@ namespace
   protected:
     AdblockPlus::AppInfo appInfo;
     TestWebRequest* webRequest;
-    AdblockPlus::WebRequestPtr webRequestPtr;
+    WebRequestSharedPtr webRequestPtr;
     AdblockPlus::JsEnginePtr jsEngine;
     FilterEnginePtr filterEngine;
 

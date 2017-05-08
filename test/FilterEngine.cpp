@@ -53,7 +53,7 @@ namespace
     {
       BaseJsTest::SetUp();
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new FileSystem));
-      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest));
+      jsEngine->SetWebRequest(std::make_shared<LazyWebRequest>());
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LogSystem));
       filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
@@ -82,7 +82,7 @@ namespace
       }
     };
 
-    MockWebRequest* mockWebRequest;
+    std::shared_ptr<MockWebRequest> mockWebRequest;
     FilterEnginePtr filterEngine;
 
     void SetUp()
@@ -92,8 +92,7 @@ namespace
       appInfo.version = "1.0.1";
       AdblockPlus::JsEnginePtr jsEngine = CreateJsEngine(appInfo);
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
-      mockWebRequest = new MockWebRequest;
-      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(mockWebRequest));
+      jsEngine->SetWebRequest(mockWebRequest = std::make_shared<MockWebRequest>());
       filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
   };
@@ -117,7 +116,7 @@ namespace
       auto jsEngine = JsEngine::New(appInfo);
       weakJsEngine = jsEngine;
       jsEngine->SetFileSystem(fileSystem);
-      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(new LazyWebRequest()));
+      jsEngine->SetWebRequest(std::make_shared<LazyWebRequest>());
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem()));
       return jsEngine;
     }
@@ -193,7 +192,7 @@ namespace
       std::vector<std::pair<bool, std::string>> strings;
     };
   protected:
-    MockWebRequest* webRequest;
+    std::shared_ptr<MockWebRequest> webRequest;
     std::string subscriptionUrlPrefix;
     FilterEngine::CreationParameters createParams;
     // HACK: it's a shared pointer to keep it available in
@@ -217,7 +216,7 @@ namespace
       data = std::make_shared<SharedData>();
       BaseJsTest::SetUp();
       jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem()));
-      jsEngine->SetWebRequest(AdblockPlus::WebRequestPtr(webRequest = new MockWebRequest()));
+      jsEngine->SetWebRequest(webRequest = std::make_shared<MockWebRequest>());
       jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem()));
 
       subscriptionUrlPrefix = "http://example";

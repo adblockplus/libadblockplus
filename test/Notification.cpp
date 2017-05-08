@@ -35,7 +35,7 @@ namespace
     {
       BaseJsTest::SetUp();
       jsEngine->SetFileSystem(FileSystemPtr(new LazyFileSystem()));
-      jsEngine->SetWebRequest(WebRequestPtr(new LazyWebRequest()));
+      jsEngine->SetWebRequest(std::make_shared<LazyWebRequest>());
       jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
       filterEngine = FilterEngine::Create(jsEngine);
     }
