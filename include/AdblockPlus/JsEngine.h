@@ -277,7 +277,6 @@ namespace AdblockPlus
     void SetFileSystem(const FileSystemPtr& val);
 
     /**
-    /**
      * Sets the `WebRequest` implementation used for XMLHttpRequests.
      * Setting this is optional, the engine will use a `DefaultWebRequest`
      * instance by default, which might be sufficient.
