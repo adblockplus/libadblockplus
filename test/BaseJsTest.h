@@ -22,6 +22,37 @@
 #include <gtest/gtest.h>
 #include "../src/Thread.h"
 
+// Strictly speaking in each test there should be a special implementation of
+// an interface, which is merely referenced by a wrapper and the latter should
+// be injected into JsEngine or what ever. However the everthing a test often
+// actually needs is the access to pending tasks. Therefore instantiation of
+// implemenation of an interface, creation of shared tasks and sharing them
+// with tasks in test is located in this class.
+//
+// Task is passed as an additional template parameter instead of using traits
+// (CRTP does not work with types in derived class) merely to simplify the code
+// by minimization.
+template<typename T, typename TTask, typename Interface>
+class DelayedMixin : public Interface
+{
+public:
+  typedef TTask Task;
+  typedef std::shared_ptr<std::list<Task>> SharedTasks;
+  static std::unique_ptr<Interface> New(SharedTasks& tasks)
+  {
+    std::unique_ptr<T> result(new T());
+    tasks = result->tasks;
+    return std::move(result);
+  }
+protected:
+  DelayedMixin()
+    : tasks(std::make_shared<std::list<Task>>())
+  {
+  }
+
+  SharedTasks tasks;
+};
+
 class ThrowingTimer : public AdblockPlus::ITimer
 {
   void SetTimer(const std::chrono::milliseconds& timeout, const TimerCallback& timerCallback) override
@@ -36,6 +67,30 @@ class NoopTimer : public AdblockPlus::ITimer
   {
   }
 };
+
+struct DelayedTimerTask
+{
+  std::chrono::milliseconds timeout;
+  AdblockPlus::ITimer::TimerCallback callback;
+};
+
+class DelayedTimer : public DelayedMixin<DelayedTimer, DelayedTimerTask, AdblockPlus::ITimer>
+{
+public:
+  void SetTimer(const std::chrono::milliseconds& timeout, const TimerCallback& timerCallback) override
+  {
+    Task task = { timeout, timerCallback };
+    tasks->emplace_back(task);
+  }
+
+  // JS part often schedules download requests using Utils.runAsync which calls
+  // setTimeout(callback, 0). So, we need to firstly process those timers
+  // to actually schedule web requests and afterwards we may inspect pending
+  // web requests.
+  // non-immeditate timers are not touched
+  static void ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks);
+};
+
 
 class ThrowingLogSystem : public AdblockPlus::LogSystem
 {
@@ -153,6 +208,23 @@ class NoopWebRequest : public AdblockPlus::IWebRequest
 public:
   void GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders, const GetCallback& callback) override
   {
+  }
+};
+
+struct DelayedWebRequestTask
+{
+  std::string url;
+  AdblockPlus::HeaderList headers;
+  AdblockPlus::IWebRequest::GetCallback getCallback;
+};
+
+class DelayedWebRequest : public DelayedMixin<DelayedWebRequest, DelayedWebRequestTask, AdblockPlus::IWebRequest>
+{
+public:
+  void GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders, const GetCallback& callback) override
+  {
+    Task task = { url, requestHeaders, callback };
+    tasks->emplace_back(task);
   }
 };
 

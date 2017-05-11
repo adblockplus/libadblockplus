@@ -17,6 +17,21 @@
 
 #include "BaseJsTest.h"
 
+void DelayedTimer::ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks)
+{
+  auto ii = timerTasks->begin();
+  while (ii != timerTasks->end())
+  {
+    if (ii->timeout.count() == 0)
+    {
+      ii->callback();
+      ii = timerTasks->erase(ii);
+    }
+    else
+      ++ii;
+  }
+}
+
 JsEngineCreationParameters::JsEngineCreationParameters()
   : logSystem(std::make_shared<ThrowingLogSystem>())
   , timer(new ThrowingTimer())

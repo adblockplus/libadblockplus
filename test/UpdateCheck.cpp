@@ -31,26 +31,13 @@ namespace
       source.replace(pos, find.size(), replace);
   }
 
-  std::string previousRequestUrl;
-  class TestWebRequest : public LazyWebRequest
-  {
-  public:
-    AdblockPlus::ServerResponse response;
-    AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
-    {
-      if (url.find("easylist") != std::string::npos)
-        return LazyWebRequest::GET(url, requestHeaders);
-
-      previousRequestUrl = url;
-      return response;
-    }
-  };
-
   class UpdateCheckTest : public ::testing::Test
   {
   protected:
     AdblockPlus::AppInfo appInfo;
-    std::shared_ptr<TestWebRequest> webRequest;
+    AdblockPlus::ServerResponse webRequestResponse;
+    DelayedWebRequest::SharedTasks webRequestTasks;
+    DelayedTimer::SharedTasks timerTasks;
     AdblockPlus::JsEnginePtr jsEngine;
     FilterEnginePtr filterEngine;
 
@@ -61,8 +48,6 @@ namespace
 
     void SetUp()
     {
-      webRequest = std::make_shared<TestWebRequest>();
-
       eventCallbackCalled = false;
       updateCallbackCalled = false;
       Reset();
@@ -74,9 +59,9 @@ namespace
       jsEngineParams.appInfo = appInfo;
       jsEngineParams.logSystem.reset(new LazyLogSystem());
       jsEngineParams.fileSystem.reset(new LazyFileSystem());
-      jsEngineParams.timer = CreateDefaultTimer();
+      jsEngineParams.timer = DelayedTimer::New(timerTasks);
+      jsEngineParams.webRequest = DelayedWebRequest::New(webRequestTasks);
       jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      jsEngine->SetWebRequest(webRequest);
       jsEngine->SetEventCallback("updateAvailable", [this](JsValueList&& params)
       {
         eventCallbackCalled = true;
@@ -86,23 +71,39 @@ namespace
       filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
 
-    void ForceUpdateCheck()
+    // Returns a URL or the empty string if there is no such request.
+    std::string ProcessPendingUpdateWebRequest()
     {
-      filterEngine->ForceUpdateCheck(
-          std::bind(&UpdateCheckTest::UpdateCallback, this, std::placeholders::_1));
+      auto ii = webRequestTasks->begin();
+      while (ii != webRequestTasks->end())
+      {
+        if (ii->url.find("update.json") != std::string::npos)
+        {
+          ii->getCallback(webRequestResponse);
+          auto url = ii->url;
+          webRequestTasks->erase(ii);
+          return url;
+        }
+        ++ii;
+      }
+      return std::string();
     }
 
-    void UpdateCallback(const std::string& error)
+    void ForceUpdateCheck()
     {
-      updateCallbackCalled = true;
-      updateError = error;
+      filterEngine->ForceUpdateCheck([this](const std::string& error)
+      {
+        updateCallbackCalled = true;
+        updateError = error;
+      });
+      DelayedTimer::ProcessImmediateTimers(timerTasks);
     }
   };
 }
 
 TEST_F(UpdateCheckTest, RequestFailure)
 {
-  webRequest->response.status = IWebRequest::NS_ERROR_FAILURE;
+  webRequestResponse.status = IWebRequest::NS_ERROR_FAILURE;
 
   appInfo.name = "1";
   appInfo.version = "3";
@@ -113,7 +114,7 @@ TEST_F(UpdateCheckTest, RequestFailure)
   Reset();
   ForceUpdateCheck();
 
-  AdblockPlus::Sleep(100);
+  auto requestUrl = ProcessPendingUpdateWebRequest();
 
   ASSERT_FALSE(eventCallbackCalled);
   ASSERT_TRUE(updateCallbackCalled);
@@ -132,14 +133,14 @@ TEST_F(UpdateCheckTest, RequestFailure)
                  "&platform=" + platform +
                  "&platformVersion=" + platformVersion +
                  "&lastVersion=0&downloadCount=0";
-  ASSERT_EQ(expectedUrl, previousRequestUrl);
+  ASSERT_EQ(expectedUrl, requestUrl);
 }
 
 TEST_F(UpdateCheckTest, UpdateAvailable)
 {
-  webRequest->response.status = IWebRequest::NS_OK;
-  webRequest->response.responseStatus = 200;
-  webRequest->response.responseText = "{\"1\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
+  webRequestResponse.status = IWebRequest::NS_OK;
+  webRequestResponse.responseStatus = 200;
+  webRequestResponse.responseText = "{\"1\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
 
   appInfo.name = "1";
   appInfo.version = "3";
@@ -150,7 +151,7 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   Reset();
   ForceUpdateCheck();
 
-  AdblockPlus::Sleep(100);
+  auto requestUrl = ProcessPendingUpdateWebRequest();
 
   ASSERT_TRUE(eventCallbackCalled);
   ASSERT_EQ(1u, eventCallbackParams.size());
@@ -171,14 +172,14 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
                  "&platform=" + platform +
                  "&platformVersion=" + platformVersion +
                  "&lastVersion=0&downloadCount=0";
-  ASSERT_EQ(expectedUrl, previousRequestUrl);
+  ASSERT_EQ(expectedUrl, requestUrl);
 }
 
 TEST_F(UpdateCheckTest, ApplicationUpdateAvailable)
 {
-  webRequest->response.status = IWebRequest::NS_OK;
-  webRequest->response.responseStatus = 200;
-  webRequest->response.responseText = "{\"1/4\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
+  webRequestResponse.status = IWebRequest::NS_OK;
+  webRequestResponse.responseStatus = 200;
+  webRequestResponse.responseText = "{\"1/4\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
 
   appInfo.name = "1";
   appInfo.version = "3";
@@ -189,20 +190,19 @@ TEST_F(UpdateCheckTest, ApplicationUpdateAvailable)
   Reset();
   ForceUpdateCheck();
 
-  AdblockPlus::Sleep(100);
+  ProcessPendingUpdateWebRequest();
 
   ASSERT_TRUE(eventCallbackCalled);
   ASSERT_EQ(1u, eventCallbackParams.size());
   ASSERT_EQ("https://foo.bar/", eventCallbackParams[0].AsString());
-  ASSERT_TRUE(updateCallbackCalled);
   ASSERT_TRUE(updateError.empty());
 }
 
 TEST_F(UpdateCheckTest, WrongApplication)
 {
-  webRequest->response.status = IWebRequest::NS_OK;
-  webRequest->response.responseStatus = 200;
-  webRequest->response.responseText = "{\"1/3\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
+  webRequestResponse.status = IWebRequest::NS_OK;
+  webRequestResponse.responseStatus = 200;
+  webRequestResponse.responseText = "{\"1/3\": {\"version\":\"3.1\",\"url\":\"https://foo.bar/\"}}";
 
   appInfo.name = "1";
   appInfo.version = "3";
@@ -213,7 +213,7 @@ TEST_F(UpdateCheckTest, WrongApplication)
   Reset();
   ForceUpdateCheck();
 
-  AdblockPlus::Sleep(100);
+  ProcessPendingUpdateWebRequest();
 
   ASSERT_FALSE(eventCallbackCalled);
   ASSERT_TRUE(updateCallbackCalled);
@@ -222,9 +222,9 @@ TEST_F(UpdateCheckTest, WrongApplication)
 
 TEST_F(UpdateCheckTest, WrongVersion)
 {
-  webRequest->response.status = IWebRequest::NS_OK;
-  webRequest->response.responseStatus = 200;
-  webRequest->response.responseText = "{\"1\": {\"version\":\"3\",\"url\":\"https://foo.bar/\"}}";
+  webRequestResponse.status = IWebRequest::NS_OK;
+  webRequestResponse.responseStatus = 200;
+  webRequestResponse.responseText = "{\"1\": {\"version\":\"3\",\"url\":\"https://foo.bar/\"}}";
 
   appInfo.name = "1";
   appInfo.version = "3";
@@ -235,7 +235,7 @@ TEST_F(UpdateCheckTest, WrongVersion)
   Reset();
   ForceUpdateCheck();
 
-  AdblockPlus::Sleep(100);
+  ProcessPendingUpdateWebRequest();
 
   ASSERT_FALSE(eventCallbackCalled);
   ASSERT_TRUE(updateCallbackCalled);
@@ -244,9 +244,9 @@ TEST_F(UpdateCheckTest, WrongVersion)
 
 TEST_F(UpdateCheckTest, WrongURL)
 {
-  webRequest->response.status = IWebRequest::NS_OK;
-  webRequest->response.responseStatus = 200;
-  webRequest->response.responseText = "{\"1\": {\"version\":\"3.1\",\"url\":\"http://insecure/\"}}";
+  webRequestResponse.status = IWebRequest::NS_OK;
+  webRequestResponse.responseStatus = 200;
+  webRequestResponse.responseText = "{\"1\": {\"version\":\"3.1\",\"url\":\"http://insecure/\"}}";
 
   appInfo.name = "1";
   appInfo.version = "3";
@@ -257,7 +257,7 @@ TEST_F(UpdateCheckTest, WrongURL)
   Reset();
   ForceUpdateCheck();
 
-  AdblockPlus::Sleep(100);
+  ProcessPendingUpdateWebRequest();
 
   ASSERT_FALSE(eventCallbackCalled);
   ASSERT_TRUE(updateCallbackCalled);
