@@ -77,18 +77,21 @@ namespace
   };
 
   template<class T>
-  class WebRequestTest : public BaseJsTest
+  class WebRequestTest : public ::testing::Test
   {
   protected:
     void SetUp()
     {
-      BaseJsTest::SetUp();
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.timer.reset(new NoopTimer());
+      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngine = CreateJsEngine(std::move(jsEngineParams));
       webRequest = std::make_shared<T>();
       jsEngine->SetWebRequest(webRequest);
-      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem()));
     }
 
     std::shared_ptr<T> webRequest;
+    JsEnginePtr jsEngine;
   };
 
   typedef WebRequestTest<MockWebRequest> MockWebRequestTest;

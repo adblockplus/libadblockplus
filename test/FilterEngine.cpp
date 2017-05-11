@@ -44,17 +44,19 @@ namespace
   };
 
   template<class FileSystem, class LogSystem>
-  class FilterEngineTestGeneric : public BaseJsTest
+  class FilterEngineTestGeneric : public ::testing::Test
   {
   protected:
     FilterEnginePtr filterEngine;
 
     void SetUp() override
     {
-      BaseJsTest::SetUp();
-      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new FileSystem));
-      jsEngine->SetWebRequest(std::make_shared<LazyWebRequest>());
-      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LogSystem));
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.fileSystem.reset(new FileSystem());
+      jsEngineParams.logSystem.reset(new LogSystem());
+      jsEngineParams.timer.reset(new NoopTimer());
+      jsEngineParams.webRequest.reset(new NoopWebRequest());
+      auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
       filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
     void TearDown() override
@@ -87,11 +89,12 @@ namespace
 
     void SetUp()
     {
-      AdblockPlus::AppInfo appInfo;
-      appInfo.name = "test";
-      appInfo.version = "1.0.1";
-      AdblockPlus::JsEnginePtr jsEngine = CreateJsEngine(appInfo);
-      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.appInfo.name = "test";
+      jsEngineParams.appInfo.version = "1.0.1";
+      jsEngineParams.timer = CreateDefaultTimer();
+      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      AdblockPlus::JsEnginePtr jsEngine = CreateJsEngine(std::move(jsEngineParams));
       jsEngine->SetWebRequest(mockWebRequest = std::make_shared<MockWebRequest>());
       filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
     }
@@ -113,11 +116,14 @@ namespace
     }
     JsEnginePtr createJsEngine(const AppInfo& appInfo = AppInfo())
     {
-      auto jsEngine = JsEngine::New(appInfo);
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.appInfo = appInfo;
+      jsEngineParams.fileSystem = fileSystem;
+      jsEngineParams.logSystem.reset(new LazyLogSystem());
+      jsEngineParams.timer.reset(new NoopTimer());
+      jsEngineParams.webRequest.reset(new NoopWebRequest());
+      auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
       weakJsEngine = jsEngine;
-      jsEngine->SetFileSystem(fileSystem);
-      jsEngine->SetWebRequest(std::make_shared<LazyWebRequest>());
-      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem()));
       return jsEngine;
     }
     void TearDown() override
@@ -149,7 +155,7 @@ namespace
     }
   };
 
-  class FilterEngineIsAllowedConnectionTest : public BaseJsTest
+  class FilterEngineIsAllowedConnectionTest : public ::testing::Test
   {
     class MockWebRequest : public LazyWebRequest
     {
@@ -210,14 +216,17 @@ namespace
     };
     std::shared_ptr<SharedData> data;
     FilterEnginePtr filterEngine;
+    JsEnginePtr jsEngine;
 
     void SetUp()
     {
       data = std::make_shared<SharedData>();
-      BaseJsTest::SetUp();
-      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem()));
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.logSystem.reset(new LazyLogSystem());
+      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngineParams.timer = CreateDefaultTimer();
+      jsEngine = CreateJsEngine(std::move(jsEngineParams));
       jsEngine->SetWebRequest(webRequest = std::make_shared<MockWebRequest>());
-      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem()));
 
       subscriptionUrlPrefix = "http://example";
       ServerResponse exampleSubscriptionResponse;

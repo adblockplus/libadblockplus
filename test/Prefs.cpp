@@ -20,6 +20,8 @@
 #include "../src/Thread.h"
 #include "BaseJsTest.h"
 
+using namespace AdblockPlus;
+
 namespace
 {
   typedef std::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
@@ -65,24 +67,23 @@ namespace
   class PrefsTest : public ::testing::Test
   {
   protected:
-    TestFileSystem* fileSystem;
-    AdblockPlus::FileSystemPtr fileSystemPtr;
+    std::shared_ptr<TestFileSystem> fileSystem;
     AdblockPlus::JsEnginePtr jsEngine;
 
     void SetUp()
     {
-      fileSystem = new TestFileSystem();
-      fileSystemPtr.reset(fileSystem);
-
+      fileSystem = std::make_shared<TestFileSystem>();
       ResetJsEngine();
     }
 
     void ResetJsEngine()
     {
-      jsEngine = CreateJsEngine();
-      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
-      jsEngine->SetFileSystem(fileSystemPtr);
-      jsEngine->SetWebRequest(std::make_shared<LazyWebRequest>());
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.fileSystem = fileSystem;
+      jsEngineParams.webRequest.reset(new NoopWebRequest());
+      jsEngineParams.logSystem.reset(new LazyLogSystem());
+      jsEngineParams.timer.reset(new NoopTimer());
+      jsEngine = CreateJsEngine(std::move(jsEngineParams));
     }
 
     FilterEnginePtr CreateFilterEngine(const AdblockPlus::FilterEngine::Prefs& preconfiguredPrefs =

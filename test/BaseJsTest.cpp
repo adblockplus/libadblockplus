@@ -17,9 +17,22 @@
 
 #include "BaseJsTest.h"
 
-AdblockPlus::JsEnginePtr CreateJsEngine(const AdblockPlus::AppInfo& appInfo,
-  AdblockPlus::WebRequestPtr webRequest)
+JsEngineCreationParameters::JsEngineCreationParameters()
+  : logSystem(std::make_shared<ThrowingLogSystem>())
+  , timer(new ThrowingTimer())
+  , webRequest(new ThrowingWebRequest())
+  , fileSystem(std::make_shared<ThrowingFileSystem>())
+{
+}
+
+AdblockPlus::JsEnginePtr CreateJsEngine(JsEngineCreationParameters&& jsEngineCreationParameters)
 {
   static AdblockPlus::ScopedV8IsolatePtr isolate = std::make_shared<AdblockPlus::ScopedV8Isolate>();
-  return AdblockPlus::JsEngine::New(appInfo, AdblockPlus::CreateDefaultTimer(), std::move(webRequest), isolate);
+  auto jsEngine = AdblockPlus::JsEngine::New(jsEngineCreationParameters.appInfo,
+    std::move(jsEngineCreationParameters.timer),
+    std::move(jsEngineCreationParameters.webRequest),
+    isolate);
+  jsEngine->SetLogSystem(std::move(jsEngineCreationParameters.logSystem));
+  jsEngine->SetFileSystem(std::move(jsEngineCreationParameters.fileSystem));
+  return jsEngine;
 }

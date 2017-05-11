@@ -20,8 +20,17 @@
 
 namespace
 {
-  class GlobalJsObjectTest : public BaseJsTest
+  class GlobalJsObjectTest : public ::testing::Test
   {
+  protected:
+    AdblockPlus::JsEnginePtr jsEngine;
+
+    void SetUp() override
+    {
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.timer = AdblockPlus::CreateDefaultTimer();
+      jsEngine = CreateJsEngine(std::move(jsEngineParams));
+    }
   };
 }
 

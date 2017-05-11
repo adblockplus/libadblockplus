@@ -50,8 +50,7 @@ namespace
   {
   protected:
     AdblockPlus::AppInfo appInfo;
-    TestWebRequest* webRequest;
-    WebRequestSharedPtr webRequestPtr;
+    std::shared_ptr<TestWebRequest> webRequest;
     AdblockPlus::JsEnginePtr jsEngine;
     FilterEnginePtr filterEngine;
 
@@ -62,8 +61,7 @@ namespace
 
     void SetUp()
     {
-      webRequest = new TestWebRequest();
-      webRequestPtr.reset(webRequest);
+      webRequest = std::make_shared<TestWebRequest>();
 
       eventCallbackCalled = false;
       updateCallbackCalled = false;
@@ -72,10 +70,13 @@ namespace
 
     void Reset()
     {
-      jsEngine = CreateJsEngine(appInfo);
-      jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new LazyLogSystem));
-      jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new LazyFileSystem));
-      jsEngine->SetWebRequest(webRequestPtr);
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.appInfo = appInfo;
+      jsEngineParams.logSystem.reset(new LazyLogSystem());
+      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngineParams.timer = CreateDefaultTimer();
+      jsEngine = CreateJsEngine(std::move(jsEngineParams));
+      jsEngine->SetWebRequest(webRequest);
       jsEngine->SetEventCallback("updateAvailable", [this](JsValueList&& params)
       {
         eventCallbackCalled = true;

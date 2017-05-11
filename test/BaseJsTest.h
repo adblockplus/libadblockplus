@@ -22,6 +22,21 @@
 #include <gtest/gtest.h>
 #include "../src/Thread.h"
 
+class ThrowingTimer : public AdblockPlus::ITimer
+{
+  void SetTimer(const std::chrono::milliseconds& timeout, const TimerCallback& timerCallback) override
+  {
+    throw std::runtime_error("Unexpected timer: " + std::to_string(timeout.count()));
+  }
+};
+
+class NoopTimer : public AdblockPlus::ITimer
+{
+  void SetTimer(const std::chrono::milliseconds& timeout, const TimerCallback& timerCallback) override
+  {
+  }
+};
+
 class ThrowingLogSystem : public AdblockPlus::LogSystem
 {
 public:
@@ -133,6 +148,14 @@ public:
   }
 };
 
+class NoopWebRequest : public AdblockPlus::IWebRequest
+{
+public:
+  void GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders, const GetCallback& callback) override
+  {
+  }
+};
+
 class LazyLogSystem : public AdblockPlus::LogSystem
 {
 public:
@@ -142,8 +165,18 @@ public:
   }
 };
 
-AdblockPlus::JsEnginePtr CreateJsEngine(const AdblockPlus::AppInfo& appInfo = AdblockPlus::AppInfo(),
-  AdblockPlus::WebRequestPtr webRequest = AdblockPlus::WebRequestPtr(new ThrowingWebRequest()));
+struct JsEngineCreationParameters
+{
+  JsEngineCreationParameters();
+
+  AdblockPlus::AppInfo appInfo;
+  AdblockPlus::LogSystemPtr logSystem;
+  AdblockPlus::TimerPtr timer;
+  AdblockPlus::WebRequestPtr webRequest;
+  AdblockPlus::FileSystemPtr fileSystem;
+};
+
+AdblockPlus::JsEnginePtr CreateJsEngine(JsEngineCreationParameters&& jsEngineCreationParameters = JsEngineCreationParameters());
 
 class BaseJsTest : public ::testing::Test
 {
@@ -153,9 +186,6 @@ protected:
   virtual void SetUp()
   {
     jsEngine = CreateJsEngine();
-    jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr(new ThrowingLogSystem));
-    jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr(new ThrowingFileSystem));
-    jsEngine->SetWebRequest(std::make_shared<ThrowingWebRequest>());
   }
 };
 

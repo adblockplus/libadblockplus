@@ -27,22 +27,24 @@ namespace
 {
   typedef std::shared_ptr<FilterEngine> FilterEnginePtr;
 
-  class NotificationTest : public BaseJsTest
+  class NotificationTest : public ::testing::Test
   {
   protected:
     FilterEnginePtr filterEngine;
     void SetUp()
     {
-      BaseJsTest::SetUp();
-      jsEngine->SetFileSystem(FileSystemPtr(new LazyFileSystem()));
-      jsEngine->SetWebRequest(std::make_shared<LazyWebRequest>());
-      jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngineParams.logSystem.reset(new DefaultLogSystem());
+      jsEngineParams.timer.reset(new NoopTimer());
+      jsEngineParams.webRequest.reset(new NoopWebRequest());
+      auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
       filterEngine = FilterEngine::Create(jsEngine);
     }
 
     void AddNotification(const std::string& notification)
     {
-      jsEngine->Evaluate("(function()"
+      filterEngine->GetJsEngine()->Evaluate("(function()"
       "{"
         "require('notification').Notification.addNotification(" + notification + ");"
       "})();");
