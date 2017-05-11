@@ -192,17 +192,6 @@ public:
   }
 };
 
-class LazyWebRequest : public AdblockPlus::WebRequest
-{
-public:
-  AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
-  {
-    while (true)
-      AdblockPlus::Sleep(100000);
-    return AdblockPlus::ServerResponse();
-  }
-};
-
 class NoopWebRequest : public AdblockPlus::IWebRequest
 {
 public:

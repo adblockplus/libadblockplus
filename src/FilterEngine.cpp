@@ -225,8 +225,8 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
     // TODO: replace weakFilterEngine by this when it's possible to control the
     // execution time of the asynchronous part below.
     std::weak_ptr<FilterEngine> weakFilterEngine = filterEngine;
-    auto isConnectionAllowedCallback = params.isConnectionAllowedCallback;
-    jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [weakFilterEngine, isConnectionAllowedCallback](JsValueList&& params){
+    auto isSubscriptionDowloadAllowedCallback = params.isSubscriptionDowloadAllowedCallback;
+    jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [weakFilterEngine, isSubscriptionDowloadAllowedCallback](JsValueList&& params){
       auto filterEngine = weakFilterEngine.lock();
       if (!filterEngine)
         return;
@@ -238,7 +238,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       assert(areArgumentsValid && "Invalid argument: there should be two args and the second one should be a function");
       if (!areArgumentsValid)
         return;
-      if (!isConnectionAllowedCallback)
+      if (!isSubscriptionDowloadAllowedCallback)
       {
         params[1].Call(jsEngine->NewValue(true));
         return;
@@ -253,12 +253,8 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
         auto jsParams = jsEngine->TakeJsValues(valuesID);
         jsParams[1].Call(jsEngine->NewValue(isAllowed));
       };
-      std::shared_ptr<std::string> allowedConnectionType = params[0].IsString() ? std::make_shared<std::string>(params[0].AsString()) : nullptr;
-      // temporary hack with thread:
-      std::thread([isConnectionAllowedCallback, allowedConnectionType, callJsCallback]
-      {
-        callJsCallback(isConnectionAllowedCallback(allowedConnectionType.get()));
-      }).detach();
+      std::string allowedConnectionType = params[0].IsString() ? params[0].AsString() : std::string();
+      isSubscriptionDowloadAllowedCallback(params[0].IsString() ? &allowedConnectionType : nullptr, callJsCallback);
     });
   }
   

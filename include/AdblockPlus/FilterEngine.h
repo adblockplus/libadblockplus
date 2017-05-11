@@ -255,10 +255,11 @@ namespace AdblockPlus
     typedef std::function<void(Notification&&)> ShowNotificationCallback;
 
     /**
-     * Callback function returning false when current connection is not
-     * allowedConnectionType, e.g. because it is a metered connection.
+     * Asynchronous callback function passing false when current connection
+     * type does not correspond to allowedConnectionType, e.g. because it is a
+     * metered connection.
      */
-    typedef std::function<bool(const std::string* allowedConnectionType)> IsConnectionAllowedCallback;
+    typedef std::function<void(const std::string* allowedConnectionType, const std::function<void(bool)>&)> IsConnectionAllowedAsyncCallback;
 
     /**
      * FilterEngine creation parameters.
@@ -271,11 +272,11 @@ namespace AdblockPlus
        */
       Prefs preconfiguredPrefs;
       /**
-       * `AdblockPlus::FilterEngine::IsConnectionAllowedCallback` a callback
-       * checking whether the request from Adblock Plus should be blocked on
-       * the current connection.
+       * A callback of `AdblockPlus::FilterEngine::IsConnectionAllowedAsyncCallback` type
+       * checking whether the request to download a subscription from Adblock Plus may be performed
+       * on the current connection.
        */
-      IsConnectionAllowedCallback isConnectionAllowedCallback;
+      IsConnectionAllowedAsyncCallback isSubscriptionDowloadAllowedCallback;
     };
 
     /**

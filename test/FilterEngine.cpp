@@ -155,130 +155,86 @@ namespace
     }
   };
 
-  class FilterEngineIsAllowedConnectionTest : public ::testing::Test
+  class FilterEngineIsSubscriptionDownloadAllowedTest : public ::testing::Test
   {
-    class MockWebRequest : public LazyWebRequest
-    {
-    public:
-      std::map</*beginning of url*/std::string, AdblockPlus::ServerResponse> responses;
-
-      AdblockPlus::ServerResponse GET(const std::string& url,
-        const AdblockPlus::HeaderList& requestHeaders) const
-      {
-        for (const auto& response : responses)
-        {
-          if (Utils::BeginsWith(url, response.first))
-          {
-            return response.second;
-          }
-        }
-        return LazyWebRequest::GET(url, requestHeaders);
-      }
-    };
-    class SyncStrings
-    {
-    public:
-      void Add(const std::string* value)
-      {
-        std::lock_guard<std::mutex> lock(mutex);
-        strings.emplace_back(!!value, value ? *value : "");
-      }
-      std::vector<std::pair<bool, std::string>> GetStrings() const
-      {
-        std::lock_guard<std::mutex> lock(mutex);
-        return strings;
-      }
-      void Clear()
-      {
-        std::lock_guard<std::mutex> lock(mutex);
-        strings.clear();
-      }
-    private:
-      mutable std::mutex mutex;
-      std::vector<std::pair<bool, std::string>> strings;
-    };
   protected:
-    std::shared_ptr<MockWebRequest> webRequest;
-    std::string subscriptionUrlPrefix;
+    typedef std::vector<std::pair<bool, std::string>> ConnectionTypes;
+    DelayedWebRequest::SharedTasks webRequestTasks;
+    DelayedTimer::SharedTasks timerTasks;
     FilterEngine::CreationParameters createParams;
-    // HACK: it's a shared pointer to keep it available in
-    // isConnectionAllowedCallback after destroying of the test.
-    struct SharedData
-    {
-      SyncStrings capturedConnectionTypes;
-      bool isConnectionAllowed;
-      struct
-      {
-        std::string url;
-        std::mutex mutex;
-        std::condition_variable cv;
-      } downloadStatusChanged;
-    };
-    std::shared_ptr<SharedData> data;
+    ConnectionTypes capturedConnectionTypes;
+    bool isConnectionAllowed;
+    std::vector<std::function<void(bool)>> isSubscriptionDowloadAllowedCallbacks;
     FilterEnginePtr filterEngine;
     JsEnginePtr jsEngine;
 
     void SetUp()
     {
-      data = std::make_shared<SharedData>();
+      isConnectionAllowed = true;
+
       JsEngineCreationParameters jsEngineParams;
       jsEngineParams.logSystem.reset(new LazyLogSystem());
       jsEngineParams.fileSystem.reset(new LazyFileSystem());
-      jsEngineParams.timer = CreateDefaultTimer();
+      jsEngineParams.timer = DelayedTimer::New(timerTasks);
+      jsEngineParams.webRequest = DelayedWebRequest::New(webRequestTasks);
       jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      jsEngine->SetWebRequest(webRequest = std::make_shared<MockWebRequest>());
 
-      subscriptionUrlPrefix = "http://example";
-      ServerResponse exampleSubscriptionResponse;
-      exampleSubscriptionResponse.responseStatus = 200;
-      exampleSubscriptionResponse.status = IWebRequest::NS_OK;
-      exampleSubscriptionResponse.responseText = "[Adblock Plus 2.0]\n||example.com";
-      webRequest->responses.emplace(subscriptionUrlPrefix, exampleSubscriptionResponse);
       createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));
-      data->isConnectionAllowed = true;
-      auto closure = data;
-      createParams.isConnectionAllowedCallback = [closure](const std::string* allowedConnectionType)->bool{
-        closure->capturedConnectionTypes.Add(allowedConnectionType);
-        return closure->isConnectionAllowed;
+
+      createParams.isSubscriptionDowloadAllowedCallback = [this](const std::string* allowedConnectionType,
+        const std::function<void(bool)>& isSubscriptionDowloadAllowedCallback){
+        capturedConnectionTypes.emplace_back(!!allowedConnectionType, allowedConnectionType ? *allowedConnectionType : std::string());
+        isSubscriptionDowloadAllowedCallbacks.emplace_back(isSubscriptionDowloadAllowedCallback);
       };
     }
 
     Subscription EnsureExampleSubscriptionAndForceUpdate(const std::string& apppendToUrl = std::string())
     {
+      auto subscriptionUrl = "http://example" + apppendToUrl;
+      bool isSubscriptionDownloadStatusReceived = false;
       if (!filterEngine)
       {
         filterEngine = FilterEngine::Create(jsEngine, createParams);
-        auto closure = data;
-        filterEngine->SetFilterChangeCallback([closure](const std::string& action, JsValue&& item)
+        filterEngine->SetFilterChangeCallback([&isSubscriptionDownloadStatusReceived, &subscriptionUrl](const std::string& action, JsValue&& item)
         {
-          if (action == "subscription.downloadStatus")
-          {
-            {
-              std::lock_guard<std::mutex> lock(closure->downloadStatusChanged.mutex);
-              closure->downloadStatusChanged.url = item.GetProperty("url").AsString();
-            }
-            closure->downloadStatusChanged.cv.notify_one();
-          }
+          if (action == "subscription.downloadStatus" && item.GetProperty("url").AsString() == subscriptionUrl)
+            isSubscriptionDownloadStatusReceived = true;
         });
       }
-      auto subscriptionUrl = subscriptionUrlPrefix + apppendToUrl;
       auto subscription = filterEngine->GetSubscription(subscriptionUrl);
       EXPECT_EQ(0u, subscription.GetProperty("filters").AsList().size()) << subscriptionUrl;
       EXPECT_TRUE(subscription.GetProperty("downloadStatus").IsNull()) << subscriptionUrl;
       subscription.UpdateFilters();
+
+      // Since currently the check is called from implemenation of web request
+      // they have to been firstly scheduled, namely before processing of
+      // 'is subscription download allowed' callbacks;
+      DelayedTimer::ProcessImmediateTimers(timerTasks);
+
+      for (const auto& isSubscriptionDowloadAllowedCallback : isSubscriptionDowloadAllowedCallbacks)
       {
-        std::unique_lock<std::mutex> lock(data->downloadStatusChanged.mutex);
-        data->downloadStatusChanged.cv.wait_for(lock,
-          /*don't block tests forever*/std::chrono::seconds(300),
-          [this, subscriptionUrl]()->bool
-        {
-          return subscriptionUrl == data->downloadStatusChanged.url;
-        });
-        // Basically it's enough to wait only for downloadStatus although there
-        // is still some JS code being executed. Any following attempt to work
-        // with subscription object will result in execution of JS, which will
-        // be blocked until finishing of currently running code.
+        isSubscriptionDowloadAllowedCallback(isConnectionAllowed);
       }
+      isSubscriptionDowloadAllowedCallbacks.clear();
+
+      {
+        auto ii_webRequest = std::find_if(webRequestTasks->begin(), webRequestTasks->end(), [&subscriptionUrl](const DelayedWebRequest::Task& task)->bool
+        {
+          return Utils::BeginsWith(task.url, subscriptionUrl);
+        });
+
+        // if download is allowed then there should be a web request
+        EXPECT_EQ(isConnectionAllowed, ii_webRequest != webRequestTasks->end());
+        if (ii_webRequest != webRequestTasks->end())
+        {
+          ServerResponse exampleSubscriptionResponse;
+          exampleSubscriptionResponse.responseStatus = 200;
+          exampleSubscriptionResponse.status = IWebRequest::NS_OK;
+          exampleSubscriptionResponse.responseText = "[Adblock Plus 2.0]\n||example.com";
+          ii_webRequest->getCallback(exampleSubscriptionResponse);
+        }
+      }
+      EXPECT_TRUE(isSubscriptionDownloadStatusReceived);
       return subscription;
     }
   };
@@ -1059,37 +1015,35 @@ namespace AA_ApiTest
   }
 }
 
-TEST_F(FilterEngineIsAllowedConnectionTest, AbsentCallbackAllowsUpdating)
+TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AbsentCallbackAllowsUpdating)
 {
-  createParams.isConnectionAllowedCallback = FilterEngine::IsConnectionAllowedCallback();
+  createParams.isSubscriptionDowloadAllowedCallback = FilterEngine::IsConnectionAllowedAsyncCallback();
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
 }
 
-TEST_F(FilterEngineIsAllowedConnectionTest, AllowingCallbackAllowsUpdating)
+TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AllowingCallbackAllowsUpdating)
 {
   // no stored allowed_connection_type preference
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-  auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
   ASSERT_EQ(1u, capturedConnectionTypes.size());
   EXPECT_FALSE(capturedConnectionTypes[0].first);
 }
 
-TEST_F(FilterEngineIsAllowedConnectionTest, NotAllowingCallbackDoesNotAllowUpdating)
+TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, NotAllowingCallbackDoesNotAllowUpdating)
 {
-  data->isConnectionAllowed = false;
+  isConnectionAllowed = false;
   // no stored allowed_connection_type preference
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_connection_error", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(0u, subscription.GetProperty("filters").AsList().size());
-  auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
   EXPECT_EQ(1u, capturedConnectionTypes.size());
 }
 
-TEST_F(FilterEngineIsAllowedConnectionTest, PredefinedAllowedConnectionTypeIsPassedToCallback)
+TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, PredefinedAllowedConnectionTypeIsPassedToCallback)
 {
   std::string predefinedAllowedConnectionType = "non-metered";
   createParams.preconfiguredPrefs.insert(std::make_pair("allowed_connection_type",
@@ -1097,13 +1051,12 @@ TEST_F(FilterEngineIsAllowedConnectionTest, PredefinedAllowedConnectionTypeIsPas
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-  auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
   ASSERT_EQ(1u, capturedConnectionTypes.size());
   EXPECT_TRUE(capturedConnectionTypes[0].first);
   EXPECT_EQ(predefinedAllowedConnectionType, capturedConnectionTypes[0].second);
 }
 
-TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCallback)
+TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, ConfiguredConnectionTypeIsPassedToCallback)
 {
   // FilterEngine->RemoveSubscription is not usable here because subscriptions
   // are cached internally by URL. So, different URLs are used in diffirent
@@ -1115,25 +1068,22 @@ TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCa
     auto subscription = EnsureExampleSubscriptionAndForceUpdate();
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-    auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_TRUE(capturedConnectionTypes[0].first);
     EXPECT_EQ(predefinedAllowedConnectionType, capturedConnectionTypes[0].second);
   }
-  data->capturedConnectionTypes.Clear();
+  capturedConnectionTypes.clear();
   {
     // set no value
     filterEngine->SetAllowedConnectionType(nullptr);
     auto subscription = EnsureExampleSubscriptionAndForceUpdate("subA");
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-    auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_FALSE(capturedConnectionTypes[0].first);
     subscription.RemoveFromList();
-    data->capturedConnectionTypes.Clear();
   }
-  data->capturedConnectionTypes.Clear();
+  capturedConnectionTypes.clear();
   {
     // set some value
     std::string testConnection = "test connection";
@@ -1141,7 +1091,6 @@ TEST_F(FilterEngineIsAllowedConnectionTest, ConfiguredConnectionTypeIsPassedToCa
     auto subscription = EnsureExampleSubscriptionAndForceUpdate("subB");
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
-    auto capturedConnectionTypes = data->capturedConnectionTypes.GetStrings();
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_TRUE(capturedConnectionTypes[0].first);
     EXPECT_EQ(testConnection, capturedConnectionTypes[0].second);
