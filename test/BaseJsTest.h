@@ -137,13 +137,9 @@ public:
 
 };
 
-class ThrowingWebRequest : public AdblockPlus::IWebRequest, public AdblockPlus::WebRequest
+class ThrowingWebRequest : public AdblockPlus::IWebRequest
 {
 public:
-  AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const override
-  {
-    throw std::runtime_error("Unexpected GET: " + url);
-  }
   void GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders, const GetCallback&) override
   {
     throw std::runtime_error("Unexpected GET: " + url);
