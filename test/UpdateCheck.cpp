@@ -38,7 +38,6 @@ namespace
     AdblockPlus::ServerResponse webRequestResponse;
     DelayedWebRequest::SharedTasks webRequestTasks;
     DelayedTimer::SharedTasks timerTasks;
-    AdblockPlus::JsEnginePtr jsEngine;
     FilterEnginePtr filterEngine;
 
     bool eventCallbackCalled;
@@ -60,7 +59,7 @@ namespace
       jsEngineParams.fileSystem.reset(new LazyFileSystem());
       jsEngineParams.timer = DelayedTimer::New(timerTasks);
       jsEngineParams.webRequest = DelayedWebRequest::New(webRequestTasks);
-      jsEngine = CreateJsEngine(std::move(jsEngineParams));
+      auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
       jsEngine->SetEventCallback("updateAvailable", [this](JsValueList&& params)
       {
         eventCallbackCalled = true;
@@ -120,8 +119,8 @@ TEST_F(UpdateCheckTest, RequestFailure)
   ASSERT_FALSE(updateError.empty());
 
   std::string expectedUrl(filterEngine->GetPref("update_url_release").AsString());
-  std::string platform = jsEngine->Evaluate("require('info').platform").AsString();
-  std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion").AsString();
+  std::string platform = filterEngine->GetJsEngine()->Evaluate("require('info').platform").AsString();
+  std::string platformVersion = filterEngine->GetJsEngine()->Evaluate("require('info').platformVersion").AsString();
 
   FindAndReplace(expectedUrl, "%NAME%", appInfo.name);
   FindAndReplace(expectedUrl, "%TYPE%", "1");   // manual update
@@ -159,8 +158,8 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   ASSERT_TRUE(updateError.empty());
 
   std::string expectedUrl(filterEngine->GetPref("update_url_devbuild").AsString());
-  std::string platform = jsEngine->Evaluate("require('info').platform").AsString();
-  std::string platformVersion = jsEngine->Evaluate("require('info').platformVersion").AsString();
+  std::string platform = filterEngine->GetJsEngine()->Evaluate("require('info').platform").AsString();
+  std::string platformVersion = filterEngine->GetJsEngine()->Evaluate("require('info').platformVersion").AsString();
 
   FindAndReplace(expectedUrl, "%NAME%", appInfo.name);
   FindAndReplace(expectedUrl, "%TYPE%", "1");   // manual update
