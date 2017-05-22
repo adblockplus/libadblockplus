@@ -69,37 +69,6 @@ namespace
   typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
   typedef FilterEngineTestGeneric<VeryLazyFileSystem, LazyLogSystem> FilterEngineTestNoData;
 
-  class UpdaterTest : public ::testing::Test
-  {
-  protected:
-    class MockWebRequest : public AdblockPlus::WebRequest
-    {
-    public:
-      AdblockPlus::ServerResponse response;
-
-      AdblockPlus::ServerResponse GET(const std::string& url,
-          const AdblockPlus::HeaderList& requestHeaders) const
-      {
-        return response;
-      }
-    };
-
-    std::shared_ptr<MockWebRequest> mockWebRequest;
-    FilterEnginePtr filterEngine;
-
-    void SetUp()
-    {
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.appInfo.name = "test";
-      jsEngineParams.appInfo.version = "1.0.1";
-      jsEngineParams.timer = CreateDefaultTimer();
-      jsEngineParams.fileSystem.reset(new LazyFileSystem());
-      AdblockPlus::JsEnginePtr jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      jsEngine->SetWebRequest(mockWebRequest = std::make_shared<MockWebRequest>());
-      filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
-    }
-  };
-
   class FilterEngineWithFreshFolder : public ::testing::Test
   {
   protected:
@@ -619,54 +588,6 @@ TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
   filterEngine->RemoveFilterChangeCallback();
   filterEngine->GetFilter("foo").RemoveFromList();
   EXPECT_EQ(1, timesCalled);
-}
-
-TEST_F(UpdaterTest, SetRemoveUpdateAvailableCallback)
-{
-  mockWebRequest->response.status = 0;
-  mockWebRequest->response.responseStatus = 200;
-  mockWebRequest->response.responseText = "\
-{\
-  \"test\": {\
-    \"version\": \"1.0.2\",\
-    \"url\": \"https://downloads.adblockplus.org/test-1.0.2.tar.gz?update\"\
-  }\
-}";
-
-  int timesCalled = 0;
-  filterEngine->SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
-  {
-    ++timesCalled;
-  });
-  filterEngine->ForceUpdateCheck();
-  AdblockPlus::Sleep(100);
-  EXPECT_EQ(1, timesCalled);
-
-  filterEngine->RemoveUpdateAvailableCallback();
-  filterEngine->ForceUpdateCheck();
-  AdblockPlus::Sleep(100);
-  EXPECT_EQ(1, timesCalled);
-}
-
-TEST_F(UpdaterTest, ForceUpdateCheck)
-{
-  mockWebRequest->response.status = 0;
-  mockWebRequest->response.responseStatus = 200;
-  mockWebRequest->response.responseText = "\
-{\
-  \"test\": {\
-    \"version\": \"1.0.2\",\
-    \"url\": \"https://downloads.adblockplus.org/test-1.0.2.tar.gz?update\"\
-  }\
-}";
-
-  int called = 0; // 0 - not  called; 1 - once, no error; 2 - error
-  filterEngine->ForceUpdateCheck([&called](const std::string& error)->void
-  {
-    called = error.empty() ? 1 : 2;
-  });
-  AdblockPlus::Sleep(100);
-  EXPECT_EQ(1, called);
 }
 
 TEST_F(FilterEngineTest, DocumentWhitelisting)

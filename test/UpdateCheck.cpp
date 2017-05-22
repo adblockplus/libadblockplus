@@ -262,3 +262,48 @@ TEST_F(UpdateCheckTest, WrongURL)
   ASSERT_TRUE(updateCallbackCalled);
   ASSERT_FALSE(updateError.empty());
 }
+
+TEST_F(UpdateCheckTest, SetRemoveUpdateAvailableCallback)
+{
+  webRequestResponse.status = 0;
+  webRequestResponse.responseStatus = 200;
+  webRequestResponse.responseText = "\
+{\
+  \"test\": {\
+    \"version\": \"1.0.2\",\
+    \"url\": \"https://downloads.adblockplus.org/test-1.0.2.tar.gz?update\"\
+  }\
+}";
+
+  appInfo.name = "test";
+  appInfo.version = "1.0.1";
+  CreateFilterEngine();
+
+  int timesCalled = 0;
+  filterEngine->SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
+  {
+    ++timesCalled;
+  });
+  ForceUpdateCheck();
+
+  // ensure that the was the corresponding request
+  EXPECT_FALSE(ProcessPendingUpdateWebRequest().empty());
+
+  EXPECT_EQ(1, timesCalled);
+
+  // filterEngine->SetUpdateAvailableCallback overriddes previously installed on JsEngine
+  // handler for "updateAvailable" event.
+  EXPECT_FALSE(eventCallbackCalled);
+
+  filterEngine->RemoveUpdateAvailableCallback();
+  ForceUpdateCheck();
+
+  // ensure that the was the corresponding request
+  EXPECT_FALSE(ProcessPendingUpdateWebRequest().empty());
+
+  EXPECT_FALSE(eventCallbackCalled);
+  EXPECT_EQ(1, timesCalled);
+
+  // previous handler is not restored
+  EXPECT_FALSE(eventCallbackCalled);
+}
