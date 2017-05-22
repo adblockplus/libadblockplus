@@ -50,10 +50,9 @@ namespace
     {
       eventCallbackCalled = false;
       updateCallbackCalled = false;
-      Reset();
     }
 
-    void Reset()
+    void CreateFilterEngine()
     {
       JsEngineCreationParameters jsEngineParams;
       jsEngineParams.appInfo = appInfo;
@@ -111,7 +110,7 @@ TEST_F(UpdateCheckTest, RequestFailure)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = false;
 
-  Reset();
+  CreateFilterEngine();
   ForceUpdateCheck();
 
   auto requestUrl = ProcessPendingUpdateWebRequest();
@@ -148,7 +147,7 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  Reset();
+  CreateFilterEngine();
   ForceUpdateCheck();
 
   auto requestUrl = ProcessPendingUpdateWebRequest();
@@ -187,7 +186,7 @@ TEST_F(UpdateCheckTest, ApplicationUpdateAvailable)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  Reset();
+  CreateFilterEngine();
   ForceUpdateCheck();
 
   ProcessPendingUpdateWebRequest();
@@ -210,7 +209,7 @@ TEST_F(UpdateCheckTest, WrongApplication)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  Reset();
+  CreateFilterEngine();
   ForceUpdateCheck();
 
   ProcessPendingUpdateWebRequest();
@@ -232,7 +231,7 @@ TEST_F(UpdateCheckTest, WrongVersion)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  Reset();
+  CreateFilterEngine();
   ForceUpdateCheck();
 
   ProcessPendingUpdateWebRequest();
@@ -254,7 +253,7 @@ TEST_F(UpdateCheckTest, WrongURL)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  Reset();
+  CreateFilterEngine();
   ForceUpdateCheck();
 
   ProcessPendingUpdateWebRequest();
