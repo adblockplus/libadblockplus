@@ -313,6 +313,11 @@ namespace AdblockPlus
       return isolate->Get();
     }
 
+    /**
+     * Notifies JS engine about critically low memory what should cause a
+     * garbage collection.
+     */
+    void NotifyLowMemory();
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 

@@ -265,6 +265,16 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
     jsEngine->RemoveEventCallback("_init");
   });
 
+  std::weak_ptr<FilterEngine> weakFilterEngine = filterEngine;
+  filterEngine->SetFilterChangeCallback([weakFilterEngine](const std::string& reason, JsValue&&)
+  {
+    auto filterEngine = weakFilterEngine.lock();
+    if (!filterEngine)
+      return;
+    if (reason == "save")
+      filterEngine->GetJsEngine()->NotifyLowMemory();
+  });
+
   // Lock the JS engine while we are loading scripts, no timeouts should fire
   // until we are done.
   const JsContext context(*jsEngine);

@@ -95,6 +95,12 @@ JsEngine::JsWeakValuesList::~JsWeakValuesList()
     value->Dispose();
 }
 
+void JsEngine::NotifyLowMemory()
+{
+  const JsContext context(*this);
+  v8::V8::LowMemoryNotification();
+}
+
 void JsEngine::ScheduleTimer(const v8::Arguments& arguments)
 {
   auto jsEngine = FromArguments(arguments);
