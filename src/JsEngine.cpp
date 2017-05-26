@@ -131,10 +131,8 @@ void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
   callback.Call(timerParams);
 }
 
-AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate,
-  TimerPtr timer, WebRequestPtr webRequest)
-  : isolate(isolate)
-  , fileSystem(new DefaultFileSystem())
+AdblockPlus::JsEngine::JsEngine(TimerPtr timer, WebRequestPtr webRequest)
+  : fileSystem(new DefaultFileSystem())
   , logSystem(new DefaultLogSystem())
   , timer(std::move(timer))
   , webRequest(std::move(webRequest))
@@ -142,10 +140,9 @@ AdblockPlus::JsEngine::JsEngine(const ScopedV8IsolatePtr& isolate,
 }
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
-  TimerPtr timer, WebRequestPtr webRequest,
-  const ScopedV8IsolatePtr& isolate)
+  TimerPtr timer, WebRequestPtr webRequest)
 {
-  JsEnginePtr result(new JsEngine(isolate, std::move(timer), std::move(webRequest)));
+  JsEnginePtr result(new JsEngine(std::move(timer), std::move(webRequest)));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());

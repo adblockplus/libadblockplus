@@ -42,11 +42,9 @@ JsEngineCreationParameters::JsEngineCreationParameters()
 
 AdblockPlus::JsEnginePtr CreateJsEngine(JsEngineCreationParameters&& jsEngineCreationParameters)
 {
-  static AdblockPlus::ScopedV8IsolatePtr isolate = std::make_shared<AdblockPlus::ScopedV8Isolate>();
   auto jsEngine = AdblockPlus::JsEngine::New(jsEngineCreationParameters.appInfo,
     std::move(jsEngineCreationParameters.timer),
-    std::move(jsEngineCreationParameters.webRequest),
-    isolate);
+    std::move(jsEngineCreationParameters.webRequest));
   jsEngine->SetLogSystem(std::move(jsEngineCreationParameters.logSystem));
   jsEngine->SetFileSystem(std::move(jsEngineCreationParameters.fileSystem));
   return jsEngine;

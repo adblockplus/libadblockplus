@@ -82,11 +82,6 @@ namespace AdblockPlus
   };
 
   /**
-   * Shared smart pointer to ScopedV8Isolate instance;
-   */
-  typedef std::shared_ptr<ScopedV8Isolate> ScopedV8IsolatePtr;
-
-  /**
    * JavaScript engine used by `FilterEngine`, wraps v8.
    */
   class JsEngine : public std::enable_shared_from_this<JsEngine>
@@ -132,8 +127,7 @@ namespace AdblockPlus
      */
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo(),
       TimerPtr timer = CreateDefaultTimer(),
-      WebRequestPtr webRequest = CreateDefaultWebRequest(),
-      const ScopedV8IsolatePtr& isolate = ScopedV8IsolatePtr(new ScopedV8Isolate()));
+      WebRequestPtr webRequest = CreateDefaultWebRequest());
 
     /**
      * Registers the callback function for an event.
@@ -310,7 +304,7 @@ namespace AdblockPlus
      */
     v8::Isolate* GetIsolate()
     {
-      return isolate->Get();
+      return isolate.Get();
     }
 
     /**
@@ -321,13 +315,13 @@ namespace AdblockPlus
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
-    explicit JsEngine(const ScopedV8IsolatePtr& isolate, TimerPtr timer, WebRequestPtr webRequest);
+    explicit JsEngine(TimerPtr timer, WebRequestPtr webRequest);
 
     JsValue GetGlobalObject();
 
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.
-    ScopedV8IsolatePtr isolate;
+    ScopedV8Isolate isolate;
 
     FileSystemPtr fileSystem;
     LogSystemPtr logSystem;

@@ -188,3 +188,29 @@ TEST(NewJsEngineTest, GlobalPropertyTest)
   ASSERT_EQ(foo.AsString(), "bar");
 }
 
+TEST(NewJsEngineTest, MemoryLeak_NoCircularReferences)
+{
+  std::weak_ptr<AdblockPlus::JsEngine> weakJsEngine;
+  {
+    weakJsEngine = AdblockPlus::JsEngine::New();
+  }
+  EXPECT_FALSE(weakJsEngine.lock());
+}
+
+#if UINTPTR_MAX == UINT32_MAX // detection of 32-bit platform
+static_assert(sizeof(intptr_t) == 4, "It should be 32bit platform");
+TEST(NewJsEngineTest, 32bitsOnly_MemoryLeak_NoLeak)
+#else
+TEST(NewJsEngineTest, DISABLED_32bitsOnly_MemoryLeak_NoLeak)
+#endif
+{
+  // v8::Isolate by default requires 32MB (depends on platform), so if there is
+  // a memory leak than we will run out of memory on 32 bit platform because it
+  // will allocate 32000 MB which is less than 2GB where it reaches out of
+  // memory. Even on android where it allocates initially 16MB, the test still
+  // makes sense.
+  for (int i = 0; i < 1000; ++i)
+  {
+    AdblockPlus::JsEngine::New();
+  }
+}
