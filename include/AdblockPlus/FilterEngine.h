@@ -276,7 +276,7 @@ namespace AdblockPlus
        * checking whether the request to download a subscription from Adblock Plus may be performed
        * on the current connection.
        */
-      IsConnectionAllowedAsyncCallback isSubscriptionDowloadAllowedCallback;
+      IsConnectionAllowedAsyncCallback isSubscriptionDownloadAllowedCallback;
     };
 
     /**

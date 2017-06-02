@@ -225,8 +225,8 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
     // TODO: replace weakFilterEngine by this when it's possible to control the
     // execution time of the asynchronous part below.
     std::weak_ptr<FilterEngine> weakFilterEngine = filterEngine;
-    auto isSubscriptionDowloadAllowedCallback = params.isSubscriptionDowloadAllowedCallback;
-    jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [weakFilterEngine, isSubscriptionDowloadAllowedCallback](JsValueList&& params){
+    auto isSubscriptionDownloadAllowedCallback = params.isSubscriptionDownloadAllowedCallback;
+    jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [weakFilterEngine, isSubscriptionDownloadAllowedCallback](JsValueList&& params){
       auto filterEngine = weakFilterEngine.lock();
       if (!filterEngine)
         return;
@@ -238,7 +238,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       assert(areArgumentsValid && "Invalid argument: there should be two args and the second one should be a function");
       if (!areArgumentsValid)
         return;
-      if (!isSubscriptionDowloadAllowedCallback)
+      if (!isSubscriptionDownloadAllowedCallback)
       {
         params[1].Call(jsEngine->NewValue(true));
         return;
@@ -254,7 +254,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
         jsParams[1].Call(jsEngine->NewValue(isAllowed));
       };
       std::string allowedConnectionType = params[0].IsString() ? params[0].AsString() : std::string();
-      isSubscriptionDowloadAllowedCallback(params[0].IsString() ? &allowedConnectionType : nullptr, callJsCallback);
+      isSubscriptionDownloadAllowedCallback(params[0].IsString() ? &allowedConnectionType : nullptr, callJsCallback);
     });
   }
   

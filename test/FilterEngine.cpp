@@ -133,7 +133,7 @@ namespace
     FilterEngine::CreationParameters createParams;
     ConnectionTypes capturedConnectionTypes;
     bool isConnectionAllowed;
-    std::vector<std::function<void(bool)>> isSubscriptionDowloadAllowedCallbacks;
+    std::vector<std::function<void(bool)>> isSubscriptionDownloadAllowedCallbacks;
     FilterEnginePtr filterEngine;
     JsEnginePtr jsEngine;
 
@@ -150,10 +150,10 @@ namespace
 
       createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));
 
-      createParams.isSubscriptionDowloadAllowedCallback = [this](const std::string* allowedConnectionType,
-        const std::function<void(bool)>& isSubscriptionDowloadAllowedCallback){
+      createParams.isSubscriptionDownloadAllowedCallback = [this](const std::string* allowedConnectionType,
+        const std::function<void(bool)>& isSubscriptionDownloadAllowedCallback){
         capturedConnectionTypes.emplace_back(!!allowedConnectionType, allowedConnectionType ? *allowedConnectionType : std::string());
-        isSubscriptionDowloadAllowedCallbacks.emplace_back(isSubscriptionDowloadAllowedCallback);
+        isSubscriptionDownloadAllowedCallbacks.emplace_back(isSubscriptionDownloadAllowedCallback);
       };
     }
 
@@ -180,11 +180,11 @@ namespace
       // 'is subscription download allowed' callbacks;
       DelayedTimer::ProcessImmediateTimers(timerTasks);
 
-      for (const auto& isSubscriptionDowloadAllowedCallback : isSubscriptionDowloadAllowedCallbacks)
+      for (const auto& isSubscriptionDownloadAllowedCallback : isSubscriptionDownloadAllowedCallbacks)
       {
-        isSubscriptionDowloadAllowedCallback(isConnectionAllowed);
+        isSubscriptionDownloadAllowedCallback(isConnectionAllowed);
       }
-      isSubscriptionDowloadAllowedCallbacks.clear();
+      isSubscriptionDownloadAllowedCallbacks.clear();
 
       {
         auto ii_webRequest = std::find_if(webRequestTasks->begin(), webRequestTasks->end(), [&subscriptionUrl](const DelayedWebRequest::Task& task)->bool
@@ -938,7 +938,7 @@ namespace AA_ApiTest
 
 TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AbsentCallbackAllowsUpdating)
 {
-  createParams.isSubscriptionDowloadAllowedCallback = FilterEngine::IsConnectionAllowedAsyncCallback();
+  createParams.isSubscriptionDownloadAllowedCallback = FilterEngine::IsConnectionAllowedAsyncCallback();
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
