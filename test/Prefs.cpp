@@ -140,7 +140,7 @@ TEST_F(PrefsTest, PrefsPersist)
 
 TEST_F(PrefsTest, UnknownPrefs)
 {
-  using IOBuffer = AdblockPlus::FileSystem::IOBuffer;
+  using IOBuffer = AdblockPlus::IFileSystem::IOBuffer;
   std::string content = "{\"foobar\":2, \"patternsbackupinterval\": 12}";
   fileSystem->prefsContents = IOBuffer(content.cbegin(), content.cend());
   auto filterEngine = CreateFilterEngine();
@@ -150,7 +150,7 @@ TEST_F(PrefsTest, UnknownPrefs)
 
 TEST_F(PrefsTest, SyntaxFailure)
 {
-  using IOBuffer = AdblockPlus::FileSystem::IOBuffer;
+  using IOBuffer = AdblockPlus::IFileSystem::IOBuffer;
   std::string content = "{\"patternsbackupinterval\": 6, \"foo\"}";
   fileSystem->prefsContents = IOBuffer(content.cbegin(), content.cend());
   auto filterEngine = CreateFilterEngine();

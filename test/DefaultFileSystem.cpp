@@ -19,53 +19,112 @@
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
 
+#include "BaseJsTest.h"
+
+using AdblockPlus::IFileSystem;
+using AdblockPlus::Sync;
+
 namespace
 {
   const std::string testPath = "libadblockplus-t\xc3\xa4st-file";
 
-  void WriteString(AdblockPlus::FileSystem& fileSystem,
+  void WriteString(const AdblockPlus::FileSystemPtr& fileSystem,
                    const std::string& content)
   {
-    AdblockPlus::FileSystem::IOBuffer buffer(content.cbegin(), content.cend());
-    fileSystem.Write(testPath, buffer);
+    Sync sync;
+
+    fileSystem->Write(testPath,
+      IFileSystem::IOBuffer(content.cbegin(), content.cend()),
+      [&sync](const std::string& error)
+      {
+        EXPECT_TRUE(error.empty());
+
+        sync.Set();
+      });
+
+    sync.WaitFor();
   }
 }
 
 TEST(DefaultFileSystemTest, WriteReadRemove)
 {
-  AdblockPlus::DefaultFileSystem fileSystem;
+  Sync sync;
+  AdblockPlus::FileSystemPtr fileSystem = AdblockPlus::CreateDefaultFileSystem();
   WriteString(fileSystem, "foo");
-  auto output = fileSystem.Read(testPath);
-  fileSystem.Remove(testPath);
-  ASSERT_EQ("foo", std::string(output.cbegin(), output.cend()));
+  fileSystem->Read(testPath,
+    [fileSystem, &sync](IFileSystem::IOBuffer&& content, const std::string& error)
+    {
+      EXPECT_TRUE(error.empty());
+      EXPECT_EQ("foo", std::string(content.cbegin(), content.cend()));
+
+      fileSystem->Remove(testPath, [&sync](const std::string& error)
+        {
+          EXPECT_TRUE(error.empty());
+          sync.Set();
+        });
+    });
+
+  EXPECT_TRUE(sync.WaitFor());
 }
 
 TEST(DefaultFileSystemTest, StatWorkingDirectory)
 {
-  AdblockPlus::DefaultFileSystem fileSystem;
-  const AdblockPlus::FileSystem::StatResult result = fileSystem.Stat(".");
-  ASSERT_TRUE(result.exists);
-  ASSERT_TRUE(result.isDirectory);
-  ASSERT_FALSE(result.isFile);
-  ASSERT_NE(0, result.lastModified);
+  Sync sync;
+  AdblockPlus::FileSystemPtr fileSystem = AdblockPlus::CreateDefaultFileSystem();
+  fileSystem->Stat(".",
+    [fileSystem, &sync](const IFileSystem::StatResult result, const std::string& error)
+    {
+      EXPECT_TRUE(error.empty());
+      ASSERT_TRUE(result.exists);
+      ASSERT_TRUE(result.isDirectory);
+      ASSERT_FALSE(result.isFile);
+      ASSERT_NE(0, result.lastModified);
+      sync.Set();
+    });
+
+  EXPECT_TRUE(sync.WaitFor());
 }
 
 TEST(DefaultFileSystemTest, WriteMoveStatRemove)
 {
-  AdblockPlus::DefaultFileSystem fileSystem;
+  Sync sync;
+  AdblockPlus::FileSystemPtr fileSystem = AdblockPlus::CreateDefaultFileSystem();
   WriteString(fileSystem, "foo");
-  AdblockPlus::FileSystem::StatResult result = fileSystem.Stat(testPath);
-  ASSERT_TRUE(result.exists);
-  ASSERT_TRUE(result.isFile);
-  ASSERT_FALSE(result.isDirectory);
-  ASSERT_NE(0, result.lastModified);
-  const std::string newTestPath = testPath + "-new";
-  fileSystem.Move(testPath, newTestPath);
-  result = fileSystem.Stat(testPath);
-  ASSERT_FALSE(result.exists);
-  result = fileSystem.Stat(newTestPath);
-  ASSERT_TRUE(result.exists);
-  fileSystem.Remove(newTestPath);
-  result = fileSystem.Stat(newTestPath);
-  ASSERT_FALSE(result.exists);
+
+  fileSystem->Stat(testPath,
+    [fileSystem, &sync](const IFileSystem::StatResult& result, const std::string& error)
+    {
+      EXPECT_TRUE(error.empty());
+      ASSERT_TRUE(result.exists);
+      ASSERT_TRUE(result.isFile);
+      ASSERT_FALSE(result.isDirectory);
+      ASSERT_NE(0, result.lastModified);
+      const std::string newTestPath = testPath + "-new";
+      fileSystem->Move(testPath, newTestPath, [fileSystem, &sync, newTestPath](const std::string& error)
+      {
+        EXPECT_TRUE(error.empty());
+        fileSystem->Stat(testPath, [fileSystem, &sync, newTestPath](const IFileSystem::StatResult& result, const std::string& error)
+        {
+          EXPECT_TRUE(error.empty());
+          ASSERT_FALSE(result.exists);
+          fileSystem->Stat(newTestPath, [fileSystem, &sync, newTestPath](const IFileSystem::StatResult& result, const std::string& error)
+          {
+            EXPECT_TRUE(error.empty());
+            ASSERT_TRUE(result.exists);
+            fileSystem->Remove(newTestPath, [fileSystem, &sync, newTestPath](const std::string& error)
+            {
+              EXPECT_TRUE(error.empty());
+              fileSystem->Stat(newTestPath, [fileSystem, &sync, newTestPath](const IFileSystem::StatResult& result, const std::string& error)
+              {
+                EXPECT_TRUE(error.empty());
+                ASSERT_FALSE(result.exists);
+                sync.Set();
+              });
+            });
+          });
+        });
+      });
+    });
+
+  EXPECT_TRUE(sync.WaitFor());
 }

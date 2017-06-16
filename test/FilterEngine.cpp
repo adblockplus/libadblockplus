@@ -77,7 +77,7 @@ namespace
 
     void SetUp() override
     {
-      fileSystem.reset(new DefaultFileSystem());
+      fileSystem = CreateDefaultFileSystem();
       // Since there is neither in memory FS nor functionality to work with
       // directories use the hack: manually clean the directory.
       removeFileIfExists("patterns.ini");
@@ -109,9 +109,23 @@ namespace
       {
         try
         {
-          if (fileSystem->Stat(path).exists)
-            fileSystem->Remove(path);
-          return true;
+          Sync sync;
+          auto fs = fileSystem;
+          fileSystem->Stat(path,
+            [fs, &path, &sync](const IFileSystem::StatResult& stats, const std::string& error)
+            {
+              if (error.empty() && stats.exists)
+              {
+                fs->Remove(path, [&sync](const std::string& error)
+                  {
+                    sync.Set(error);
+                  });
+              }
+              else
+                sync.Set(error);
+            });
+          sync.WaitFor();
+          return sync.GetError().empty();
         }
         catch (...)
         {
@@ -585,6 +599,7 @@ TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
   filterEngine->GetFilter("foo").AddToList();
   EXPECT_EQ(1, timesCalled);
 
+  // we want to actually check the call count didn't change.
   filterEngine->RemoveFilterChangeCallback();
   filterEngine->GetFilter("foo").RemoveFromList();
   EXPECT_EQ(1, timesCalled);

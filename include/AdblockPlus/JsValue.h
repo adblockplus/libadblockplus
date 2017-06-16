@@ -23,6 +23,8 @@
 #include <vector>
 #include <memory>
 
+#include <AdblockPlus/IFileSystem.h>
+
 namespace v8
 {
   class Value;
@@ -37,6 +39,8 @@ namespace AdblockPlus
   class JsEngine;
 
   typedef std::shared_ptr<JsEngine> JsEnginePtr;
+
+  typedef IFileSystem::IOBuffer StringBuffer;
 
   /**
    * List of JavaScript values.
@@ -67,6 +71,7 @@ namespace AdblockPlus
     bool IsArray() const;
     bool IsFunction() const;
     std::string AsString() const;
+    StringBuffer AsStringBuffer() const;
     int64_t AsInt() const;
     bool AsBool() const;
     JsValueList AsList() const;
@@ -92,6 +97,7 @@ namespace AdblockPlus
      * @param val Property value.
      */
     void SetProperty(const std::string& name, const std::string& val);
+    void SetProperty(const std::string& name, const StringBuffer& val);
     void SetProperty(const std::string& name, int64_t val);
     void SetProperty(const std::string& name, bool val);
     void SetProperty(const std::string& name, const JsValue& value);
@@ -104,6 +110,12 @@ namespace AdblockPlus
       SetProperty(name, static_cast<int64_t>(val));
     }
     //@}
+    /**
+     * Sets a property value string if this is an object (see `IsObject()`).
+     * @param name Property name.
+     * @param val Property value as a StringBuffer.
+     */
+    void SetStringBufferProperty(const std::string& name, const StringBuffer& val);
 
     /**
      * Returns the value's class name, e.g.\ _Array_ for arrays

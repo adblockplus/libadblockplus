@@ -22,14 +22,19 @@
 #include <cctype>
 #include <functional>
 #include <string>
+#include <vector>
 #include <v8.h>
+
+#include "AdblockPlus/JsValue.h"
 
 namespace AdblockPlus
 {
   namespace Utils
   {
     std::string FromV8String(const v8::Handle<v8::Value>& value);
+    StringBuffer StringBufferFromV8String(const v8::Handle<v8::Value>& value);
     v8::Local<v8::String> ToV8String(v8::Isolate* isolate, const std::string& str);
+    v8::Local<v8::String> StringBufferToV8String(v8::Isolate* isolate, const StringBuffer& bytes);
     void ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str);
 
     // Code for templated function has to be in a header file, can't be in .cpp

@@ -18,6 +18,11 @@
 #ifndef ADBLOCKPLUS_THREAD_H
 #define ADBLOCKPLUS_THREAD_H
 
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
+#include <string>
+
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -26,6 +31,50 @@
 
 namespace AdblockPlus
 {
+  class Sync
+  {
+  public:
+    Sync()
+      : isSet(false)
+    {
+    }
+    void Wait()
+    {
+      std::unique_lock<std::mutex> lock(mutex);
+      if (!isSet)
+        cv.wait(lock);
+    }
+
+    template<class R = typename std::chrono::seconds::rep,
+             class P = std::ratio<1>>
+    bool WaitFor(const std::chrono::duration<R, P>& duration = std::chrono::seconds(20))
+    {
+      std::unique_lock<std::mutex> lock(mutex);
+      if (!isSet)
+        return cv.wait_for(lock, duration) == std::cv_status::no_timeout;
+      return true;
+    }
+    void Set(const std::string& err = std::string())
+    {
+      {
+        std::unique_lock<std::mutex> lock(mutex);
+        isSet = true;
+        error = err;
+      }
+      cv.notify_all();
+    }
+    std::string GetError()
+    {
+      std::unique_lock<std::mutex> lock(mutex);
+      return error;
+    }
+  private:
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool isSet;
+    std::string error;
+  };
+
   void Sleep(int millis);
 
   class Mutex

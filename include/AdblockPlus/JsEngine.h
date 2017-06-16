@@ -56,6 +56,11 @@ namespace AdblockPlus
   TimerPtr CreateDefaultTimer();
 
   /**
+   * A factory to construct DefaultFileSystem.
+   */
+  FileSystemPtr CreateDefaultFileSystem();
+
+  /**
    * A factory to construct DefaultWebRequest.
    */
   WebRequestPtr CreateDefaultWebRequest();
@@ -119,6 +124,7 @@ namespace AdblockPlus
      * Creates a new JavaScript engine instance.
      * @param appInfo Information about the app.
      * @param timer Implementation of timer.
+     * @param fileSystem Implementation of filesystem.
      * @param webRequest Implementation of web request.
      * @param isolate v8::Isolate wrapper. This parameter should be considered
      *        as a temporary hack for tests, it will go away. Issue #3593.
@@ -126,6 +132,7 @@ namespace AdblockPlus
      */
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo(),
       TimerPtr timer = CreateDefaultTimer(),
+      FileSystemPtr fileSystem = CreateDefaultFileSystem(),
       WebRequestPtr webRequest = CreateDefaultWebRequest());
 
     /**
@@ -257,17 +264,19 @@ namespace AdblockPlus
     JsValueList ConvertArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
     /**
-     * @see `SetFileSystem()`.
+     * Private functionality.
+     * @return The asynchronous IFileSystem implementation.
      */
-    FileSystemPtr GetFileSystem() const;
+    FileSystemPtr GetAsyncFileSystem() const;
 
     /**
-     * Sets the `FileSystem` implementation used for all file I/O.
-     * Setting this is optional, the engine will use a `DefaultFileSystem`
-     * instance by default, which might be sufficient.
+     * Sets the synchronous `FileSystem` implementation used for all
+     * file I/O. Setting this is optional, the engine will use the
+     * implementation created by `CreateDefaultFileSystem()` by
+     * default, which might be sufficient.
      * @param The `FileSystem` instance to use.
      */
-    void SetFileSystem(const FileSystemPtr& val);
+    void SetFileSystem(const FileSystemSyncPtr& val);
 
     /**
      * Sets the `WebRequest` implementation used for XMLHttpRequests.
@@ -314,7 +323,7 @@ namespace AdblockPlus
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
-    explicit JsEngine(TimerPtr timer, WebRequestPtr webRequest);
+    explicit JsEngine(TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest);
 
     JsValue GetGlobalObject();
 

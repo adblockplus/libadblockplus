@@ -18,6 +18,8 @@
 #ifndef MOCKS_H
 #define MOCKS_H
 
+#include <thread>
+
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
 #include "../src/Thread.h"
@@ -102,15 +104,25 @@ public:
   }
 };
 
-class ThrowingFileSystem : public AdblockPlus::FileSystem
+class ThrowingFileSystem : public AdblockPlus::IFileSystem, public AdblockPlus::FileSystem
 {
 public:
-  FileSystem::IOBuffer Read(const std::string& path) const
+  IOBuffer Read(const std::string& path) const
+  {
+    throw std::runtime_error("Not implemented");
+  }
+  void Read(const std::string& path,
+            const ReadCallback& callback) const
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Write(const std::string& path, const FileSystem::IOBuffer& content)
+  void Write(const std::string& path, const IOBuffer& content)
+  {
+    throw std::runtime_error("Not implemented");
+  }
+  void Write(const std::string& path, const IOBuffer& data,
+             const Callback& callback)
   {
     throw std::runtime_error("Not implemented");
   }
@@ -119,8 +131,17 @@ public:
   {
     throw std::runtime_error("Not implemented");
   }
+  void Move(const std::string& fromPath, const std::string& toPath,
+            const Callback& callback)
+  {
+    throw std::runtime_error("Not implemented");
+  }
 
   void Remove(const std::string& path)
+  {
+    throw std::runtime_error("Not implemented");
+  }
+  void Remove(const std::string& path, const Callback& callback)
   {
     throw std::runtime_error("Not implemented");
   }
@@ -129,12 +150,16 @@ public:
   {
     throw std::runtime_error("Not implemented");
   }
+  void Stat(const std::string& path,
+            const StatCallback& callback) const
+  {
+    throw std::runtime_error("Not implemented");
+  }
 
   std::string Resolve(const std::string& path) const
   {
     throw std::runtime_error("Not implemented");
   }
-
 };
 
 class ThrowingWebRequest : public AdblockPlus::IWebRequest
@@ -146,7 +171,7 @@ public:
   }
 };
 
-class LazyFileSystem : public AdblockPlus::FileSystem
+class LazyFileSystem : public AdblockPlus::IFileSystem, public AdblockPlus::FileSystem
 {
 public:
   IOBuffer Read(const std::string& path) const
@@ -159,16 +184,54 @@ public:
     return IOBuffer(dummyData.cbegin(), dummyData.cend());
   }
 
+  void Read(const std::string& path, const ReadCallback& callback) const
+  {
+    std::thread([this, path, callback]
+    {
+      auto data = Read(path);
+      callback(std::move(data), "");
+    }).detach();
+  }
+
   void Write(const std::string& path, const IOBuffer& content)
   {
+  }
+
+  void Write(const std::string& path, const IOBuffer& data,
+             const Callback& callback)
+  {
+    std::thread([this, path, data, callback]
+    {
+      Write(path, data);
+      callback("");
+    }).detach();
   }
 
   void Move(const std::string& fromPath, const std::string& toPath)
   {
   }
 
+  void Move(const std::string& fromPath, const std::string& toPath,
+            const Callback& callback)
+  {
+    std::thread([this, fromPath, toPath, callback]
+    {
+      Move(fromPath, toPath);
+      callback("");
+    }).detach();
+  }
+
   void Remove(const std::string& path)
   {
+  }
+
+  void Remove(const std::string& path, const Callback& callback)
+  {
+    std::thread([this, path, callback]
+    {
+      Remove(path);
+      callback("");
+    }).detach();
   }
 
   StatResult Stat(const std::string& path) const
@@ -180,6 +243,14 @@ public:
       result.isFile = true;
     }
     return result;
+  }
+
+  void Stat(const std::string& path, const StatCallback& callback) const
+  {
+    std::thread([this, path, callback]
+    {
+      callback(Stat(path), "");
+    }).detach();
   }
 
   std::string Resolve(const std::string& path) const

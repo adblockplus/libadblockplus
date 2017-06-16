@@ -21,7 +21,7 @@
 
 namespace
 {
-  class MockFileSystem : public AdblockPlus::FileSystem
+  class MockFileSystem : public AdblockPlus::IFileSystem
   {
   public:
     bool success;
@@ -41,48 +41,70 @@ namespace
     {
     }
 
-    IOBuffer Read(const std::string& path) const
+    void Read(const std::string& path, const ReadCallback& callback) const
     {
       if (!success)
-        throw std::runtime_error("Unable to read " + path);
-      return contentToRead;
+      {
+        callback(IOBuffer(), "Unable to read " + path);
+        return;
+      }
+      callback(IOBuffer(contentToRead), "");
     }
 
-    void Write(const std::string& path, const IOBuffer& data)
+    void Write(const std::string& path, const IOBuffer& data,
+               const Callback& callback)
     {
       if (!success)
-        throw std::runtime_error("Unable to write to " + path);
+      {
+        callback("Unable to write to " + path);
+        return;
+      }
       lastWrittenPath = path;
+
       lastWrittenContent = data;
+      callback("");
     }
 
-    void Move(const std::string& fromPath, const std::string& toPath)
+    void Move(const std::string& fromPath, const std::string& toPath,
+              const Callback& callback)
     {
       if (!success)
-        throw std::runtime_error("Unable to move " + fromPath + " to "
-                                 + toPath);
+      {
+        callback("Unable to move " + fromPath + " to " + toPath);
+        return;
+      }
       movedFrom = fromPath;
       movedTo = toPath;
+      callback("");
     }
 
-    void Remove(const std::string& path)
+    void Remove(const std::string& path, const Callback& callback)
     {
       if (!success)
-        throw std::runtime_error("Unable to remove " + path);
+      {
+        callback("Unable to remove " + path);
+        return;
+      }
       removedPath = path;
+      callback("");
     }
 
-    StatResult Stat(const std::string& path) const
+    void Stat(const std::string& path,
+              const StatCallback& callback) const
     {
-      if (!success)
-        throw std::runtime_error("Unable to stat " + path);
-      statPath = path;
       StatResult result;
-      result.exists = statExists;
-      result.isDirectory = statIsDirectory;
-      result.isFile = statIsFile;
-      result.lastModified = statLastModified;
-      return result;
+      std::string error;
+      if (!success)
+        error = "Unable to stat " + path;
+      else
+      {
+        statPath = path;
+        result.exists = statExists;
+        result.isDirectory = statIsDirectory;
+        result.isFile = statIsFile;
+        result.lastModified = statLastModified;
+      }
+      callback(result, error);
     }
 
     std::string Resolve(const std::string& path) const
@@ -111,9 +133,10 @@ namespace
 
     void SetUp()
     {
-      BaseJsTest::SetUp();
       mockFileSystem = MockFileSystemPtr(new MockFileSystem);
-      jsEngine->SetFileSystem(mockFileSystem);
+      JsEngineCreationParameters params;
+      params.fileSystem = mockFileSystem;
+      jsEngine = CreateJsEngine(std::move(params));
     }
   };
 }
@@ -121,12 +144,12 @@ namespace
 TEST_F(FileSystemJsObjectTest, Read)
 {
   mockFileSystem->contentToRead =
-    AdblockPlus::FileSystem::IOBuffer{'f', 'o', 'o'};
+    AdblockPlus::IFileSystem::IOBuffer{'f', 'o', 'o'};
   std::string content;
   std::string error;
   ReadFile(jsEngine, content, error);
   ASSERT_EQ("foo", content);
-  ASSERT_EQ("", error);
+  ASSERT_EQ("undefined", error);
 }
 
 TEST_F(FileSystemJsObjectTest, ReadIllegalArguments)
@@ -150,9 +173,9 @@ TEST_F(FileSystemJsObjectTest, Write)
   jsEngine->Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->lastWrittenPath);
-  ASSERT_EQ((AdblockPlus::FileSystem::IOBuffer{'b', 'a', 'r'}),
-    mockFileSystem->lastWrittenContent);
-  ASSERT_EQ("", jsEngine->Evaluate("error").AsString());
+  ASSERT_EQ((AdblockPlus::IFileSystem::IOBuffer{'b', 'a', 'r'}),
+            mockFileSystem->lastWrittenContent);
+  ASSERT_TRUE(jsEngine->Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, WriteIllegalArguments)
@@ -175,7 +198,7 @@ TEST_F(FileSystemJsObjectTest, Move)
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->movedFrom);
   ASSERT_EQ("bar", mockFileSystem->movedTo);
-  ASSERT_EQ("", jsEngine->Evaluate("error").AsString());
+  ASSERT_TRUE(jsEngine->Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, MoveIllegalArguments)
@@ -189,7 +212,7 @@ TEST_F(FileSystemJsObjectTest, MoveError)
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(50);
-  ASSERT_NE("", jsEngine->Evaluate("error").AsString());
+  ASSERT_FALSE(jsEngine->Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, Remove)
@@ -197,7 +220,7 @@ TEST_F(FileSystemJsObjectTest, Remove)
   jsEngine->Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->removedPath);
-  ASSERT_EQ("", jsEngine->Evaluate("error").AsString());
+  ASSERT_TRUE(jsEngine->Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, RemoveIllegalArguments)
@@ -223,7 +246,7 @@ TEST_F(FileSystemJsObjectTest, Stat)
   jsEngine->Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->statPath);
-  ASSERT_EQ("", jsEngine->Evaluate("result.error").AsString());
+  ASSERT_TRUE(jsEngine->Evaluate("result.error").IsUndefined());
   ASSERT_TRUE(jsEngine->Evaluate("result.exists").AsBool());
   ASSERT_FALSE(jsEngine->Evaluate("result.isDirectory").AsBool());
   ASSERT_TRUE(jsEngine->Evaluate("result.isFile").AsBool());
@@ -241,5 +264,5 @@ TEST_F(FileSystemJsObjectTest, StatError)
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
   AdblockPlus::Sleep(50);
-  ASSERT_NE("", jsEngine->Evaluate("result.error").AsString());
+  ASSERT_FALSE(jsEngine->Evaluate("result.error").IsUndefined());
 }

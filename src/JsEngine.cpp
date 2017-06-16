@@ -78,6 +78,11 @@ TimerPtr AdblockPlus::CreateDefaultTimer()
   return TimerPtr(new DefaultTimer());
 }
 
+FileSystemPtr AdblockPlus::CreateDefaultFileSystem()
+{
+  return FileSystemPtr(new DefaultFileSystem(std::make_shared<DefaultFileSystemSync>()));
+}
+
 WebRequestPtr AdblockPlus::CreateDefaultWebRequest()
 {
   return WebRequestPtr(new DefaultWebRequest(std::make_shared<DefaultWebRequestSync>()));
@@ -137,8 +142,9 @@ void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
   callback.Call(timerParams);
 }
 
-AdblockPlus::JsEngine::JsEngine(TimerPtr timer, WebRequestPtr webRequest)
-  : fileSystem(new DefaultFileSystem())
+AdblockPlus::JsEngine::JsEngine(TimerPtr timer, FileSystemPtr fileSystem,
+  WebRequestPtr webRequest)
+  : fileSystem(std::move(fileSystem))
   , logSystem(new DefaultLogSystem())
   , timer(std::move(timer))
   , webRequest(std::move(webRequest))
@@ -146,9 +152,11 @@ AdblockPlus::JsEngine::JsEngine(TimerPtr timer, WebRequestPtr webRequest)
 }
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
-  TimerPtr timer, WebRequestPtr webRequest)
+  TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest)
 {
-  JsEnginePtr result(new JsEngine(std::move(timer), std::move(webRequest)));
+  JsEnginePtr result(new JsEngine(std::move(timer),
+                                  std::move(fileSystem),
+                                  std::move(webRequest)));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
@@ -311,17 +319,17 @@ AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Funct
   return list;
 }
 
-AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetFileSystem() const
+AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetAsyncFileSystem() const
 {
   return fileSystem;
 }
 
-void AdblockPlus::JsEngine::SetFileSystem(const AdblockPlus::FileSystemPtr& val)
+void AdblockPlus::JsEngine::SetFileSystem(const AdblockPlus::FileSystemSyncPtr& val)
 {
   if (!val)
     throw std::runtime_error("FileSystem cannot be null");
 
-  fileSystem = val;
+  fileSystem.reset(new DefaultFileSystem(val));
 }
 
 void AdblockPlus::JsEngine::SetWebRequest(const AdblockPlus::WebRequestSharedPtr& val)

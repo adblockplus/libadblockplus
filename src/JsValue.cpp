@@ -127,6 +127,12 @@ std::string AdblockPlus::JsValue::AsString() const
   return Utils::FromV8String(UnwrapValue());
 }
 
+StringBuffer AdblockPlus::JsValue::AsStringBuffer() const
+{
+  const JsContext context(*jsEngine);
+  return Utils::StringBufferFromV8String(UnwrapValue());
+}
+
 int64_t AdblockPlus::JsValue::AsInt() const
 {
   const JsContext context(*jsEngine);
@@ -201,6 +207,12 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::strin
 {
   const JsContext context(*jsEngine);
   SetProperty(name, Utils::ToV8String(jsEngine->GetIsolate(), val));
+}
+
+void AdblockPlus::JsValue::SetStringBufferProperty(const std::string& name, const StringBuffer& val)
+{
+  const JsContext context(*jsEngine);
+  SetProperty(name, Utils::StringBufferToV8String(jsEngine->GetIsolate(), val));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)

@@ -44,8 +44,8 @@ AdblockPlus::JsEnginePtr CreateJsEngine(JsEngineCreationParameters&& jsEngineCre
 {
   auto jsEngine = AdblockPlus::JsEngine::New(jsEngineCreationParameters.appInfo,
     std::move(jsEngineCreationParameters.timer),
+    std::move(jsEngineCreationParameters.fileSystem),
     std::move(jsEngineCreationParameters.webRequest));
   jsEngine->SetLogSystem(std::move(jsEngineCreationParameters.logSystem));
-  jsEngine->SetFileSystem(std::move(jsEngineCreationParameters.fileSystem));
   return jsEngine;
 }

@@ -35,10 +35,26 @@ std::string Utils::FromV8String(const v8::Handle<v8::Value>& value)
     return std::string();
 }
 
+StringBuffer Utils::StringBufferFromV8String(const v8::Handle<v8::Value>& value)
+{
+  v8::String::Utf8Value stringValue(value);
+  if (stringValue.length())
+    return IFileSystem::IOBuffer(*stringValue, *stringValue + stringValue.length());
+  else
+    return IFileSystem::IOBuffer();
+}
+
 v8::Local<v8::String> Utils::ToV8String(v8::Isolate* isolate, const std::string& str)
 {
   return v8::String::NewFromUtf8(isolate, str.c_str(),
     v8::String::NewStringType::kNormalString, str.length());
+}
+
+v8::Local<v8::String> Utils::StringBufferToV8String(v8::Isolate* isolate, const StringBuffer& str)
+{
+  return v8::String::NewFromUtf8(isolate,
+    reinterpret_cast<const char*>(str.data()),
+    v8::String::NewStringType::kNormalString, str.size());
 }
 
 void Utils::ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str)

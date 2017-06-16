@@ -19,7 +19,9 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
+#include <thread>
 
 #include <sys/types.h>
 
@@ -66,8 +68,8 @@ namespace
 #endif
 }
 
-FileSystem::IOBuffer
-DefaultFileSystem::Read(const std::string& path) const
+IFileSystem::IOBuffer
+DefaultFileSystemSync::Read(const std::string& path) const
 {
   std::ifstream file(NormalizePath(path).c_str(), std::ios_base::binary);
   if (file.fail())
@@ -77,36 +79,36 @@ DefaultFileSystem::Read(const std::string& path) const
   auto dataSize = file.tellg();
   file.seekg(0, std::ios_base::beg);
 
-  IOBuffer data(dataSize);
+  IFileSystem::IOBuffer data(dataSize);
   file.read(reinterpret_cast<std::ifstream::char_type*>(data.data()),
             data.size());
   return data;
 }
 
-void DefaultFileSystem::Write(const std::string& path,
-                              const IOBuffer& data)
+void DefaultFileSystemSync::Write(const std::string& path,
+                              const IFileSystem::IOBuffer& data)
 {
   std::ofstream file(NormalizePath(path).c_str(), std::ios_base::out | std::ios_base::binary);
   file.write(reinterpret_cast<const std::ofstream::char_type*>(data.data()),
              data.size());
 }
 
-void DefaultFileSystem::Move(const std::string& fromPath,
-                             const std::string& toPath)
+void DefaultFileSystemSync::Move(const std::string& fromPath,
+                                 const std::string& toPath)
 {
   if (rename(NormalizePath(fromPath).c_str(), NormalizePath(toPath).c_str()))
     throw RuntimeErrorWithErrno("Failed to move " + fromPath + " to " + toPath);
 }
 
-void DefaultFileSystem::Remove(const std::string& path)
+void DefaultFileSystemSync::Remove(const std::string& path)
 {
   if (remove(NormalizePath(path).c_str()))
     throw RuntimeErrorWithErrno("Failed to remove " + path);
 }
 
-FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
+IFileSystem::StatResult DefaultFileSystemSync::Stat(const std::string& path) const
 {
-  FileSystem::StatResult result;
+  IFileSystem::StatResult result;
 #ifdef WIN32
   WIN32_FILE_ATTRIBUTE_DATA data;
   if (!GetFileAttributesExW(NormalizePath(path).c_str(), GetFileExInfoStandard, &data))
@@ -170,7 +172,7 @@ FileSystem::StatResult DefaultFileSystem::Stat(const std::string& path) const
 #endif
 }
 
-std::string DefaultFileSystem::Resolve(const std::string& path) const
+std::string DefaultFileSystemSync::Resolve(const std::string& path) const
 {
   if (basePath == "")
   {
@@ -193,7 +195,7 @@ std::string DefaultFileSystem::Resolve(const std::string& path) const
   }
 }
 
-void DefaultFileSystem::SetBasePath(const std::string& path)
+void DefaultFileSystemSync::SetBasePath(const std::string& path)
 {
   basePath = path;
 
@@ -203,3 +205,133 @@ void DefaultFileSystem::SetBasePath(const std::string& path)
   }
 }
 
+DefaultFileSystem::DefaultFileSystem(const FileSystemSyncPtr& syncImpl)
+  : syncImpl(syncImpl)
+{
+}
+
+void DefaultFileSystem::Read(const std::string& path,
+                             const ReadCallback& callback) const
+{
+  auto impl = syncImpl;
+  std::thread([impl, path, callback]
+  {
+    std::string error;
+    try
+    {
+      auto data = impl->Read(path);
+      callback(std::move(data), error);
+      return;
+    }
+    catch (std::exception& e)
+    {
+      error = e.what();
+    }
+    catch (...)
+    {
+      error =  "Unknown error while reading from " + path;
+    }
+    callback(IOBuffer(), error);
+  }).detach();
+}
+
+void DefaultFileSystem::Write(const std::string& path,
+                              const IOBuffer& data,
+                              const Callback& callback)
+{
+  auto impl = syncImpl;
+  std::thread([impl, path, data, callback]
+  {
+    std::string error;
+    try
+    {
+      impl->Write(path, data);
+    }
+    catch (std::exception& e)
+    {
+      error = e.what();
+    }
+    catch (...)
+    {
+      error = "Unknown error while writing to " + path;
+    }
+    callback(error);
+  }).detach();
+}
+
+void DefaultFileSystem::Move(const std::string& fromPath,
+                             const std::string& toPath,
+                             const Callback& callback)
+{
+  auto impl = syncImpl;
+  std::thread([impl, fromPath, toPath, callback]
+  {
+    std::string error;
+    try
+    {
+      impl->Move(fromPath, toPath);
+    }
+    catch (std::exception& e)
+    {
+      error = e.what();
+    }
+    catch (...)
+    {
+      error = "Unknown error while moving " + fromPath + " to " + toPath;
+    }
+    callback(error);
+  }).detach();
+}
+
+void DefaultFileSystem::Remove(const std::string& path,
+                               const Callback& callback)
+{
+  auto impl = syncImpl;
+  std::thread([impl, path, callback]
+  {
+    std::string error;
+    try
+    {
+      impl->Remove(path);
+    }
+    catch (std::exception& e)
+    {
+      error = e.what();
+    }
+    catch (...)
+    {
+      error = "Unknown error while removing " + path;
+    }
+    callback(error);
+  }).detach();
+}
+
+void DefaultFileSystem::Stat(const std::string& path,
+                             const StatCallback& callback) const
+{
+  auto impl = syncImpl;
+  std::thread([impl, path, callback]
+  {
+    std::string error;
+    try
+    {
+      auto result = impl->Stat(path);
+      callback(result, error);
+      return;
+    }
+    catch (std::exception& e)
+    {
+      error = e.what();
+    }
+    catch (...)
+    {
+      error = "Unknown error while calling stat on " + path;
+    }
+    callback(StatResult(), error);
+  }).detach();
+}
+
+std::string DefaultFileSystem::Resolve(const std::string& path) const
+{
+  return syncImpl->Resolve(path);
+}

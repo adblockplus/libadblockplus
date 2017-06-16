@@ -34,14 +34,14 @@ namespace AdblockPlus
    * All paths are considered relative to the base path, or to the current
    * working directory if no base path is set (see `SetBasePath()`).
    */
-  class DefaultFileSystem : public FileSystem
+  class DefaultFileSystemSync : public FileSystem
   {
   public:
-    IOBuffer Read(const std::string& path) const;
-    void Write(const std::string& path, const IOBuffer& data);
+    IFileSystem::IOBuffer Read(const std::string& path) const;
+    void Write(const std::string& path, const IFileSystem::IOBuffer& data);
     void Move(const std::string& fromPath, const std::string& toPath);
     void Remove(const std::string& path);
-    StatResult Stat(const std::string& path) const;
+    IFileSystem::StatResult Stat(const std::string& path) const;
     std::string Resolve(const std::string& path) const;
 
     /**
@@ -52,6 +52,27 @@ namespace AdblockPlus
 
   protected:
     std::string basePath;
+  };
+
+  class DefaultFileSystem : public IFileSystem
+  {
+  public:
+    explicit DefaultFileSystem(const FileSystemSyncPtr& syncImpl);
+    void Read(const std::string& path,
+              const ReadCallback& callback) const;
+    void Write(const std::string& path,
+               const IOBuffer& data,
+               const Callback& callback);
+    void Move(const std::string& fromPath,
+              const std::string& toPath,
+              const Callback& callback);
+    void Remove(const std::string& path, const Callback& callback);
+    void Stat(const std::string& path,
+              const StatCallback& callback) const;
+
+    std::string Resolve(const std::string& path) const;
+  private:
+    FileSystemSyncPtr syncImpl;
   };
 }
 

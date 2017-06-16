@@ -23,8 +23,6 @@
 
 namespace AdblockPlus
 {
-  class FileSystem;
-
   namespace FileSystemJsObject
   {
     JsValue& Setup(JsEngine& jsEngine, JsValue& obj);

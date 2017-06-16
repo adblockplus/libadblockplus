@@ -58,6 +58,8 @@
       'include/AdblockPlus/ITimer.h',
       'include/AdblockPlus/IWebRequest.h',
       'include/AdblockPlus/DefaultWebRequest.h',
+      'include/AdblockPlus/IFileSystem.h',
+      'include/AdblockPlus/DefaultFileSystem.h',
       'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
       'src/DefaultLogSystem.cpp',

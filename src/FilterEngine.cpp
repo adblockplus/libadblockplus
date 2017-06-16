@@ -180,37 +180,6 @@ bool Subscription::operator==(const Subscription& subscription) const
   return GetProperty("url").AsString() == subscription.GetProperty("url").AsString();
 }
 
-namespace
-{
-  class Sync
-  {
-  public:
-    Sync()
-      :initialized(false)
-    {
-
-    }
-    void Wait()
-    {
-      std::unique_lock<std::mutex> lock(mutex);
-      while (!initialized)
-        cv.wait(lock);
-    }
-    void Set()
-    {
-      {
-        std::unique_lock<std::mutex> lock(mutex);
-        initialized = true;
-      }
-      cv.notify_all();
-    }
-  private:
-    std::mutex mutex;
-    std::condition_variable cv;
-    bool initialized;
-  };
-}
-
 FilterEngine::FilterEngine(const JsEnginePtr& jsEngine)
   : jsEngine(jsEngine), firstRun(false), updateCheckId(0)
 {

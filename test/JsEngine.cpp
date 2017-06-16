@@ -171,12 +171,6 @@ TEST(NewJsEngineTest, CallbackGetSet)
   AdblockPlus::LogSystemPtr logSystem(new AdblockPlus::DefaultLogSystem());
   jsEngine->SetLogSystem(logSystem);
   ASSERT_EQ(logSystem, jsEngine->GetLogSystem());
-
-  ASSERT_TRUE(jsEngine->GetFileSystem());
-  ASSERT_ANY_THROW(jsEngine->SetFileSystem(AdblockPlus::FileSystemPtr()));
-  AdblockPlus::FileSystemPtr fileSystem(new AdblockPlus::DefaultFileSystem());
-  jsEngine->SetFileSystem(fileSystem);
-  ASSERT_EQ(fileSystem, jsEngine->GetFileSystem());
 }
 
 TEST(NewJsEngineTest, GlobalPropertyTest)
