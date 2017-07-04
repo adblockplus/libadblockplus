@@ -25,8 +25,8 @@
 
 namespace
 {
-  v8::Handle<v8::Value> DoLog(AdblockPlus::LogSystem::LogLevel logLevel,
-      const v8::Arguments& arguments)
+  void DoLog(AdblockPlus::LogSystem::LogLevel logLevel,
+    const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     const AdblockPlus::JsContext context(*jsEngine);
@@ -41,48 +41,47 @@ namespace
     }
 
     std::stringstream source;
-    v8::Local<v8::StackFrame> frame = v8::StackTrace::CurrentStackTrace(1)->GetFrame(0);
+    v8::Local<v8::StackFrame> frame = v8::StackTrace::CurrentStackTrace(arguments.GetIsolate(), 1)->GetFrame(0);
     source << AdblockPlus::Utils::FromV8String(frame->GetScriptName());
     source << ":" << frame->GetLineNumber();
 
     AdblockPlus::LogSystemPtr callback = jsEngine->GetLogSystem();
     (*callback)(logLevel, message.str(), source.str());
-    return v8::Undefined();
   }
 
-  v8::Handle<v8::Value> LogCallback(const v8::Arguments& arguments)
+  void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
     return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_LOG, arguments);
   }
 
-  v8::Handle<v8::Value> DebugCallback(const v8::Arguments& arguments)
+  void DebugCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_LOG, arguments);
+    DoLog(AdblockPlus::LogSystem::LOG_LEVEL_LOG, arguments);
   }
 
-  v8::Handle<v8::Value> InfoCallback(const v8::Arguments& arguments)
+  void InfoCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_INFO, arguments);
+    DoLog(AdblockPlus::LogSystem::LOG_LEVEL_INFO, arguments);
   }
 
-  v8::Handle<v8::Value> WarnCallback(const v8::Arguments& arguments)
+  void WarnCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_WARN, arguments);
+    DoLog(AdblockPlus::LogSystem::LOG_LEVEL_WARN, arguments);
   }
 
-  v8::Handle<v8::Value> ErrorCallback(const v8::Arguments& arguments)
+  void ErrorCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    return DoLog(AdblockPlus::LogSystem::LOG_LEVEL_ERROR, arguments);
+    DoLog(AdblockPlus::LogSystem::LOG_LEVEL_ERROR, arguments);
   }
 
-  v8::Handle<v8::Value> TraceCallback(const v8::Arguments& arguments)
+  void TraceCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
     AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     const AdblockPlus::JsContext context(*jsEngine);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     std::stringstream traceback;
-    v8::Local<v8::StackTrace> frames = v8::StackTrace::CurrentStackTrace(100);
+    v8::Local<v8::StackTrace> frames = v8::StackTrace::CurrentStackTrace(arguments.GetIsolate(), 100);
     for (int i = 0, l = frames->GetFrameCount(); i < l; i++)
     {
       v8::Local<v8::StackFrame> frame = frames->GetFrame(i);
@@ -100,7 +99,6 @@ namespace
 
     AdblockPlus::LogSystemPtr callback = jsEngine->GetLogSystem();
     (*callback)(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, traceback.str(), "");
-    return v8::Undefined();
   }
 }
 

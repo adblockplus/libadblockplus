@@ -32,6 +32,7 @@ namespace AdblockPlus
     std::string Slurp(std::istream& stream);
     std::string FromV8String(const v8::Handle<v8::Value>& value);
     v8::Local<v8::String> ToV8String(v8::Isolate* isolate, const std::string& str);
+    void ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str);
 
     // Code for templated function has to be in a header file, can't be in .cpp
     template<class T>

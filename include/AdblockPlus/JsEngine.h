@@ -34,12 +34,11 @@
 
 namespace v8
 {
-  class Arguments;
   class Isolate;
   class Value;
   class Context;
-  template<class T> class Handle;
-  typedef Handle<Value>(*InvocationCallback)(const Arguments &args);
+  template<typename T> class FunctionCallbackInfo;
+  typedef void(*FunctionCallback)(const FunctionCallbackInfo<v8::Value>& info);
 }
 
 namespace AdblockPlus
@@ -92,7 +91,7 @@ namespace AdblockPlus
     struct JsWeakValuesList
     {
       ~JsWeakValuesList();
-      std::vector<std::unique_ptr<v8::Persistent<v8::Value>>> values;
+      std::vector<v8::Global<v8::Value>> values;
     };
     typedef std::list<JsWeakValuesList> JsWeakValuesLists;
   public:
@@ -199,21 +198,21 @@ namespace AdblockPlus
     /**
      * Creates a JavaScript function that invokes a C++ callback.
      * @param callback C++ callback to invoke. The callback receives a
-     *        `v8::Arguments` object and can use `FromArguments()` to retrieve
+     *        `v8::FunctionCallbackInfo` object and can use `FromArguments()` to retrieve
      *        the current `JsEngine`.
      * @return New `JsValue` instance.
      */
-    JsValue NewCallback(const v8::InvocationCallback& callback);
+    JsValue NewCallback(const v8::FunctionCallback& callback);
 
     /**
-     * Returns a `JsEngine` instance contained in a `v8::Arguments` object.
+     * Returns a `JsEngine` instance contained in a `v8::FunctionCallbackInfo` object.
      * Use this in callbacks created via `NewCallback()` to retrieve the current
      * `JsEngine`.
-     * @param arguments `v8::Arguments` object containing the `JsEngine`
+     * @param arguments `v8::FunctionCallbackInfo` object containing the `JsEngine`
      *        instance.
-     * @return `JsEngine` instance from `v8::Arguments`.
+     * @return `JsEngine` instance from `v8::FunctionCallbackInfo`.
      */
-    static JsEnginePtr FromArguments(const v8::Arguments& arguments);
+    static JsEnginePtr FromArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
     /**
      * Stores `JsValue`s in a way they don't keep a strong reference to
@@ -237,25 +236,25 @@ namespace AdblockPlus
 
     /*
      * Private functionality required to implement timers.
-     * @param arguments `v8::Arguments` is the arguments received in C++
+     * @param arguments `v8::FunctionCallbackInfo` is the arguments received in C++
      * callback associated for global setTimeout method.
      */
-    static void ScheduleTimer(const v8::Arguments& arguments);
+    static void ScheduleTimer(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
     /*
      * Private functionality required to implement web requests.
-     * @param arguments `v8::Arguments` is the arguments received in C++
+     * @param arguments `v8::FunctionCallbackInfo` is the arguments received in C++
      * callback associated for global GET method.
      */
-    static void ScheduleWebRequest(const v8::Arguments& arguments);
+    static void ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
     /**
      * Converts v8 arguments to `JsValue` objects.
-     * @param arguments `v8::Arguments` object containing the arguments to
+     * @param arguments `v8::FunctionCallbackInfo` object containing the arguments to
      *        convert.
      * @return List of arguments converted to `const JsValue` objects.
      */
-    JsValueList ConvertArguments(const v8::Arguments& arguments);
+    JsValueList ConvertArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
     /**
      * @see `SetFileSystem()`.
@@ -325,7 +324,7 @@ namespace AdblockPlus
 
     FileSystemPtr fileSystem;
     LogSystemPtr logSystem;
-    std::unique_ptr<v8::Persistent<v8::Context>> context;
+    std::unique_ptr<v8::Global<v8::Context>> context;
     EventMap eventCallbacks;
     std::mutex eventCallbacksMutex;
     JsWeakValuesLists jsWeakValuesLists;

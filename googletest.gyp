@@ -6,7 +6,6 @@
         'msvs_settings': {
           'VCCLCompilerTool': {
             'Optimization': '0',
-
             'conditions': [
               ['OS=="win" and component=="shared_library"', {
                 'RuntimeLibrary': '3',  # /MDd
@@ -37,10 +36,6 @@
         },
       },
     },
-    'msvs_configuration_attributes': {
-      'OutputDirectory': '<(DEPTH)\\build\\$(ConfigurationName)',
-      'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
-    },
     'conditions': [[
       'target_arch=="x64"', {
         'xcode_settings': {
@@ -58,37 +53,29 @@
     'target_name': 'googletest',
     'type': '<(library)',
     'sources': [
-      'googletest/googletest/src/gtest-death-test.cc',
-      'googletest/googletest/src/gtest-filepath.cc',
-      'googletest/googletest/src/gtest-port.cc',
-      'googletest/googletest/src/gtest-printers.cc',
-      'googletest/googletest/src/gtest-test-part.cc',
-      'googletest/googletest/src/gtest-typed-test.cc',
-      'googletest/googletest/src/gtest.cc'
+      'third_party/googletest/googletest/src/gtest-death-test.cc',
+      'third_party/googletest/googletest/src/gtest-filepath.cc',
+      'third_party/googletest/googletest/src/gtest-port.cc',
+      'third_party/googletest/googletest/src/gtest-printers.cc',
+      'third_party/googletest/googletest/src/gtest-test-part.cc',
+      'third_party/googletest/googletest/src/gtest-typed-test.cc',
+      'third_party/googletest/googletest/src/gtest.cc'
     ],
     'include_dirs': [
-      'googletest/googletest',
-      'googletest/googletest/include'
+      'third_party/googletest/googletest',
+      'third_party/googletest/googletest/include'
     ],
     'direct_dependent_settings': {
       'include_dirs': [
-        'googletest/googletest',
-        'googletest/googletest/include'
+        'third_party/googletest/googletest',
+        'third_party/googletest/googletest/include'
       ]
     },
-    'conditions': [[
-      'OS=="win"',
-      {
-        'defines': [ '_VARIADIC_MAX=10' ],
-        'direct_dependent_settings': {
-          'defines': [ '_VARIADIC_MAX=10' ],
-        },
-      }]],
   },
   {
     'target_name': 'googletest_main',
     'type': '<(library)',
-    'sources': ['googletest/googletest/src/gtest_main.cc'],
+    'sources': ['third_party/googletest/googletest/src/gtest_main.cc'],
     'dependencies': ['googletest'],
     'export_dependent_settings': ['googletest']
   }]

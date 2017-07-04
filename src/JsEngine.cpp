@@ -21,6 +21,7 @@
 #include "JsError.h"
 #include "Utils.h"
 #include "DefaultTimer.h"
+#include <libplatform/libplatform.h>
 
 namespace
 {
@@ -47,14 +48,19 @@ namespace
   class V8Initializer
   {
     V8Initializer()
+      : platform(v8::platform::CreateDefaultPlatform())
     {
+      v8::V8::InitializePlatform(platform);
       v8::V8::Initialize();
     }
 
     ~V8Initializer()
     {
       v8::V8::Dispose();
+      v8::V8::ShutdownPlatform();
+      delete platform;
     }
+    v8::Platform* platform;
   public:
     static void Init()
     {
@@ -80,7 +86,9 @@ WebRequestPtr AdblockPlus::CreateDefaultWebRequest()
 AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
 {
   V8Initializer::Init();
-  isolate = v8::Isolate::New();
+  v8::Isolate::CreateParams isolateParams;
+  isolateParams.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+  isolate = v8::Isolate::New(isolateParams);
 }
 
 AdblockPlus::ScopedV8Isolate::~ScopedV8Isolate()
@@ -91,17 +99,15 @@ AdblockPlus::ScopedV8Isolate::~ScopedV8Isolate()
 
 JsEngine::JsWeakValuesList::~JsWeakValuesList()
 {
-  for (auto& value : values)
-    value->Dispose();
 }
 
 void JsEngine::NotifyLowMemory()
 {
   const JsContext context(*this);
-  v8::V8::LowMemoryNotification();
+  GetIsolate()->MemoryPressureNotification(v8::MemoryPressureLevel::kCritical);
 }
 
-void JsEngine::ScheduleTimer(const v8::Arguments& arguments)
+void JsEngine::ScheduleTimer(const v8::FunctionCallbackInfo<v8::Value>& arguments)
 {
   auto jsEngine = FromArguments(arguments);
   if (arguments.Length() < 2)
@@ -148,7 +154,7 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
   const v8::HandleScope handleScope(result->GetIsolate());
 
-  result->context.reset(new v8::Persistent<v8::Context>(result->GetIsolate(),
+  result->context.reset(new v8::Global<v8::Context>(result->GetIsolate(),
     v8::Context::New(result->GetIsolate())));
   auto global = result->GetGlobalObject();
   AdblockPlus::GlobalJsObject::Setup(*result, appInfo, global);
@@ -207,7 +213,7 @@ void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, AdblockPl
 
 void AdblockPlus::JsEngine::Gc()
 {
-  while (!v8::V8::IdleNotification());
+  while (!GetIsolate()->IdleNotification(1000));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(const std::string& val)
@@ -225,17 +231,17 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(int64_t val)
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(bool val)
 {
   const JsContext context(*this);
-  return JsValue(shared_from_this(), v8::Boolean::New(val));
+  return JsValue(shared_from_this(), v8::Boolean::New(GetIsolate(), val));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewObject()
 {
   const JsContext context(*this);
-  return JsValue(shared_from_this(), v8::Object::New());
+  return JsValue(shared_from_this(), v8::Object::New(GetIsolate()));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(
-    const v8::InvocationCallback& callback)
+    const v8::FunctionCallback& callback)
 {
   const JsContext context(*this);
 
@@ -243,12 +249,12 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(
   // it's no longer used
   std::weak_ptr<JsEngine>* data =
       new std::weak_ptr<JsEngine>(shared_from_this());
-  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(callback,
-      v8::External::New(data));
+  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(GetIsolate(), callback,
+      v8::External::New(GetIsolate(), data));
   return JsValue(shared_from_this(), templ->GetFunction());
 }
 
-AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::Arguments& arguments)
+AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments)
 {
   const v8::Local<const v8::External> external =
       v8::Local<const v8::External>::Cast(arguments.Data());
@@ -271,7 +277,7 @@ JsEngine::JsWeakValuesID JsEngine::StoreJsValues(const JsValueList& values)
     JsContext context(*this);
     for (const auto& value : values)
     {
-      it->values.emplace_back(new v8::Persistent<v8::Value>(GetIsolate(), value.UnwrapValue()));
+      it->values.emplace_back(GetIsolate(), value.UnwrapValue());
     }
   }
   JsWeakValuesID retValue;
@@ -286,7 +292,7 @@ JsValueList JsEngine::TakeJsValues(const JsWeakValuesID& id)
     JsContext context(*this);
     for (const auto& v8Value : id.iterator->values)
     {
-      retValue.emplace_back(JsValue(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), *v8Value)));
+      retValue.emplace_back(JsValue(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), v8Value)));
     }
   }
   {
@@ -296,7 +302,7 @@ JsValueList JsEngine::TakeJsValues(const JsWeakValuesID& id)
   return retValue;
 }
 
-AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Arguments& arguments)
+AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments)
 {
   const JsContext context(*this);
   JsValueList list;

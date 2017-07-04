@@ -1,28 +1,52 @@
-ARCH := x64
+V8_DIR :=$(shell pwd -L)/third_party/v8/
+HOST_ARCH :=$(shell python ${V8_DIR}gypfiles/detect_v8_host_arch.py)
 
-ANDROID_PARAMETERS = OS=android
+GYP_PARAMETERS=host_arch=${HOST_ARCH}
+
+ifndef HOST_OS
+  raw_OS = $(shell uname -s)
+  ifeq (${raw_OS},Linux)
+    HOST_OS=linux
+  else ifeq (${raw_OS},Darwin)
+    HOST_OS=mac
+  endif
+endif
+
 ifneq ($(ANDROID_ARCH),)
+GYP_PARAMETERS+= OS=android target_arch=${ANDROID_ARCH}
 ifeq ($(ANDROID_ARCH),arm)
-ANDROID_PARAMETERS += target_arch=arm android_target_arch=arm
-ANDROID_PARAMETERS += arm_neon=0 armv7=0 arm_fpu=off vfp3=off
-ANDROID_PARAMETERS += arm_float_abi=default
 ANDROID_ABI = armeabi-v7a
 else ifeq ($(ANDROID_ARCH),ia32)
-ANDROID_PARAMETERS += target_arch=x86 android_target_arch=x86
 ANDROID_ABI = x86
 else
 $(error "Unsupported Android architecture: $(ANDROID_ARCH))
 endif
 ANDROID_DEST_DIR = android_$(ANDROID_ARCH).release
+else
+TARGET_ARCH=${HOST_ARCH}
+ifdef ARCH
+TARGET_ARCH=${ARCH}
 endif
+GYP_PARAMETERS+= OS=${HOST_OS} target_arch=${TARGET_ARCH}
+endif
+
 
 TEST_EXECUTABLE = build/out/Debug/tests
 
-.PHONY: all test clean docs v8_android_multi android_multi android_x86 \
-	android_arm
+.PHONY: all test clean docs v8 v8_android_multi android_multi android_x86 \
+	android_arm ensure_dependencies
 
-all:
-	third_party/gyp/gyp --depth=. -f make -I common.gypi --generator-output=build -Dtarget_arch=$(ARCH) libadblockplus.gyp
+.DEFAULT_GOAL:=all
+
+ensure_dependencies:
+	python ensure_dependencies.py
+
+v8: ensure_dependencies
+	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I v8.gypi --generator-output=build/v8 ${V8_DIR}src/v8.gyp
+	make -C build/v8 v8_snapshot v8_libplatform v8_libsampler
+
+all: v8
+	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=build libadblockplus.gyp
 	$(MAKE) -C build
 
 test: all
@@ -45,23 +69,40 @@ android_arm:
 	ANDROID_ARCH="arm" $(MAKE) android_multi
 
 ifneq ($(ANDROID_ARCH),)
-v8_android_multi:
-	mkdir -p third_party/v8/build/gyp
-	cp -f third_party/v8_gyp_launcher third_party/v8/build/gyp/gyp
-	DEFINES="${ANDROID_PARAMETERS}" \
-	OUTDIR=../../build \
-	$(MAKE) -C third_party/v8 $(ANDROID_DEST_DIR)
+v8_android_multi: ensure_dependencies
+	cd third_party/v8 && GYP_GENERATORS=make-android \
+	  GYP_DEFINES="${GYP_PARAMETERS} v8_target_arch=${ANDROID_ARCH}" \
+	  PYTHONPATH="${V8_DIR}tools/generate_shim_headers:${V8_DIR}gypfiles:${PYTHONPATH}" \
+	  tools/gyp/gyp \
+	    --generator-output=../../build src/v8.gyp \
+	    -Igypfiles/standalone.gypi \
+	    --depth=. \
+	    -S.android_${ANDROID_ARCH}.release \
+	    -I../../android-v8-options.gypi
+	cd third_party/v8 && make \
+	  -C ../../build \
+	  -f Makefile.android_${ANDROID_ARCH}.release \
+	  v8_snapshot v8_libplatform v8_libsampler \
+	  BUILDTYPE=Release \
+	  builddir=${V8_DIR}../../build/android_${ANDROID_ARCH}.release
 
-android_multi: v8_android_multi
-	GYP_DEFINES="${ANDROID_PARAMETERS} ANDROID_ARCH=$(ANDROID_ARCH)" \
-	third_party/gyp/gyp --depth=. -f make-android -I common.gypi --generator-output=build -Gandroid_ndk_version=r9 libadblockplus.gyp
+v8_android_multi_linux_${ANDROID_ARCH}: v8_android_multi
+
+v8_android_multi_mac_ia32: v8_android_multi
+	find build/android_ia32.release/ -depth 1 -iname \*.a -exec ${ANDROID_NDK_ROOT}/toolchains/x86-4.9/prebuilt/darwin-x86_64/bin/i686-linux-android-ranlib {} \;
+
+v8_android_multi_mac_arm: v8_android_multi
+	find build/android_arm.release/ -depth 1 -iname \*.a -exec ${ANDROID_NDK_ROOT}/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/bin/arm-linux-androideabi-ranlib {} \;
+
+android_multi: v8_android_multi_${HOST_OS}_${ANDROID_ARCH}
+	GYP_DEFINES="${GYP_PARAMETERS}" \
+	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=build -Gandroid_ndk_version=r9 libadblockplus.gyp
 	$(ANDROID_NDK_ROOT)/ndk-build -C build installed_modules \
 	BUILDTYPE=Release \
 	APP_ABI=$(ANDROID_ABI) \
 	APP_PLATFORM=android-9 \
 	APP_STL=c++_static \
 	APP_BUILD_SCRIPT=Makefile \
-	NDK_TOOLCHAIN_VERSION=clang3.4 \
 	NDK_PROJECT_PATH=. \
 	NDK_OUT=. \
 	NDK_APP_DST_DIR=$(ANDROID_DEST_DIR)

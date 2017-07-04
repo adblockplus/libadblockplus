@@ -11,10 +11,18 @@ import gyp.generator.msvs
 
 orig_fix_path = gyp.generator.msvs._FixPath
 
+# gyp is trying to expand parameters as paths and the fix prevents gyp from
+# doing it for particular parameters for particular tools.
+# Don't touch following js2c and build-v8 parameters
+dont_expand = [
+# js2c
+  'CORE', 'EXPERIMENTAL', 'off', 'EXTRAS', 'EXPERIMENTAL_EXTRAS',
+# build-v8
+  'ia32', 'x64'
+]
 
 def _FixPath(path):
-    if path == 'CORE' or path == 'EXPERIMENTAL' or path == 'off':
-        # Don't touch js2c parameters
+    if path in dont_expand:
         return path
     return orig_fix_path(path)
 gyp.generator.msvs._FixPath = _FixPath

@@ -27,7 +27,7 @@ using namespace AdblockPlus;
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
       v8::Handle<v8::Value> value)
     : jsEngine(jsEngine),
-      value(new v8::Persistent<v8::Value>(jsEngine->GetIsolate(), value))
+      value(new v8::Global<v8::Value>(jsEngine->GetIsolate(), value))
 {
 }
 
@@ -41,7 +41,7 @@ AdblockPlus::JsValue::JsValue(const JsValue& src)
   : jsEngine(src.jsEngine)
 {
   const JsContext context(*src.jsEngine);
-  value.reset(new v8::Persistent<v8::Value>(src.jsEngine->GetIsolate(), *src.value));
+  value.reset(new v8::Global<v8::Value>(src.jsEngine->GetIsolate(), *src.value));
 }
 
 AdblockPlus::JsValue::~JsValue()
@@ -49,7 +49,6 @@ AdblockPlus::JsValue::~JsValue()
   if (value)
   {
     const JsContext context(*jsEngine);
-    value->Dispose();
     value.reset();
   }
 }
@@ -57,10 +56,16 @@ AdblockPlus::JsValue::~JsValue()
 JsValue& AdblockPlus::JsValue::operator=(const JsValue& src)
 {
   const JsContext context(*src.jsEngine);
-  if (value)
-    value->Dispose();
   jsEngine = src.jsEngine;
-  value.reset(new v8::Persistent<v8::Value>(src.jsEngine->GetIsolate(), *src.value));
+  value.reset(new v8::Global<v8::Value>(src.jsEngine->GetIsolate(), *src.value));
+
+  return *this;
+}
+
+JsValue& AdblockPlus::JsValue::operator=(JsValue&& src)
+{
+  jsEngine = std::move(src.jsEngine);
+  value = std::move(src.value);
 
   return *this;
 }
@@ -213,7 +218,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, const JsValue& v
 void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)
 {
   const JsContext context(*jsEngine);
-  SetProperty(name, v8::Boolean::New(val));
+  SetProperty(name, v8::Boolean::New(jsEngine->GetIsolate(), val));
 }
 
 std::string AdblockPlus::JsValue::GetClass() const

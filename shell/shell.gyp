@@ -15,6 +15,11 @@
       'src/PrefsCommand.cpp',
       'src/SubscriptionsCommand.cpp'
     ],
+    'msvs_settings': {
+      'VCLinkerTool': {
+        'SubSystem': '1',   # Console
+      }
+    },
     'xcode_settings': {
       'OTHER_LDFLAGS': ['-stdlib=libstdc++'],
     },

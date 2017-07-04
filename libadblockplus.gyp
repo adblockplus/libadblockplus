@@ -12,27 +12,47 @@
         'have_curl': '<!(python check_curl.py)'
       }
     }
+  ],
+  [
+    'OS=="win"', {
+      'targets': [{
+        'target_name': 'build-v8',
+        'type': 'none',
+        'actions': [{
+          'action_name': 'build-v8',
+          'inputs': ['build-v8.cmd'],
+          'outputs': [
+            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_libplatform.lib',
+            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_base_0.lib',
+            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_base_1.lib',
+            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_base_2.lib',
+            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_base_3.lib',
+            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_libbase.lib',
+            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_libsampler.lib',
+            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_snapshot.lib',
+          ],
+          'action': [
+            'cmd',
+            '/C',
+            'build-v8.cmd',
+            '$(MSBuildBinPath)',
+            '<(target_arch)',
+            '<(CONFIGURATION_NAME)',
+            '$(PlatformToolset)'
+          ]
+        }],
+      }]
+    }
   ]],
-  'includes': ['third_party/v8/build/features.gypi',
-               'third_party/v8/build/toolchain.gypi',
-               'shell/shell.gyp'],
+  'includes': ['shell/shell.gyp'],
   'targets': [{
-    'target_name': 'ensure_dependencies',
-    'type': 'none',
-    'actions': [{
-      'action_name': 'ensure_dependencies',
-      'inputs': ['ensure_dependencies.py'],
-      'outputs': ['ensure_dependencies_phony_output'],
-      'action': ['python', 'ensure_dependencies.py'],
-    }],
-  },
-  {
     'target_name': 'libadblockplus',
     'type': '<(library)',
-    'dependencies': ['ensure_dependencies'],
+    'xcode_settings':{},
     'include_dirs': [
       'include',
       'third_party/v8/include',
+      'third_party/v8',
     ],
     'sources': [
       'include/AdblockPlus/ITimer.h',
@@ -60,20 +80,50 @@
       '<(INTERMEDIATE_DIR)/adblockplus.js.cpp'
     ],
     'direct_dependent_settings': {
-      'include_dirs': ['include']
+      'include_dirs': ['include'],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'AdditionalLibraryDirectories': ['v8/build/<(CONFIGURATION_NAME)'],
+        }
+      },
     },
     'conditions': [
-      ['OS=="android"', {
+      ['OS=="linux" or OS=="mac"', {
         'link_settings': {
           'libraries': [
-            'android_<(ANDROID_ARCH).release/obj.target/tools/gyp/libv8_base.<(ANDROID_ARCH).a',
-            'android_<(ANDROID_ARCH).release/obj.target/tools/gyp/libv8_snapshot.a',
+            'v8/out/<(CONFIGURATION_NAME)/libv8_libplatform.a',
+            'v8/out/<(CONFIGURATION_NAME)/libv8_base.a',
+            'v8/out/<(CONFIGURATION_NAME)/libv8_snapshot.a',
+            'v8/out/<(CONFIGURATION_NAME)/libv8_libbase.a',
+            'v8/out/<(CONFIGURATION_NAME)/libv8_libsampler.a',
+          ]
+        }
+      }],
+      ['OS=="win"', {
+        'dependencies': ['build-v8'],
+        'link_settings': {
+          'libraries': [
+            '-lv8_libplatform',
+            '-lv8_base_0',
+            '-lv8_base_1',
+            '-lv8_base_2',
+            '-lv8_base_3',
+            '-lv8_libbase',
+            '-lv8_libsampler',
+            '-lv8_snapshot',
+            '-lwinmm'
           ],
         },
+      }],
+      ['OS=="android"', {
+        'user_libraries': [
+          'android_<(target_arch).release/libv8_libplatform.a',
+          'android_<(target_arch).release/libv8_base.a',
+          'android_<(target_arch).release/libv8_snapshot.a',
+          'android_<(target_arch).release/libv8_libbase.a',
+          'android_<(target_arch).release/libv8_libsampler.a',
+        ],
         'standalone_static_library': 1, # disable thin archives
-      }, {
-        'dependencies': ['third_party/v8/tools/gyp/v8.gyp:v8'],
-        'export_dependent_settings': ['third_party/v8/tools/gyp/v8.gyp:v8'],
       }],
       ['have_curl==1',
         {
@@ -166,8 +216,9 @@
   {
     'target_name': 'tests',
     'type': 'executable',
+    'xcode_settings': {},
     'dependencies': [
-      'third_party/googletest.gyp:googletest_main',
+      'googletest.gyp:googletest_main',
       'libadblockplus'
     ],
     'sources': [

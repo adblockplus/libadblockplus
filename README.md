@@ -20,36 +20,43 @@ Building
 You need a C++11 compatible compiler to build libadblockplus.
 
 Win32:
-* Microsoft Visual Studio 2010, 2012
+* At least v140 Visual C++ toolset (available in Microsoft Visual Studio 2015).
 
 Linux:
 * g++ 5.2
 
 Mac:
-* clang 3.6 for OS X
+* clang 3.6 for OS X/macOS (Xcode should be installed and its developer tools should be "selected").
 
 Android:
 * The host system should be Linux or OS X
-* android-ndk-r9, android-ndk-r10c. You can download the latter for [OS X](http://dl.google.com/android/ndk/android-ndk-r10c-darwin-x86_64.bin), [Linux 32](http://dl.google.com/android/ndk/android-ndk-r10c-linux-x86.bin), [Linux 64](http://dl.google.com/android/ndk/android-ndk-r10c-linux-x86_64.bin).
+* android-ndk-r12b Here are the links for downloading
+  [OS X](https://dl.google.com/android/repository/android-ndk-r12b-darwin-x86_64.zip), 
+  [Linux 64](https://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip).
 * g++ multilib
 
 If you have a compilation issue with another compiler please [create an issue](https://issues.adblockplus.org/).
 
+You also need Python 2.7 and ensure that `python.exe` is in your `PATH`.
+
 ### Unix
 
-All you need is Python 2.7 and Make:
+Using Make:
 
     make
 
-The default target architecture is x64. On a 32 bit system, run:
+The default target architecture is the architecture of a host. In order to build for a different architecture pass `ARCH` to `make`, e.g. run:
 
     make ARCH=ia32
+
+supported values are `ia32` and `x64`.
+    
 
 To build and run the tests:
 
     make test
 
-Likewise, use the following on a 32 bit system:
+Likewise, use the following with `ARCH`:
 
     make test ARCH=ia32
 
@@ -59,9 +66,6 @@ To run specific tests, you can specify a filter:
 
 ### Windows
 
-You need Microsoft Visual C++ (Express is sufficient) 2012
-and Python 2.7. Make sure that `python.exe` is on your `PATH`.
-
 * Execute `createsolution.bat` to generate project files, this will create
 `build\ia32\libadblockplus.sln` (solution for the 32 bit build) and
 `build\x64\libadblockplus.sln` (solution for the 64 bit build). Unfortunately,
@@ -70,6 +74,8 @@ V8 doesn't support creating both from the same project files.
 Visual Studio and build the solution there. Alternatively you can use the
 `msbuild` command line tool, e.g. run `msbuild /m build\ia32\libadblockplus.sln`
 from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
+
+Tested on Microsoft Visual Studio 2015 Community Edition.
 
 ### Building for Android
 

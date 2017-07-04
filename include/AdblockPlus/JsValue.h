@@ -27,9 +27,8 @@ namespace v8
 {
   class Value;
   class Object;
-  template<class T> class Handle;
   template<class T> class Local;
-  template<class T> class Persistent;
+  template<class T> class Global;
 }
 
 namespace AdblockPlus
@@ -57,6 +56,7 @@ namespace AdblockPlus
     virtual ~JsValue();
 
     JsValue& operator=(const JsValue& src);
+    JsValue& operator=(JsValue&& src);
 
     bool IsUndefined() const;
     bool IsNull() const;
@@ -142,13 +142,14 @@ namespace AdblockPlus
   protected:
     JsEnginePtr jsEngine;
   private:
-    JsValue(JsEnginePtr jsEngine, v8::Handle<v8::Value> value);
-    void SetProperty(const std::string& name, v8::Handle<v8::Value> val);
+    JsValue(JsEnginePtr jsEngine, v8::Local<v8::Value> value);
+    void SetProperty(const std::string& name, v8::Local<v8::Value> val);
+
     // Parameter args is not const because a pointer to its internal arrays is
     // passed to v8::Function::Call but the latter does not expect a const pointer.
-    JsValue Call(std::vector<v8::Handle<v8::Value>>& args, v8::Local<v8::Object> thisObj) const;
+    JsValue Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Object> thisObj) const;
 
-    std::unique_ptr<v8::Persistent<v8::Value>> value;
+    std::unique_ptr<v8::Global<v8::Value>> value;
   };
 }
 

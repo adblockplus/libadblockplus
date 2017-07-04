@@ -49,6 +49,10 @@ v8::Local<v8::String> Utils::ToV8String(v8::Isolate* isolate, const std::string&
     v8::String::NewStringType::kNormalString, str.length());
 }
 
+void Utils::ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str)
+{
+  isolate->ThrowException(Utils::ToV8String(isolate, str));
+}
 
 #ifdef _WIN32
 std::wstring Utils::ToUtf16String(const std::string& str)
