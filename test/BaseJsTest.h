@@ -105,12 +105,12 @@ public:
 class ThrowingFileSystem : public AdblockPlus::FileSystem
 {
 public:
-  std::shared_ptr<std::istream> Read(const std::string& path) const
+  FileSystem::IOBuffer Read(const std::string& path) const
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Write(const std::string& path, std::istream& content)
+  void Write(const std::string& path, const FileSystem::IOBuffer& content)
   {
     throw std::runtime_error("Not implemented");
   }
@@ -149,17 +149,17 @@ public:
 class LazyFileSystem : public AdblockPlus::FileSystem
 {
 public:
-  std::shared_ptr<std::istream> Read(const std::string& path) const
+  IOBuffer Read(const std::string& path) const
   {
     std::string dummyData("");
     if (path == "patterns.ini")
       dummyData = "# Adblock Plus preferences\n[Subscription]\nurl=~fl~";
     else if (path == "prefs.json")
       dummyData = "{}";
-    return std::shared_ptr<std::istream>(new std::istringstream(dummyData));
+    return IOBuffer(dummyData.cbegin(), dummyData.cend());
   }
 
-  void Write(const std::string& path, std::istream& content)
+  void Write(const std::string& path, const IOBuffer& content)
   {
   }
 

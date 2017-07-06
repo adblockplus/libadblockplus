@@ -66,20 +66,29 @@ namespace
 #endif
 }
 
-std::shared_ptr<std::istream>
+FileSystem::IOBuffer
 DefaultFileSystem::Read(const std::string& path) const
 {
-  std::shared_ptr<std::istream> result(new std::ifstream(NormalizePath(path).c_str()));
-  if (result->fail())
+  std::ifstream file(NormalizePath(path).c_str(), std::ios_base::binary);
+  if (file.fail())
     throw RuntimeErrorWithErrno("Failed to open " + path);
-  return result;
+
+  file.seekg(0, std::ios_base::end);
+  auto dataSize = file.tellg();
+  file.seekg(0, std::ios_base::beg);
+
+  IOBuffer data(dataSize);
+  file.read(reinterpret_cast<std::ifstream::char_type*>(data.data()),
+            data.size());
+  return data;
 }
 
 void DefaultFileSystem::Write(const std::string& path,
-                              std::istream& data)
+                              const IOBuffer& data)
 {
   std::ofstream file(NormalizePath(path).c_str(), std::ios_base::out | std::ios_base::binary);
-  file << Utils::Slurp(data);
+  file.write(reinterpret_cast<const std::ofstream::char_type*>(data.data()),
+             data.size());
 }
 
 void DefaultFileSystem::Move(const std::string& fromPath,

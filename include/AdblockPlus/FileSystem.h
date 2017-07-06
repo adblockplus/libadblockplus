@@ -65,23 +65,24 @@ namespace AdblockPlus
       int64_t lastModified;
     };
 
+    typedef std::vector<uint8_t> IOBuffer;
+
     virtual ~FileSystem() {}
 
     /**
      * Reads from a file.
      * @param path File path.
-     * @return Input stream with the file's contents.
+     * @return Buffer with the file content.
      */
-    virtual std::shared_ptr<std::istream>
-      Read(const std::string& path) const = 0;
+    virtual IOBuffer Read(const std::string& path) const = 0;
 
     /**
      * Writes to a file.
      * @param path File path.
-     * @param data Input stream with the data to write.
+     * @param data Buffer with the data to write.
      */
     virtual void Write(const std::string& path,
-                       std::istream& data) = 0;
+                       const IOBuffer& data) = 0;
 
     /**
      * Moves a file (i.e.\ renames it).

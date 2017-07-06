@@ -29,24 +29,20 @@ namespace
   class TestFileSystem : public LazyFileSystem
   {
   public:
-    std::string prefsContents;
+    IOBuffer prefsContents;
 
-    std::shared_ptr<std::istream> Read(const std::string& path) const
+    IOBuffer Read(const std::string& path) const
     {
       if (path == "prefs.json" && !prefsContents.empty())
-        return std::shared_ptr<std::istream>(new std::istringstream(prefsContents));
+        return prefsContents;
 
       return LazyFileSystem::Read(path);
     }
 
-    void Write(const std::string& path, std::istream& content)
+    void Write(const std::string& path, const IOBuffer& content)
     {
       if (path == "prefs.json")
-      {
-        std::stringstream ss;
-        ss << content.rdbuf();
-        prefsContents = ss.str();
-      }
+        prefsContents = content;
       else
         LazyFileSystem::Write(path, content);
     }
@@ -144,7 +140,9 @@ TEST_F(PrefsTest, PrefsPersist)
 
 TEST_F(PrefsTest, UnknownPrefs)
 {
-  fileSystem->prefsContents = "{\"foobar\":2, \"patternsbackupinterval\": 12}";
+  using IOBuffer = AdblockPlus::FileSystem::IOBuffer;
+  std::string content = "{\"foobar\":2, \"patternsbackupinterval\": 12}";
+  fileSystem->prefsContents = IOBuffer(content.cbegin(), content.cend());
   auto filterEngine = CreateFilterEngine();
   ASSERT_TRUE(filterEngine->GetPref("foobar").IsUndefined());
   ASSERT_EQ(12, filterEngine->GetPref("patternsbackupinterval").AsInt());
@@ -152,7 +150,9 @@ TEST_F(PrefsTest, UnknownPrefs)
 
 TEST_F(PrefsTest, SyntaxFailure)
 {
-  fileSystem->prefsContents = "{\"patternsbackupinterval\": 6, \"foo\"}";
+  using IOBuffer = AdblockPlus::FileSystem::IOBuffer;
+  std::string content = "{\"patternsbackupinterval\": 6, \"foo\"}";
+  fileSystem->prefsContents = IOBuffer(content.cbegin(), content.cend());
   auto filterEngine = CreateFilterEngine();
 
   ASSERT_EQ(24, filterEngine->GetPref("patternsbackupinterval").AsInt());

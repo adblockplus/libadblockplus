@@ -61,8 +61,8 @@ namespace
       std::string error;
       try
       {
-        std::shared_ptr<std::istream> stream = fileSystem->Read(path);
-        content = Utils::Slurp(*stream);
+        auto buffer = fileSystem->Read(path);
+        content = std::string(buffer.cbegin(), buffer.cend());
       }
       catch (std::exception& e)
       {
@@ -100,9 +100,8 @@ namespace
       std::string error;
       try
       {
-        std::stringstream stream;
-        stream << content;
-        fileSystem->Write(path, stream);
+        FileSystem::IOBuffer buffer(content.cbegin(), content.cend());
+        fileSystem->Write(path, buffer);
       }
       catch (std::exception& e)
       {

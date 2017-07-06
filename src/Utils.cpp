@@ -15,7 +15,6 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
 #include <stdexcept>
 
 #ifdef _WIN32
@@ -26,13 +25,6 @@
 #include "Utils.h"
 
 using namespace AdblockPlus;
-
-std::string Utils::Slurp(std::istream& stream)
-{
-  std::stringstream content;
-  content << stream.rdbuf();
-  return content.str();
-}
 
 std::string Utils::FromV8String(const v8::Handle<v8::Value>& value)
 {

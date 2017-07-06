@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <cctype>
 #include <functional>
-#include <istream>
 #include <string>
 #include <v8.h>
 
@@ -29,7 +28,6 @@ namespace AdblockPlus
 {
   namespace Utils
   {
-    std::string Slurp(std::istream& stream);
     std::string FromV8String(const v8::Handle<v8::Value>& value);
     v8::Local<v8::String> ToV8String(v8::Isolate* isolate, const std::string& str);
     void ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str);

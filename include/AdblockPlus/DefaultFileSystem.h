@@ -37,8 +37,8 @@ namespace AdblockPlus
   class DefaultFileSystem : public FileSystem
   {
   public:
-    std::shared_ptr<std::istream> Read(const std::string& path) const;
-    void Write(const std::string& path, std::istream& data);
+    IOBuffer Read(const std::string& path) const;
+    void Write(const std::string& path, const IOBuffer& data);
     void Move(const std::string& fromPath, const std::string& toPath);
     void Remove(const std::string& path);
     StatResult Stat(const std::string& path) const;

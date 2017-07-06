@@ -25,9 +25,9 @@ namespace
   {
   public:
     bool success;
-    std::string contentToRead;
+    IOBuffer contentToRead;
     std::string lastWrittenPath;
-    std::string lastWrittenContent;
+    IOBuffer lastWrittenContent;
     std::string movedFrom;
     std::string movedTo;
     std::string removedPath;
@@ -41,24 +41,19 @@ namespace
     {
     }
 
-    std::shared_ptr<std::istream> Read(const std::string& path) const
+    IOBuffer Read(const std::string& path) const
     {
       if (!success)
         throw std::runtime_error("Unable to read " + path);
-      std::stringstream* const stream = new std::stringstream;
-      *stream << contentToRead;
-      return std::shared_ptr<std::istream>(stream);
+      return contentToRead;
     }
 
-    void Write(const std::string& path, std::istream& data)
+    void Write(const std::string& path, const IOBuffer& data)
     {
       if (!success)
         throw std::runtime_error("Unable to write to " + path);
       lastWrittenPath = path;
-
-      std::stringstream content;
-      content << data.rdbuf();
-      lastWrittenContent = content.str();
+      lastWrittenContent = data;
     }
 
     void Move(const std::string& fromPath, const std::string& toPath)
@@ -125,7 +120,8 @@ namespace
 
 TEST_F(FileSystemJsObjectTest, Read)
 {
-  mockFileSystem->contentToRead = "foo";
+  mockFileSystem->contentToRead =
+    AdblockPlus::FileSystem::IOBuffer{'f', 'o', 'o'};
   std::string content;
   std::string error;
   ReadFile(jsEngine, content, error);
@@ -154,7 +150,8 @@ TEST_F(FileSystemJsObjectTest, Write)
   jsEngine->Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
   AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->lastWrittenPath);
-  ASSERT_EQ("bar", mockFileSystem->lastWrittenContent);
+  ASSERT_EQ((AdblockPlus::FileSystem::IOBuffer{'b', 'a', 'r'}),
+    mockFileSystem->lastWrittenContent);
   ASSERT_EQ("", jsEngine->Evaluate("error").AsString());
 }
 

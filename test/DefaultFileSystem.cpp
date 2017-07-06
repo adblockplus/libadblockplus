@@ -26,9 +26,8 @@ namespace
   void WriteString(AdblockPlus::FileSystem& fileSystem,
                    const std::string& content)
   {
-    std::stringstream input;
-    input << content;
-    fileSystem.Write(testPath, input);
+    AdblockPlus::FileSystem::IOBuffer buffer(content.cbegin(), content.cend());
+    fileSystem.Write(testPath, buffer);
   }
 }
 
@@ -36,10 +35,9 @@ TEST(DefaultFileSystemTest, WriteReadRemove)
 {
   AdblockPlus::DefaultFileSystem fileSystem;
   WriteString(fileSystem, "foo");
-  std::stringstream output;
-  output << fileSystem.Read(testPath)->rdbuf();
+  auto output = fileSystem.Read(testPath);
   fileSystem.Remove(testPath);
-  ASSERT_EQ("foo", output.str());
+  ASSERT_EQ("foo", std::string(output.cbegin(), output.cend()));
 }
 
 TEST(DefaultFileSystemTest, StatWorkingDirectory)
