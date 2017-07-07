@@ -19,10 +19,11 @@
 #define ADBLOCK_PLUS_IFILE_SYSTEM_H
 
 #include <istream>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <memory>
 #include <vector>
+#include <functional>
 
 namespace AdblockPlus
 {
