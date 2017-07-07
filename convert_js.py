@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import io
 import sys
 import os
 import codecs
@@ -9,10 +10,11 @@ import json
 import argparse
 import xml.dom.minidom as minidom
 
-baseDir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(baseDir, 'adblockpluscore', 'buildtools', 'jshydra'))
-from abp_rewrite import doRewrite
-
+jsTemplate = """require.scopes["%s"] = (function() {
+  let exports = {};
+%s
+  return exports;
+})();"""
 
 class CStringArray:
     def __init__(self):
@@ -61,9 +63,11 @@ def convertXMLFile(array, file):
 
 
 def convertJsFile(array, file):
-    converted = doRewrite([os.path.abspath(file)], ['module=true', 'source_repo=https://hg.adblockplus.org/adblockpluscore/'])
-    array.add(os.path.basename(file))
-    array.add(converted)
+    with io.open(file, encoding="utf-8") as jsFile:
+      jsFileContent = jsFile.read()
+    referenceFileName = os.path.basename(file)
+    array.add(referenceFileName)
+    array.add(jsTemplate % (re.sub("\\.jsm?$", "", referenceFileName), jsFileContent))
 
 
 def convert(verbatimBefore, convertFiles, verbatimAfter, outFile):
