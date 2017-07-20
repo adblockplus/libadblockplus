@@ -12,6 +12,13 @@ ifndef HOST_OS
   endif
 endif
 
+ifneq "$(and ${LIBV8_LIB_DIR}, ${LIBV8_INCLUDE_DIR})" ""
+BUILD_V8=do-nothing
+ABP_GYP_PARAMETERS+= libv8_lib_dir=${LIBV8_LIB_DIR} libv8_include_dir=${LIBV8_INCLUDE_DIR}
+else
+BUILD_V8=build-v8
+endif
+
 ifneq ($(ANDROID_ARCH),)
 GYP_PARAMETERS+= OS=android target_arch=${ANDROID_ARCH}
 ifeq ($(ANDROID_ARCH),arm)
@@ -22,7 +29,13 @@ else
 $(error "Unsupported Android architecture: $(ANDROID_ARCH))
 endif
 ANDROID_DEST_DIR = android_$(ANDROID_ARCH).release
-else
+
+ifeq "$(and ${LIBV8_LIB_DIR}, ${LIBV8_INCLUDE_DIR})" ""
+ABP_GYP_PARAMETERS+= libv8_lib_dir=${ANDROID_DEST_DIR}
+BUILD_V8=build-v8-android
+endif
+
+else # if ${ANDROID_ARCH} is empty
 TARGET_ARCH=${HOST_ARCH}
 ifdef ARCH
 TARGET_ARCH=${ARCH}
@@ -33,20 +46,22 @@ endif
 
 TEST_EXECUTABLE = build/out/Debug/tests
 
-.PHONY: all test clean docs v8 v8_android_multi android_multi android_x86 \
+.PHONY: do-nothing all test clean docs build-v8 build-v8-android v8_android_multi android_multi android_x86 \
 	android_arm ensure_dependencies
 
 .DEFAULT_GOAL:=all
 
+do-nothing:
+
 ensure_dependencies:
 	python ensure_dependencies.py
 
-v8: ensure_dependencies
+build-v8: ensure_dependencies
 	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I build-v8.gypi --generator-output=build/v8 ${V8_DIR}src/v8.gyp
 	make -C build/v8 v8_snapshot v8_libplatform v8_libsampler
 
-all: v8
-	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=build libadblockplus.gyp
+all: ${BUILD_V8} ensure_dependencies 
+	GYP_DEFINES="${GYP_PARAMETERS} ${ABP_GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=build libadblockplus.gyp
 	$(MAKE) -C build
 
 test: all
@@ -94,8 +109,10 @@ v8_android_multi_mac_ia32: v8_android_multi
 v8_android_multi_mac_arm: v8_android_multi
 	find build/android_arm.release/ -depth 1 -iname \*.a -exec ${ANDROID_NDK_ROOT}/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/bin/arm-linux-androideabi-ranlib {} \;
 
-android_multi: v8_android_multi_${HOST_OS}_${ANDROID_ARCH}
-	GYP_DEFINES="${GYP_PARAMETERS}" \
+build-v8-android: v8_android_multi_${HOST_OS}_${ANDROID_ARCH}
+
+android_multi: ${BUILD_V8} ensure_dependencies
+	GYP_DEFINES="${GYP_PARAMETERS} ${ABP_GYP_PARAMETERS}" \
 	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=build -Gandroid_ndk_version=r9 libadblockplus.gyp
 	$(ANDROID_NDK_ROOT)/ndk-build -C build installed_modules \
 	BUILDTYPE=Release \

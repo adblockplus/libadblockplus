@@ -1,10 +1,11 @@
 {
   'variables': {
-    'libv8_include_dir': 'third_party/v8/include',
+    'libv8_include_dir%': 'third_party/v8/include',
     'libv8_build_targets': [],
+    'libv8_no_build%': 0,
     'conditions': [[
       'OS=="win"', {
-        'libv8_lib_dir': 'v8/build/<(CONFIGURATION_NAME)',
+        'libv8_lib_dir%': 'v8/build/<(CONFIGURATION_NAME)',
         'libv8_libs': [
           '-lv8_libplatform',
           '-lv8_base_0',
@@ -17,27 +18,29 @@
         ],
       }],
       ['OS=="linux" or OS=="mac"', {
+        'libv8_lib_dir%': 'v8/out/<(CONFIGURATION_NAME)',
         'libv8_libs': [
-          'v8/out/<(CONFIGURATION_NAME)/libv8_libplatform.a',
-          'v8/out/<(CONFIGURATION_NAME)/libv8_base.a',
-          'v8/out/<(CONFIGURATION_NAME)/libv8_snapshot.a',
-          'v8/out/<(CONFIGURATION_NAME)/libv8_libbase.a',
-          'v8/out/<(CONFIGURATION_NAME)/libv8_libsampler.a',
+          '-lv8_libplatform',
+          '-lv8_base',
+          '-lv8_snapshot',
+          '-lv8_libbase',
+          '-lv8_libsampler',
         ]
       }],
       ['OS=="android"', {
+        'libv8_lib_dir%': '', # must be specified, e.g. in Makefile
         'libv8_libs': [
-          'android_<(target_arch).release/libv8_libplatform.a',
-          'android_<(target_arch).release/libv8_base.a',
-          'android_<(target_arch).release/libv8_snapshot.a',
-          'android_<(target_arch).release/libv8_libbase.a',
-          'android_<(target_arch).release/libv8_libsampler.a',
+          '<(libv8_lib_dir)/libv8_libplatform.a',
+          '<(libv8_lib_dir)/libv8_base.a',
+          '<(libv8_lib_dir)/libv8_snapshot.a',
+          '<(libv8_lib_dir)/libv8_libbase.a',
+          '<(libv8_lib_dir)/libv8_libsampler.a',
         ],
       }],
     ]
   },
   'conditions': [[
-    'OS=="win"', {
+    'OS=="win" and libv8_no_build!="true"', {
       'variables': {
         'libv8_build_targets': ['build-v8'],
       },

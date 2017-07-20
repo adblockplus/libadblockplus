@@ -249,3 +249,21 @@ The shell is automatically built by `make`, you can run it as follows:
 ### Windows
 
 Just run the project *abpshell*.
+
+Building with prebuilt V8
+-------------------------
+
+This functionality is only for internal usage.
+
+## How to use it:
+Let's say that v8 is stored in `libadblockplus/v8-bins`.
+### Windows
+
+    set "GYP_DEFINES=libv8_include_dir=../../v8-bins/win/include libv8_lib_dir=../../v8-bins/win/Win32/<(CONFIGURATION_NAME) libv8_no_build=true"
+    createsolution.bat
+
+### *nix
+
+    [ANDROID_NDK_ROOT=....] make [android_...] LIBV8_LIB_DIR=../v8-bins/libs LIBV8_INCLUDE_DIR=../v8-bins/include
+
+The rest is the same.

@@ -68,6 +68,9 @@
           'libraries': [
             '<@(libv8_libs)'
           ],
+          'library_dirs': [
+            '<(libv8_lib_dir)'
+          ]
         }
       }],
       ['OS=="win"', {
