@@ -12,47 +12,16 @@
         'have_curl': '<!(python check_curl.py)'
       }
     }
-  ],
-  [
-    'OS=="win"', {
-      'targets': [{
-        'target_name': 'build-v8',
-        'type': 'none',
-        'actions': [{
-          'action_name': 'build-v8',
-          'inputs': ['build-v8.cmd'],
-          'outputs': [
-            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_libplatform.lib',
-            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_base_0.lib',
-            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_base_1.lib',
-            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_base_2.lib',
-            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_base_3.lib',
-            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_libbase.lib',
-            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_libsampler.lib',
-            'build/<(target_arch)/v8/build/<(CONFIGURATION_NAME)/v8_snapshot.lib',
-          ],
-          'action': [
-            'cmd',
-            '/C',
-            'build-v8.cmd',
-            '$(MSBuildBinPath)',
-            '<(target_arch)',
-            '<(CONFIGURATION_NAME)',
-            '$(PlatformToolset)'
-          ]
-        }],
-      }]
-    }
   ]],
-  'includes': ['shell/shell.gyp'],
+  'includes': ['v8.gypi', 'shell/shell.gyp'],
   'targets': [{
     'target_name': 'libadblockplus',
     'type': '<(library)',
+    'dependencies': ['<@(libv8_build_targets)'],
     'xcode_settings':{},
     'include_dirs': [
       'include',
-      'third_party/v8/include',
-      'third_party/v8',
+      '<(libv8_include_dir)'
     ],
     'sources': [
       'include/AdblockPlus/ITimer.h',
@@ -83,47 +52,35 @@
     ],
     'direct_dependent_settings': {
       'include_dirs': ['include'],
-      'msvs_settings': {
-        'VCLinkerTool': {
-          'AdditionalLibraryDirectories': ['v8/build/<(CONFIGURATION_NAME)'],
+      'conditions': [[
+        'OS=="win"', {
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalLibraryDirectories': ['<(libv8_lib_dir)'],
+            }
+          }
         }
-      },
+      ]],
     },
     'conditions': [
       ['OS=="linux" or OS=="mac"', {
         'link_settings': {
           'libraries': [
-            'v8/out/<(CONFIGURATION_NAME)/libv8_libplatform.a',
-            'v8/out/<(CONFIGURATION_NAME)/libv8_base.a',
-            'v8/out/<(CONFIGURATION_NAME)/libv8_snapshot.a',
-            'v8/out/<(CONFIGURATION_NAME)/libv8_libbase.a',
-            'v8/out/<(CONFIGURATION_NAME)/libv8_libsampler.a',
-          ]
+            '<@(libv8_libs)'
+          ],
         }
       }],
       ['OS=="win"', {
-        'dependencies': ['build-v8'],
         'link_settings': {
           'libraries': [
-            '-lv8_libplatform',
-            '-lv8_base_0',
-            '-lv8_base_1',
-            '-lv8_base_2',
-            '-lv8_base_3',
-            '-lv8_libbase',
-            '-lv8_libsampler',
-            '-lv8_snapshot',
+            '<@(libv8_libs)',
             '-lwinmm'
           ],
         },
       }],
       ['OS=="android"', {
         'user_libraries': [
-          'android_<(target_arch).release/libv8_libplatform.a',
-          'android_<(target_arch).release/libv8_base.a',
-          'android_<(target_arch).release/libv8_snapshot.a',
-          'android_<(target_arch).release/libv8_libbase.a',
-          'android_<(target_arch).release/libv8_libsampler.a',
+          '<@(libv8_libs)'
         ],
         'standalone_static_library': 1, # disable thin archives
       }],
