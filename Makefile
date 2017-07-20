@@ -42,7 +42,7 @@ ensure_dependencies:
 	python ensure_dependencies.py
 
 v8: ensure_dependencies
-	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I v8.gypi --generator-output=build/v8 ${V8_DIR}src/v8.gyp
+	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I build-v8.gypi --generator-output=build/v8 ${V8_DIR}src/v8.gyp
 	make -C build/v8 v8_snapshot v8_libplatform v8_libsampler
 
 all: v8

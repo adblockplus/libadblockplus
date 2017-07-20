@@ -15,5 +15,5 @@
       }
     }
   ]],
-  'includes': ['v8.gypi'],
+  'includes': ['build-v8.gypi'],
 }

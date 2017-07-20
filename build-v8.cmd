@@ -12,7 +12,7 @@ set PlatformToolset=%~4
 
 pushd "%~dp0"
 
-@python msvs_gyp_wrapper.py --depth=build\%ARCH%\v8 -f msvs -I v8.gypi --generator-output=build\%ARCH%\v8 -G msvs_version=2015 -Dtarget_arch=%ARCH% -Dhost_arch=%ARCH% third_party/v8/src/v8.gyp
+@python msvs_gyp_wrapper.py --depth=build\%ARCH%\v8 -f msvs -I build-v8.gypi --generator-output=build\%ARCH%\v8 -G msvs_version=2015 -Dtarget_arch=%ARCH% -Dhost_arch=%ARCH% third_party/v8/src/v8.gyp
 
 @"%MSBuildBinPath%/msbuild.exe" /m build/%ARCH%/v8/third_party/v8/src/v8.sln /p:PlatformToolset=%PlatformToolset% /p:Configuration=%CONFIGURATION% /target:v8_snapshot,v8_libplatform,v8_libsampler
 
