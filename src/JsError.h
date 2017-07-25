@@ -22,24 +22,6 @@
 #include <stdexcept>
 #include <v8.h>
 
-namespace
-{
-  std::string ExceptionToString(const v8::Handle<v8::Value>& exception,
-      const v8::Handle<v8::Message>& message)
-  {
-    std::stringstream error;
-    error << *v8::String::Utf8Value(exception);
-    if (!message.IsEmpty())
-    {
-      error << " at ";
-      error << *v8::String::Utf8Value(message->GetScriptResourceName());
-      error << ":";
-      error << message->GetLineNumber();
-    }
-    return error.str();
-  }
-}
-
 namespace AdblockPlus
 {
   class JsError : public std::runtime_error
