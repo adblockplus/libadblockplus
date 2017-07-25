@@ -22,7 +22,7 @@
 
 namespace AdblockPlus
 {
-  class AppInfo;
+  struct AppInfo;
   class JsEngine;
 
   namespace GlobalJsObject
