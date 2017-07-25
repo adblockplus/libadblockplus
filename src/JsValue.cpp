@@ -165,7 +165,7 @@ AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
 std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
 {
   if (!IsObject())
-    throw new std::runtime_error("Attempting to get propert list for a non-object");
+    throw std::runtime_error("Attempting to get propert list for a non-object");
 
   const JsContext context(*jsEngine);
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(UnwrapValue());
@@ -180,7 +180,7 @@ std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
 AdblockPlus::JsValue AdblockPlus::JsValue::GetProperty(const std::string& name) const
 {
   if (!IsObject())
-    throw new std::runtime_error("Attempting to get property of a non-object");
+    throw std::runtime_error("Attempting to get property of a non-object");
 
   const JsContext context(*jsEngine);
   v8::Local<v8::String> property = Utils::ToV8String(jsEngine->GetIsolate(), name);
@@ -191,7 +191,7 @@ AdblockPlus::JsValue AdblockPlus::JsValue::GetProperty(const std::string& name) 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Handle<v8::Value> val)
 {
   if (!IsObject())
-    throw new std::runtime_error("Attempting to set property on a non-object");
+    throw std::runtime_error("Attempting to set property on a non-object");
 
   v8::Local<v8::String> property = Utils::ToV8String(jsEngine->GetIsolate(), name);
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
@@ -236,7 +236,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)
 std::string AdblockPlus::JsValue::GetClass() const
 {
   if (!IsObject())
-    throw new std::runtime_error("Cannot get constructor of a non-object");
+    throw std::runtime_error("Cannot get constructor of a non-object");
 
   const JsContext context(*jsEngine);
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
@@ -278,9 +278,9 @@ JsValue JsValue::Call(const JsValue& arg) const
 JsValue JsValue::Call(std::vector<v8::Handle<v8::Value>>& args, v8::Local<v8::Object> thisObj) const
 {
   if (!IsFunction())
-    throw new std::runtime_error("Attempting to call a non-function");
+    throw std::runtime_error("Attempting to call a non-function");
   if (!thisObj->IsObject())
-    throw new std::runtime_error("`this` pointer has to be an object");
+    throw std::runtime_error("`this` pointer has to be an object");
 
   const JsContext context(*jsEngine);
 
