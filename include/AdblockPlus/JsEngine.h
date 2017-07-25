@@ -126,8 +126,6 @@ namespace AdblockPlus
      * @param timer Implementation of timer.
      * @param fileSystem Implementation of filesystem.
      * @param webRequest Implementation of web request.
-     * @param isolate v8::Isolate wrapper. This parameter should be considered
-     *        as a temporary hack for tests, it will go away. Issue #3593.
      * @return New `JsEngine` instance.
      */
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo(),
