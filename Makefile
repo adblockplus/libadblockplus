@@ -1,5 +1,5 @@
 V8_DIR :=$(shell pwd -L)/third_party/v8/
-HOST_ARCH :=$(shell python ${V8_DIR}gypfiles/detect_v8_host_arch.py)
+HOST_ARCH :=$(shell python third_party/detect_v8_host_arch.py)
 
 GYP_PARAMETERS=host_arch=${HOST_ARCH}
 
