@@ -21,6 +21,7 @@
 #include "JsError.h"
 #include "Utils.h"
 #include "DefaultTimer.h"
+#include "DefaultWebRequest.h"
 #include <libplatform/libplatform.h>
 
 namespace
@@ -85,7 +86,7 @@ FileSystemPtr AdblockPlus::CreateDefaultFileSystem()
 
 WebRequestPtr AdblockPlus::CreateDefaultWebRequest()
 {
-  return WebRequestPtr(new DefaultWebRequest(std::make_shared<DefaultWebRequestSync>()));
+  return WebRequestPtr(new DefaultWebRequest(std::unique_ptr<DefaultWebRequestSync>(new DefaultWebRequestSync())));
 }
 
 AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
@@ -330,14 +331,6 @@ void AdblockPlus::JsEngine::SetFileSystem(const AdblockPlus::FileSystemSyncPtr& 
     throw std::runtime_error("FileSystem cannot be null");
 
   fileSystem.reset(new DefaultFileSystem(val));
-}
-
-void AdblockPlus::JsEngine::SetWebRequest(const AdblockPlus::WebRequestSharedPtr& val)
-{
-  if (!val)
-    throw std::runtime_error("WebRequest cannot be null");
-
-  webRequestLegacy = val;
 }
 
 AdblockPlus::LogSystemPtr AdblockPlus::JsEngine::GetLogSystem() const

@@ -18,7 +18,7 @@
 #ifndef ADBLOCK_PLUS_DEFAULT_WEB_REQUEST_H
 #define ADBLOCK_PLUS_DEFAULT_WEB_REQUEST_H
 
-#include "WebRequest.h"
+#include <AdblockPlus/IWebRequest.h>
 
 namespace AdblockPlus
 {
@@ -27,20 +27,21 @@ namespace AdblockPlus
    * on other platforms. A dummy implementation that always reports failure is
    * used if libcurl is not available.
    */
-  class DefaultWebRequestSync : public WebRequest
+  class DefaultWebRequestSync
   {
+  public:
     ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const;
   };
 
   class DefaultWebRequest : public IWebRequest
   {
   public:
-    explicit DefaultWebRequest(const WebRequestSharedPtr& syncImpl);
+    explicit DefaultWebRequest(std::unique_ptr<DefaultWebRequestSync>&& syncImpl);
     ~DefaultWebRequest();
 
     void GET(const std::string& url, const HeaderList& requestHeaders, const GetCallback& getCallback) override;
   private:
-    WebRequestSharedPtr syncImpl;
+    std::unique_ptr<DefaultWebRequestSync> syncImpl;
   };
 }
 

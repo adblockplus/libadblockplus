@@ -26,7 +26,6 @@
     'sources': [
       'include/AdblockPlus/ITimer.h',
       'include/AdblockPlus/IWebRequest.h',
-      'include/AdblockPlus/DefaultWebRequest.h',
       'include/AdblockPlus/IFileSystem.h',
       'include/AdblockPlus/DefaultFileSystem.h',
       'src/AppInfoJsObject.cpp',
@@ -35,6 +34,7 @@
       'src/DefaultFileSystem.cpp',
       'src/DefaultTimer.cpp',
       'src/DefaultTimer.h',
+      'src/DefaultWebRequest.h',
       'src/DefaultWebRequest.cpp',
       'src/FileSystemJsObject.cpp',
       'src/FilterEngine.cpp',

@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "AdblockPlus/DefaultWebRequest.h"
+#include "DefaultWebRequest.h"
 #include <algorithm>
 #include <sstream>
 #include <Windows.h>

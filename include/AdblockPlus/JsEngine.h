@@ -29,7 +29,7 @@
 #include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/JsValue.h>
-#include <AdblockPlus/WebRequest.h>
+#include <AdblockPlus/IWebRequest.h>
 #include <AdblockPlus/ITimer.h>
 
 namespace v8
@@ -277,14 +277,6 @@ namespace AdblockPlus
     void SetFileSystem(const FileSystemSyncPtr& val);
 
     /**
-     * Sets the `WebRequest` implementation used for XMLHttpRequests.
-     * Setting this is optional, the engine will use a `DefaultWebRequest`
-     * instance by default, which might be sufficient.
-     * @param The `WebRequest` instance to use.
-     */
-    void SetWebRequest(const WebRequestSharedPtr& val);
-
-    /**
      * @see `SetLogSystem()`.
      */
     LogSystemPtr GetLogSystem() const;
@@ -338,7 +330,6 @@ namespace AdblockPlus
     std::mutex jsWeakValuesListsMutex;
     TimerPtr timer;
     WebRequestPtr webRequest;
-    WebRequestSharedPtr webRequestLegacy;
   };
 }
 

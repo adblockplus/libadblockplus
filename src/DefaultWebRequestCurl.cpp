@@ -19,7 +19,7 @@
 #include <cctype>
 #include <algorithm>
 #include <curl/curl.h>
-#include <AdblockPlus/DefaultWebRequest.h>
+#include "DefaultWebRequest.h"
 
 namespace
 {

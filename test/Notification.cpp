@@ -63,7 +63,7 @@ namespace
     }
   };
 
-  class MockWebRequest : public WebRequest
+  class MockWebRequest : public IWebRequest
   {
   public:
     std::string responseText;
@@ -71,18 +71,18 @@ namespace
       : responseText(notification)
     {
     }
-    ServerResponse GET(const std::string& url,
-      const HeaderList& requestHeaders) const
+    void GET(const std::string& url, const HeaderList& requestHeaders,
+      const GetCallback& getCallback) override
     {
       if (url.find("/notification.json") == std::string::npos)
       {
-        return ServerResponse();
+        return;
       }
       ServerResponse serverResponse;
       serverResponse.status = IWebRequest::NS_OK;
       serverResponse.responseStatus = 200;
       serverResponse.responseText = responseText;
-      return serverResponse;
+      getCallback(serverResponse);
     }
   };
 

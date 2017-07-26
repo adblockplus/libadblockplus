@@ -80,15 +80,6 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
     webRequestParams[2].Call(resultObject);
   };
 
-  if (jsEngine->webRequestLegacy)
-  {
-    std::thread([jsEngine, url, headers, getCallback]
-    {
-      getCallback(jsEngine->webRequestLegacy->GET(url, headers));
-    }).detach();
-    return;
-  }
-
   jsEngine->webRequest->GET(url, headers, getCallback);
 }
 

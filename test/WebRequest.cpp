@@ -25,42 +25,66 @@ using namespace AdblockPlus;
 
 namespace
 {
-  class MockWebRequest : public AdblockPlus::WebRequest
+  class DefaultWebRequestTest : public ::testing::Test
   {
-  public:
-    AdblockPlus::ServerResponse GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders) const
+  protected:
+    void SetUp()
     {
-      std::set<std::string> headerNames;
-      for (auto header : requestHeaders)
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.timer.reset(new NoopTimer());
+      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngineParams.webRequest = CreateWebRequest();
+      jsEngine = CreateJsEngine(std::move(jsEngineParams));
+    }
+
+    virtual WebRequestPtr CreateWebRequest()
+    {
+      return CreateDefaultWebRequest();
+    }
+
+    JsEnginePtr jsEngine;
+  };
+
+  class MockWebRequestTest : public DefaultWebRequestTest
+  {
+    virtual WebRequestPtr CreateWebRequest() override
+    {
+      return DelayedWebRequest::New(webRequestTasks);
+    }
+
+  protected:
+    void ProcessPendingWebRequests()
+    {
+      for (auto iiWebTask = webRequestTasks->cbegin(); iiWebTask != webRequestTasks->cend();
+      webRequestTasks->erase(iiWebTask++))
       {
-        headerNames.insert(header.first);
-      }
-      {
-        std::lock_guard<std::mutex> lock(requestHeaderNamesMutex);
+        const auto& webRequestTask = *iiWebTask;
+        std::set<std::string> headerNames;
+        for (const auto& header : webRequestTask.headers)
+        {
+          headerNames.insert(header.first);
+        }
         // we currently ignore the result. We should check it actually gets inserted.
-        requestHeaderNames.insert(std::make_pair(url, std::move(headerNames)));
-      }
+        requestHeaderNames.insert(std::make_pair(webRequestTask.url, std::move(headerNames)));
 
-      AdblockPlus::Sleep(50);
-
-      AdblockPlus::ServerResponse result;
-      result.status = IWebRequest::NS_OK;
-      result.responseStatus = 123;
-      result.responseHeaders.push_back(std::pair<std::string, std::string>("Foo", "Bar"));
-      result.responseText = url + "\n";
-      if (!requestHeaders.empty())
-      {
-        result.responseText += requestHeaders[0].first + "\n" + requestHeaders[0].second;
+        AdblockPlus::ServerResponse result;
+        result.status = IWebRequest::NS_OK;
+        result.responseStatus = 123;
+        result.responseHeaders.push_back(std::pair<std::string, std::string>("Foo", "Bar"));
+        result.responseText = webRequestTask.url + "\n";
+        if (!webRequestTask.headers.empty())
+        {
+          result.responseText += webRequestTask.headers[0].first + "\n" + webRequestTask.headers[0].second;
+        }
+        webRequestTask.getCallback(result);
       }
-      return result;
     }
 
     // Testing method
-    // Get the headers for the request. Return a pair of a bool (found
-    // or not) and the actual header names
-    std::pair<bool, std::set<std::string>> headersForRequest(const std::string& url)
+    // Get the headers for the request. Return a pair of a bool (found or not)
+    // and the actual header names
+    std::pair<bool, std::set<std::string>> GetHeadersForRequest(const std::string& url)
     {
-      std::lock_guard<std::mutex> lock(requestHeaderNamesMutex);
       auto iter = requestHeaderNames.find(url);
       if (iter != requestHeaderNames.end())
       {
@@ -71,32 +95,9 @@ namespace
       return std::make_pair(false, std::set<std::string>());
     }
 
-    // mutable. Very Ugly. But we are testing and need to change this in GET which is const.
-    mutable std::mutex requestHeaderNamesMutex;
-    mutable std::map<std::string, std::set<std::string>> requestHeaderNames;
+    DelayedWebRequest::SharedTasks webRequestTasks;
+    std::map<std::string, std::set<std::string>> requestHeaderNames;
   };
-
-  template<class T>
-  class WebRequestTest : public ::testing::Test
-  {
-  protected:
-    void SetUp()
-    {
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.timer.reset(new NoopTimer());
-      jsEngineParams.fileSystem.reset(new LazyFileSystem());
-      jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      webRequest = std::make_shared<T>();
-      jsEngine->SetWebRequest(webRequest);
-    }
-
-    std::shared_ptr<T> webRequest;
-    JsEnginePtr jsEngine;
-  };
-
-  typedef WebRequestTest<MockWebRequest> MockWebRequestTest;
-  typedef WebRequestTest<AdblockPlus::DefaultWebRequestSync> DefaultWebRequestTest;
-  typedef WebRequestTest<MockWebRequest> XMLHttpRequestTest;
 
   // we return the url of the XHR.
   std::string ResetTestXHR(const AdblockPlus::JsEnginePtr& jsEngine, const std::string& defaultUrl = "")
@@ -144,7 +145,7 @@ TEST_F(MockWebRequestTest, SuccessfulRequest)
 {
   jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
   ASSERT_TRUE(jsEngine->Evaluate("this.foo").IsUndefined());
-  AdblockPlus::Sleep(200);
+  ProcessPendingWebRequests();
   ASSERT_EQ(IWebRequest::NS_OK, jsEngine->Evaluate("foo.status").AsInt());
   ASSERT_EQ(123, jsEngine->Evaluate("foo.responseStatus").AsInt());
   ASSERT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText").AsString());
@@ -247,7 +248,7 @@ namespace
   typedef std::shared_ptr<CatchLogSystem> CatchLogSystemPtr;
 }
 
-TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
+TEST_F(MockWebRequestTest, RequestHeaderValidation)
 {
   auto catchLogSystem = CatchLogSystemPtr(new CatchLogSystem());
   jsEngine->SetLogSystem(catchLogSystem);
@@ -267,9 +268,9 @@ TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
     request.setRequestHeader('Accept-Encoding', 'gzip');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
   EXPECT_EQ(msg + "Accept-Encoding", catchLogSystem->lastMessage);
-  WaitForVariable("result", jsEngine);
+  ProcessPendingWebRequests();
   {
-    auto headersRequest = webRequest->headersForRequest(url);
+    auto headersRequest = GetHeadersForRequest(url);
     EXPECT_TRUE(headersRequest.first);
     const auto& headers = headersRequest.second;
     EXPECT_TRUE(headers.cend() == headers.find("Accept-Encoding"));
@@ -282,9 +283,9 @@ TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
     request.setRequestHeader('DNT', '1');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
   EXPECT_EQ(msg + "DNT", catchLogSystem->lastMessage);
-  WaitForVariable("result", jsEngine);
+  ProcessPendingWebRequests();
   {
-    auto headersRequest = webRequest->headersForRequest(url);
+    auto headersRequest = GetHeadersForRequest(url);
     EXPECT_TRUE(headersRequest.first);
     const auto& headers = headersRequest.second;
     EXPECT_TRUE(headers.cend() == headers.find("DNT"));
@@ -297,9 +298,9 @@ TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
     request.setRequestHeader('X', 'y');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, catchLogSystem->lastLogLevel);
   EXPECT_EQ("", catchLogSystem->lastMessage);
-  WaitForVariable("result", jsEngine);
+  ProcessPendingWebRequests();
   {
-    auto headersRequest = webRequest->headersForRequest(url);
+    auto headersRequest = GetHeadersForRequest(url);
     EXPECT_TRUE(headersRequest.first);
     const auto& headers = headersRequest.second;
     EXPECT_FALSE(headers.cend() == headers.find("X"));
@@ -312,9 +313,9 @@ TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
     request.setRequestHeader('Proxy-foo', 'bar');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
   EXPECT_EQ(msg + "Proxy-foo", catchLogSystem->lastMessage);
-  WaitForVariable("result", jsEngine);
+  ProcessPendingWebRequests();
   {
-    auto headersRequest = webRequest->headersForRequest(url);
+    auto headersRequest = GetHeadersForRequest(url);
     EXPECT_TRUE(headersRequest.first);
     const auto& headers = headersRequest.second;
     EXPECT_TRUE(headers.cend() == headers.find("Proxy-foo"));
@@ -327,9 +328,9 @@ TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
     request.setRequestHeader('Sec-foo', 'bar');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
   EXPECT_EQ(msg + "Sec-foo", catchLogSystem->lastMessage);
-  WaitForVariable("result", jsEngine);
+  ProcessPendingWebRequests();
   {
-    auto headersRequest = webRequest->headersForRequest(url);
+    auto headersRequest = GetHeadersForRequest(url);
     EXPECT_TRUE(headersRequest.first);
     const auto& headers = headersRequest.second;
     EXPECT_TRUE(headers.cend() == headers.find("Sec-foo"));
@@ -342,9 +343,9 @@ TEST_F(XMLHttpRequestTest, RequestHeaderValidation)
     request.setRequestHeader('Security', 'theater');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, catchLogSystem->lastLogLevel);
   EXPECT_EQ("", catchLogSystem->lastMessage);
-  WaitForVariable("result", jsEngine);
+  ProcessPendingWebRequests();
   {
-    auto headersRequest = webRequest->headersForRequest(url);
+    auto headersRequest = GetHeadersForRequest(url);
     EXPECT_TRUE(headersRequest.first);
     const auto& headers = headersRequest.second;
     EXPECT_FALSE(headers.cend() == headers.find("Security"));

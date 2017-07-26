@@ -15,13 +15,13 @@
 * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <AdblockPlus/DefaultWebRequest.h>
+#include "DefaultWebRequest.h"
 #include <thread>
 
 using namespace AdblockPlus;
 
-DefaultWebRequest::DefaultWebRequest(const WebRequestSharedPtr& syncImpl)
-  : syncImpl(syncImpl)
+DefaultWebRequest::DefaultWebRequest(std::unique_ptr<DefaultWebRequestSync>&& syncImpl)
+  : syncImpl(std::move(syncImpl))
 {
 
 }
@@ -33,9 +33,8 @@ DefaultWebRequest::~DefaultWebRequest()
 
 void DefaultWebRequest::GET(const std::string& url, const HeaderList& requestHeaders, const GetCallback& getCallback)
 {
-  auto syncImplCapture = syncImpl;
-  std::thread([syncImplCapture, url, requestHeaders, getCallback]
+  std::thread([this, url, requestHeaders, getCallback]
   {
-    getCallback(syncImplCapture->GET(url, requestHeaders));
+    getCallback(this->syncImpl->GET(url, requestHeaders));
   }).detach();
 }
