@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <AdblockPlus/FileSystem.h>
+#include <AdblockPlus/IFileSystem.h>
 #include <stdexcept>
 #include <sstream>
 #include <vector>

@@ -18,7 +18,7 @@
 #ifndef ADBLOCK_PLUS_DEFAULT_FILE_SYSTEM_H
 #define ADBLOCK_PLUS_DEFAULT_FILE_SYSTEM_H
 
-#include "FileSystem.h"
+#include <AdblockPlus/IFileSystem.h>
 
 #ifdef _WIN32
 #define PATH_SEPARATOR '\\'
@@ -29,12 +29,12 @@
 namespace AdblockPlus
 {
   /**
-   * `FileSystem` implementation that interacts directly with the operating
+   * File system implementation that interacts directly with the operating
    * system's file system.
    * All paths are considered relative to the base path, or to the current
    * working directory if no base path is set (see `SetBasePath()`).
    */
-  class DefaultFileSystemSync : public FileSystem
+  class DefaultFileSystemSync
   {
   public:
     IFileSystem::IOBuffer Read(const std::string& path) const;
@@ -57,7 +57,7 @@ namespace AdblockPlus
   class DefaultFileSystem : public IFileSystem
   {
   public:
-    explicit DefaultFileSystem(const FileSystemSyncPtr& syncImpl);
+    explicit DefaultFileSystem(std::unique_ptr<DefaultFileSystemSync> syncImpl);
     void Read(const std::string& path,
               const ReadCallback& callback) const;
     void Write(const std::string& path,
@@ -72,7 +72,7 @@ namespace AdblockPlus
 
     std::string Resolve(const std::string& path) const;
   private:
-    FileSystemSyncPtr syncImpl;
+    std::unique_ptr<DefaultFileSystemSync> syncImpl;
   };
 }
 

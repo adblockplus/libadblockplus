@@ -22,6 +22,7 @@
 #include "Utils.h"
 #include "DefaultTimer.h"
 #include "DefaultWebRequest.h"
+#include "DefaultFileSystem.h"
 #include <libplatform/libplatform.h>
 
 namespace
@@ -81,7 +82,7 @@ TimerPtr AdblockPlus::CreateDefaultTimer()
 
 FileSystemPtr AdblockPlus::CreateDefaultFileSystem()
 {
-  return FileSystemPtr(new DefaultFileSystem(std::make_shared<DefaultFileSystemSync>()));
+  return FileSystemPtr(new DefaultFileSystem(std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync())));
 }
 
 WebRequestPtr AdblockPlus::CreateDefaultWebRequest()

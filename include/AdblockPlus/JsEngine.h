@@ -27,7 +27,7 @@
 #include <mutex>
 #include <AdblockPlus/AppInfo.h>
 #include <AdblockPlus/LogSystem.h>
-#include <AdblockPlus/FileSystem.h>
+#include <AdblockPlus/IFileSystem.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/IWebRequest.h>
 #include <AdblockPlus/ITimer.h>

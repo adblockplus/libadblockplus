@@ -15,7 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <AdblockPlus/DefaultFileSystem.h>
+#include "DefaultFileSystem.h"
 #include <cstdio>
 #include <cstring>
 #include <fstream>
@@ -205,21 +205,20 @@ void DefaultFileSystemSync::SetBasePath(const std::string& path)
   }
 }
 
-DefaultFileSystem::DefaultFileSystem(const FileSystemSyncPtr& syncImpl)
-  : syncImpl(syncImpl)
+DefaultFileSystem::DefaultFileSystem(std::unique_ptr<DefaultFileSystemSync> syncImpl)
+  : syncImpl(std::move(syncImpl))
 {
 }
 
 void DefaultFileSystem::Read(const std::string& path,
                              const ReadCallback& callback) const
 {
-  auto impl = syncImpl;
-  std::thread([impl, path, callback]
+  std::thread([this, path, callback]
   {
     std::string error;
     try
     {
-      auto data = impl->Read(path);
+      auto data = syncImpl->Read(path);
       callback(std::move(data), error);
       return;
     }
@@ -239,13 +238,12 @@ void DefaultFileSystem::Write(const std::string& path,
                               const IOBuffer& data,
                               const Callback& callback)
 {
-  auto impl = syncImpl;
-  std::thread([impl, path, data, callback]
+  std::thread([this, path, data, callback]
   {
     std::string error;
     try
     {
-      impl->Write(path, data);
+      syncImpl->Write(path, data);
     }
     catch (std::exception& e)
     {
@@ -263,13 +261,12 @@ void DefaultFileSystem::Move(const std::string& fromPath,
                              const std::string& toPath,
                              const Callback& callback)
 {
-  auto impl = syncImpl;
-  std::thread([impl, fromPath, toPath, callback]
+  std::thread([this, fromPath, toPath, callback]
   {
     std::string error;
     try
     {
-      impl->Move(fromPath, toPath);
+      syncImpl->Move(fromPath, toPath);
     }
     catch (std::exception& e)
     {
@@ -286,13 +283,12 @@ void DefaultFileSystem::Move(const std::string& fromPath,
 void DefaultFileSystem::Remove(const std::string& path,
                                const Callback& callback)
 {
-  auto impl = syncImpl;
-  std::thread([impl, path, callback]
+  std::thread([this, path, callback]
   {
     std::string error;
     try
     {
-      impl->Remove(path);
+      syncImpl->Remove(path);
     }
     catch (std::exception& e)
     {
@@ -309,13 +305,12 @@ void DefaultFileSystem::Remove(const std::string& path,
 void DefaultFileSystem::Stat(const std::string& path,
                              const StatCallback& callback) const
 {
-  auto impl = syncImpl;
-  std::thread([impl, path, callback]
+  std::thread([this, path, callback]
   {
     std::string error;
     try
     {
-      auto result = impl->Stat(path);
+      auto result = syncImpl->Stat(path);
       callback(result, error);
       return;
     }
