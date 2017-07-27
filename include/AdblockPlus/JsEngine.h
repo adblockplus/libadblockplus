@@ -275,15 +275,6 @@ namespace AdblockPlus
     FileSystemPtr GetAsyncFileSystem() const;
 
     /**
-     * Sets the synchronous `FileSystem` implementation used for all
-     * file I/O. Setting this is optional, the engine will use the
-     * implementation created by `CreateDefaultFileSystem()` by
-     * default, which might be sufficient.
-     * @param The `FileSystem` instance to use.
-     */
-    void SetFileSystem(const FileSystemSyncPtr& val);
-
-    /**
      * Private functionality.
      * @return The LogSystem implementation.
      */

@@ -331,14 +331,6 @@ AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetAsyncFileSystem() const
   return fileSystem;
 }
 
-void AdblockPlus::JsEngine::SetFileSystem(const AdblockPlus::FileSystemSyncPtr& val)
-{
-  if (!val)
-    throw std::runtime_error("FileSystem cannot be null");
-
-  fileSystem.reset(new DefaultFileSystem(val));
-}
-
 AdblockPlus::LogSystem& AdblockPlus::JsEngine::GetLogSystem()
 {
   return *logSystem;
