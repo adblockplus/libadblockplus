@@ -41,7 +41,7 @@ namespace
     {
     }
 
-    void Read(const std::string& path, const ReadCallback& callback) const
+    void Read(const std::string& path, const ReadCallback& callback) const override
     {
       if (!success)
       {
@@ -52,7 +52,7 @@ namespace
     }
 
     void Write(const std::string& path, const IOBuffer& data,
-               const Callback& callback)
+               const Callback& callback) override
     {
       if (!success)
       {
@@ -66,7 +66,7 @@ namespace
     }
 
     void Move(const std::string& fromPath, const std::string& toPath,
-              const Callback& callback)
+              const Callback& callback) override
     {
       if (!success)
       {
@@ -78,7 +78,7 @@ namespace
       callback("");
     }
 
-    void Remove(const std::string& path, const Callback& callback)
+    void Remove(const std::string& path, const Callback& callback) override
     {
       if (!success)
       {
@@ -89,8 +89,7 @@ namespace
       callback("");
     }
 
-    void Stat(const std::string& path,
-              const StatCallback& callback) const
+    void Stat(const std::string& path, const StatCallback& callback) const override
     {
       StatResult result;
       std::string error;
@@ -107,7 +106,7 @@ namespace
       callback(result, error);
     }
 
-    std::string Resolve(const std::string& path) const
+    std::string Resolve(const std::string& path) const override
     {
       if (!success)
         throw std::runtime_error("Unable to stat " + path);
