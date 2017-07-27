@@ -197,7 +197,6 @@
       'test/Notification.cpp',
       'test/Prefs.cpp',
       'test/ReferrerMapping.cpp',
-      'test/Thread.cpp',
       'test/UpdateCheck.cpp',
       'test/WebRequest.cpp'
     ],

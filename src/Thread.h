@@ -76,50 +76,6 @@ namespace AdblockPlus
   };
 
   void Sleep(int millis);
-
-  class Mutex
-  {
-  public:
-#ifdef WIN32
-    CRITICAL_SECTION nativeMutex;
-#else
-    pthread_mutex_t nativeMutex;
-#endif
-
-    Mutex();
-    ~Mutex();
-    void Lock();
-    void Unlock();
-  };
-
-  class Lock
-  {
-  public:
-    Lock(Mutex& mutex);
-    ~Lock();
-
-  private:
-    Mutex& mutex;
-  };
-
-  class Thread
-  {
-  public:
-    explicit Thread(bool deleteSelfOnFinish = false);
-    virtual ~Thread();
-    virtual void Run() = 0;
-    void Start();
-    void Join();
-  private:
-    static void CallRun(Thread* thread);
-  private:
-#ifdef WIN32
-    HANDLE nativeThread;
-#else
-    pthread_t nativeThread;
-#endif
-    bool m_deleteSelfOnFinish;
-  };
 }
 
 #endif
