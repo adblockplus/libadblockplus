@@ -34,16 +34,19 @@ namespace AdblockPlus
 
 namespace
 {
-  class VeryLazyFileSystem : public LazyFileSystem
+  class NoFilesFileSystem : public LazyFileSystem
   {
   public:
-    StatResult Stat(const std::string& path) const
+    void Stat(const std::string& path, const StatCallback& callback) const override
     {
-      return StatResult();
+      scheduler([callback]
+      {
+        callback(StatResult(), "");
+      });
     }
   };
 
-  template<class FileSystem, class LogSystem>
+  template<class LazyFileSystemT, class LogSystem>
   class FilterEngineTestGeneric : public ::testing::Test
   {
   protected:
@@ -51,23 +54,19 @@ namespace
 
     void SetUp() override
     {
+      LazyFileSystemT* fileSystem;
       JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.fileSystem.reset(new FileSystem());
+      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystemT());
       jsEngineParams.logSystem.reset(new LogSystem());
       jsEngineParams.timer.reset(new NoopTimer());
       jsEngineParams.webRequest.reset(new NoopWebRequest());
       auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
-    }
-    void TearDown() override
-    {
-      // Workaround for issue 5198
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      filterEngine = CreateFilterEngine(*fileSystem, jsEngine);
     }
   };
 
   typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
-  typedef FilterEngineTestGeneric<VeryLazyFileSystem, LazyLogSystem> FilterEngineTestNoData;
+  typedef FilterEngineTestGeneric<NoFilesFileSystem, LazyLogSystem> FilterEngineTestNoData;
 
   class FilterEngineWithFreshFolder : public ::testing::Test
   {
@@ -150,6 +149,7 @@ namespace
     std::vector<std::function<void(bool)>> isSubscriptionDownloadAllowedCallbacks;
     FilterEnginePtr filterEngine;
     JsEnginePtr jsEngine;
+    LazyFileSystem* fileSystem;
 
     void SetUp()
     {
@@ -157,7 +157,7 @@ namespace
 
       JsEngineCreationParameters jsEngineParams;
       jsEngineParams.logSystem.reset(new LazyLogSystem());
-      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       jsEngineParams.timer = DelayedTimer::New(timerTasks);
       jsEngineParams.webRequest = DelayedWebRequest::New(webRequestTasks);
       jsEngine = CreateJsEngine(std::move(jsEngineParams));
@@ -177,7 +177,7 @@ namespace
       bool isSubscriptionDownloadStatusReceived = false;
       if (!filterEngine)
       {
-        filterEngine = FilterEngine::Create(jsEngine, createParams);
+        filterEngine = CreateFilterEngine(*fileSystem, jsEngine, createParams);
         filterEngine->SetFilterChangeCallback([&isSubscriptionDownloadStatusReceived, &subscriptionUrl](const std::string& action, JsValue&& item)
         {
           if (action == "subscription.downloadStatus" && item.GetProperty("url").AsString() == subscriptionUrl)
@@ -591,7 +591,6 @@ TEST_F(FilterEngineTestNoData, FirstRunFlag)
 TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
 {
   int timesCalled = 0;
-  std::this_thread::sleep_for(std::chrono::milliseconds(200));
   filterEngine->SetFilterChangeCallback([&timesCalled](const std::string&, AdblockPlus::JsValue&&)
   {
     timesCalled++;

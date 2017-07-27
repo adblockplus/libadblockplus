@@ -33,7 +33,7 @@ namespace
       JsEngineCreationParameters jsEngineParams;
       jsEngineParams.logSystem = CreateLogSystem();
       jsEngineParams.timer.reset(new NoopTimer());
-      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       jsEngineParams.webRequest = CreateWebRequest();
       jsEngine = CreateJsEngine(std::move(jsEngineParams));
     }
@@ -49,6 +49,7 @@ namespace
     }
 
     JsEnginePtr jsEngine;
+    LazyFileSystem* fileSystem;
   };
 
   class MockWebRequestTest : public DefaultWebRequestTest
@@ -178,7 +179,7 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
 
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
-  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
+  auto filterEngine = CreateFilterEngine(*fileSystem, jsEngine);
 
   ResetTestXHR(jsEngine, "https://easylist-downloads.adblockplus.org/easylist.txt");
   jsEngine->Evaluate("\
@@ -208,7 +209,7 @@ TEST_F(DefaultWebRequestTest, DummyWebRequest)
 
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
-  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
+  auto filterEngine = CreateFilterEngine(*fileSystem, jsEngine);
 
   ResetTestXHR(jsEngine);
   jsEngine->Evaluate("\
@@ -264,7 +265,7 @@ namespace
 
 TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
 {
-  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
+  auto filterEngine = CreateFilterEngine(*fileSystem, jsEngine);
 
   const std::string msg = "Attempt to set a forbidden header was denied: ";
 

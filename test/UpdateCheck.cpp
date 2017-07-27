@@ -55,8 +55,9 @@ namespace
     {
       JsEngineCreationParameters jsEngineParams;
       jsEngineParams.appInfo = appInfo;
+      LazyFileSystem* fileSystem;
       jsEngineParams.logSystem.reset(new LazyLogSystem());
-      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       jsEngineParams.timer = DelayedTimer::New(timerTasks);
       jsEngineParams.webRequest = DelayedWebRequest::New(webRequestTasks);
       auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
@@ -66,7 +67,7 @@ namespace
         eventCallbackParams = std::move(params);
       });
 
-      filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
+      filterEngine = ::CreateFilterEngine(*fileSystem, jsEngine);
     }
 
     // Returns a URL or the empty string if there is no such request.

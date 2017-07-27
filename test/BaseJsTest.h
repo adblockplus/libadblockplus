@@ -149,93 +149,78 @@ public:
   }
 };
 
-class LazyFileSystem : public AdblockPlus::IFileSystem, public AdblockPlus::FileSystem
+class LazyFileSystem : public AdblockPlus::IFileSystem
 {
 public:
-  IOBuffer Read(const std::string& path) const
+  typedef std::function<void()> Task;
+  typedef std::function<void(const Task& task)> Scheduler;
+  static void ExecuteImmediately(const Task& task)
   {
-    std::string dummyData("");
-    if (path == "patterns.ini")
-      dummyData = "# Adblock Plus preferences\n[Subscription]\nurl=~fl~";
-    else if (path == "prefs.json")
-      dummyData = "{}";
-    return IOBuffer(dummyData.cbegin(), dummyData.cend());
+    if (task)
+      task();
+  }
+  explicit LazyFileSystem(const Scheduler& scheduler = LazyFileSystem::ExecuteImmediately)
+    : scheduler(scheduler)
+  {
   }
 
-  void Read(const std::string& path, const ReadCallback& callback) const
+  void Read(const std::string& path, const ReadCallback& callback) const override
   {
-    std::thread([this, path, callback]
+    scheduler([path, callback]
     {
-      auto data = Read(path);
-      callback(std::move(data), "");
-    }).detach();
-  }
-
-  void Write(const std::string& path, const IOBuffer& content)
-  {
+      if (path == "patterns.ini")
+      {
+        std::string dummyData = "# Adblock Plus preferences\n[Subscription]\nurl=~fl~";
+        callback(IOBuffer(dummyData.cbegin(), dummyData.cend()), "");
+      }
+      else if (path == "prefs.json")
+      {
+        std::string dummyData = "{}";
+        callback(IOBuffer(dummyData.cbegin(), dummyData.cend()), "");
+      }
+    });
   }
 
   void Write(const std::string& path, const IOBuffer& data,
-             const Callback& callback)
+             const Callback& callback) override
   {
-    std::thread([this, path, data, callback]
-    {
-      Write(path, data);
-      callback("");
-    }).detach();
   }
 
-  void Move(const std::string& fromPath, const std::string& toPath)
-  {
-  }
 
   void Move(const std::string& fromPath, const std::string& toPath,
-            const Callback& callback)
+            const Callback& callback) override
   {
-    std::thread([this, fromPath, toPath, callback]
+  }
+
+  void Remove(const std::string& path, const Callback& callback) override
+  {
+  }
+
+  void Stat(const std::string& path, const StatCallback& callback) const override
+  {
+    scheduler([path, callback]
     {
-      Move(fromPath, toPath);
-      callback("");
-    }).detach();
+      StatResult result;
+      if (path == "patterns.ini")
+      {
+        result.exists = true;
+        result.isFile = true;
+      }
+      callback(result, "");
+    });
   }
 
-  void Remove(const std::string& path)
-  {
-  }
-
-  void Remove(const std::string& path, const Callback& callback)
-  {
-    std::thread([this, path, callback]
-    {
-      Remove(path);
-      callback("");
-    }).detach();
-  }
-
-  StatResult Stat(const std::string& path) const
-  {
-    StatResult result;
-    if (path == "patterns.ini")
-    {
-      result.exists = true;
-      result.isFile = true;
-    }
-    return result;
-  }
-
-  void Stat(const std::string& path, const StatCallback& callback) const
-  {
-    std::thread([this, path, callback]
-    {
-      callback(Stat(path), "");
-    }).detach();
-  }
-
-  std::string Resolve(const std::string& path) const
+  std::string Resolve(const std::string& path) const override
   {
     return path;
   }
+public:
+  Scheduler scheduler;
 };
+
+AdblockPlus::FilterEnginePtr CreateFilterEngine(LazyFileSystem& fileSystem,
+  const AdblockPlus::JsEnginePtr& jsEngine,
+  const AdblockPlus::FilterEngine::CreationParameters& creationParams = AdblockPlus::FilterEngine::CreationParameters());
 
 class NoopWebRequest : public AdblockPlus::IWebRequest
 {

@@ -31,32 +31,46 @@ namespace
   public:
     IOBuffer prefsContents;
 
-    IOBuffer Read(const std::string& path) const
+    void Read(const std::string& path, const ReadCallback& callback) const override
     {
-      if (path == "prefs.json" && !prefsContents.empty())
-        return prefsContents;
-
-      return LazyFileSystem::Read(path);
-    }
-
-    void Write(const std::string& path, const IOBuffer& content)
-    {
-      if (path == "prefs.json")
-        prefsContents = content;
-      else
-        LazyFileSystem::Write(path, content);
-    }
-
-    StatResult Stat(const std::string& path) const
-    {
-      if (path == "prefs.json")
+      scheduler([this, path, callback]
       {
-        StatResult result;
-        result.exists = result.isFile = !prefsContents.empty();
-        return result;
-      }
+        if (path == "prefs.json" && !prefsContents.empty())
+        {
+          callback(IOBuffer(prefsContents.cbegin(), prefsContents.cend()), "");
+          return;
+        }
 
-      return LazyFileSystem::Stat(path);
+        LazyFileSystem::Read(path, callback);
+      });
+    }
+
+    void Write(const std::string& path, const IOBuffer& content, const Callback& callback) override
+    {
+      scheduler([this, path, content, callback]
+      {
+        if (path == "prefs.json")
+        {
+          prefsContents = content;
+          callback("");
+        }
+      });
+    }
+
+    void Stat(const std::string& path, const StatCallback& callback) const override
+    {
+      scheduler([this, path, callback]
+      {
+        if (path == "prefs.json")
+        {
+          StatResult result;
+          result.exists = result.isFile = !prefsContents.empty();
+          callback(result, "");
+          return;
+        }
+
+        LazyFileSystem::Stat(path, callback);
+      });
     }
   };
 
@@ -87,7 +101,7 @@ namespace
     {
       AdblockPlus::FilterEngine::CreationParameters createParams;
       createParams.preconfiguredPrefs = preconfiguredPrefs;
-      return AdblockPlus::FilterEngine::Create(jsEngine, createParams);
+      return ::CreateFilterEngine(*fileSystem, jsEngine, createParams);
     }
   };
 }
@@ -124,8 +138,6 @@ TEST_F(PrefsTest, PrefsPersist)
     filterEngine->SetPref("patternsfile", jsEngine->NewValue("filters.ini"));
     filterEngine->SetPref("patternsbackupinterval", jsEngine->NewValue(48));
     filterEngine->SetPref("subscriptions_autoupdate", jsEngine->NewValue(false));
-
-    AdblockPlus::Sleep(100);
   }
   ASSERT_FALSE(fileSystem->prefsContents.empty());
 
@@ -201,8 +213,6 @@ TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
     ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page").IsBool());
     ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page").AsBool());
     filterEngine->SetPref("suppress_first_run_page", jsEngine->NewValue(false));
-
-    AdblockPlus::Sleep(100);
   }
   ASSERT_FALSE(fileSystem->prefsContents.empty());
 

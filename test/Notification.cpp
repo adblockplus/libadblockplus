@@ -33,13 +33,14 @@ namespace
     FilterEnginePtr filterEngine;
     void SetUp()
     {
+      LazyFileSystem* fileSystem;
       JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.fileSystem.reset(new LazyFileSystem());
+      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       jsEngineParams.logSystem.reset(new DefaultLogSystem());
       jsEngineParams.timer.reset(new NoopTimer());
       jsEngineParams.webRequest.reset(new NoopWebRequest());
       auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      filterEngine = FilterEngine::Create(jsEngine);
+      filterEngine = CreateFilterEngine(*fileSystem, jsEngine);
     }
 
     void AddNotification(const std::string& notification)
