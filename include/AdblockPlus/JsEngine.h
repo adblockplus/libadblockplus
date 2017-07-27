@@ -127,6 +127,10 @@ namespace AdblockPlus
 
     /**
      * Creates a new JavaScript engine instance.
+     *
+     * When a parameter value is nullptr the corresponding default
+     * implementation is chosen.
+     *
      * @param appInfo Information about the app.
      * @param timer Implementation of timer.
      * @param fileSystem Implementation of filesystem.
@@ -135,10 +139,8 @@ namespace AdblockPlus
      * @return New `JsEngine` instance.
      */
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo(),
-      TimerPtr timer = CreateDefaultTimer(),
-      FileSystemPtr fileSystem = CreateDefaultFileSystem(),
-      WebRequestPtr webRequest = CreateDefaultWebRequest(),
-      LogSystemPtr logSystem = CreateDefaultLogSystem());
+      TimerPtr timer = nullptr, FileSystemPtr fileSystem = nullptr,
+      WebRequestPtr webRequest = nullptr, LogSystemPtr logSystem = nullptr);
 
     /**
      * Registers the callback function for an event.

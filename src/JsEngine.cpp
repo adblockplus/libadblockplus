@@ -161,10 +161,10 @@ AdblockPlus::JsEngine::JsEngine(TimerPtr timer, FileSystemPtr fileSystem,
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
   TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest, LogSystemPtr logSystem)
 {
-  JsEnginePtr result(new JsEngine(std::move(timer),
-                                  std::move(fileSystem),
-                                  std::move(webRequest),
-                                  std::move(logSystem)));
+  JsEnginePtr result(new JsEngine(timer ? std::move(timer) : CreateDefaultTimer(),
+    fileSystem ? std::move(fileSystem) : CreateDefaultFileSystem(),
+    webRequest ? std::move(webRequest) : CreateDefaultWebRequest(),
+    logSystem ? std::move(logSystem) : CreateDefaultLogSystem()));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
