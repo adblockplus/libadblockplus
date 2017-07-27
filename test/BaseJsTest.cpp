@@ -33,7 +33,7 @@ void DelayedTimer::ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks)
 }
 
 JsEngineCreationParameters::JsEngineCreationParameters()
-  : logSystem(std::make_shared<ThrowingLogSystem>())
+  : logSystem(new ThrowingLogSystem())
   , timer(new ThrowingTimer())
   , webRequest(new ThrowingWebRequest())
   , fileSystem(std::make_shared<ThrowingFileSystem>())
@@ -45,7 +45,7 @@ AdblockPlus::JsEnginePtr CreateJsEngine(JsEngineCreationParameters&& jsEngineCre
   auto jsEngine = AdblockPlus::JsEngine::New(jsEngineCreationParameters.appInfo,
     std::move(jsEngineCreationParameters.timer),
     std::move(jsEngineCreationParameters.fileSystem),
-    std::move(jsEngineCreationParameters.webRequest));
-  jsEngine->SetLogSystem(std::move(jsEngineCreationParameters.logSystem));
+    std::move(jsEngineCreationParameters.webRequest),
+    std::move(jsEngineCreationParameters.logSystem));
   return jsEngine;
 }

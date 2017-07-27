@@ -89,6 +89,11 @@ WebRequestPtr AdblockPlus::CreateDefaultWebRequest()
   return WebRequestPtr(new DefaultWebRequest(std::unique_ptr<DefaultWebRequestSync>(new DefaultWebRequestSync())));
 }
 
+LogSystemPtr AdblockPlus::CreateDefaultLogSystem()
+{
+  return LogSystemPtr(new DefaultLogSystem());
+}
+
 AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
 {
   V8Initializer::Init();
@@ -144,20 +149,21 @@ void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
 }
 
 AdblockPlus::JsEngine::JsEngine(TimerPtr timer, FileSystemPtr fileSystem,
-  WebRequestPtr webRequest)
+  WebRequestPtr webRequest, LogSystemPtr logSystem)
   : fileSystem(std::move(fileSystem))
-  , logSystem(new DefaultLogSystem())
   , timer(std::move(timer))
   , webRequest(std::move(webRequest))
+  , logSystem(std::move(logSystem))
 {
 }
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
-  TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest)
+  TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest, LogSystemPtr logSystem)
 {
   JsEnginePtr result(new JsEngine(std::move(timer),
                                   std::move(fileSystem),
-                                  std::move(webRequest)));
+                                  std::move(webRequest),
+                                  std::move(logSystem)));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
@@ -333,19 +339,10 @@ void AdblockPlus::JsEngine::SetFileSystem(const AdblockPlus::FileSystemSyncPtr& 
   fileSystem.reset(new DefaultFileSystem(val));
 }
 
-AdblockPlus::LogSystemPtr AdblockPlus::JsEngine::GetLogSystem() const
+AdblockPlus::LogSystem& AdblockPlus::JsEngine::GetLogSystem()
 {
-  return logSystem;
+  return *logSystem;
 }
-
-void AdblockPlus::JsEngine::SetLogSystem(const AdblockPlus::LogSystemPtr& val)
-{
-  if (!val)
-    throw std::runtime_error("LogSystem cannot be null");
-
-  logSystem = val;
-}
-
 
 void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name,
                                               const AdblockPlus::JsValue& value)

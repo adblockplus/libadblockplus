@@ -66,6 +66,11 @@ namespace AdblockPlus
   WebRequestPtr CreateDefaultWebRequest();
 
   /**
+   * A factory to construct LogSystem.
+   */
+  LogSystemPtr CreateDefaultLogSystem();
+
+  /**
    * Scope based isolate manager. Creates a new isolate instance on
    * constructing and disposes it on destructing.
    */
@@ -126,12 +131,14 @@ namespace AdblockPlus
      * @param timer Implementation of timer.
      * @param fileSystem Implementation of filesystem.
      * @param webRequest Implementation of web request.
+     * @param logSystem Implementation of log system.
      * @return New `JsEngine` instance.
      */
     static JsEnginePtr New(const AppInfo& appInfo = AppInfo(),
       TimerPtr timer = CreateDefaultTimer(),
       FileSystemPtr fileSystem = CreateDefaultFileSystem(),
-      WebRequestPtr webRequest = CreateDefaultWebRequest());
+      WebRequestPtr webRequest = CreateDefaultWebRequest(),
+      LogSystemPtr logSystem = CreateDefaultLogSystem());
 
     /**
      * Registers the callback function for an event.
@@ -277,18 +284,10 @@ namespace AdblockPlus
     void SetFileSystem(const FileSystemSyncPtr& val);
 
     /**
-     * @see `SetLogSystem()`.
+     * Private functionality.
+     * @return The LogSystem implementation.
      */
-    LogSystemPtr GetLogSystem() const;
-
-    /**
-     * Sets the `LogSystem` implementation used for logging (e.g. to handle
-     * `console.log()` calls from JavaScript).
-     * Setting this is optional, the engine will use a `DefaultLogSystem`
-     * instance by default, which might be sufficient.
-     * @param The `LogSystem` instance to use.
-     */
-    void SetLogSystem(const LogSystemPtr& val);
+    LogSystem& GetLogSystem();
 
     /**
      * Sets a global property that can be accessed by all the scripts.
@@ -313,7 +312,7 @@ namespace AdblockPlus
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
-    explicit JsEngine(TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest);
+    explicit JsEngine(TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest, LogSystemPtr logSystem);
 
     JsValue GetGlobalObject();
 

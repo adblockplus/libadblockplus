@@ -31,6 +31,7 @@ namespace
     void SetUp()
     {
       JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.logSystem = CreateLogSystem();
       jsEngineParams.timer.reset(new NoopTimer());
       jsEngineParams.fileSystem.reset(new LazyFileSystem());
       jsEngineParams.webRequest = CreateWebRequest();
@@ -40,6 +41,11 @@ namespace
     virtual WebRequestPtr CreateWebRequest()
     {
       return CreateDefaultWebRequest();
+    }
+
+    virtual LogSystemPtr CreateLogSystem()
+    {
+      return LogSystemPtr(new ThrowingLogSystem());
     }
 
     JsEnginePtr jsEngine;
@@ -245,14 +251,19 @@ namespace
     }
   };
 
-  typedef std::shared_ptr<CatchLogSystem> CatchLogSystemPtr;
+  class MockWebRequestAndLogSystemTest : public MockWebRequestTest
+  {
+    LogSystemPtr CreateLogSystem() override
+    {
+      return LogSystemPtr(catchLogSystem = new CatchLogSystem());
+    }
+  protected:
+    CatchLogSystem* catchLogSystem;
+  };
 }
 
-TEST_F(MockWebRequestTest, RequestHeaderValidation)
+TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
 {
-  auto catchLogSystem = CatchLogSystemPtr(new CatchLogSystem());
-  jsEngine->SetLogSystem(catchLogSystem);
-
   auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
 
   const std::string msg = "Attempt to set a forbidden header was denied: ";

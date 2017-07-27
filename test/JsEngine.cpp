@@ -162,17 +162,6 @@ TEST_F(JsEngineTest, EventCallbacks)
   ASSERT_FALSE(callbackCalled);
 }
 
-TEST(NewJsEngineTest, CallbackGetSet)
-{
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
-
-  ASSERT_TRUE(jsEngine->GetLogSystem());
-  ASSERT_ANY_THROW(jsEngine->SetLogSystem(AdblockPlus::LogSystemPtr()));
-  AdblockPlus::LogSystemPtr logSystem(new AdblockPlus::DefaultLogSystem());
-  jsEngine->SetLogSystem(logSystem);
-  ASSERT_EQ(logSystem, jsEngine->GetLogSystem());
-}
-
 TEST(NewJsEngineTest, GlobalPropertyTest)
 {
   AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());

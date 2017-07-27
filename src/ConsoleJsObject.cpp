@@ -45,8 +45,8 @@ namespace
     source << AdblockPlus::Utils::FromV8String(frame->GetScriptName());
     source << ":" << frame->GetLineNumber();
 
-    AdblockPlus::LogSystemPtr callback = jsEngine->GetLogSystem();
-    (*callback)(logLevel, message.str(), source.str());
+    AdblockPlus::LogSystem& callback = jsEngine->GetLogSystem();
+    callback(logLevel, message.str(), source.str());
   }
 
   void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
@@ -97,8 +97,8 @@ namespace
       traceback << std::endl;
     }
 
-    AdblockPlus::LogSystemPtr callback = jsEngine->GetLogSystem();
-    (*callback)(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, traceback.str(), "");
+    AdblockPlus::LogSystem& callback = jsEngine->GetLogSystem();
+    callback(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, traceback.str(), "");
   }
 }
 

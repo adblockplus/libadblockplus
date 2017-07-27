@@ -35,18 +35,16 @@ namespace
     }
   };
 
-  typedef std::shared_ptr<MockLogSystem> MockLogSystemPtr;
-
   class ConsoleJsObjectTest : public BaseJsTest
   {
   protected:
-    MockLogSystemPtr mockLogSystem;
+    MockLogSystem* mockLogSystem;
 
     void SetUp()
     {
-      BaseJsTest::SetUp();
-      mockLogSystem = MockLogSystemPtr(new MockLogSystem);
-      jsEngine->SetLogSystem(mockLogSystem);
+      JsEngineCreationParameters jsEngineParams;
+      jsEngineParams.logSystem.reset(mockLogSystem = new MockLogSystem());
+      jsEngine = CreateJsEngine(std::move(jsEngineParams));
     }
   };
 }

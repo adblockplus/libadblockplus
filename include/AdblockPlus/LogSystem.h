@@ -48,9 +48,9 @@ namespace AdblockPlus
   };
 
   /**
-   * Shared smart pointer to a `LogSystem` instance.
+   * Smart pointer to a `LogSystem` instance.
    */
-  typedef std::shared_ptr<LogSystem> LogSystemPtr;
+  typedef std::unique_ptr<LogSystem> LogSystemPtr;
 }
 
 #endif
