@@ -118,7 +118,6 @@ namespace
                 std::string& error)
   {
     jsEngine->Evaluate("_fileSystem.read('', function(r) {result = r})");
-    AdblockPlus::Sleep(50);
     content = jsEngine->Evaluate("result.content").AsString();
     error = jsEngine->Evaluate("result.error").AsString();
   }
@@ -170,7 +169,6 @@ TEST_F(FileSystemJsObjectTest, ReadError)
 TEST_F(FileSystemJsObjectTest, Write)
 {
   jsEngine->Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
-  AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->lastWrittenPath);
   ASSERT_EQ((AdblockPlus::IFileSystem::IOBuffer{'b', 'a', 'r'}),
             mockFileSystem->lastWrittenContent);
@@ -187,14 +185,12 @@ TEST_F(FileSystemJsObjectTest, WriteError)
 {
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
-  AdblockPlus::Sleep(50);
   ASSERT_NE("", jsEngine->Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, Move)
 {
   jsEngine->Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
-  AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->movedFrom);
   ASSERT_EQ("bar", mockFileSystem->movedTo);
   ASSERT_TRUE(jsEngine->Evaluate("error").IsUndefined());
@@ -210,14 +206,12 @@ TEST_F(FileSystemJsObjectTest, MoveError)
 {
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
-  AdblockPlus::Sleep(50);
   ASSERT_FALSE(jsEngine->Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, Remove)
 {
   jsEngine->Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
-  AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->removedPath);
   ASSERT_TRUE(jsEngine->Evaluate("error").IsUndefined());
 }
@@ -232,7 +226,6 @@ TEST_F(FileSystemJsObjectTest, RemoveError)
 {
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
-  AdblockPlus::Sleep(50);
   ASSERT_NE("", jsEngine->Evaluate("error").AsString());
 }
 
@@ -243,7 +236,6 @@ TEST_F(FileSystemJsObjectTest, Stat)
   mockFileSystem->statIsFile = true;
   mockFileSystem->statLastModified = 1337;
   jsEngine->Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
-  AdblockPlus::Sleep(50);
   ASSERT_EQ("foo", mockFileSystem->statPath);
   ASSERT_TRUE(jsEngine->Evaluate("result.error").IsUndefined());
   ASSERT_TRUE(jsEngine->Evaluate("result.exists").AsBool());
@@ -262,6 +254,5 @@ TEST_F(FileSystemJsObjectTest, StatError)
 {
   mockFileSystem->success = false;
   jsEngine->Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
-  AdblockPlus::Sleep(50);
   ASSERT_FALSE(jsEngine->Evaluate("result.error").IsUndefined());
 }
