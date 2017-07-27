@@ -104,59 +104,37 @@ public:
   }
 };
 
-class ThrowingFileSystem : public AdblockPlus::IFileSystem, public AdblockPlus::FileSystem
+class ThrowingFileSystem : public AdblockPlus::IFileSystem
 {
 public:
-  IOBuffer Read(const std::string& path) const
-  {
-    throw std::runtime_error("Not implemented");
-  }
-  void Read(const std::string& path,
-            const ReadCallback& callback) const
+  void Read(const std::string& path, const ReadCallback& callback) const override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Write(const std::string& path, const IOBuffer& content)
-  {
-    throw std::runtime_error("Not implemented");
-  }
   void Write(const std::string& path, const IOBuffer& data,
-             const Callback& callback)
+    const Callback& callback) override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Move(const std::string& fromPath, const std::string& toPath)
-  {
-    throw std::runtime_error("Not implemented");
-  }
   void Move(const std::string& fromPath, const std::string& toPath,
-            const Callback& callback)
+            const Callback& callback) override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Remove(const std::string& path)
-  {
-    throw std::runtime_error("Not implemented");
-  }
-  void Remove(const std::string& path, const Callback& callback)
+  void Remove(const std::string& path, const Callback& callback) override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  StatResult Stat(const std::string& path) const
-  {
-    throw std::runtime_error("Not implemented");
-  }
-  void Stat(const std::string& path,
-            const StatCallback& callback) const
+  void Stat(const std::string& path, const StatCallback& callback) const override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  std::string Resolve(const std::string& path) const
+  std::string Resolve(const std::string& path) const override
   {
     throw std::runtime_error("Not implemented");
   }
