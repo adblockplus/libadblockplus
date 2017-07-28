@@ -19,6 +19,7 @@
 #define ADBLOCK_PLUS_DEFAULT_WEB_REQUEST_H
 
 #include <AdblockPlus/IWebRequest.h>
+#include <AdblockPlus/Scheduler.h>
 
 namespace AdblockPlus
 {
@@ -36,11 +37,12 @@ namespace AdblockPlus
   class DefaultWebRequest : public IWebRequest
   {
   public:
-    explicit DefaultWebRequest(std::unique_ptr<DefaultWebRequestSync>&& syncImpl);
+    explicit DefaultWebRequest(const Scheduler& scheduler, std::unique_ptr<DefaultWebRequestSync>&& syncImpl);
     ~DefaultWebRequest();
 
     void GET(const std::string& url, const HeaderList& requestHeaders, const GetCallback& getCallback) override;
   private:
+    Scheduler scheduler;
     std::unique_ptr<DefaultWebRequestSync> syncImpl;
   };
 }

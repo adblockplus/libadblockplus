@@ -31,6 +31,7 @@
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/IWebRequest.h>
 #include <AdblockPlus/ITimer.h>
+#include <AdblockPlus/Scheduler.h>
 
 namespace v8
 {
@@ -63,7 +64,7 @@ namespace AdblockPlus
   /**
    * A factory to construct DefaultWebRequest.
    */
-  WebRequestPtr CreateDefaultWebRequest();
+  WebRequestPtr CreateDefaultWebRequest(const Scheduler& scheduler);
 
   /**
    * A factory to construct LogSystem.

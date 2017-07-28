@@ -71,6 +71,11 @@ namespace
       static V8Initializer initializer;
     }
   };
+
+  void DummyScheduler(const AdblockPlus::SchedulerTask& task)
+  {
+    std::thread(task).detach();
+  }
 }
 
 using namespace AdblockPlus;
@@ -85,9 +90,9 @@ FileSystemPtr AdblockPlus::CreateDefaultFileSystem()
   return FileSystemPtr(new DefaultFileSystem(std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync())));
 }
 
-WebRequestPtr AdblockPlus::CreateDefaultWebRequest()
+WebRequestPtr AdblockPlus::CreateDefaultWebRequest(const Scheduler& scheduler)
 {
-  return WebRequestPtr(new DefaultWebRequest(std::unique_ptr<DefaultWebRequestSync>(new DefaultWebRequestSync())));
+  return WebRequestPtr(new DefaultWebRequest(scheduler, std::unique_ptr<DefaultWebRequestSync>(new DefaultWebRequestSync())));
 }
 
 LogSystemPtr AdblockPlus::CreateDefaultLogSystem()
@@ -163,7 +168,7 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
 {
   JsEnginePtr result(new JsEngine(timer ? std::move(timer) : CreateDefaultTimer(),
     fileSystem ? std::move(fileSystem) : CreateDefaultFileSystem(),
-    webRequest ? std::move(webRequest) : CreateDefaultWebRequest(),
+    webRequest ? std::move(webRequest) : CreateDefaultWebRequest(::DummyScheduler),
     logSystem ? std::move(logSystem) : CreateDefaultLogSystem()));
 
   const v8::Locker locker(result->GetIsolate());

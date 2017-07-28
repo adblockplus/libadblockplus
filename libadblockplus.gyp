@@ -27,6 +27,7 @@
       'include/AdblockPlus/ITimer.h',
       'include/AdblockPlus/IWebRequest.h',
       'include/AdblockPlus/IFileSystem.h',
+      'include/AdblockPlus/Scheduler.h',
       'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
       'src/DefaultLogSystem.cpp',

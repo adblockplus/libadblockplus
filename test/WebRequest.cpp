@@ -25,7 +25,7 @@ using namespace AdblockPlus;
 
 namespace
 {
-  class DefaultWebRequestTest : public ::testing::Test
+  class BaseWebRequestTest : public ::testing::Test
   {
   protected:
     void SetUp()
@@ -38,10 +38,7 @@ namespace
       jsEngine = CreateJsEngine(std::move(jsEngineParams));
     }
 
-    virtual WebRequestPtr CreateWebRequest()
-    {
-      return CreateDefaultWebRequest();
-    }
+    virtual WebRequestPtr CreateWebRequest() = 0;
 
     virtual LogSystemPtr CreateLogSystem()
     {
@@ -52,9 +49,30 @@ namespace
     LazyFileSystem* fileSystem;
   };
 
-  class MockWebRequestTest : public DefaultWebRequestTest
+  class DefaultWebRequestTest : public BaseWebRequestTest
   {
-    virtual WebRequestPtr CreateWebRequest() override
+    WebRequestPtr CreateWebRequest() override
+    {
+      return CreateDefaultWebRequest([this](const SchedulerTask& task)
+      {
+        webRequestTasks.emplace_back(task);
+      });
+    }
+    std::list<SchedulerTask> webRequestTasks;
+  protected:
+    void WaitForVariable(const std::string& variable, const AdblockPlus::JsEnginePtr& jsEngine)
+    {
+      while (jsEngine->Evaluate(variable).IsUndefined() && !webRequestTasks.empty())
+      {
+        (*webRequestTasks.begin())();
+        webRequestTasks.pop_front();
+      }
+    }
+  };
+
+  class MockWebRequestTest : public BaseWebRequestTest
+  {
+    WebRequestPtr CreateWebRequest() override
     {
       return DelayedWebRequest::New(webRequestTasks);
     }
@@ -127,15 +145,6 @@ namespace
     ");
     return url;
   }
-
-  void WaitForVariable(const std::string& variable, const AdblockPlus::JsEnginePtr& jsEngine)
-  {
-    do
-    {
-      AdblockPlus::Sleep(60);
-    } while (jsEngine->Evaluate(variable).IsUndefined());
-  }
-
 }
 
 TEST_F(MockWebRequestTest, BadCall)

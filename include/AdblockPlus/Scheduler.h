@@ -15,26 +15,19 @@
 * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "DefaultWebRequest.h"
-#include <thread>
+#ifndef ADBLOCK_PLUS_SCHEDULER_H
+#define ADBLOCK_PLUS_SCHEDULER_H
 
-using namespace AdblockPlus;
-
-DefaultWebRequest::DefaultWebRequest(const Scheduler& scheduler, std::unique_ptr<DefaultWebRequestSync>&& syncImpl)
-  : scheduler(scheduler), syncImpl(std::move(syncImpl))
+namespace AdblockPlus
 {
+  /**
+   * Task object which can be passed to `Scheduler` to be executed asynchronously.
+   */
+  typedef std::function<void()> SchedulerTask;
 
+  /**
+   * Scheduler object executing tasks asynchronously.
+   */
+  typedef std::function<void(const SchedulerTask&)> Scheduler;
 }
-
-DefaultWebRequest::~DefaultWebRequest()
-{
-
-}
-
-void DefaultWebRequest::GET(const std::string& url, const HeaderList& requestHeaders, const GetCallback& getCallback)
-{
-  scheduler([this, url, requestHeaders, getCallback]
-  {
-    getCallback(this->syncImpl->GET(url, requestHeaders));
-  });
-}
+#endif // ADBLOCK_PLUS_SCHEDULER_H
