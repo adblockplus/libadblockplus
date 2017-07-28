@@ -22,109 +22,166 @@
 #include "BaseJsTest.h"
 
 using AdblockPlus::IFileSystem;
-using AdblockPlus::Sync;
+using AdblockPlus::FileSystemPtr;
+using AdblockPlus::SchedulerTask;
 
 namespace
 {
   const std::string testPath = "libadblockplus-t\xc3\xa4st-file";
 
-  void WriteString(const AdblockPlus::FileSystemPtr& fileSystem,
-                   const std::string& content)
+  class DefaultFileSystemTest : public ::testing::Test
   {
-    Sync sync;
-
-    fileSystem->Write(testPath,
-      IFileSystem::IOBuffer(content.cbegin(), content.cend()),
-      [&sync](const std::string& error)
-      {
-        EXPECT_TRUE(error.empty());
-
-        sync.Set();
-      });
-
-    sync.WaitFor();
-  }
-}
-
-TEST(DefaultFileSystemTest, WriteReadRemove)
-{
-  Sync sync;
-  AdblockPlus::FileSystemPtr fileSystem = AdblockPlus::CreateDefaultFileSystem();
-  WriteString(fileSystem, "foo");
-  fileSystem->Read(testPath,
-    [fileSystem, &sync](IFileSystem::IOBuffer&& content, const std::string& error)
+  public:
+    void SetUp() override
     {
-      EXPECT_TRUE(error.empty());
-      EXPECT_EQ("foo", std::string(content.cbegin(), content.cend()));
+      fileSystem = AdblockPlus::CreateDefaultFileSystem([this](const SchedulerTask& task)
+      {
+        fileSystemTasks.emplace_back(task);
+      });
+    }
+  protected:
+    void WriteString(const std::string& content)
+    {
+      bool hasRun = false;
+      fileSystem->Write(testPath,
+        IFileSystem::IOBuffer(content.cbegin(), content.cend()),
+        [&hasRun](const std::string& error)
+      {
+        EXPECT_TRUE(error.empty()) << error;
+        hasRun = true;
+      });
+      EXPECT_FALSE(hasRun);
+      PumpTask();
+      EXPECT_TRUE(hasRun);
+    }
 
-      fileSystem->Remove(testPath, [&sync](const std::string& error)
-        {
-          EXPECT_TRUE(error.empty());
-          sync.Set();
-        });
-    });
+    void PumpTask()
+    {
+      ASSERT_EQ(1u, fileSystemTasks.size());
+      (*fileSystemTasks.begin())();
+      fileSystemTasks.pop_front();
+    }
 
-  EXPECT_TRUE(sync.WaitFor());
+    std::list<SchedulerTask> fileSystemTasks;
+    FileSystemPtr fileSystem;
+  };
 }
 
-TEST(DefaultFileSystemTest, StatWorkingDirectory)
+TEST_F(DefaultFileSystemTest, WriteReadRemove)
 {
-  Sync sync;
-  AdblockPlus::FileSystemPtr fileSystem = AdblockPlus::CreateDefaultFileSystem();
+  WriteString("foo");
+
+  bool hasReadRun = false;
+  fileSystem->Read(testPath,
+    [this, &hasReadRun](IFileSystem::IOBuffer&& content, const std::string& error)
+  {
+    EXPECT_TRUE(error.empty());
+    EXPECT_EQ("foo", std::string(content.cbegin(), content.cend()));
+    hasReadRun = true;
+  });
+  EXPECT_FALSE(hasReadRun);
+  PumpTask();
+  EXPECT_TRUE(hasReadRun);
+
+  bool hasRemoveRun = false;
+  fileSystem->Remove(testPath, [&hasRemoveRun](const std::string& error)
+  {
+    EXPECT_TRUE(error.empty());
+    hasRemoveRun = true;
+  });
+  EXPECT_FALSE(hasRemoveRun);
+  PumpTask();
+  EXPECT_TRUE(hasRemoveRun);
+}
+
+TEST_F(DefaultFileSystemTest, StatWorkingDirectory)
+{
+  bool hasStatRun = false;
   fileSystem->Stat(".",
-    [fileSystem, &sync](const IFileSystem::StatResult result, const std::string& error)
+    [&hasStatRun](const IFileSystem::StatResult result, const std::string& error)
     {
       EXPECT_TRUE(error.empty());
       ASSERT_TRUE(result.exists);
       ASSERT_TRUE(result.isDirectory);
       ASSERT_FALSE(result.isFile);
       ASSERT_NE(0, result.lastModified);
-      sync.Set();
+      hasStatRun = true;
     });
-
-  EXPECT_TRUE(sync.WaitFor());
+  EXPECT_FALSE(hasStatRun);
+  PumpTask();
+  EXPECT_TRUE(hasStatRun);
 }
 
-TEST(DefaultFileSystemTest, WriteMoveStatRemove)
+TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
 {
-  Sync sync;
-  AdblockPlus::FileSystemPtr fileSystem = AdblockPlus::CreateDefaultFileSystem();
-  WriteString(fileSystem, "foo");
+  WriteString("foo");
 
+  bool hasStatOrigFileExistsRun = false;
   fileSystem->Stat(testPath,
-    [fileSystem, &sync](const IFileSystem::StatResult& result, const std::string& error)
+    [&hasStatOrigFileExistsRun](const IFileSystem::StatResult& result, const std::string& error)
     {
       EXPECT_TRUE(error.empty());
       ASSERT_TRUE(result.exists);
       ASSERT_TRUE(result.isFile);
       ASSERT_FALSE(result.isDirectory);
       ASSERT_NE(0, result.lastModified);
-      const std::string newTestPath = testPath + "-new";
-      fileSystem->Move(testPath, newTestPath, [fileSystem, &sync, newTestPath](const std::string& error)
-      {
-        EXPECT_TRUE(error.empty());
-        fileSystem->Stat(testPath, [fileSystem, &sync, newTestPath](const IFileSystem::StatResult& result, const std::string& error)
-        {
-          EXPECT_TRUE(error.empty());
-          ASSERT_FALSE(result.exists);
-          fileSystem->Stat(newTestPath, [fileSystem, &sync, newTestPath](const IFileSystem::StatResult& result, const std::string& error)
-          {
-            EXPECT_TRUE(error.empty());
-            ASSERT_TRUE(result.exists);
-            fileSystem->Remove(newTestPath, [fileSystem, &sync, newTestPath](const std::string& error)
-            {
-              EXPECT_TRUE(error.empty());
-              fileSystem->Stat(newTestPath, [fileSystem, &sync, newTestPath](const IFileSystem::StatResult& result, const std::string& error)
-              {
-                EXPECT_TRUE(error.empty());
-                ASSERT_FALSE(result.exists);
-                sync.Set();
-              });
-            });
-          });
-        });
-      });
+      hasStatOrigFileExistsRun = true;
     });
+  EXPECT_FALSE(hasStatOrigFileExistsRun);
+  PumpTask();
+  EXPECT_TRUE(hasStatOrigFileExistsRun);
 
-  EXPECT_TRUE(sync.WaitFor());
+  const std::string newTestPath = testPath + "-new";
+  bool hasMoveRun = false;
+  fileSystem->Move(testPath, newTestPath, [&hasMoveRun, newTestPath](const std::string& error)
+  {
+    EXPECT_TRUE(error.empty());
+    hasMoveRun = true;
+  });
+  EXPECT_FALSE(hasMoveRun);
+  PumpTask();
+  EXPECT_TRUE(hasMoveRun);
+
+  bool hasStatOrigFileDontExistsRun = false;
+  fileSystem->Stat(testPath, [&hasStatOrigFileDontExistsRun](const IFileSystem::StatResult& result, const std::string& error)
+  {
+    EXPECT_TRUE(error.empty());
+    ASSERT_FALSE(result.exists);
+    hasStatOrigFileDontExistsRun = true;
+  });
+  EXPECT_FALSE(hasStatOrigFileDontExistsRun);
+  PumpTask();
+  EXPECT_TRUE(hasStatOrigFileDontExistsRun);
+
+  bool hasStatNewFileExistsRun = false;
+  fileSystem->Stat(newTestPath, [&hasStatNewFileExistsRun](const IFileSystem::StatResult& result, const std::string& error)
+  {
+    EXPECT_TRUE(error.empty());
+    ASSERT_TRUE(result.exists);
+    hasStatNewFileExistsRun = true;
+  });
+  EXPECT_FALSE(hasStatNewFileExistsRun);
+  PumpTask();
+  EXPECT_TRUE(hasStatNewFileExistsRun);
+
+  bool hasRemoveRun = false;
+  fileSystem->Remove(newTestPath, [&hasRemoveRun](const std::string& error)
+  {
+    EXPECT_TRUE(error.empty());
+    hasRemoveRun = true;
+  });
+  EXPECT_FALSE(hasRemoveRun);
+  PumpTask();
+  EXPECT_TRUE(hasRemoveRun);
+
+  bool hasStatRemovedFileRun = false;
+  fileSystem->Stat(newTestPath, [&hasStatRemovedFileRun](const IFileSystem::StatResult& result, const std::string& error)
+  {
+    EXPECT_TRUE(error.empty());
+    ASSERT_FALSE(result.exists);
+    hasStatRemovedFileRun = true;
+  });
+  EXPECT_FALSE(hasStatRemovedFileRun);
+  PumpTask();
+  EXPECT_TRUE(hasStatRemovedFileRun);
 }

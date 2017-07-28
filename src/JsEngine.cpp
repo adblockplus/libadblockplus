@@ -85,9 +85,9 @@ TimerPtr AdblockPlus::CreateDefaultTimer()
   return TimerPtr(new DefaultTimer());
 }
 
-FileSystemPtr AdblockPlus::CreateDefaultFileSystem()
+FileSystemPtr AdblockPlus::CreateDefaultFileSystem(const Scheduler& scheduler)
 {
-  return FileSystemPtr(new DefaultFileSystem(std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync())));
+  return FileSystemPtr(new DefaultFileSystem(scheduler, std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync())));
 }
 
 WebRequestPtr AdblockPlus::CreateDefaultWebRequest(const Scheduler& scheduler)
@@ -167,7 +167,7 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
   TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest, LogSystemPtr logSystem)
 {
   JsEnginePtr result(new JsEngine(timer ? std::move(timer) : CreateDefaultTimer(),
-    fileSystem ? std::move(fileSystem) : CreateDefaultFileSystem(),
+    fileSystem ? std::move(fileSystem) : CreateDefaultFileSystem(::DummyScheduler),
     webRequest ? std::move(webRequest) : CreateDefaultWebRequest(::DummyScheduler),
     logSystem ? std::move(logSystem) : CreateDefaultLogSystem()));
 

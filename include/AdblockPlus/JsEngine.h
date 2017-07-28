@@ -59,7 +59,7 @@ namespace AdblockPlus
   /**
    * A factory to construct DefaultFileSystem.
    */
-  FileSystemPtr CreateDefaultFileSystem();
+  FileSystemPtr CreateDefaultFileSystem(const Scheduler& scheduler);
 
   /**
    * A factory to construct DefaultWebRequest.

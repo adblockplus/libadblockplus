@@ -205,15 +205,15 @@ void DefaultFileSystemSync::SetBasePath(const std::string& path)
   }
 }
 
-DefaultFileSystem::DefaultFileSystem(std::unique_ptr<DefaultFileSystemSync> syncImpl)
-  : syncImpl(std::move(syncImpl))
+DefaultFileSystem::DefaultFileSystem(const Scheduler& scheduler, std::unique_ptr<DefaultFileSystemSync> syncImpl)
+  : scheduler(scheduler), syncImpl(std::move(syncImpl))
 {
 }
 
 void DefaultFileSystem::Read(const std::string& path,
                              const ReadCallback& callback) const
 {
-  std::thread([this, path, callback]
+  scheduler([this, path, callback]
   {
     std::string error;
     try
@@ -231,14 +231,14 @@ void DefaultFileSystem::Read(const std::string& path,
       error =  "Unknown error while reading from " + path;
     }
     callback(IOBuffer(), error);
-  }).detach();
+  });
 }
 
 void DefaultFileSystem::Write(const std::string& path,
                               const IOBuffer& data,
                               const Callback& callback)
 {
-  std::thread([this, path, data, callback]
+  scheduler([this, path, data, callback]
   {
     std::string error;
     try
@@ -254,14 +254,14 @@ void DefaultFileSystem::Write(const std::string& path,
       error = "Unknown error while writing to " + path;
     }
     callback(error);
-  }).detach();
+  });
 }
 
 void DefaultFileSystem::Move(const std::string& fromPath,
                              const std::string& toPath,
                              const Callback& callback)
 {
-  std::thread([this, fromPath, toPath, callback]
+  scheduler([this, fromPath, toPath, callback]
   {
     std::string error;
     try
@@ -277,13 +277,13 @@ void DefaultFileSystem::Move(const std::string& fromPath,
       error = "Unknown error while moving " + fromPath + " to " + toPath;
     }
     callback(error);
-  }).detach();
+  });
 }
 
 void DefaultFileSystem::Remove(const std::string& path,
                                const Callback& callback)
 {
-  std::thread([this, path, callback]
+  scheduler([this, path, callback]
   {
     std::string error;
     try
@@ -299,13 +299,13 @@ void DefaultFileSystem::Remove(const std::string& path,
       error = "Unknown error while removing " + path;
     }
     callback(error);
-  }).detach();
+  });
 }
 
 void DefaultFileSystem::Stat(const std::string& path,
                              const StatCallback& callback) const
 {
-  std::thread([this, path, callback]
+  scheduler([this, path, callback]
   {
     std::string error;
     try
@@ -323,7 +323,7 @@ void DefaultFileSystem::Stat(const std::string& path,
       error = "Unknown error while calling stat on " + path;
     }
     callback(StatResult(), error);
-  }).detach();
+  });
 }
 
 std::string DefaultFileSystem::Resolve(const std::string& path) const

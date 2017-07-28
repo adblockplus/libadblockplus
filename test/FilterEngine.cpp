@@ -72,17 +72,21 @@ namespace
   {
   protected:
     FileSystemPtr fileSystem;
+    std::list<SchedulerTask> fileSystemTasks;
     std::weak_ptr<JsEngine> weakJsEngine;
 
     void SetUp() override
     {
-      fileSystem = CreateDefaultFileSystem();
+      fileSystem = CreateDefaultFileSystem([this](const SchedulerTask& task)
+      {
+        fileSystemTasks.emplace_back(task);
+      });
       // Since there is neither in memory FS nor functionality to work with
       // directories use the hack: manually clean the directory.
       removeFileIfExists("patterns.ini");
       removeFileIfExists("prefs.json");
     }
-    JsEnginePtr createJsEngine(const AppInfo& appInfo = AppInfo())
+    JsEnginePtr CreateJsEngine(const AppInfo& appInfo = AppInfo())
     {
       JsEngineCreationParameters jsEngineParams;
       jsEngineParams.appInfo = appInfo;
@@ -90,10 +94,27 @@ namespace
       jsEngineParams.logSystem.reset(new LazyLogSystem());
       jsEngineParams.timer.reset(new NoopTimer());
       jsEngineParams.webRequest.reset(new NoopWebRequest());
-      auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
+      auto jsEngine = ::CreateJsEngine(std::move(jsEngineParams));
       weakJsEngine = jsEngine;
       return jsEngine;
     }
+
+    FilterEnginePtr CreateFilterEngine(const JsEnginePtr& jsEngine,
+      const FilterEngine::CreationParameters& creationParams = FilterEngine::CreationParameters())
+    {
+      FilterEnginePtr retValue;
+      FilterEngine::CreateAsync(jsEngine, [&retValue](const FilterEnginePtr& filterEngine)
+      {
+        retValue = filterEngine;
+      }, creationParams);
+      while (!retValue && !fileSystemTasks.empty())
+      {
+        (*fileSystemTasks.begin())();
+        fileSystemTasks.pop_front();
+      }
+      return retValue;
+    }
+
     void TearDown() override
     {
       removeFileIfExists("patterns.ini");
@@ -102,38 +123,34 @@ namespace
     }
     void removeFileIfExists(const std::string& path)
     {
-      // Hack: allow IO to finish currently running operations, in particular
-      // writing into files. Otherwise we get "Permission denied".
-      auto safeRemove = [this, &path]()->bool
+      bool hasStatRun = false;
+      bool doesFileExists;
+      fileSystem->Stat(path, [&hasStatRun, &doesFileExists](const IFileSystem::StatResult& stats, const std::string& error)
       {
-        try
-        {
-          Sync sync;
-          auto fs = fileSystem;
-          fileSystem->Stat(path,
-            [fs, &path, &sync](const IFileSystem::StatResult& stats, const std::string& error)
-            {
-              if (error.empty() && stats.exists)
-              {
-                fs->Remove(path, [&sync](const std::string& error)
-                  {
-                    sync.Set(error);
-                  });
-              }
-              else
-                sync.Set(error);
-            });
-          sync.WaitFor();
-          return sync.GetError().empty();
-        }
-        catch (...)
-        {
-          return false;
-        }
-      };
-      int i = 5;
-      while ((i-- > 0 && weakJsEngine.lock()) || !safeRemove())
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        EXPECT_TRUE(error.empty()) << error;
+        doesFileExists = stats.exists;
+        hasStatRun = true;
+      });
+      while (!hasStatRun && !fileSystemTasks.empty())
+      {
+        (*fileSystemTasks.begin())();
+        fileSystemTasks.pop_front();
+      }
+
+      if (!doesFileExists)
+        return;
+
+      bool hasRemoveRun = false;
+      fileSystem->Remove(path, [&hasRemoveRun](const std::string& error)
+      {
+        EXPECT_TRUE(error.empty()) << error;
+        hasRemoveRun = true;
+      });
+      while (!hasStatRun && !fileSystemTasks.empty())
+      {
+        (*fileSystemTasks.begin())();
+        fileSystemTasks.pop_front();
+      }
     }
   };
 
@@ -667,8 +684,8 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
   AppInfo appInfo;
   appInfo.locale = "zh";
   const std::string langSubscriptionUrl = "https://easylist-downloads.adblockplus.org/easylistchina+easylist.txt";
-  auto jsEngine = createJsEngine(appInfo);
-  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
+  auto jsEngine = CreateJsEngine(appInfo);
+  auto filterEngine = CreateFilterEngine(jsEngine);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   ASSERT_EQ(2u, subscriptions.size());
   std::unique_ptr<Subscription> aaSubscription;
@@ -691,10 +708,10 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
 
 TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
 {
-  auto jsEngine = createJsEngine();
+  auto jsEngine = CreateJsEngine();
   FilterEngine::CreationParameters createParams;
   createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));
-  auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine, createParams);
+  auto filterEngine = CreateFilterEngine(jsEngine, createParams);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   EXPECT_EQ(0u, subscriptions.size());
   EXPECT_FALSE(filterEngine->IsAAEnabled());

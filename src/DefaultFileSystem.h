@@ -19,6 +19,7 @@
 #define ADBLOCK_PLUS_DEFAULT_FILE_SYSTEM_H
 
 #include <AdblockPlus/IFileSystem.h>
+#include <AdblockPlus/Scheduler.h>
 
 #ifdef _WIN32
 #define PATH_SEPARATOR '\\'
@@ -57,7 +58,7 @@ namespace AdblockPlus
   class DefaultFileSystem : public IFileSystem
   {
   public:
-    explicit DefaultFileSystem(std::unique_ptr<DefaultFileSystemSync> syncImpl);
+    explicit DefaultFileSystem(const Scheduler& scheduler, std::unique_ptr<DefaultFileSystemSync> syncImpl);
     void Read(const std::string& path,
               const ReadCallback& callback) const;
     void Write(const std::string& path,
@@ -72,6 +73,7 @@ namespace AdblockPlus
 
     std::string Resolve(const std::string& path) const;
   private:
+    Scheduler scheduler;
     std::unique_ptr<DefaultFileSystemSync> syncImpl;
   };
 }
