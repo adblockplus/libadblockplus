@@ -158,8 +158,8 @@ AdblockPlus::JsEngine::JsEngine(TimerPtr timer, FileSystemPtr fileSystem,
   WebRequestPtr webRequest, LogSystemPtr logSystem)
   : fileSystem(std::move(fileSystem))
   , timer(std::move(timer))
-  , webRequest(std::move(webRequest))
   , logSystem(std::move(logSystem))
+  , webRequest(std::move(webRequest))
 {
 }
 
