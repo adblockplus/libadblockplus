@@ -27,10 +27,9 @@ namespace
 {
   typedef std::shared_ptr<FilterEngine> FilterEnginePtr;
 
-  class NotificationTest : public ::testing::Test
+  class NotificationTest : public BaseJsTest
   {
   protected:
-    std::unique_ptr<Platform> platform;
     FilterEnginePtr filterEngine;
     void SetUp()
     {
@@ -45,7 +44,7 @@ namespace
 
     void AddNotification(const std::string& notification)
     {
-      filterEngine->GetJsEngine()->Evaluate("(function()"
+      GetJsEngine().Evaluate("(function()"
       "{"
         "require('notification').Notification.addNotification(" + notification + ");"
       "})();");

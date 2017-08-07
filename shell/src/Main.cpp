@@ -65,7 +65,7 @@ int main()
 
     AdblockPlus::Platform platform;
     platform.SetUpJsEngine(appInfo);
-    AdblockPlus::JsEnginePtr jsEngine = platform.GetJsEngine();
+    AdblockPlus::JsEngine& jsEngine = platform.GetJsEngine();
     auto filterEngine = platform.GetFilterEngine();
 
     CommandMap commands;

@@ -104,7 +104,7 @@ namespace AdblockPlus
      * Retrieves the `JsEngine` instance. It calls SetUpJsEngine if JsEngine is
      * not initialized yet.
      */
-    std::shared_ptr<JsEngine> GetJsEngine();
+    JsEngine& GetJsEngine();
 
     /**
      * Ensures that FilterEngine is constructed. Only the first call is effective.

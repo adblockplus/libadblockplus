@@ -199,7 +199,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       auto filterEngine = weakFilterEngine.lock();
       if (!filterEngine)
         return;
-      auto jsEngine = filterEngine->GetJsEngine();
+      auto& jsEngine = filterEngine->GetJsEngine();
 
       // param[0] - nullable string Prefs.allowed_connection_type
       // param[1] - function(Boolean)
@@ -209,18 +209,18 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
         return;
       if (!isSubscriptionDownloadAllowedCallback)
       {
-        params[1].Call(jsEngine->NewValue(true));
+        params[1].Call(jsEngine.NewValue(true));
         return;
       }
-      auto valuesID = jsEngine->StoreJsValues(params);
+      auto valuesID = jsEngine.StoreJsValues(params);
       auto callJsCallback = [weakFilterEngine, valuesID](bool isAllowed)
       {
         auto filterEngine = weakFilterEngine.lock();
         if (!filterEngine)
           return;
-        auto jsEngine = filterEngine->GetJsEngine();
-        auto jsParams = jsEngine->TakeJsValues(valuesID);
-        jsParams[1].Call(jsEngine->NewValue(isAllowed));
+        auto& jsEngine = filterEngine->GetJsEngine();
+        auto jsParams = jsEngine.TakeJsValues(valuesID);
+        jsParams[1].Call(jsEngine.NewValue(isAllowed));
       };
       std::string allowedConnectionType = params[0].IsString() ? params[0].AsString() : std::string();
       isSubscriptionDownloadAllowedCallback(params[0].IsString() ? &allowedConnectionType : nullptr, callJsCallback);
@@ -241,7 +241,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
     if (!filterEngine)
       return;
     if (reason == "save")
-      filterEngine->GetJsEngine()->NotifyLowMemory();
+      filterEngine->GetJsEngine().NotifyLowMemory();
   });
 
   // Lock the JS engine while we are loading scripts, no timeouts should fire

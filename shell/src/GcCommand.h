@@ -26,13 +26,13 @@
 class GcCommand : public Command
 {
 public:
-  explicit GcCommand(AdblockPlus::JsEnginePtr jsEngine);
+  explicit GcCommand(AdblockPlus::JsEngine& jsEngine);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;
 
 private:
-  AdblockPlus::JsEnginePtr jsEngine;
+  AdblockPlus::JsEngine& jsEngine;
 };
 
 #endif

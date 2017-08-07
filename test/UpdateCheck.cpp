@@ -31,14 +31,13 @@ namespace
       source.replace(pos, find.size(), replace);
   }
 
-  class UpdateCheckTest : public ::testing::Test
+  class UpdateCheckTest : public BaseJsTest
   {
   protected:
     AdblockPlus::AppInfo appInfo;
     AdblockPlus::ServerResponse webRequestResponse;
     DelayedWebRequest::SharedTasks webRequestTasks;
     DelayedTimer::SharedTasks timerTasks;
-    std::unique_ptr<Platform> platform;
     FilterEnginePtr filterEngine;
 
     bool eventCallbackCalled;
@@ -62,7 +61,7 @@ namespace
       platformParams.webRequest = DelayedWebRequest::New(webRequestTasks);
       platform.reset(new Platform(std::move(platformParams)));
       platform->SetUpJsEngine(appInfo);
-      platform->GetJsEngine()->SetEventCallback("updateAvailable", [this](JsValueList&& params)
+      GetJsEngine().SetEventCallback("updateAvailable", [this](JsValueList&& params)
       {
         eventCallbackCalled = true;
         eventCallbackParams = std::move(params);
@@ -121,8 +120,8 @@ TEST_F(UpdateCheckTest, RequestFailure)
   ASSERT_FALSE(updateError.empty());
 
   std::string expectedUrl(filterEngine->GetPref("update_url_release").AsString());
-  std::string platform = filterEngine->GetJsEngine()->Evaluate("require('info').platform").AsString();
-  std::string platformVersion = filterEngine->GetJsEngine()->Evaluate("require('info').platformVersion").AsString();
+  std::string platform = GetJsEngine().Evaluate("require('info').platform").AsString();
+  std::string platformVersion = GetJsEngine().Evaluate("require('info').platformVersion").AsString();
 
   FindAndReplace(expectedUrl, "%NAME%", appInfo.name);
   FindAndReplace(expectedUrl, "%TYPE%", "1");   // manual update
@@ -160,8 +159,8 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   ASSERT_TRUE(updateError.empty());
 
   std::string expectedUrl(filterEngine->GetPref("update_url_devbuild").AsString());
-  std::string platform = filterEngine->GetJsEngine()->Evaluate("require('info').platform").AsString();
-  std::string platformVersion = filterEngine->GetJsEngine()->Evaluate("require('info').platformVersion").AsString();
+  std::string platform = GetJsEngine().Evaluate("require('info').platform").AsString();
+  std::string platformVersion = GetJsEngine().Evaluate("require('info').platformVersion").AsString();
 
   FindAndReplace(expectedUrl, "%NAME%", appInfo.name);
   FindAndReplace(expectedUrl, "%TYPE%", "1");   // manual update

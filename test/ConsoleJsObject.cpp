@@ -37,26 +37,23 @@ namespace
     }
   };
 
-  class ConsoleJsObjectTest : public ::testing::Test
+  class ConsoleJsObjectTest : public BaseJsTest
   {
   protected:
-    std::unique_ptr<Platform> platform;
     MockLogSystem* mockLogSystem;
-    JsEnginePtr jsEngine;
 
     void SetUp() override
     {
       ThrowingPlatformCreationParameters platformParams;
       platformParams.logSystem.reset(mockLogSystem = new MockLogSystem());
       platform.reset(new Platform(std::move(platformParams)));
-      jsEngine = platform->GetJsEngine();
     }
   };
 }
 
 TEST_F(ConsoleJsObjectTest, ConsoleLogCall)
 {
-  jsEngine->Evaluate("\n\nconsole.log('foo', 'bar');\n\n", "eval");
+  GetJsEngine().Evaluate("\n\nconsole.log('foo', 'bar');\n\n", "eval");
   ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_LOG, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ("eval:3", mockLogSystem->lastSource);
@@ -64,7 +61,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleLogCall)
 
 TEST_F(ConsoleJsObjectTest, ConsoleDebugCall)
 {
-  jsEngine->Evaluate("console.debug('foo', 'bar')");
+  GetJsEngine().Evaluate("console.debug('foo', 'bar')");
   ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_LOG, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ(":1", mockLogSystem->lastSource);
@@ -72,7 +69,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleDebugCall)
 
 TEST_F(ConsoleJsObjectTest, ConsoleInfoCall)
 {
-  jsEngine->Evaluate("console.info('foo', 'bar')");
+  GetJsEngine().Evaluate("console.info('foo', 'bar')");
   ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_INFO, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ(":1", mockLogSystem->lastSource);
@@ -80,7 +77,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleInfoCall)
 
 TEST_F(ConsoleJsObjectTest, ConsoleWarnCall)
 {
-  jsEngine->Evaluate("console.warn('foo', 'bar')");
+  GetJsEngine().Evaluate("console.warn('foo', 'bar')");
   ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ(":1", mockLogSystem->lastSource);
@@ -88,7 +85,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleWarnCall)
 
 TEST_F(ConsoleJsObjectTest, ConsoleErrorCall)
 {
-  jsEngine->Evaluate("console.error('foo', 'bar')");
+  GetJsEngine().Evaluate("console.error('foo', 'bar')");
   ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_ERROR, mockLogSystem->lastLogLevel);
   ASSERT_EQ("foo bar", mockLogSystem->lastMessage);
   ASSERT_EQ(":1", mockLogSystem->lastSource);
@@ -96,7 +93,7 @@ TEST_F(ConsoleJsObjectTest, ConsoleErrorCall)
 
 TEST_F(ConsoleJsObjectTest, ConsoleTraceCall)
 {
-  jsEngine->Evaluate("\n\
+  GetJsEngine().Evaluate("\n\
     function foo()\n\
     {\n\
       (function() {\n\

@@ -72,10 +72,10 @@ void Platform::SetUpJsEngine(const AppInfo& appInfo)
   jsEngine = JsEngine::New(appInfo, *this);
 }
 
-std::shared_ptr<JsEngine> Platform::GetJsEngine()
+JsEngine& Platform::GetJsEngine()
 {
   SetUpJsEngine();
-  return jsEngine;
+  return *jsEngine;
 }
 
 void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& parameters,
@@ -90,7 +90,8 @@ void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& p
     filterEngine = filterEnginePromise->get_future();
   }
 
-  FilterEngine::CreateAsync(GetJsEngine(), [this, onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
+  GetJsEngine(); // ensures that JsEngine is instantiated
+  FilterEngine::CreateAsync(jsEngine, [this, onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
   {
     filterEnginePromise->set_value(filterEngine);
     if (onCreated)

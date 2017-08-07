@@ -48,10 +48,9 @@ namespace
   };
 
   template<class LazyFileSystemT, class LogSystem>
-  class FilterEngineTestGeneric : public ::testing::Test
+  class FilterEngineTestGeneric : public BaseJsTest
   {
   protected:
-    std::unique_ptr<Platform> platform;
     FilterEnginePtr filterEngine;
 
     void SetUp() override
@@ -70,10 +69,9 @@ namespace
   typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
   typedef FilterEngineTestGeneric<NoFilesFileSystem, LazyLogSystem> FilterEngineTestNoData;
 
-  class FilterEngineWithFreshFolder : public ::testing::Test
+  class FilterEngineWithFreshFolder : public BaseJsTest
   {
   protected:
-    std::unique_ptr<Platform> platform;
     FileSystemPtr fileSystem;
     std::list<SchedulerTask> fileSystemTasks;
 
@@ -119,6 +117,7 @@ namespace
       removeFileIfExists("patterns.ini");
       removeFileIfExists("prefs.json");
       fileSystem.reset();
+      BaseJsTest::TearDown();
     }
     void removeFileIfExists(const std::string& path)
     {
@@ -153,7 +152,7 @@ namespace
     }
   };
 
-  class FilterEngineIsSubscriptionDownloadAllowedTest : public ::testing::Test
+  class FilterEngineIsSubscriptionDownloadAllowedTest : public BaseJsTest
   {
   protected:
     typedef std::vector<std::pair<bool, std::string>> ConnectionTypes;
@@ -163,7 +162,6 @@ namespace
     ConnectionTypes capturedConnectionTypes;
     bool isConnectionAllowed;
     std::vector<std::function<void(bool)>> isSubscriptionDownloadAllowedCallbacks;
-    std::unique_ptr<Platform> platform;
     FilterEnginePtr filterEngine;
     LazyFileSystem* fileSystem;
 
@@ -178,7 +176,7 @@ namespace
       platformParams.webRequest = DelayedWebRequest::New(webRequestTasks);
       platform.reset(new Platform(std::move(platformParams)));
 
-      createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", platform->GetJsEngine()->NewValue(false));
+      createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(false));
 
       createParams.isSubscriptionDownloadAllowedCallback = [this](const std::string* allowedConnectionType,
         const std::function<void(bool)>& isSubscriptionDownloadAllowedCallback){
@@ -709,7 +707,7 @@ TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
 {
   InitPlatformAndAppInfo();
   FilterEngine::CreationParameters createParams;
-  createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", platform->GetJsEngine()->NewValue(false));
+  createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(false));
   auto filterEngine = CreateFilterEngine(createParams);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   EXPECT_EQ(0u, subscriptions.size());
@@ -998,7 +996,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, PredefinedAllowedConnectio
 {
   std::string predefinedAllowedConnectionType = "non-metered";
   createParams.preconfiguredPrefs.insert(std::make_pair("allowed_connection_type",
-    platform->GetJsEngine()->NewValue(predefinedAllowedConnectionType)));
+    GetJsEngine().NewValue(predefinedAllowedConnectionType)));
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
@@ -1015,7 +1013,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, ConfiguredConnectionTypeIs
   {
     std::string predefinedAllowedConnectionType = "non-metered";
     createParams.preconfiguredPrefs.insert(std::make_pair(
-      "allowed_connection_type", platform->GetJsEngine()->NewValue(predefinedAllowedConnectionType)));
+      "allowed_connection_type", GetJsEngine().NewValue(predefinedAllowedConnectionType)));
     auto subscription = EnsureExampleSubscriptionAndForceUpdate();
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());

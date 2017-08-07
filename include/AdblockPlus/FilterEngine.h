@@ -300,7 +300,7 @@ namespace AdblockPlus
      * Retrieves the `JsEngine` instance associated with this `FilterEngine`
      * instance.
      */
-    JsEnginePtr GetJsEngine() const { return jsEngine; }
+    JsEngine& GetJsEngine() const { return *jsEngine; }
 
     /**
      * Checks if this is the first run of the application.

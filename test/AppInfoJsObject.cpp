@@ -30,22 +30,21 @@ TEST(AppInfoJsObjectTest, AllProperties)
   appInfo.developmentBuild = true;
   AdblockPlus::Platform platform{ThrowingPlatformCreationParameters()};
   platform.SetUpJsEngine(appInfo);
-  ASSERT_EQ("1", platform.GetJsEngine()->Evaluate("_appInfo.version").AsString());
-  ASSERT_EQ("3", platform.GetJsEngine()->Evaluate("_appInfo.name").AsString());
-  ASSERT_EQ("4", platform.GetJsEngine()->Evaluate("_appInfo.application").AsString());
-  ASSERT_EQ("5", platform.GetJsEngine()->Evaluate("_appInfo.applicationVersion").AsString());
-  ASSERT_EQ("2", platform.GetJsEngine()->Evaluate("_appInfo.locale").AsString());
-  ASSERT_TRUE(platform.GetJsEngine()->Evaluate("_appInfo.developmentBuild").AsBool());
+  ASSERT_EQ("1", platform.GetJsEngine().Evaluate("_appInfo.version").AsString());
+  ASSERT_EQ("3", platform.GetJsEngine().Evaluate("_appInfo.name").AsString());
+  ASSERT_EQ("4", platform.GetJsEngine().Evaluate("_appInfo.application").AsString());
+  ASSERT_EQ("5", platform.GetJsEngine().Evaluate("_appInfo.applicationVersion").AsString());
+  ASSERT_EQ("2", platform.GetJsEngine().Evaluate("_appInfo.locale").AsString());
+  ASSERT_TRUE(platform.GetJsEngine().Evaluate("_appInfo.developmentBuild").AsBool());
 }
 
 TEST(AppInfoJsObjectTest, DefaultPropertyValues)
 {
   AdblockPlus::Platform platform{ThrowingPlatformCreationParameters()};
-  platform.SetUpJsEngine();
-  ASSERT_EQ("", platform.GetJsEngine()->Evaluate("_appInfo.version").AsString());
-  ASSERT_EQ("", platform.GetJsEngine()->Evaluate("_appInfo.name").AsString());
-  ASSERT_EQ("", platform.GetJsEngine()->Evaluate("_appInfo.application").AsString());
-  ASSERT_EQ("", platform.GetJsEngine()->Evaluate("_appInfo.applicationVersion").AsString());
-  ASSERT_EQ("", platform.GetJsEngine()->Evaluate("_appInfo.locale").AsString());
-  ASSERT_FALSE(platform.GetJsEngine()->Evaluate("_appInfo.developmentBuild").AsBool());
+  ASSERT_EQ("", platform.GetJsEngine().Evaluate("_appInfo.version").AsString());
+  ASSERT_EQ("", platform.GetJsEngine().Evaluate("_appInfo.name").AsString());
+  ASSERT_EQ("", platform.GetJsEngine().Evaluate("_appInfo.application").AsString());
+  ASSERT_EQ("", platform.GetJsEngine().Evaluate("_appInfo.applicationVersion").AsString());
+  ASSERT_EQ("", platform.GetJsEngine().Evaluate("_appInfo.locale").AsString());
+  ASSERT_FALSE(platform.GetJsEngine().Evaluate("_appInfo.developmentBuild").AsBool());
 }

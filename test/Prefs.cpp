@@ -74,10 +74,9 @@ namespace
     }
   };
 
-  class PrefsTest : public ::testing::Test
+  class PrefsTest : public BaseJsTest
   {
   protected:
-    std::unique_ptr<Platform> platform;
     std::shared_ptr<TestFileSystem> fileSystem;
 
     void SetUp()
@@ -114,13 +113,13 @@ TEST_F(PrefsTest, PrefsGetSet)
   ASSERT_TRUE(filterEngine->GetPref("subscriptions_autoupdate").AsBool());
   ASSERT_TRUE(filterEngine->GetPref("foobar").IsUndefined());
 
-  ASSERT_ANY_THROW(filterEngine->SetPref("patternsfile", platform->GetJsEngine()->NewValue(0)));
-  ASSERT_ANY_THROW(filterEngine->SetPref("patternsbackupinterval", platform->GetJsEngine()->NewValue(true)));
-  ASSERT_ANY_THROW(filterEngine->SetPref("subscriptions_autoupdate", platform->GetJsEngine()->NewValue("foo")));
+  ASSERT_ANY_THROW(filterEngine->SetPref("patternsfile", GetJsEngine().NewValue(0)));
+  ASSERT_ANY_THROW(filterEngine->SetPref("patternsbackupinterval", GetJsEngine().NewValue(true)));
+  ASSERT_ANY_THROW(filterEngine->SetPref("subscriptions_autoupdate", GetJsEngine().NewValue("foo")));
 
-  filterEngine->SetPref("patternsfile", platform->GetJsEngine()->NewValue("filters.ini"));
-  filterEngine->SetPref("patternsbackupinterval", platform->GetJsEngine()->NewValue(48));
-  filterEngine->SetPref("subscriptions_autoupdate", platform->GetJsEngine()->NewValue(false));
+  filterEngine->SetPref("patternsfile", GetJsEngine().NewValue("filters.ini"));
+  filterEngine->SetPref("patternsbackupinterval", GetJsEngine().NewValue(48));
+  filterEngine->SetPref("subscriptions_autoupdate", GetJsEngine().NewValue(false));
 
   ASSERT_EQ("filters.ini", filterEngine->GetPref("patternsfile").AsString());
   ASSERT_EQ(48, filterEngine->GetPref("patternsbackupinterval").AsInt());
@@ -135,9 +134,9 @@ TEST_F(PrefsTest, PrefsPersist)
     ASSERT_EQ(24, filterEngine->GetPref("patternsbackupinterval").AsInt());
     ASSERT_TRUE(filterEngine->GetPref("subscriptions_autoupdate").AsBool());
 
-    filterEngine->SetPref("patternsfile", platform->GetJsEngine()->NewValue("filters.ini"));
-    filterEngine->SetPref("patternsbackupinterval", platform->GetJsEngine()->NewValue(48));
-    filterEngine->SetPref("subscriptions_autoupdate", platform->GetJsEngine()->NewValue(false));
+    filterEngine->SetPref("patternsfile", GetJsEngine().NewValue("filters.ini"));
+    filterEngine->SetPref("patternsbackupinterval", GetJsEngine().NewValue(48));
+    filterEngine->SetPref("subscriptions_autoupdate", GetJsEngine().NewValue(false));
   }
   ASSERT_FALSE(fileSystem->prefsContents.empty());
 
@@ -173,8 +172,8 @@ TEST_F(PrefsTest, SyntaxFailure)
 TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
 {
   AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
-  preconfiguredPrefs.emplace("disable_auto_updates", platform->GetJsEngine()->NewValue(false));
-  preconfiguredPrefs.emplace("suppress_first_run_page", platform->GetJsEngine()->NewValue(true));
+  preconfiguredPrefs.emplace("disable_auto_updates", GetJsEngine().NewValue(false));
+  preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
   auto filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
   ASSERT_TRUE(filterEngine->GetPref("disable_auto_updates").IsBool());
@@ -186,7 +185,7 @@ TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
 TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
 {
   AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
-  preconfiguredPrefs.emplace("unsupported_preconfig", platform->GetJsEngine()->NewValue(true));
+  preconfiguredPrefs.emplace("unsupported_preconfig", GetJsEngine().NewValue(true));
   auto filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
   ASSERT_TRUE(filterEngine->GetPref("unsupported_preconfig").IsUndefined());
@@ -195,10 +194,10 @@ TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
 TEST_F(PrefsTest, PreconfiguredPrefsOverride)
 {
   AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
-  preconfiguredPrefs.emplace("suppress_first_run_page", platform->GetJsEngine()->NewValue(true));
+  preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
   auto filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
-  filterEngine->SetPref("suppress_first_run_page", platform->GetJsEngine()->NewValue(false));
+  filterEngine->SetPref("suppress_first_run_page", GetJsEngine().NewValue(false));
   ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page").IsBool());
   ASSERT_FALSE(filterEngine->GetPref("suppress_first_run_page").AsBool());
 }
@@ -207,19 +206,19 @@ TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
 {
   {
     AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
-    preconfiguredPrefs.emplace("suppress_first_run_page", platform->GetJsEngine()->NewValue(true));
+    preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
     auto filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
     ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page").IsBool());
     ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page").AsBool());
-    filterEngine->SetPref("suppress_first_run_page", platform->GetJsEngine()->NewValue(false));
+    filterEngine->SetPref("suppress_first_run_page", GetJsEngine().NewValue(false));
   }
   ASSERT_FALSE(fileSystem->prefsContents.empty());
 
   {
     ResetPlatform();
     AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
-    preconfiguredPrefs.emplace("suppress_first_run_page", platform->GetJsEngine()->NewValue(true));
+    preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
     auto filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
     ASSERT_TRUE(filterEngine->GetPref("suppress_first_run_page").IsBool());

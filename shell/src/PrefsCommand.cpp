@@ -69,19 +69,19 @@ void PrefsCommand::operator()(const std::string& arguments)
     {
       std::string value;
       std::getline(argumentStream, value);
-      filterEngine.SetPref(pref, filterEngine.GetJsEngine()->NewValue(value));
+      filterEngine.SetPref(pref, filterEngine.GetJsEngine().NewValue(value));
     }
     else if (current.IsNumber())
     {
       int64_t value;
       argumentStream >> value;
-      filterEngine.SetPref(pref, filterEngine.GetJsEngine()->NewValue(value));
+      filterEngine.SetPref(pref, filterEngine.GetJsEngine().NewValue(value));
     }
     else if (current.IsBool())
     {
       bool value;
       argumentStream >> value;
-      filterEngine.SetPref(pref, filterEngine.GetJsEngine()->NewValue(value));
+      filterEngine.SetPref(pref, filterEngine.GetJsEngine().NewValue(value));
     }
     else
       std::cout << "Cannot set a preference of unknown type" << std::endl;

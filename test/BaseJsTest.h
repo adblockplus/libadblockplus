@@ -267,9 +267,22 @@ class BaseJsTest : public ::testing::Test
 protected:
   std::unique_ptr<AdblockPlus::Platform> platform;
 
-  virtual void SetUp()
+  void SetUp() override
   {
     platform.reset(new AdblockPlus::Platform(ThrowingPlatformCreationParameters()));
+  }
+
+  AdblockPlus::JsEngine& GetJsEngine()
+  {
+    if (!platform)
+      throw std::runtime_error("Platform must be initialized");
+    return platform->GetJsEngine();
+  }
+
+  void TearDown() override
+  {
+    if (platform)
+      platform.reset();
   }
 };
 

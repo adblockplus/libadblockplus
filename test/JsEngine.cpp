@@ -22,51 +22,42 @@ using namespace AdblockPlus;
 
 namespace
 {
-  class JsEngineTest : public BaseJsTest
-  {
-  protected:
-    JsEnginePtr jsEngine;
-    void SetUp() override
-    {
-      BaseJsTest::SetUp();
-      jsEngine = platform->GetJsEngine();
-    }
-  };
+  typedef BaseJsTest JsEngineTest;
 }
 
 TEST_F(JsEngineTest, Evaluate)
 {
-  jsEngine->Evaluate("function hello() { return 'Hello'; }");
-  auto result = jsEngine->Evaluate("hello()");
+  GetJsEngine().Evaluate("function hello() { return 'Hello'; }");
+  auto result = GetJsEngine().Evaluate("hello()");
   ASSERT_TRUE(result.IsString());
   ASSERT_EQ("Hello", result.AsString());
 }
 
 TEST_F(JsEngineTest, RuntimeExceptionIsThrown)
 {
-  ASSERT_THROW(jsEngine->Evaluate("doesnotexist()"), std::runtime_error);
+  ASSERT_THROW(GetJsEngine().Evaluate("doesnotexist()"), std::runtime_error);
 }
 
 TEST_F(JsEngineTest, CompileTimeExceptionIsThrown)
 {
-  ASSERT_THROW(jsEngine->Evaluate("'foo'bar'"), std::runtime_error);
+  ASSERT_THROW(GetJsEngine().Evaluate("'foo'bar'"), std::runtime_error);
 }
 
 TEST_F(JsEngineTest, ValueCreation)
 {
-  auto value = jsEngine->NewValue("foo");
+  auto value = GetJsEngine().NewValue("foo");
   ASSERT_TRUE(value.IsString());
   ASSERT_EQ("foo", value.AsString());
 
-  value = jsEngine->NewValue(12345678901234);
+  value = GetJsEngine().NewValue(12345678901234);
   ASSERT_TRUE(value.IsNumber());
   ASSERT_EQ(12345678901234, value.AsInt());
 
-  value = jsEngine->NewValue(true);
+  value = GetJsEngine().NewValue(true);
   ASSERT_TRUE(value.IsBool());
   ASSERT_TRUE(value.AsBool());
 
-  value = jsEngine->NewObject();
+  value = GetJsEngine().NewObject();
   ASSERT_TRUE(value.IsObject());
   ASSERT_EQ(0u, value.GetOwnPropertyNames().size());
 }
@@ -87,7 +78,7 @@ namespace {
 TEST_F(JsEngineTest, ValueCopy)
 {
   {
-    auto value = jsEngine->NewValue("foo");
+    auto value = GetJsEngine().NewValue("foo");
     ASSERT_TRUE(value.IsString());
     ASSERT_EQ("foo", value.AsString());
 
@@ -95,10 +86,10 @@ TEST_F(JsEngineTest, ValueCopy)
     ASSERT_TRUE(value2.IsString());
     ASSERT_EQ("foo", value2.AsString());
 
-    ASSERT_TRUE(IsSame(*jsEngine, value, value2));
+    ASSERT_TRUE(IsSame(GetJsEngine(), value, value2));
   }
   {
-    auto value = jsEngine->NewValue(12345678901234);
+    auto value = GetJsEngine().NewValue(12345678901234);
     ASSERT_TRUE(value.IsNumber());
     ASSERT_EQ(12345678901234, value.AsInt());
 
@@ -106,10 +97,10 @@ TEST_F(JsEngineTest, ValueCopy)
     ASSERT_TRUE(value2.IsNumber());
     ASSERT_EQ(12345678901234, value2.AsInt());
 
-    ASSERT_TRUE(IsSame(*jsEngine, value, value2));
+    ASSERT_TRUE(IsSame(GetJsEngine(), value, value2));
   }
   {
-    auto value = jsEngine->NewValue(true);
+    auto value = GetJsEngine().NewValue(true);
     ASSERT_TRUE(value.IsBool());
     ASSERT_TRUE(value.AsBool());
 
@@ -117,10 +108,10 @@ TEST_F(JsEngineTest, ValueCopy)
     ASSERT_TRUE(value2.IsBool());
     ASSERT_TRUE(value2.AsBool());
 
-    ASSERT_TRUE(IsSame(*jsEngine, value, value2));
+    ASSERT_TRUE(IsSame(GetJsEngine(), value, value2));
   }
   {
-    auto value = jsEngine->NewObject();
+    auto value = GetJsEngine().NewObject();
     ASSERT_TRUE(value.IsObject());
     ASSERT_EQ(0u, value.GetOwnPropertyNames().size());
 
@@ -128,7 +119,7 @@ TEST_F(JsEngineTest, ValueCopy)
     ASSERT_TRUE(value2.IsObject());
     ASSERT_EQ(0u, value2.GetOwnPropertyNames().size());
 
-    ASSERT_TRUE(IsSame(*jsEngine, value, value2));
+    ASSERT_TRUE(IsSame(GetJsEngine(), value, value2));
   }
 }
 
@@ -144,13 +135,13 @@ TEST_F(JsEngineTest, EventCallbacks)
 
   // Trigger event without a callback
   callbackCalled = false;
-  jsEngine->Evaluate("_triggerEvent('foobar')");
+  GetJsEngine().Evaluate("_triggerEvent('foobar')");
   ASSERT_FALSE(callbackCalled);
 
   // Set callback
-  jsEngine->SetEventCallback("foobar", Callback);
+  GetJsEngine().SetEventCallback("foobar", Callback);
   callbackCalled = false;
-  jsEngine->Evaluate("_triggerEvent('foobar', 1, 'x', true)");
+  GetJsEngine().Evaluate("_triggerEvent('foobar', 1, 'x', true)");
   ASSERT_TRUE(callbackCalled);
   ASSERT_EQ(callbackParams.size(), 3u);
   ASSERT_EQ(callbackParams[0].AsInt(), 1);
@@ -159,31 +150,32 @@ TEST_F(JsEngineTest, EventCallbacks)
 
   // Trigger a different event
   callbackCalled = false;
-  jsEngine->Evaluate("_triggerEvent('barfoo')");
+  GetJsEngine().Evaluate("_triggerEvent('barfoo')");
   ASSERT_FALSE(callbackCalled);
 
   // Remove callback
-  jsEngine->RemoveEventCallback("foobar");
+  GetJsEngine().RemoveEventCallback("foobar");
   callbackCalled = false;
-  jsEngine->Evaluate("_triggerEvent('foobar')");
+  GetJsEngine().Evaluate("_triggerEvent('foobar')");
   ASSERT_FALSE(callbackCalled);
 }
 
 TEST(NewJsEngineTest, GlobalPropertyTest)
 {
   Platform platform{ThrowingPlatformCreationParameters()};
-  auto jsEngine = platform.GetJsEngine();
-  jsEngine->SetGlobalProperty("foo", jsEngine->NewValue("bar"));
-  auto foo = jsEngine->Evaluate("foo");
+  auto& jsEngine = platform.GetJsEngine();
+  jsEngine.SetGlobalProperty("foo", jsEngine.NewValue("bar"));
+  auto foo = jsEngine.Evaluate("foo");
   ASSERT_TRUE(foo.IsString());
   ASSERT_EQ(foo.AsString(), "bar");
 }
 
 TEST(NewJsEngineTest, MemoryLeak_NoCircularReferences)
 {
+  Platform platform{ThrowingPlatformCreationParameters()};
   std::weak_ptr<AdblockPlus::JsEngine> weakJsEngine;
   {
-    weakJsEngine = Platform{ThrowingPlatformCreationParameters()}.GetJsEngine();
+    weakJsEngine = JsEngine::New(AppInfo(), platform);
   }
   EXPECT_FALSE(weakJsEngine.lock());
 }
@@ -195,6 +187,7 @@ TEST(NewJsEngineTest, 32bitsOnly_MemoryLeak_NoLeak)
 TEST(NewJsEngineTest, DISABLED_32bitsOnly_MemoryLeak_NoLeak)
 #endif
 {
+  Platform platform{ThrowingPlatformCreationParameters()};
   // v8::Isolate by default requires 32MB (depends on platform), so if there is
   // a memory leak than we will run out of memory on 32 bit platform because it
   // will allocate 32000 MB which is less than 2GB where it reaches out of
@@ -202,6 +195,6 @@ TEST(NewJsEngineTest, DISABLED_32bitsOnly_MemoryLeak_NoLeak)
   // makes sense.
   for (int i = 0; i < 1000; ++i)
   {
-    Platform{ThrowingPlatformCreationParameters()}.GetJsEngine();
+    JsEngine::New(AppInfo(), platform);
   }
 }

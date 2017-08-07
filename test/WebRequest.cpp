@@ -25,7 +25,7 @@ using namespace AdblockPlus;
 
 namespace
 {
-  class BaseWebRequestTest : public ::testing::Test
+  class BaseWebRequestTest : public BaseJsTest
   {
   protected:
     void SetUp()
@@ -36,7 +36,6 @@ namespace
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest = CreateWebRequest();
       platform.reset(new Platform(std::move(platformParams)));
-      jsEngine = platform->GetJsEngine();
     }
 
     virtual WebRequestPtr CreateWebRequest() = 0;
@@ -46,8 +45,6 @@ namespace
       return LogSystemPtr(new ThrowingLogSystem());
     }
 
-    std::unique_ptr<Platform> platform;
-    JsEnginePtr jsEngine;
     LazyFileSystem* fileSystem;
   };
 
@@ -62,9 +59,9 @@ namespace
     }
     std::list<SchedulerTask> webRequestTasks;
   protected:
-    void WaitForVariable(const std::string& variable, const AdblockPlus::JsEnginePtr& jsEngine)
+    void WaitForVariable(const std::string& variable, AdblockPlus::JsEngine& jsEngine)
     {
-      while (jsEngine->Evaluate(variable).IsUndefined() && !webRequestTasks.empty())
+      while (jsEngine.Evaluate(variable).IsUndefined() && !webRequestTasks.empty())
       {
         (*webRequestTasks.begin())();
         webRequestTasks.pop_front();
@@ -127,7 +124,7 @@ namespace
   };
 
   // we return the url of the XHR.
-  std::string ResetTestXHR(const AdblockPlus::JsEnginePtr& jsEngine, const std::string& defaultUrl = "")
+  std::string ResetTestXHR(AdblockPlus::JsEngine& jsEngine, const std::string& defaultUrl = "")
   {
     std::string url = defaultUrl;
     // make up a unique URL if we don't have one.
@@ -137,7 +134,7 @@ namespace
       url += std::to_string(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
     }
 
-    jsEngine->Evaluate(std::string("\
+    jsEngine.Evaluate(std::string("\
       var result;\
       var request = new XMLHttpRequest();\
       request.open('GET', '") + url + "'); \
@@ -151,86 +148,92 @@ namespace
 
 TEST_F(MockWebRequestTest, BadCall)
 {
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET()"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET('', {}, function(){})"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET({toString: false}, {}, function(){})"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET('http://example.com/', null, function(){})"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET('http://example.com/', {}, null)"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_webRequest.GET('http://example.com/', {}, function(){}, 0)"));
+  auto& jsEngine = GetJsEngine();
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET()"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET('', {}, function(){})"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET({toString: false}, {}, function(){})"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET('http://example.com/', null, function(){})"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET('http://example.com/', {}, null)"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET('http://example.com/', {}, function(){}, 0)"));
 }
 
 TEST_F(MockWebRequestTest, SuccessfulRequest)
 {
-  jsEngine->Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
-  ASSERT_TRUE(jsEngine->Evaluate("this.foo").IsUndefined());
+  auto& jsEngine = GetJsEngine();
+  jsEngine.Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  ASSERT_TRUE(jsEngine.Evaluate("this.foo").IsUndefined());
   ProcessPendingWebRequests();
-  ASSERT_EQ(IWebRequest::NS_OK, jsEngine->Evaluate("foo.status").AsInt());
-  ASSERT_EQ(123, jsEngine->Evaluate("foo.responseStatus").AsInt());
-  ASSERT_EQ("http://example.com/\nX\nY", jsEngine->Evaluate("foo.responseText").AsString());
-  ASSERT_EQ("{\"Foo\":\"Bar\"}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
+  ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("foo.status").AsInt());
+  ASSERT_EQ(123, jsEngine.Evaluate("foo.responseStatus").AsInt());
+  ASSERT_EQ("http://example.com/\nX\nY", jsEngine.Evaluate("foo.responseText").AsString());
+  ASSERT_EQ("{\"Foo\":\"Bar\"}", jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
 }
 
 #if defined(HAVE_CURL) || defined(_WIN32)
 TEST_F(DefaultWebRequestTest, RealWebRequest)
 {
+  auto& jsEngine = GetJsEngine();
   // This URL should redirect to easylist-downloads.adblockplus.org and we
   // should get the actual filter list back.
-  jsEngine->Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  jsEngine.Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   WaitForVariable("this.foo", jsEngine);
-  ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
-  ASSERT_EQ(IWebRequest::NS_OK, jsEngine->Evaluate("foo.status").AsInt());
-  ASSERT_EQ(200, jsEngine->Evaluate("foo.responseStatus").AsInt());
-  ASSERT_EQ("[Adblock Plus ", jsEngine->Evaluate("foo.responseText.substr(0, 14)").AsString());
-  ASSERT_EQ("text/plain", jsEngine->Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
+  ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
+  ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("foo.status").AsInt());
+  ASSERT_EQ(200, jsEngine.Evaluate("foo.responseStatus").AsInt());
+  ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("foo.responseText.substr(0, 14)").AsString());
+  ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
 #if defined(HAVE_CURL)
-  ASSERT_EQ("gzip", jsEngine->Evaluate("foo.responseHeaders['content-encoding'].substr(0, 4)").AsString());
+  ASSERT_EQ("gzip", jsEngine.Evaluate("foo.responseHeaders['content-encoding'].substr(0, 4)").AsString());
 #endif
-  ASSERT_TRUE(jsEngine->Evaluate("foo.responseHeaders['location']").IsUndefined());
+  ASSERT_TRUE(jsEngine.Evaluate("foo.responseHeaders['location']").IsUndefined());
 }
 
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
+  auto& jsEngine = GetJsEngine();
   auto filterEngine = CreateFilterEngine(*fileSystem, *platform);
 
   ResetTestXHR(jsEngine, "https://easylist-downloads.adblockplus.org/easylist.txt");
-  jsEngine->Evaluate("\
+  jsEngine.Evaluate("\
     request.setRequestHeader('X', 'Y');\
     request.setRequestHeader('X2', 'Y2');\
     request.send(null);");
   WaitForVariable("result", jsEngine);
-  ASSERT_EQ(IWebRequest::NS_OK, jsEngine->Evaluate("request.channel.status").AsInt());
-  ASSERT_EQ(200, jsEngine->Evaluate("request.status").AsInt());
-  ASSERT_EQ("[Adblock Plus ", jsEngine->Evaluate("result.substr(0, 14)").AsString());
-  ASSERT_EQ("text/plain", jsEngine->Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)").AsString());
+  ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("request.channel.status").AsInt());
+  ASSERT_EQ(200, jsEngine.Evaluate("request.status").AsInt());
+  ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("result.substr(0, 14)").AsString());
+  ASSERT_EQ("text/plain", jsEngine.Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)").AsString());
 #if defined(HAVE_CURL)
-  ASSERT_EQ("gzip", jsEngine->Evaluate("request.getResponseHeader('Content-Encoding').substr(0, 4)").AsString());
+  ASSERT_EQ("gzip", jsEngine.Evaluate("request.getResponseHeader('Content-Encoding').substr(0, 4)").AsString());
 #endif
-  ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Location')").IsNull());
+  ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Location')").IsNull());
 }
 #else
 TEST_F(DefaultWebRequestTest, DummyWebRequest)
 {
-  jsEngine->Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  auto& jsEngine = GetJsEngine();
+  jsEngine.Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
   WaitForVariable("this.foo", jsEngine);
-  ASSERT_EQ(IWebRequest::NS_ERROR_FAILURE, jsEngine->Evaluate("foo.status").AsInt());
-  ASSERT_EQ(0, jsEngine->Evaluate("foo.responseStatus").AsInt());
-  ASSERT_EQ("", jsEngine->Evaluate("foo.responseText").AsString());
-  ASSERT_EQ("{}", jsEngine->Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
+  ASSERT_EQ(IWebRequest::NS_ERROR_FAILURE, jsEngine.Evaluate("foo.status").AsInt());
+  ASSERT_EQ(0, jsEngine.Evaluate("foo.responseStatus").AsInt());
+  ASSERT_EQ("", jsEngine.Evaluate("foo.responseText").AsString());
+  ASSERT_EQ("{}", jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
 }
 
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
+  auto& jsEngine = GetJsEngine();
   auto filterEngine = CreateFilterEngine(*fileSystem, *platform);
 
   ResetTestXHR(jsEngine);
-  jsEngine->Evaluate("\
+  jsEngine.Evaluate("\
     request.setRequestHeader('X', 'Y');\
     request.send(null);");
   WaitForVariable("result", jsEngine);
-  ASSERT_EQ(IWebRequest::NS_ERROR_FAILURE, jsEngine->Evaluate("request.channel.status").AsInt());
-  ASSERT_EQ(0, jsEngine->Evaluate("request.status").AsInt());
-  ASSERT_EQ("error", jsEngine->Evaluate("result").AsString());
-  ASSERT_TRUE(jsEngine->Evaluate("request.getResponseHeader('Content-Type')").IsNull());
+  ASSERT_EQ(IWebRequest::NS_ERROR_FAILURE, jsEngine.Evaluate("request.channel.status").AsInt());
+  ASSERT_EQ(0, jsEngine.Evaluate("request.status").AsInt());
+  ASSERT_EQ("error", jsEngine.Evaluate("result").AsString());
+  ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Content-Type')").IsNull());
 }
 
 #endif
@@ -276,6 +279,7 @@ namespace
 
 TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
 {
+  auto& jsEngine = GetJsEngine();
   auto filterEngine = CreateFilterEngine(*fileSystem, *platform);
 
   const std::string msg = "Attempt to set a forbidden header was denied: ";
@@ -287,7 +291,7 @@ TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
   // test 'Accept-Encoding' is rejected
   catchLogSystem->clear();
   std::string url = ResetTestXHR(jsEngine);
-  jsEngine->Evaluate("\
+  jsEngine.Evaluate("\
     request.setRequestHeader('Accept-Encoding', 'gzip');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
   EXPECT_EQ(msg + "Accept-Encoding", catchLogSystem->lastMessage);
@@ -302,7 +306,7 @@ TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
   // test 'DNT' is rejected
   catchLogSystem->clear();
   url = ResetTestXHR(jsEngine);
-  jsEngine->Evaluate("\
+  jsEngine.Evaluate("\
     request.setRequestHeader('DNT', '1');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
   EXPECT_EQ(msg + "DNT", catchLogSystem->lastMessage);
@@ -317,7 +321,7 @@ TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
   // test random 'X' header is accepted
   catchLogSystem->clear();
   url = ResetTestXHR(jsEngine);
-  jsEngine->Evaluate("\
+  jsEngine.Evaluate("\
     request.setRequestHeader('X', 'y');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, catchLogSystem->lastLogLevel);
   EXPECT_EQ("", catchLogSystem->lastMessage);
@@ -332,7 +336,7 @@ TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
   // test /^Proxy-/ is rejected.
   catchLogSystem->clear();
   url = ResetTestXHR(jsEngine);
-  jsEngine->Evaluate("\
+  jsEngine.Evaluate("\
     request.setRequestHeader('Proxy-foo', 'bar');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
   EXPECT_EQ(msg + "Proxy-foo", catchLogSystem->lastMessage);
@@ -347,7 +351,7 @@ TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
   // test /^Sec-/ is rejected.
   catchLogSystem->clear();
   url = ResetTestXHR(jsEngine);
-  jsEngine->Evaluate("\
+  jsEngine.Evaluate("\
     request.setRequestHeader('Sec-foo', 'bar');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_WARN, catchLogSystem->lastLogLevel);
   EXPECT_EQ(msg + "Sec-foo", catchLogSystem->lastMessage);
@@ -362,7 +366,7 @@ TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
   // test 'Security' is accepted.
   catchLogSystem->clear();
   url = ResetTestXHR(jsEngine);
-  jsEngine->Evaluate("\
+  jsEngine.Evaluate("\
     request.setRequestHeader('Security', 'theater');\nrequest.send();");
   EXPECT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, catchLogSystem->lastLogLevel);
   EXPECT_EQ("", catchLogSystem->lastMessage);

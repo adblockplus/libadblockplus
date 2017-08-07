@@ -114,12 +114,12 @@ namespace
     }
   };
 
-  void ReadFile(AdblockPlus::JsEnginePtr jsEngine, std::string& content,
+  void ReadFile(AdblockPlus::JsEngine& jsEngine, std::string& content,
                 std::string& error)
   {
-    jsEngine->Evaluate("_fileSystem.read('', function(r) {result = r})");
-    content = jsEngine->Evaluate("result.content").AsString();
-    error = jsEngine->Evaluate("result.error").AsString();
+    jsEngine.Evaluate("_fileSystem.read('', function(r) {result = r})");
+    content = jsEngine.Evaluate("result.content").AsString();
+    error = jsEngine.Evaluate("result.error").AsString();
   }
 
   typedef std::shared_ptr<MockFileSystem> MockFileSystemPtr;
@@ -128,7 +128,6 @@ namespace
   {
   protected:
     MockFileSystemPtr mockFileSystem;
-    AdblockPlus::JsEnginePtr jsEngine;
 
     void SetUp()
     {
@@ -136,7 +135,6 @@ namespace
       ThrowingPlatformCreationParameters params;
       params.fileSystem = mockFileSystem;
       platform.reset(new AdblockPlus::Platform(std::move(params)));
-      jsEngine = platform->GetJsEngine();
     }
   };
 }
@@ -147,15 +145,15 @@ TEST_F(FileSystemJsObjectTest, Read)
     AdblockPlus::IFileSystem::IOBuffer{'f', 'o', 'o'};
   std::string content;
   std::string error;
-  ReadFile(jsEngine, content, error);
+  ReadFile(GetJsEngine(), content, error);
   ASSERT_EQ("foo", content);
   ASSERT_EQ("undefined", error);
 }
 
 TEST_F(FileSystemJsObjectTest, ReadIllegalArguments)
 {
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.read()"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.read('', '')"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.read()"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.read('', '')"));
 }
 
 TEST_F(FileSystemJsObjectTest, ReadError)
@@ -163,72 +161,72 @@ TEST_F(FileSystemJsObjectTest, ReadError)
   mockFileSystem->success = false;
   std::string content;
   std::string error;
-  ReadFile(jsEngine, content, error);
+  ReadFile(GetJsEngine(), content, error);
   ASSERT_NE("", error);
   ASSERT_EQ("", content);
 }
 
 TEST_F(FileSystemJsObjectTest, Write)
 {
-  jsEngine->Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
+  GetJsEngine().Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
   ASSERT_EQ("foo", mockFileSystem->lastWrittenPath);
   ASSERT_EQ((AdblockPlus::IFileSystem::IOBuffer{'b', 'a', 'r'}),
             mockFileSystem->lastWrittenContent);
-  ASSERT_TRUE(jsEngine->Evaluate("error").IsUndefined());
+  ASSERT_TRUE(GetJsEngine().Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, WriteIllegalArguments)
 {
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.write()"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.write('', '', '')"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.write()"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.write('', '', '')"));
 }
 
 TEST_F(FileSystemJsObjectTest, WriteError)
 {
   mockFileSystem->success = false;
-  jsEngine->Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
-  ASSERT_NE("", jsEngine->Evaluate("error").AsString());
+  GetJsEngine().Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
+  ASSERT_NE("", GetJsEngine().Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, Move)
 {
-  jsEngine->Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
+  GetJsEngine().Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
   ASSERT_EQ("foo", mockFileSystem->movedFrom);
   ASSERT_EQ("bar", mockFileSystem->movedTo);
-  ASSERT_TRUE(jsEngine->Evaluate("error").IsUndefined());
+  ASSERT_TRUE(GetJsEngine().Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, MoveIllegalArguments)
 {
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.move()"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.move('', '', '')"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.move()"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.move('', '', '')"));
 }
 
 TEST_F(FileSystemJsObjectTest, MoveError)
 {
   mockFileSystem->success = false;
-  jsEngine->Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
-  ASSERT_FALSE(jsEngine->Evaluate("error").IsUndefined());
+  GetJsEngine().Evaluate("_fileSystem.move('foo', 'bar', function(e) {error = e})");
+  ASSERT_FALSE(GetJsEngine().Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, Remove)
 {
-  jsEngine->Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
+  GetJsEngine().Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
   ASSERT_EQ("foo", mockFileSystem->removedPath);
-  ASSERT_TRUE(jsEngine->Evaluate("error").IsUndefined());
+  ASSERT_TRUE(GetJsEngine().Evaluate("error").IsUndefined());
 }
 
 TEST_F(FileSystemJsObjectTest, RemoveIllegalArguments)
 {
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.remove()"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.remove('', '')"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.remove()"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.remove('', '')"));
 }
 
 TEST_F(FileSystemJsObjectTest, RemoveError)
 {
   mockFileSystem->success = false;
-  jsEngine->Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
-  ASSERT_NE("", jsEngine->Evaluate("error").AsString());
+  GetJsEngine().Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
+  ASSERT_NE("", GetJsEngine().Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, Stat)
@@ -237,24 +235,24 @@ TEST_F(FileSystemJsObjectTest, Stat)
   mockFileSystem->statIsDirectory= false;
   mockFileSystem->statIsFile = true;
   mockFileSystem->statLastModified = 1337;
-  jsEngine->Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
+  GetJsEngine().Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
   ASSERT_EQ("foo", mockFileSystem->statPath);
-  ASSERT_TRUE(jsEngine->Evaluate("result.error").IsUndefined());
-  ASSERT_TRUE(jsEngine->Evaluate("result.exists").AsBool());
-  ASSERT_FALSE(jsEngine->Evaluate("result.isDirectory").AsBool());
-  ASSERT_TRUE(jsEngine->Evaluate("result.isFile").AsBool());
-  ASSERT_EQ(1337, jsEngine->Evaluate("result.lastModified").AsInt());
+  ASSERT_TRUE(GetJsEngine().Evaluate("result.error").IsUndefined());
+  ASSERT_TRUE(GetJsEngine().Evaluate("result.exists").AsBool());
+  ASSERT_FALSE(GetJsEngine().Evaluate("result.isDirectory").AsBool());
+  ASSERT_TRUE(GetJsEngine().Evaluate("result.isFile").AsBool());
+  ASSERT_EQ(1337, GetJsEngine().Evaluate("result.lastModified").AsInt());
 }
 
 TEST_F(FileSystemJsObjectTest, StatIllegalArguments)
 {
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.stat()"));
-  ASSERT_ANY_THROW(jsEngine->Evaluate("_fileSystem.stat('', '')"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.stat()"));
+  ASSERT_ANY_THROW(GetJsEngine().Evaluate("_fileSystem.stat('', '')"));
 }
 
 TEST_F(FileSystemJsObjectTest, StatError)
 {
   mockFileSystem->success = false;
-  jsEngine->Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
-  ASSERT_FALSE(jsEngine->Evaluate("result.error").IsUndefined());
+  GetJsEngine().Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
+  ASSERT_FALSE(GetJsEngine().Evaluate("result.error").IsUndefined());
 }
