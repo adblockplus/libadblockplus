@@ -23,8 +23,6 @@ using namespace AdblockPlus;
 
 namespace
 {
-  typedef std::shared_ptr<AdblockPlus::FilterEngine> FilterEnginePtr;
-
   void FindAndReplace(std::string& source, const std::string& find, const std::string& replace)
   {
     for (size_t pos = 0; (pos = source.find(find), pos) != std::string::npos; pos += replace.size())
@@ -38,7 +36,6 @@ namespace
     AdblockPlus::ServerResponse webRequestResponse;
     DelayedWebRequest::SharedTasks webRequestTasks;
     DelayedTimer::SharedTasks timerTasks;
-    FilterEnginePtr filterEngine;
 
     bool eventCallbackCalled;
     AdblockPlus::JsValueList eventCallbackParams;
@@ -67,7 +64,7 @@ namespace
         eventCallbackParams = std::move(params);
       });
 
-      filterEngine = ::CreateFilterEngine(*fileSystem, *platform);
+      ::CreateFilterEngine(*fileSystem, *platform);
     }
 
     // Returns a URL or the empty string if there is no such request.
@@ -90,7 +87,7 @@ namespace
 
     void ForceUpdateCheck()
     {
-      filterEngine->ForceUpdateCheck([this](const std::string& error)
+      platform->GetFilterEngine().ForceUpdateCheck([this](const std::string& error)
       {
         updateCallbackCalled = true;
         updateError = error;
@@ -119,7 +116,7 @@ TEST_F(UpdateCheckTest, RequestFailure)
   ASSERT_TRUE(updateCallbackCalled);
   ASSERT_FALSE(updateError.empty());
 
-  std::string expectedUrl(filterEngine->GetPref("update_url_release").AsString());
+  std::string expectedUrl(platform->GetFilterEngine().GetPref("update_url_release").AsString());
   std::string platform = GetJsEngine().Evaluate("require('info').platform").AsString();
   std::string platformVersion = GetJsEngine().Evaluate("require('info').platformVersion").AsString();
 
@@ -158,7 +155,7 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   ASSERT_TRUE(updateCallbackCalled);
   ASSERT_TRUE(updateError.empty());
 
-  std::string expectedUrl(filterEngine->GetPref("update_url_devbuild").AsString());
+  std::string expectedUrl(platform->GetFilterEngine().GetPref("update_url_devbuild").AsString());
   std::string platform = GetJsEngine().Evaluate("require('info').platform").AsString();
   std::string platformVersion = GetJsEngine().Evaluate("require('info').platformVersion").AsString();
 
@@ -280,7 +277,7 @@ TEST_F(UpdateCheckTest, SetRemoveUpdateAvailableCallback)
   CreateFilterEngine();
 
   int timesCalled = 0;
-  filterEngine->SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
+  platform->GetFilterEngine().SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
   {
     ++timesCalled;
   });
@@ -291,11 +288,11 @@ TEST_F(UpdateCheckTest, SetRemoveUpdateAvailableCallback)
 
   EXPECT_EQ(1, timesCalled);
 
-  // filterEngine->SetUpdateAvailableCallback overriddes previously installed on JsEngine
+  // FilterEngine::SetUpdateAvailableCallback overriddes previously installed on JsEngine
   // handler for "updateAvailable" event.
   EXPECT_FALSE(eventCallbackCalled);
 
-  filterEngine->RemoveUpdateAvailableCallback();
+  platform->GetFilterEngine().RemoveUpdateAvailableCallback();
   ForceUpdateCheck();
 
   // ensure that the was the corresponding request

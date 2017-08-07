@@ -219,7 +219,7 @@ public:
   Scheduler scheduler;
 };
 
-AdblockPlus::FilterEnginePtr CreateFilterEngine(LazyFileSystem& fileSystem,
+AdblockPlus::FilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
   AdblockPlus::Platform& platform,
   const AdblockPlus::FilterEngine::CreationParameters& creationParams = AdblockPlus::FilterEngine::CreationParameters());
 

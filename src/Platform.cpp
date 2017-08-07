@@ -95,14 +95,14 @@ void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& p
   {
     filterEnginePromise->set_value(filterEngine);
     if (onCreated)
-      onCreated(filterEngine);
+      onCreated(*filterEngine);
   }, parameters);
 }
 
-FilterEnginePtr Platform::GetFilterEngine()
+FilterEngine& Platform::GetFilterEngine()
 {
   CreateFilterEngineAsync();
-  return std::shared_future<FilterEnginePtr>(filterEngine).get();
+  return *std::shared_future<FilterEnginePtr>(filterEngine).get();
 }
 
 ITimer& Platform::GetTimer()

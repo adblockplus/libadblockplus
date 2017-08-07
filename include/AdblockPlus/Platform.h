@@ -81,7 +81,7 @@ namespace AdblockPlus
     /**
      * Callback type invoked when FilterEngine is created.
      */
-    typedef std::function<void(const FilterEnginePtr&)> OnFilterEngineCreatedCallback;
+    typedef std::function<void(const FilterEngine&)> OnFilterEngineCreatedCallback;
 
     /**
      * Platform constructor.
@@ -122,7 +122,7 @@ namespace AdblockPlus
      * operations, please ensure that provided implementation does not lead to
      * a dead lock.
      */
-    FilterEnginePtr GetFilterEngine();
+    FilterEngine& GetFilterEngine();
 
     /**
     * @return The asynchronous ITimer implementation.

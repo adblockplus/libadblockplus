@@ -35,7 +35,7 @@ void DelayedTimer::ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks)
   }
 }
 
-FilterEnginePtr CreateFilterEngine(LazyFileSystem& fileSystem,
+FilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
   Platform& platform,
   const FilterEngine::CreationParameters& creationParams)
 {
@@ -44,18 +44,18 @@ FilterEnginePtr CreateFilterEngine(LazyFileSystem& fileSystem,
   {
     fileSystemTasks.emplace_back(task);
   };
-  FilterEnginePtr retValue;
-  platform.CreateFilterEngineAsync(creationParams, [&retValue, &fileSystem](const FilterEnginePtr& filterEngine)
+  bool isFilterEngineReady = false;
+  platform.CreateFilterEngineAsync(creationParams, [&isFilterEngineReady, &fileSystem](const FilterEngine& filterEngine)
   {
-    retValue = filterEngine;
     fileSystem.scheduler = LazyFileSystem::ExecuteImmediately;
+    isFilterEngineReady = true;
   });
-  while (!retValue && !fileSystemTasks.empty())
+  while (!isFilterEngineReady && !fileSystemTasks.empty())
   {
     (*fileSystemTasks.begin())();
     fileSystemTasks.pop_front();
   }
-  return retValue;
+  return platform.GetFilterEngine();
 }
 
 ThrowingPlatformCreationParameters::ThrowingPlatformCreationParameters()

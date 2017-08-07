@@ -25,12 +25,9 @@ using namespace AdblockPlus;
 
 namespace
 {
-  typedef std::shared_ptr<FilterEngine> FilterEnginePtr;
-
   class NotificationTest : public BaseJsTest
   {
   protected:
-    FilterEnginePtr filterEngine;
     void SetUp()
     {
       LazyFileSystem* fileSystem;
@@ -39,7 +36,7 @@ namespace
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest.reset(new NoopWebRequest());
       platform.reset(new Platform(std::move(platformParams)));
-      filterEngine = CreateFilterEngine(*fileSystem, *platform);
+      CreateFilterEngine(*fileSystem, *platform);
     }
 
     void AddNotification(const std::string& notification)
@@ -53,12 +50,13 @@ namespace
     std::unique_ptr<Notification> PeekNotification(const std::string& url = std::string())
     {
       std::unique_ptr<Notification> retValue;
-      filterEngine->SetShowNotificationCallback(
+      auto& filterEngine = platform->GetFilterEngine();
+      filterEngine.SetShowNotificationCallback(
         [&retValue](Notification&& notification) {
           retValue.reset(new Notification(std::move(notification)));
         });
-      filterEngine->ShowNextNotification(url);
-      filterEngine->RemoveShowNotificationCallback();
+      filterEngine.ShowNextNotification(url);
+      filterEngine.RemoveShowNotificationCallback();
       return retValue;
     }
   };
@@ -90,7 +88,6 @@ namespace
   class NotificationMockWebRequestTest : public BaseJsTest
   {
   protected:
-    FilterEnginePtr filterEngine;
     bool isNotificationCallbackCalled;
     void SetUp()
     {
