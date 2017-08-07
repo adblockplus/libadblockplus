@@ -36,7 +36,7 @@ void DelayedTimer::ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks)
 }
 
 FilterEnginePtr CreateFilterEngine(LazyFileSystem& fileSystem,
-  const JsEnginePtr& jsEngine,
+  Platform& platform,
   const FilterEngine::CreationParameters& creationParams)
 {
   std::list<LazyFileSystem::Task> fileSystemTasks;
@@ -45,11 +45,11 @@ FilterEnginePtr CreateFilterEngine(LazyFileSystem& fileSystem,
     fileSystemTasks.emplace_back(task);
   };
   FilterEnginePtr retValue;
-  FilterEngine::CreateAsync(jsEngine, [&retValue, &fileSystem](const FilterEnginePtr& filterEngine)
+  platform.CreateFilterEngineAsync(creationParams, [&retValue, &fileSystem](const FilterEnginePtr& filterEngine)
   {
     retValue = filterEngine;
     fileSystem.scheduler = LazyFileSystem::ExecuteImmediately;
-  }, creationParams);
+  });
   while (!retValue && !fileSystemTasks.empty())
   {
     (*fileSystemTasks.begin())();

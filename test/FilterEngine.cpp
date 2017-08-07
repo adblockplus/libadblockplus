@@ -63,7 +63,7 @@ namespace
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystemT());
       platformParams.webRequest.reset(new NoopWebRequest());
       platform.reset(new Platform(std::move(platformParams)));
-      filterEngine = CreateFilterEngine(*fileSystem, platform->GetJsEngine());
+      filterEngine = CreateFilterEngine(*fileSystem, *platform);
     }
   };
 
@@ -76,7 +76,6 @@ namespace
     std::unique_ptr<Platform> platform;
     FileSystemPtr fileSystem;
     std::list<SchedulerTask> fileSystemTasks;
-    std::weak_ptr<JsEngine> weakJsEngine;
 
     void SetUp() override
     {
@@ -89,7 +88,7 @@ namespace
       removeFileIfExists("patterns.ini");
       removeFileIfExists("prefs.json");
     }
-    JsEnginePtr CreateJsEngine(const AppInfo& appInfo = AppInfo())
+    void InitPlatformAndAppInfo(const AppInfo& appInfo = AppInfo())
     {
       ThrowingPlatformCreationParameters platformParams;
       platformParams.logSystem.reset(new LazyLogSystem());
@@ -98,19 +97,15 @@ namespace
       platformParams.webRequest.reset(new NoopWebRequest());
       platform.reset(new Platform(std::move(platformParams)));
       platform->SetUpJsEngine(appInfo);
-      auto jsEngine = platform->GetJsEngine();
-      weakJsEngine = jsEngine;
-      return jsEngine;
     }
 
-    FilterEnginePtr CreateFilterEngine(const JsEnginePtr& jsEngine,
-      const FilterEngine::CreationParameters& creationParams = FilterEngine::CreationParameters())
+    FilterEnginePtr CreateFilterEngine(const FilterEngine::CreationParameters& creationParams = FilterEngine::CreationParameters())
     {
       FilterEnginePtr retValue;
-      FilterEngine::CreateAsync(jsEngine, [&retValue](const FilterEnginePtr& filterEngine)
+      platform->CreateFilterEngineAsync(creationParams, [&retValue](const FilterEnginePtr& filterEngine)
       {
         retValue = filterEngine;
-      }, creationParams);
+      });
       while (!retValue && !fileSystemTasks.empty())
       {
         (*fileSystemTasks.begin())();
@@ -198,7 +193,7 @@ namespace
       bool isSubscriptionDownloadStatusReceived = false;
       if (!filterEngine)
       {
-        filterEngine = CreateFilterEngine(*fileSystem, platform->GetJsEngine(), createParams);
+        filterEngine = CreateFilterEngine(*fileSystem, *platform, createParams);
         filterEngine->SetFilterChangeCallback([&isSubscriptionDownloadStatusReceived, &subscriptionUrl](const std::string& action, JsValue&& item)
         {
           if (action == "subscription.downloadStatus" && item.GetProperty("url").AsString() == subscriptionUrl)
@@ -688,8 +683,8 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
   AppInfo appInfo;
   appInfo.locale = "zh";
   const std::string langSubscriptionUrl = "https://easylist-downloads.adblockplus.org/easylistchina+easylist.txt";
-  auto jsEngine = CreateJsEngine(appInfo);
-  auto filterEngine = CreateFilterEngine(jsEngine);
+  InitPlatformAndAppInfo(appInfo);
+  auto filterEngine = CreateFilterEngine();
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   ASSERT_EQ(2u, subscriptions.size());
   std::unique_ptr<Subscription> aaSubscription;
@@ -712,10 +707,10 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
 
 TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
 {
-  auto jsEngine = CreateJsEngine();
+  InitPlatformAndAppInfo();
   FilterEngine::CreationParameters createParams;
-  createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));
-  auto filterEngine = CreateFilterEngine(jsEngine, createParams);
+  createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", platform->GetJsEngine()->NewValue(false));
+  auto filterEngine = CreateFilterEngine(createParams);
   const auto subscriptions = filterEngine->GetListedSubscriptions();
   EXPECT_EQ(0u, subscriptions.size());
   EXPECT_FALSE(filterEngine->IsAAEnabled());

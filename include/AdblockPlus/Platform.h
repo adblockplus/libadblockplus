@@ -24,7 +24,9 @@
 #include "IWebRequest.h"
 #include "AppInfo.h"
 #include "Scheduler.h"
+#include "FilterEngine.h"
 #include <mutex>
+#include <future>
 
 namespace AdblockPlus
 {
@@ -77,6 +79,11 @@ namespace AdblockPlus
     };
 
     /**
+     * Callback type invoked when FilterEngine is created.
+     */
+    typedef std::function<void(const FilterEnginePtr&)> OnFilterEngineCreatedCallback;
+
+    /**
      * Platform constructor.
      *
      * When a parameter value is nullptr the corresponding default
@@ -98,6 +105,24 @@ namespace AdblockPlus
      * not initialized yet.
      */
     std::shared_ptr<JsEngine> GetJsEngine();
+
+    /**
+     * Ensures that FilterEngine is constructed. Only the first call is effective.
+     *
+     * @param parameters optional creation parameters.
+     * @param onCreated A callback which is called when FilterEngine is ready
+     *        for use.
+     */
+    void CreateFilterEngineAsync(const FilterEngine::CreationParameters& parameters = FilterEngine::CreationParameters(),
+      const OnFilterEngineCreatedCallback& onCreated = OnFilterEngineCreatedCallback());
+
+    /**
+     * Synchronous equivalent of `CreateFilterEngineAsync`.
+     * Internally it blocks and waits for finishing of certain asynchronous
+     * operations, please ensure that provided implementation does not lead to
+     * a dead lock.
+     */
+    FilterEnginePtr GetFilterEngine();
 
     /**
     * @return The asynchronous ITimer implementation.
@@ -127,6 +152,7 @@ namespace AdblockPlus
     // used for creation and deletion of modules.
     std::mutex modulesMutex;
     std::shared_ptr<JsEngine> jsEngine;
+    std::shared_future<FilterEnginePtr> filterEngine;
   };
 }
 

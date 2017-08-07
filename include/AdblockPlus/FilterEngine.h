@@ -280,8 +280,8 @@ namespace AdblockPlus
     };
 
     /**
-    * Callback type invoked when FilterEngine is created.
-    */
+     * Callback type invoked when FilterEngine is created.
+     */
     typedef std::function<void(const FilterEnginePtr&)> OnCreatedCallback;
 
     /**
@@ -295,13 +295,6 @@ namespace AdblockPlus
     static void CreateAsync(const JsEnginePtr& jsEngine,
       const OnCreatedCallback& onCreated,
       const CreationParameters& parameters = CreationParameters());
-
-    /**
-     * Synchronous interface to construct FilterEngine. For details see
-     * asynchronous version CreateAsync.
-     */
-    static FilterEnginePtr Create(const JsEnginePtr& jsEngine,
-      const CreationParameters& params = CreationParameters());
 
     /**
      * Retrieves the `JsEngine` instance associated with this `FilterEngine`

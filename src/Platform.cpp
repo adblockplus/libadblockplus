@@ -78,6 +78,32 @@ std::shared_ptr<JsEngine> Platform::GetJsEngine()
   return jsEngine;
 }
 
+void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& parameters,
+  const OnFilterEngineCreatedCallback& onCreated)
+{
+  std::shared_ptr<std::promise<FilterEnginePtr>> filterEnginePromise;
+  {
+    std::lock_guard<std::mutex> lock(modulesMutex);
+    if (filterEngine.valid())
+      return;
+    filterEnginePromise = std::make_shared<std::promise<FilterEnginePtr>>();
+    filterEngine = filterEnginePromise->get_future();
+  }
+
+  FilterEngine::CreateAsync(GetJsEngine(), [this, onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
+  {
+    filterEnginePromise->set_value(filterEngine);
+    if (onCreated)
+      onCreated(filterEngine);
+  }, parameters);
+}
+
+FilterEnginePtr Platform::GetFilterEngine()
+{
+  CreateFilterEngineAsync();
+  return std::shared_future<FilterEnginePtr>(filterEngine).get();
+}
+
 ITimer& Platform::GetTimer()
 {
   return *timer;

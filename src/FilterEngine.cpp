@@ -259,20 +259,6 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
     jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
 }
 
-FilterEnginePtr FilterEngine::Create(const JsEnginePtr& jsEngine,
-  const FilterEngine::CreationParameters& params)
-{
-  FilterEnginePtr retValue;
-  Sync sync;
-  CreateAsync(jsEngine, [&retValue, &sync](const FilterEnginePtr& filterEngine)
-  {
-    retValue = filterEngine;
-    sync.Set();
-  }, params);
-  sync.Wait();
-  return retValue;
-}
-
 namespace
 {
   typedef std::map<FilterEngine::ContentType, std::string> ContentTypeMap;

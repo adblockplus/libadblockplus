@@ -40,7 +40,7 @@ namespace
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest.reset(new NoopWebRequest());
       platform.reset(new Platform(std::move(platformParams)));
-      filterEngine = CreateFilterEngine(*fileSystem, platform->GetJsEngine());
+      filterEngine = CreateFilterEngine(*fileSystem, *platform);
     }
 
     void AddNotification(const std::string& notification)

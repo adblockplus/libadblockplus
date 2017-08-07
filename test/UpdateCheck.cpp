@@ -68,7 +68,7 @@ namespace
         eventCallbackParams = std::move(params);
       });
 
-      filterEngine = ::CreateFilterEngine(*fileSystem, platform->GetJsEngine());
+      filterEngine = ::CreateFilterEngine(*fileSystem, *platform);
     }
 
     // Returns a URL or the empty string if there is no such request.
