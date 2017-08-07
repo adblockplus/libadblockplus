@@ -16,6 +16,7 @@
  */
 
 #include "BaseJsTest.h"
+#include <AdblockPlus/DefaultLogSystem.h>
 #include <thread>
 #include <condition_variable>
 
@@ -50,18 +51,19 @@ namespace
   class FilterEngineTestGeneric : public ::testing::Test
   {
   protected:
+    std::unique_ptr<Platform> platform;
     FilterEnginePtr filterEngine;
 
     void SetUp() override
     {
       LazyFileSystemT* fileSystem;
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystemT());
-      jsEngineParams.logSystem.reset(new LogSystem());
-      jsEngineParams.timer.reset(new NoopTimer());
-      jsEngineParams.webRequest.reset(new NoopWebRequest());
-      auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      filterEngine = CreateFilterEngine(*fileSystem, jsEngine);
+      ThrowingPlatformCreationParameters platformParams;
+      platformParams.logSystem.reset(new LogSystem());
+      platformParams.timer.reset(new NoopTimer());
+      platformParams.fileSystem.reset(fileSystem = new LazyFileSystemT());
+      platformParams.webRequest.reset(new NoopWebRequest());
+      platform.reset(new Platform(std::move(platformParams)));
+      filterEngine = CreateFilterEngine(*fileSystem, platform->GetJsEngine());
     }
   };
 
@@ -71,6 +73,7 @@ namespace
   class FilterEngineWithFreshFolder : public ::testing::Test
   {
   protected:
+    std::unique_ptr<Platform> platform;
     FileSystemPtr fileSystem;
     std::list<SchedulerTask> fileSystemTasks;
     std::weak_ptr<JsEngine> weakJsEngine;
@@ -88,13 +91,14 @@ namespace
     }
     JsEnginePtr CreateJsEngine(const AppInfo& appInfo = AppInfo())
     {
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.appInfo = appInfo;
-      jsEngineParams.fileSystem = fileSystem;
-      jsEngineParams.logSystem.reset(new LazyLogSystem());
-      jsEngineParams.timer.reset(new NoopTimer());
-      jsEngineParams.webRequest.reset(new NoopWebRequest());
-      auto jsEngine = ::CreateJsEngine(std::move(jsEngineParams));
+      ThrowingPlatformCreationParameters platformParams;
+      platformParams.logSystem.reset(new LazyLogSystem());
+      platformParams.timer.reset(new NoopTimer());
+      platformParams.fileSystem = fileSystem;
+      platformParams.webRequest.reset(new NoopWebRequest());
+      platform.reset(new Platform(std::move(platformParams)));
+      platform->SetUpJsEngine(appInfo);
+      auto jsEngine = platform->GetJsEngine();
       weakJsEngine = jsEngine;
       return jsEngine;
     }
@@ -164,22 +168,22 @@ namespace
     ConnectionTypes capturedConnectionTypes;
     bool isConnectionAllowed;
     std::vector<std::function<void(bool)>> isSubscriptionDownloadAllowedCallbacks;
+    std::unique_ptr<Platform> platform;
     FilterEnginePtr filterEngine;
-    JsEnginePtr jsEngine;
     LazyFileSystem* fileSystem;
 
     void SetUp()
     {
       isConnectionAllowed = true;
 
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.logSystem.reset(new LazyLogSystem());
-      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystem());
-      jsEngineParams.timer = DelayedTimer::New(timerTasks);
-      jsEngineParams.webRequest = DelayedWebRequest::New(webRequestTasks);
-      jsEngine = CreateJsEngine(std::move(jsEngineParams));
+      ThrowingPlatformCreationParameters platformParams;
+      platformParams.logSystem.reset(new LazyLogSystem());
+      platformParams.timer = DelayedTimer::New(timerTasks);
+      platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
+      platformParams.webRequest = DelayedWebRequest::New(webRequestTasks);
+      platform.reset(new Platform(std::move(platformParams)));
 
-      createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", jsEngine->NewValue(false));
+      createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", platform->GetJsEngine()->NewValue(false));
 
       createParams.isSubscriptionDownloadAllowedCallback = [this](const std::string* allowedConnectionType,
         const std::function<void(bool)>& isSubscriptionDownloadAllowedCallback){
@@ -194,7 +198,7 @@ namespace
       bool isSubscriptionDownloadStatusReceived = false;
       if (!filterEngine)
       {
-        filterEngine = CreateFilterEngine(*fileSystem, jsEngine, createParams);
+        filterEngine = CreateFilterEngine(*fileSystem, platform->GetJsEngine(), createParams);
         filterEngine->SetFilterChangeCallback([&isSubscriptionDownloadStatusReceived, &subscriptionUrl](const std::string& action, JsValue&& item)
         {
           if (action == "subscription.downloadStatus" && item.GetProperty("url").AsString() == subscriptionUrl)
@@ -999,7 +1003,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, PredefinedAllowedConnectio
 {
   std::string predefinedAllowedConnectionType = "non-metered";
   createParams.preconfiguredPrefs.insert(std::make_pair("allowed_connection_type",
-    jsEngine->NewValue(predefinedAllowedConnectionType)));
+    platform->GetJsEngine()->NewValue(predefinedAllowedConnectionType)));
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
@@ -1016,7 +1020,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, ConfiguredConnectionTypeIs
   {
     std::string predefinedAllowedConnectionType = "non-metered";
     createParams.preconfiguredPrefs.insert(std::make_pair(
-      "allowed_connection_type", jsEngine->NewValue(predefinedAllowedConnectionType)));
+      "allowed_connection_type", platform->GetJsEngine()->NewValue(predefinedAllowedConnectionType)));
     auto subscription = EnsureExampleSubscriptionAndForceUpdate();
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
     EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());

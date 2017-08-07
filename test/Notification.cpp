@@ -30,17 +30,17 @@ namespace
   class NotificationTest : public ::testing::Test
   {
   protected:
+    std::unique_ptr<Platform> platform;
     FilterEnginePtr filterEngine;
     void SetUp()
     {
       LazyFileSystem* fileSystem;
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystem());
-      jsEngineParams.logSystem.reset(new DefaultLogSystem());
-      jsEngineParams.timer.reset(new NoopTimer());
-      jsEngineParams.webRequest.reset(new NoopWebRequest());
-      auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      filterEngine = CreateFilterEngine(*fileSystem, jsEngine);
+      ThrowingPlatformCreationParameters platformParams;
+      platformParams.timer.reset(new NoopTimer());
+      platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
+      platformParams.webRequest.reset(new NoopWebRequest());
+      platform.reset(new Platform(std::move(platformParams)));
+      filterEngine = CreateFilterEngine(*fileSystem, platform->GetJsEngine());
     }
 
     void AddNotification(const std::string& notification)

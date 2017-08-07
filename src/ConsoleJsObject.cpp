@@ -22,6 +22,7 @@
 #include "ConsoleJsObject.h"
 #include "JsContext.h"
 #include "Utils.h"
+#include <AdblockPlus/Platform.h>
 
 namespace
 {
@@ -45,7 +46,7 @@ namespace
     source << AdblockPlus::Utils::FromV8String(frame->GetScriptName());
     source << ":" << frame->GetLineNumber();
 
-    AdblockPlus::LogSystem& callback = jsEngine->GetLogSystem();
+    AdblockPlus::LogSystem& callback = jsEngine->GetPlatform().GetLogSystem();
     callback(logLevel, message.str(), source.str());
   }
 
@@ -97,7 +98,7 @@ namespace
       traceback << std::endl;
     }
 
-    AdblockPlus::LogSystem& callback = jsEngine->GetLogSystem();
+    AdblockPlus::LogSystem& callback = jsEngine->GetPlatform().GetLogSystem();
     callback(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, traceback.str(), "");
   }
 }

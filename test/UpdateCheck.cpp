@@ -38,6 +38,7 @@ namespace
     AdblockPlus::ServerResponse webRequestResponse;
     DelayedWebRequest::SharedTasks webRequestTasks;
     DelayedTimer::SharedTasks timerTasks;
+    std::unique_ptr<Platform> platform;
     FilterEnginePtr filterEngine;
 
     bool eventCallbackCalled;
@@ -53,21 +54,21 @@ namespace
 
     void CreateFilterEngine()
     {
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.appInfo = appInfo;
       LazyFileSystem* fileSystem;
-      jsEngineParams.logSystem.reset(new LazyLogSystem());
-      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystem());
-      jsEngineParams.timer = DelayedTimer::New(timerTasks);
-      jsEngineParams.webRequest = DelayedWebRequest::New(webRequestTasks);
-      auto jsEngine = CreateJsEngine(std::move(jsEngineParams));
-      jsEngine->SetEventCallback("updateAvailable", [this](JsValueList&& params)
+      ThrowingPlatformCreationParameters platformParams;
+      platformParams.logSystem.reset(new LazyLogSystem());
+      platformParams.timer = DelayedTimer::New(timerTasks);
+      platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
+      platformParams.webRequest = DelayedWebRequest::New(webRequestTasks);
+      platform.reset(new Platform(std::move(platformParams)));
+      platform->SetUpJsEngine(appInfo);
+      platform->GetJsEngine()->SetEventCallback("updateAvailable", [this](JsValueList&& params)
       {
         eventCallbackCalled = true;
         eventCallbackParams = std::move(params);
       });
 
-      filterEngine = ::CreateFilterEngine(*fileSystem, jsEngine);
+      filterEngine = ::CreateFilterEngine(*fileSystem, platform->GetJsEngine());
     }
 
     // Returns a URL or the empty string if there is no such request.

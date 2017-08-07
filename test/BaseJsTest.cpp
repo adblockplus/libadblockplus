@@ -35,24 +35,6 @@ void DelayedTimer::ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks)
   }
 }
 
-JsEngineCreationParameters::JsEngineCreationParameters()
-  : logSystem(new ThrowingLogSystem())
-  , timer(new ThrowingTimer())
-  , webRequest(new ThrowingWebRequest())
-  , fileSystem(std::make_shared<ThrowingFileSystem>())
-{
-}
-
-AdblockPlus::JsEnginePtr CreateJsEngine(JsEngineCreationParameters&& jsEngineCreationParameters)
-{
-  auto jsEngine = AdblockPlus::JsEngine::New(jsEngineCreationParameters.appInfo,
-    std::move(jsEngineCreationParameters.timer),
-    std::move(jsEngineCreationParameters.fileSystem),
-    std::move(jsEngineCreationParameters.webRequest),
-    std::move(jsEngineCreationParameters.logSystem));
-  return jsEngine;
-}
-
 FilterEnginePtr CreateFilterEngine(LazyFileSystem& fileSystem,
   const JsEnginePtr& jsEngine,
   const FilterEngine::CreationParameters& creationParams)
@@ -74,4 +56,12 @@ FilterEnginePtr CreateFilterEngine(LazyFileSystem& fileSystem,
     fileSystemTasks.pop_front();
   }
   return retValue;
+}
+
+ThrowingPlatformCreationParameters::ThrowingPlatformCreationParameters()
+{
+  logSystem.reset(new ThrowingLogSystem());
+  timer.reset(new ThrowingTimer());
+  fileSystem = std::make_shared<ThrowingFileSystem>();
+  webRequest.reset(new ThrowingWebRequest());
 }

@@ -21,7 +21,7 @@
 #include "JsContext.h"
 #include "Utils.h"
 #include "WebRequestJsObject.h"
-#include <thread> // TODO: remove with removing of JsEngine::webRequestLegacy
+#include <AdblockPlus/Platform.h>
 
 using namespace AdblockPlus;
 
@@ -80,7 +80,7 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
     webRequestParams[2].Call(resultObject);
   };
 
-  jsEngine->webRequest->GET(url, headers, getCallback);
+  jsEngine->GetPlatform().GetWebRequest().GET(url, headers, getCallback);
 }
 
 namespace

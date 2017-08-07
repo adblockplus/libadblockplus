@@ -24,6 +24,7 @@
 #include "FileSystemJsObject.h"
 #include "JsContext.h"
 #include "Utils.h"
+#include <AdblockPlus/Platform.h>
 
 using namespace AdblockPlus;
 using AdblockPlus::Utils::ThrowExceptionInJS;
@@ -45,7 +46,7 @@ namespace
     values.push_back(converted[1]);
     auto weakCallback = jsEngine->StoreJsValues(values);
     std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-    jsEngine->GetAsyncFileSystem()->Read(converted[0].AsString(),
+    jsEngine->GetPlatform().GetFileSystem().Read(converted[0].AsString(),
       [weakJsEngine, weakCallback]
       (IFileSystem::IOBuffer&& content, const std::string& error)
       {
@@ -78,7 +79,7 @@ namespace
     auto weakCallback = jsEngine->StoreJsValues(values);
     std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
     auto content = converted[1].AsStringBuffer();
-    jsEngine->GetAsyncFileSystem()->Write(converted[0].AsString(),
+    jsEngine->GetPlatform().GetFileSystem().Write(converted[0].AsString(),
       content,
       [weakJsEngine, weakCallback](const std::string& error)
       {
@@ -109,7 +110,7 @@ namespace
     values.push_back(converted[2]);
     auto weakCallback = jsEngine->StoreJsValues(values);
     std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-    jsEngine->GetAsyncFileSystem()->Move(converted[0].AsString(),
+    jsEngine->GetPlatform().GetFileSystem().Move(converted[0].AsString(),
       converted[1].AsString(),
       [weakJsEngine, weakCallback](const std::string& error)
       {
@@ -140,7 +141,7 @@ namespace
     values.push_back(converted[1]);
     auto weakCallback = jsEngine->StoreJsValues(values);
     std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-    jsEngine->GetAsyncFileSystem()->Remove(converted[0].AsString(),
+    jsEngine->GetPlatform().GetFileSystem().Remove(converted[0].AsString(),
       [weakJsEngine, weakCallback](const std::string& error)
       {
         auto jsEngine = weakJsEngine.lock();
@@ -170,7 +171,7 @@ namespace
     values.push_back(converted[1]);
     auto weakCallback = jsEngine->StoreJsValues(values);
     std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-    jsEngine->GetAsyncFileSystem()->Stat(converted[0].AsString(),
+    jsEngine->GetPlatform().GetFileSystem().Stat(converted[0].AsString(),
       [weakJsEngine, weakCallback]
       (const IFileSystem::StatResult& statResult, const std::string& error)
       {
@@ -203,7 +204,7 @@ namespace
     if (converted.size() != 1)
       return ThrowExceptionInJS(isolate, "_fileSystem.resolve requires 1 parameter");
 
-    std::string resolved = jsEngine->GetAsyncFileSystem()->Resolve(converted[0].AsString());
+    std::string resolved = jsEngine->GetPlatform().GetFileSystem().Resolve(converted[0].AsString());
     arguments.GetReturnValue().Set(Utils::ToV8String(isolate, resolved));
   }
 }

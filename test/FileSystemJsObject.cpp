@@ -128,13 +128,15 @@ namespace
   {
   protected:
     MockFileSystemPtr mockFileSystem;
+    AdblockPlus::JsEnginePtr jsEngine;
 
     void SetUp()
     {
-      mockFileSystem = MockFileSystemPtr(new MockFileSystem);
-      JsEngineCreationParameters params;
+      mockFileSystem = MockFileSystemPtr(new MockFileSystem());
+      ThrowingPlatformCreationParameters params;
       params.fileSystem = mockFileSystem;
-      jsEngine = CreateJsEngine(std::move(params));
+      platform.reset(new AdblockPlus::Platform(std::move(params)));
+      jsEngine = platform->GetJsEngine();
     }
   };
 }

@@ -20,10 +20,8 @@
 #include "JsContext.h"
 #include "JsError.h"
 #include "Utils.h"
-#include "DefaultTimer.h"
-#include "DefaultWebRequest.h"
-#include "DefaultFileSystem.h"
 #include <libplatform/libplatform.h>
+#include <AdblockPlus/Platform.h>
 
 namespace
 {
@@ -71,34 +69,9 @@ namespace
       static V8Initializer initializer;
     }
   };
-
-  void DummyScheduler(const AdblockPlus::SchedulerTask& task)
-  {
-    std::thread(task).detach();
-  }
 }
 
 using namespace AdblockPlus;
-
-TimerPtr AdblockPlus::CreateDefaultTimer()
-{
-  return TimerPtr(new DefaultTimer());
-}
-
-FileSystemPtr AdblockPlus::CreateDefaultFileSystem(const Scheduler& scheduler)
-{
-  return FileSystemPtr(new DefaultFileSystem(scheduler, std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync())));
-}
-
-WebRequestPtr AdblockPlus::CreateDefaultWebRequest(const Scheduler& scheduler)
-{
-  return WebRequestPtr(new DefaultWebRequest(scheduler, std::unique_ptr<DefaultWebRequestSync>(new DefaultWebRequestSync())));
-}
-
-LogSystemPtr AdblockPlus::CreateDefaultLogSystem()
-{
-  return LogSystemPtr(new DefaultLogSystem());
-}
 
 AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
 {
@@ -137,7 +110,7 @@ void JsEngine::ScheduleTimer(const v8::FunctionCallbackInfo<v8::Value>& argument
   auto timerParamsID = jsEngine->StoreJsValues(jsValueArguments);
 
   std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-  jsEngine->timer->SetTimer(std::chrono::milliseconds(arguments[1]->IntegerValue()), [weakJsEngine, timerParamsID]
+  jsEngine->platform.GetTimer().SetTimer(std::chrono::milliseconds(arguments[1]->IntegerValue()), [weakJsEngine, timerParamsID]
   {
     if (auto jsEngine = weakJsEngine.lock())
       jsEngine->CallTimerTask(timerParamsID);
@@ -154,22 +127,15 @@ void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
   callback.Call(timerParams);
 }
 
-AdblockPlus::JsEngine::JsEngine(TimerPtr timer, FileSystemPtr fileSystem,
-  WebRequestPtr webRequest, LogSystemPtr logSystem)
-  : fileSystem(std::move(fileSystem))
-  , timer(std::move(timer))
-  , logSystem(std::move(logSystem))
-  , webRequest(std::move(webRequest))
+AdblockPlus::JsEngine::JsEngine(Platform& platform)
+  : platform(platform)
 {
 }
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
-  TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest, LogSystemPtr logSystem)
+  Platform& platform)
 {
-  JsEnginePtr result(new JsEngine(timer ? std::move(timer) : CreateDefaultTimer(),
-    fileSystem ? std::move(fileSystem) : CreateDefaultFileSystem(::DummyScheduler),
-    webRequest ? std::move(webRequest) : CreateDefaultWebRequest(::DummyScheduler),
-    logSystem ? std::move(logSystem) : CreateDefaultLogSystem()));
+  JsEnginePtr result(new JsEngine(platform));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
@@ -330,16 +296,6 @@ AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::Funct
   for (int i = 0; i < arguments.Length(); i++)
     list.push_back(JsValue(shared_from_this(), arguments[i]));
   return list;
-}
-
-AdblockPlus::FileSystemPtr AdblockPlus::JsEngine::GetAsyncFileSystem() const
-{
-  return fileSystem;
-}
-
-AdblockPlus::LogSystem& AdblockPlus::JsEngine::GetLogSystem()
-{
-  return *logSystem;
 }
 
 void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name,

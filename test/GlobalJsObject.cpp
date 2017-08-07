@@ -23,13 +23,15 @@ namespace
   class GlobalJsObjectTest : public ::testing::Test
   {
   protected:
+    std::unique_ptr<AdblockPlus::Platform> platform;
     AdblockPlus::JsEnginePtr jsEngine;
 
     void SetUp() override
     {
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.timer = AdblockPlus::CreateDefaultTimer();
-      jsEngine = CreateJsEngine(std::move(jsEngineParams));
+      ThrowingPlatformCreationParameters params;
+      params.timer = AdblockPlus::CreateDefaultTimer();
+      platform.reset(new AdblockPlus::Platform(std::move(params)));
+      jsEngine = platform->GetJsEngine();
     }
   };
 }
@@ -68,9 +70,11 @@ TEST_F(GlobalJsObjectTest, SetMultipleTimeouts)
 TEST_F(GlobalJsObjectTest, TimeoutDoesNotKeepJsEngine)
 {
   jsEngine->Evaluate("setTimeout(function() {}, 50000)");
-  EXPECT_EQ(1u, jsEngine.use_count()); // check that counter is still 1
+  // 1 reference is held by platform and yet one by the test fixture class.
+  EXPECT_EQ(2u, jsEngine.use_count());
   AdblockPlus::Sleep(200);
   std::weak_ptr<AdblockPlus::JsEngine> weakJsEngine = jsEngine;
   jsEngine.reset();
+  platform.reset();
   EXPECT_FALSE(weakJsEngine.lock());
 }

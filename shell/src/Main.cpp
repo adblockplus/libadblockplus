@@ -16,6 +16,7 @@
  */
 
 #include <AdblockPlus.h>
+#include <AdblockPlus/Platform.h>
 #include <iostream>
 #include <sstream>
 
@@ -61,7 +62,10 @@ int main()
     appInfo.application = "standalone";
     appInfo.applicationVersion = "1.0";
     appInfo.locale = "en-US";
-    AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
+
+    AdblockPlus::Platform platform;
+    platform.SetUpJsEngine(appInfo);
+    AdblockPlus::JsEnginePtr jsEngine = platform.GetJsEngine();
     auto filterEngine = AdblockPlus::FilterEngine::Create(jsEngine);
 
     CommandMap commands;

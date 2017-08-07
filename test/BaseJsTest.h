@@ -21,6 +21,7 @@
 #include <thread>
 
 #include <AdblockPlus.h>
+#include <AdblockPlus/Platform.h>
 #include <gtest/gtest.h>
 #include "../src/Thread.h"
 
@@ -256,27 +257,19 @@ public:
   }
 };
 
-struct JsEngineCreationParameters
+struct ThrowingPlatformCreationParameters: AdblockPlus::Platform::CreationParameters
 {
-  JsEngineCreationParameters();
-
-  AdblockPlus::AppInfo appInfo;
-  AdblockPlus::LogSystemPtr logSystem;
-  AdblockPlus::TimerPtr timer;
-  AdblockPlus::WebRequestPtr webRequest;
-  AdblockPlus::FileSystemPtr fileSystem;
+  ThrowingPlatformCreationParameters();
 };
-
-AdblockPlus::JsEnginePtr CreateJsEngine(JsEngineCreationParameters&& jsEngineCreationParameters = JsEngineCreationParameters());
 
 class BaseJsTest : public ::testing::Test
 {
 protected:
-  AdblockPlus::JsEnginePtr jsEngine;
+  std::unique_ptr<AdblockPlus::Platform> platform;
 
   virtual void SetUp()
   {
-    jsEngine = CreateJsEngine();
+    platform.reset(new AdblockPlus::Platform(ThrowingPlatformCreationParameters()));
   }
 };
 

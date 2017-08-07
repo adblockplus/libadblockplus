@@ -17,6 +17,8 @@
 
 #include "BaseJsTest.h"
 
+using namespace AdblockPlus;
+
 namespace
 {
   class MockLogSystem : public AdblockPlus::LogSystem
@@ -35,16 +37,19 @@ namespace
     }
   };
 
-  class ConsoleJsObjectTest : public BaseJsTest
+  class ConsoleJsObjectTest : public ::testing::Test
   {
   protected:
+    std::unique_ptr<Platform> platform;
     MockLogSystem* mockLogSystem;
+    JsEnginePtr jsEngine;
 
-    void SetUp()
+    void SetUp() override
     {
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.logSystem.reset(mockLogSystem = new MockLogSystem());
-      jsEngine = CreateJsEngine(std::move(jsEngineParams));
+      ThrowingPlatformCreationParameters platformParams;
+      platformParams.logSystem.reset(mockLogSystem = new MockLogSystem());
+      platform.reset(new Platform(std::move(platformParams)));
+      jsEngine = platform->GetJsEngine();
     }
   };
 }

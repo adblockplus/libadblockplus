@@ -26,7 +26,7 @@ namespace
 
 TEST_F(JsValueTest, UndefinedValue)
 {
-  auto value = jsEngine->Evaluate("undefined");
+  auto value = platform->GetJsEngine()->Evaluate("undefined");
   ASSERT_TRUE(value.IsUndefined());
   ASSERT_FALSE(value.IsNull());
   ASSERT_FALSE(value.IsString());
@@ -47,7 +47,7 @@ TEST_F(JsValueTest, UndefinedValue)
 
 TEST_F(JsValueTest, NullValue)
 {
-  auto value = jsEngine->Evaluate("null");
+  auto value = platform->GetJsEngine()->Evaluate("null");
   ASSERT_FALSE(value.IsUndefined());
   ASSERT_TRUE(value.IsNull());
   ASSERT_FALSE(value.IsString());
@@ -68,7 +68,7 @@ TEST_F(JsValueTest, NullValue)
 
 TEST_F(JsValueTest, StringValue)
 {
-  auto value = jsEngine->Evaluate("'123'");
+  auto value = platform->GetJsEngine()->Evaluate("'123'");
   ASSERT_FALSE(value.IsUndefined());
   ASSERT_FALSE(value.IsNull());
   ASSERT_TRUE(value.IsString());
@@ -90,7 +90,7 @@ TEST_F(JsValueTest, StringValue)
 
 TEST_F(JsValueTest, IntValue)
 {
-  auto value = jsEngine->Evaluate("12345678901234");
+  auto value = platform->GetJsEngine()->Evaluate("12345678901234");
   ASSERT_FALSE(value.IsUndefined());
   ASSERT_FALSE(value.IsNull());
   ASSERT_FALSE(value.IsString());
@@ -112,7 +112,7 @@ TEST_F(JsValueTest, IntValue)
 
 TEST_F(JsValueTest, BoolValue)
 {
-  auto value = jsEngine->Evaluate("true");
+  auto value = platform->GetJsEngine()->Evaluate("true");
   ASSERT_FALSE(value.IsUndefined());
   ASSERT_FALSE(value.IsNull());
   ASSERT_FALSE(value.IsString());
@@ -140,7 +140,7 @@ TEST_F(JsValueTest, ObjectValue)
       this.valueOf = function() {return 123;};\
     };\
     new Foo()");
-  auto value = jsEngine->Evaluate(source);
+  auto value = platform->GetJsEngine()->Evaluate(source);
   ASSERT_FALSE(value.IsUndefined());
   ASSERT_FALSE(value.IsNull());
   ASSERT_FALSE(value.IsString());
@@ -156,7 +156,7 @@ TEST_F(JsValueTest, ObjectValue)
   ASSERT_EQ(2, value.GetProperty("x").AsInt());
   value.SetProperty("x", 12);
   ASSERT_EQ(12, value.GetProperty("x").AsInt());
-  value.SetProperty("x", jsEngine->NewValue(15));
+  value.SetProperty("x", platform->GetJsEngine()->NewValue(15));
   ASSERT_EQ(15, value.GetProperty("x").AsInt());
   ASSERT_EQ("Foo", value.GetClass());
   ASSERT_EQ(3u, value.GetOwnPropertyNames().size());
@@ -165,7 +165,7 @@ TEST_F(JsValueTest, ObjectValue)
 
 TEST_F(JsValueTest, ArrayValue)
 {
-  auto value = jsEngine->Evaluate("[5,8,12]");
+  auto value = platform->GetJsEngine()->Evaluate("[5,8,12]");
   ASSERT_FALSE(value.IsUndefined());
   ASSERT_FALSE(value.IsNull());
   ASSERT_FALSE(value.IsString());
@@ -185,7 +185,7 @@ TEST_F(JsValueTest, ArrayValue)
 
 TEST_F(JsValueTest, FunctionValue)
 {
-  auto value = jsEngine->Evaluate("(function(foo, bar) {return this.x + '/' + foo + '/' + bar;})");
+  auto value = platform->GetJsEngine()->Evaluate("(function(foo, bar) {return this.x + '/' + foo + '/' + bar;})");
   ASSERT_FALSE(value.IsUndefined());
   ASSERT_FALSE(value.IsNull());
   ASSERT_FALSE(value.IsString());
@@ -198,17 +198,17 @@ TEST_F(JsValueTest, FunctionValue)
   ASSERT_ANY_THROW(value.AsList());
   ASSERT_EQ(2, value.GetProperty("length").AsInt());
 
-  auto thisPtr = jsEngine->Evaluate("({x:2})");
+  auto thisPtr = platform->GetJsEngine()->Evaluate("({x:2})");
   AdblockPlus::JsValueList params;
-  params.push_back(jsEngine->NewValue(5));
-  params.push_back(jsEngine->NewValue("xyz"));
+  params.push_back(platform->GetJsEngine()->NewValue(5));
+  params.push_back(platform->GetJsEngine()->NewValue("xyz"));
   ASSERT_EQ("2/5/xyz", value.Call(params, thisPtr).AsString());
 }
 
 TEST_F(JsValueTest, JsValueCallSingleArg)
 {
-  auto func = jsEngine->Evaluate("(function(arg) {return arg * 2;})");
-  EXPECT_EQ(10, func.Call(jsEngine->NewValue(5)).AsInt());
+  auto func = platform->GetJsEngine()->Evaluate("(function(arg) {return arg * 2;})");
+  EXPECT_EQ(10, func.Call(platform->GetJsEngine()->NewValue(5)).AsInt());
 }
 
 TEST_F(JsValueTest, ThrowingCoversion)
@@ -219,7 +219,7 @@ TEST_F(JsValueTest, ThrowingCoversion)
       this.valueOf = function() {throw 'test2';};\
     };\
     new Foo()");
-  auto value = jsEngine->Evaluate(source);
+  auto value = platform->GetJsEngine()->Evaluate(source);
   ASSERT_EQ("", value.AsString());
   ASSERT_EQ(0, value.AsInt());
 }

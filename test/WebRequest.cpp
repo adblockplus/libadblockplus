@@ -30,12 +30,13 @@ namespace
   protected:
     void SetUp()
     {
-      JsEngineCreationParameters jsEngineParams;
-      jsEngineParams.logSystem = CreateLogSystem();
-      jsEngineParams.timer.reset(new NoopTimer());
-      jsEngineParams.fileSystem.reset(fileSystem = new LazyFileSystem());
-      jsEngineParams.webRequest = CreateWebRequest();
-      jsEngine = CreateJsEngine(std::move(jsEngineParams));
+      ThrowingPlatformCreationParameters platformParams;
+      platformParams.logSystem = CreateLogSystem();
+      platformParams.timer.reset(new NoopTimer());
+      platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
+      platformParams.webRequest = CreateWebRequest();
+      platform.reset(new Platform(std::move(platformParams)));
+      jsEngine = platform->GetJsEngine();
     }
 
     virtual WebRequestPtr CreateWebRequest() = 0;
@@ -45,6 +46,7 @@ namespace
       return LogSystemPtr(new ThrowingLogSystem());
     }
 
+    std::unique_ptr<Platform> platform;
     JsEnginePtr jsEngine;
     LazyFileSystem* fileSystem;
   };

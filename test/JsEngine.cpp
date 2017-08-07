@@ -24,6 +24,13 @@ namespace
 {
   class JsEngineTest : public BaseJsTest
   {
+  protected:
+    JsEnginePtr jsEngine;
+    void SetUp() override
+    {
+      BaseJsTest::SetUp();
+      jsEngine = platform->GetJsEngine();
+    }
   };
 }
 
@@ -164,7 +171,8 @@ TEST_F(JsEngineTest, EventCallbacks)
 
 TEST(NewJsEngineTest, GlobalPropertyTest)
 {
-  AdblockPlus::JsEnginePtr jsEngine(AdblockPlus::JsEngine::New());
+  Platform platform{ThrowingPlatformCreationParameters()};
+  auto jsEngine = platform.GetJsEngine();
   jsEngine->SetGlobalProperty("foo", jsEngine->NewValue("bar"));
   auto foo = jsEngine->Evaluate("foo");
   ASSERT_TRUE(foo.IsString());
@@ -175,7 +183,7 @@ TEST(NewJsEngineTest, MemoryLeak_NoCircularReferences)
 {
   std::weak_ptr<AdblockPlus::JsEngine> weakJsEngine;
   {
-    weakJsEngine = AdblockPlus::JsEngine::New();
+    weakJsEngine = Platform{ThrowingPlatformCreationParameters()}.GetJsEngine();
   }
   EXPECT_FALSE(weakJsEngine.lock());
 }
@@ -194,6 +202,6 @@ TEST(NewJsEngineTest, DISABLED_32bitsOnly_MemoryLeak_NoLeak)
   // makes sense.
   for (int i = 0; i < 1000; ++i)
   {
-    AdblockPlus::JsEngine::New();
+    Platform{ThrowingPlatformCreationParameters()}.GetJsEngine();
   }
 }

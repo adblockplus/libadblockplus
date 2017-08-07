@@ -45,31 +45,12 @@ namespace v8
 namespace AdblockPlus
 {
   class JsEngine;
+  class Platform;
 
   /**
    * Shared smart pointer to a `JsEngine` instance.
    */
   typedef std::shared_ptr<JsEngine> JsEnginePtr;
-
-  /**
-   * A factory to construct DefaultTimer.
-   */
-  TimerPtr CreateDefaultTimer();
-
-  /**
-   * A factory to construct DefaultFileSystem.
-   */
-  FileSystemPtr CreateDefaultFileSystem(const Scheduler& scheduler);
-
-  /**
-   * A factory to construct DefaultWebRequest.
-   */
-  WebRequestPtr CreateDefaultWebRequest(const Scheduler& scheduler);
-
-  /**
-   * A factory to construct LogSystem.
-   */
-  LogSystemPtr CreateDefaultLogSystem();
 
   /**
    * Scope based isolate manager. Creates a new isolate instance on
@@ -129,20 +110,12 @@ namespace AdblockPlus
     /**
      * Creates a new JavaScript engine instance.
      *
-     * When a parameter value is nullptr the corresponding default
-     * implementation is chosen.
-     *
      * @param appInfo Information about the app.
-     * @param timer Implementation of timer.
-     * @param fileSystem Implementation of filesystem.
-     * @param webRequest Implementation of web request.
-     * @param logSystem Implementation of log system.
+     * @param platform AdblockPlus platform providing with necessary
+     *        dependencies.
      * @return New `JsEngine` instance.
      */
-    static JsEnginePtr New(const AppInfo& appInfo = AppInfo(),
-      TimerPtr timer = nullptr, FileSystemPtr fileSystem = nullptr,
-      WebRequestPtr webRequest = nullptr, LogSystemPtr logSystem = nullptr);
-
+    static JsEnginePtr New(const AppInfo& appInfo, Platform& platform);
     /**
      * Registers the callback function for an event.
      * @param eventName Event name. Note that this can be any string - it's a
@@ -272,18 +245,6 @@ namespace AdblockPlus
     JsValueList ConvertArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
     /**
-     * Private functionality.
-     * @return The asynchronous IFileSystem implementation.
-     */
-    FileSystemPtr GetAsyncFileSystem() const;
-
-    /**
-     * Private functionality.
-     * @return The LogSystem implementation.
-     */
-    LogSystem& GetLogSystem();
-
-    /**
      * Sets a global property that can be accessed by all the scripts.
      * @param name Name of the property to set.
      * @param value Value of the property to set.
@@ -303,26 +264,31 @@ namespace AdblockPlus
      * garbage collection.
      */
     void NotifyLowMemory();
+
+    /**
+     * Private functionality.
+     */
+    Platform& GetPlatform()
+    {
+      return platform;
+    }
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
-    explicit JsEngine(TimerPtr timer, FileSystemPtr fileSystem, WebRequestPtr webRequest, LogSystemPtr logSystem);
+    explicit JsEngine(Platform& platform);
 
     JsValue GetGlobalObject();
 
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.
     ScopedV8Isolate isolate;
+    Platform& platform;
 
-    FileSystemPtr fileSystem;
-    LogSystemPtr logSystem;
     std::unique_ptr<v8::Global<v8::Context>> context;
     EventMap eventCallbacks;
     std::mutex eventCallbacksMutex;
     JsWeakValuesLists jsWeakValuesLists;
     std::mutex jsWeakValuesListsMutex;
-    TimerPtr timer;
-    WebRequestPtr webRequest;
   };
 }
 
