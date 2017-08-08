@@ -118,6 +118,7 @@ android_multi: ${BUILD_V8} ensure_dependencies
 	BUILDTYPE=Release \
 	APP_ABI=$(ANDROID_ABI) \
 	APP_PLATFORM=android-9 \
+	APP_PIE=true \
 	APP_STL=c++_static \
 	APP_BUILD_SCRIPT=Makefile \
 	NDK_PROJECT_PATH=. \
