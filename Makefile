@@ -20,11 +20,16 @@ BUILD_V8=build-v8
 endif
 
 ifneq ($(ANDROID_ARCH),)
+ANDROID_PLATFORM_LEVEL=android-9
 GYP_PARAMETERS+= OS=android target_arch=${ANDROID_ARCH}
 ifeq ($(ANDROID_ARCH),arm)
 ANDROID_ABI = armeabi-v7a
 else ifeq ($(ANDROID_ARCH),ia32)
 ANDROID_ABI = x86
+else ifeq ($(ANDROID_ARCH),arm64)
+ANDROID_ABI = arm64-v8a
+# minimal platform having arch-arm64, see ndk/platforms
+ANDROID_PLATFORM_LEVEL=android-21
 else
 $(error "Unsupported Android architecture: $(ANDROID_ARCH))
 endif
@@ -83,6 +88,9 @@ android_x86:
 android_arm:
 	ANDROID_ARCH="arm" $(MAKE) android_multi
 
+android_arm64:
+	ANDROID_ARCH="arm64" $(MAKE) android_multi
+
 ifneq ($(ANDROID_ARCH),)
 v8_android_multi: ensure_dependencies
 	cd third_party/v8 && GYP_GENERATORS=make-android \
@@ -109,6 +117,9 @@ v8_android_multi_mac_ia32: v8_android_multi
 v8_android_multi_mac_arm: v8_android_multi
 	find build/android_arm.release/ -depth 1 -iname \*.a -exec ${ANDROID_NDK_ROOT}/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/bin/arm-linux-androideabi-ranlib {} \;
 
+v8_android_multi_mac_arm64: v8_android_multi
+	find build/android_arm64.release/ -depth 1 -iname \*.a -exec ${ANDROID_NDK_ROOT}/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/bin/aarch64-linux-android-ranlib {} \;
+
 build-v8-android: v8_android_multi_${HOST_OS}_${ANDROID_ARCH}
 
 android_multi: ${BUILD_V8} ensure_dependencies
@@ -117,7 +128,7 @@ android_multi: ${BUILD_V8} ensure_dependencies
 	$(ANDROID_NDK_ROOT)/ndk-build -C build installed_modules \
 	BUILDTYPE=Release \
 	APP_ABI=$(ANDROID_ABI) \
-	APP_PLATFORM=android-9 \
+	APP_PLATFORM=${ANDROID_PLATFORM_LEVEL} \
 	APP_PIE=true \
 	APP_STL=c++_static \
 	APP_BUILD_SCRIPT=Makefile \

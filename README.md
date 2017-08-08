@@ -85,9 +85,12 @@ To build for *x86* arch run:
 
     make android_x86
 
-To build for *arm* arch run:
+To build for *arm* or *arm64* arch run:
 
     make android_arm
+
+or
+    make android_arm64
 
 Usage
 -----
