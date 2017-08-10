@@ -96,7 +96,7 @@ v8_android_multi: ensure_dependencies
 	cd third_party/v8 && GYP_GENERATORS=make-android \
 	  GYP_DEFINES="${GYP_PARAMETERS} v8_target_arch=${ANDROID_ARCH}" \
 	  PYTHONPATH="${V8_DIR}tools/generate_shim_headers:${V8_DIR}gypfiles:${PYTHONPATH}" \
-	  tools/gyp/gyp \
+	  python ../../make_gyp_wrapper.py \
 	    --generator-output=../../build src/v8.gyp \
 	    -Igypfiles/standalone.gypi \
 	    --depth=. \

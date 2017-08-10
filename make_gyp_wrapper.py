@@ -73,6 +73,7 @@ _abp_configs attribute of instance of MakefileWriter.
 """
 
 import os
+import platform
 import sys
 import types
 
@@ -117,6 +118,16 @@ def overridden_WriteAndroidNdkModuleRule(self, module_name, all_sources, link_de
 
 MakefileWriter.Write = overridden_Write
 MakefileWriter.WriteAndroidNdkModuleRule = overridden_WriteAndroidNdkModuleRule
+
+# Issue 5393
+# replace $(LD_INPUTS) by "-Wl,--start-group $(LD_INPUTS) -Wl,--end-group" but
+# only for cmd_link_host and only on linux.
+print platform.system()
+if platform.system() == "Linux":
+    gyp.generator.make.LINK_COMMANDS_ANDROID = \
+        gyp.generator.make.LINK_COMMANDS_ANDROID[:663] + \
+        "-Wl,--start-group $(LD_INPUTS) -Wl,--end-group" + \
+        gyp.generator.make.LINK_COMMANDS_ANDROID[675:]
 
 if __name__ == '__main__':
     gyp.main(sys.argv[1:])
