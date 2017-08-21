@@ -72,6 +72,8 @@ Filter::Type Filter::GetType() const
     return TYPE_ELEMHIDE;
   else if (className == "ElemHideException")
     return TYPE_ELEMHIDE_EXCEPTION;
+  else if (className == "ElemHideEmulationFilter")
+    return TYPE_TYPE_ELEMHIDE_EMULATION;
   else if (className == "CommentFilter")
     return TYPE_COMMENT;
   else
@@ -273,6 +275,8 @@ namespace
     contentTypes[FilterEngine::CONTENT_TYPE_OBJECT] = "OBJECT";
     contentTypes[FilterEngine::CONTENT_TYPE_SUBDOCUMENT] = "SUBDOCUMENT";
     contentTypes[FilterEngine::CONTENT_TYPE_DOCUMENT] = "DOCUMENT";
+    contentTypes[FilterEngine::CONTENT_TYPE_WEBSOCKET] = "WEBSOCKET";
+    contentTypes[FilterEngine::CONTENT_TYPE_WEBRTC] = "WEBRTC";
     contentTypes[FilterEngine::CONTENT_TYPE_PING] = "PING";
     contentTypes[FilterEngine::CONTENT_TYPE_XMLHTTPREQUEST] = "XMLHTTPREQUEST";
     contentTypes[FilterEngine::CONTENT_TYPE_OBJECT_SUBREQUEST] = "OBJECT_SUBREQUEST";

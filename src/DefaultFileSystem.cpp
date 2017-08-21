@@ -124,16 +124,6 @@ IFileSystem::StatResult DefaultFileSystemSync::Stat(const std::string& path) con
   }
 
   result.exists = true;
-  if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-  {
-    result.isFile = false;
-    result.isDirectory = true;
-  }
-  else
-  {
-    result.isFile = true;
-    result.isDirectory = false;
-  }
 
   // See http://support.microsoft.com/kb/167296 on this conversion
   #define FILE_TIME_TO_UNIX_EPOCH_OFFSET 116444736000000000LL
@@ -154,8 +144,6 @@ IFileSystem::StatResult DefaultFileSystemSync::Stat(const std::string& path) con
     throw RuntimeErrorWithErrno("Unable to stat " + path);
   }
   result.exists = true;
-  result.isFile = S_ISREG(nativeStat.st_mode);
-  result.isDirectory = S_ISDIR(nativeStat.st_mode);
 
   #define MSEC_IN_SEC 1000
   #define NSEC_IN_MSEC 1000000
@@ -210,15 +198,15 @@ DefaultFileSystem::DefaultFileSystem(const Scheduler& scheduler, std::unique_ptr
 {
 }
 
-void DefaultFileSystem::Read(const std::string& path,
+void DefaultFileSystem::Read(const std::string& fileName,
                              const ReadCallback& callback) const
 {
-  scheduler([this, path, callback]
+  scheduler([this, fileName, callback]
   {
     std::string error;
     try
     {
-      auto data = syncImpl->Read(path);
+      auto data = syncImpl->Read(Resolve(fileName));
       callback(std::move(data), error);
       return;
     }
@@ -228,22 +216,22 @@ void DefaultFileSystem::Read(const std::string& path,
     }
     catch (...)
     {
-      error =  "Unknown error while reading from " + path;
+      error =  "Unknown error while reading from " + fileName + " as " + Resolve(fileName);
     }
     callback(IOBuffer(), error);
   });
 }
 
-void DefaultFileSystem::Write(const std::string& path,
+void DefaultFileSystem::Write(const std::string& fileName,
                               const IOBuffer& data,
                               const Callback& callback)
 {
-  scheduler([this, path, data, callback]
+  scheduler([this, fileName, data, callback]
   {
     std::string error;
     try
     {
-      syncImpl->Write(path, data);
+      syncImpl->Write(Resolve(fileName), data);
     }
     catch (std::exception& e)
     {
@@ -251,22 +239,22 @@ void DefaultFileSystem::Write(const std::string& path,
     }
     catch (...)
     {
-      error = "Unknown error while writing to " + path;
+      error = "Unknown error while writing to " + fileName + " as " + Resolve(fileName);
     }
     callback(error);
   });
 }
 
-void DefaultFileSystem::Move(const std::string& fromPath,
-                             const std::string& toPath,
+void DefaultFileSystem::Move(const std::string& fromFileName,
+                             const std::string& toFileName,
                              const Callback& callback)
 {
-  scheduler([this, fromPath, toPath, callback]
+  scheduler([this, fromFileName, toFileName, callback]
   {
     std::string error;
     try
     {
-      syncImpl->Move(fromPath, toPath);
+      syncImpl->Move(Resolve(fromFileName), Resolve(toFileName));
     }
     catch (std::exception& e)
     {
@@ -274,21 +262,21 @@ void DefaultFileSystem::Move(const std::string& fromPath,
     }
     catch (...)
     {
-      error = "Unknown error while moving " + fromPath + " to " + toPath;
+      error = "Unknown error while moving " + fromFileName + " to " + toFileName;
     }
     callback(error);
   });
 }
 
-void DefaultFileSystem::Remove(const std::string& path,
+void DefaultFileSystem::Remove(const std::string& fileName,
                                const Callback& callback)
 {
-  scheduler([this, path, callback]
+  scheduler([this, fileName, callback]
   {
     std::string error;
     try
     {
-      syncImpl->Remove(path);
+      syncImpl->Remove(Resolve(fileName));
     }
     catch (std::exception& e)
     {
@@ -296,21 +284,21 @@ void DefaultFileSystem::Remove(const std::string& path,
     }
     catch (...)
     {
-      error = "Unknown error while removing " + path;
+      error = "Unknown error while removing " + fileName + " as " + Resolve(fileName);
     }
     callback(error);
   });
 }
 
-void DefaultFileSystem::Stat(const std::string& path,
+void DefaultFileSystem::Stat(const std::string& fileName,
                              const StatCallback& callback) const
 {
-  scheduler([this, path, callback]
+  scheduler([this, fileName, callback]
   {
     std::string error;
     try
     {
-      auto result = syncImpl->Stat(path);
+      auto result = syncImpl->Stat(Resolve(fileName));
       callback(result, error);
       return;
     }
@@ -320,13 +308,13 @@ void DefaultFileSystem::Stat(const std::string& path,
     }
     catch (...)
     {
-      error = "Unknown error while calling stat on " + path;
+      error = "Unknown error while calling stat on " + fileName + " as " + Resolve(fileName);
     }
     callback(StatResult(), error);
   });
 }
 
-std::string DefaultFileSystem::Resolve(const std::string& path) const
+std::string DefaultFileSystem::Resolve(const std::string& fileName) const
 {
-  return syncImpl->Resolve(path);
+  return syncImpl->Resolve(fileName);
 }

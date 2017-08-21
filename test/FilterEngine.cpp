@@ -38,7 +38,7 @@ namespace
   class NoFilesFileSystem : public LazyFileSystem
   {
   public:
-    void Stat(const std::string& path, const StatCallback& callback) const override
+    void Stat(const std::string& fileName, const StatCallback& callback) const override
     {
       scheduler([callback]
       {
@@ -122,11 +122,11 @@ namespace
       fileSystem.reset();
       BaseJsTest::TearDown();
     }
-    void removeFileIfExists(const std::string& path)
+    void removeFileIfExists(const std::string& fileName)
     {
       bool hasStatRun = false;
       bool doesFileExists;
-      fileSystem->Stat(path, [&hasStatRun, &doesFileExists](const IFileSystem::StatResult& stats, const std::string& error)
+      fileSystem->Stat(fileName, [&hasStatRun, &doesFileExists](const IFileSystem::StatResult& stats, const std::string& error)
       {
         EXPECT_TRUE(error.empty()) << error;
         doesFileExists = stats.exists;
@@ -142,7 +142,7 @@ namespace
         return;
 
       bool hasRemoveRun = false;
-      fileSystem->Remove(path, [&hasRemoveRun](const std::string& error)
+      fileSystem->Remove(fileName, [&hasRemoveRun](const std::string& error)
       {
         EXPECT_TRUE(error.empty()) << error;
         hasRemoveRun = true;

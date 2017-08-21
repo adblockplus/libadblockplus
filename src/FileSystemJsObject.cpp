@@ -183,8 +183,6 @@ namespace
         auto result = jsEngine->NewObject();
 
         result.SetProperty("exists", statResult.exists);
-        result.SetProperty("isFile", statResult.isFile);
-        result.SetProperty("isDirectory", statResult.isDirectory);
         result.SetProperty("lastModified", statResult.lastModified);
         if (!error.empty())
           result.SetProperty("error", error);
@@ -193,19 +191,6 @@ namespace
         params.push_back(result);
         jsEngine->TakeJsValues(weakCallback)[0].Call(params);
       });
-  }
-
-  void ResolveCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
-  {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
-
-    v8::Isolate* isolate = arguments.GetIsolate();
-    if (converted.size() != 1)
-      return ThrowExceptionInJS(isolate, "_fileSystem.resolve requires 1 parameter");
-
-    std::string resolved = jsEngine->GetPlatform().GetFileSystem().Resolve(converted[0].AsString());
-    arguments.GetReturnValue().Set(Utils::ToV8String(isolate, resolved));
   }
 }
 
@@ -217,6 +202,5 @@ JsValue& FileSystemJsObject::Setup(JsEngine& jsEngine, JsValue& obj)
   obj.SetProperty("move", jsEngine.NewCallback(::MoveCallback));
   obj.SetProperty("remove", jsEngine.NewCallback(::RemoveCallback));
   obj.SetProperty("stat", jsEngine.NewCallback(::StatCallback));
-  obj.SetProperty("resolve", jsEngine.NewCallback(::ResolveCallback));
   return obj;
 }

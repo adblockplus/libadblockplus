@@ -43,7 +43,7 @@ namespace AdblockPlus
     void Move(const std::string& fromPath, const std::string& toPath);
     void Remove(const std::string& path);
     IFileSystem::StatResult Stat(const std::string& path) const;
-    std::string Resolve(const std::string& path) const;
+    std::string Resolve(const std::string& fileName) const;
 
     /**
      * Sets the base path, all paths are considered relative to it.
@@ -59,20 +59,21 @@ namespace AdblockPlus
   {
   public:
     explicit DefaultFileSystem(const Scheduler& scheduler, std::unique_ptr<DefaultFileSystemSync> syncImpl);
-    void Read(const std::string& path,
-              const ReadCallback& callback) const;
-    void Write(const std::string& path,
+    void Read(const std::string& fileName,
+              const ReadCallback& callback) const override;
+    void Write(const std::string& fileName,
                const IOBuffer& data,
-               const Callback& callback);
-    void Move(const std::string& fromPath,
-              const std::string& toPath,
-              const Callback& callback);
-    void Remove(const std::string& path, const Callback& callback);
-    void Stat(const std::string& path,
-              const StatCallback& callback) const;
+               const Callback& callback) override;
+    void Move(const std::string& fromFileName,
+              const std::string& toFileName,
+              const Callback& callback) override;
+    void Remove(const std::string& fileName, const Callback& callback) override;
+    void Stat(const std::string& fileName,
+              const StatCallback& callback) const override;
 
-    std::string Resolve(const std::string& path) const;
   private:
+    // Returns the absolute path to a file.
+    std::string Resolve(const std::string& fileName) const;
     Scheduler scheduler;
     std::unique_ptr<DefaultFileSystemSync> syncImpl;
   };

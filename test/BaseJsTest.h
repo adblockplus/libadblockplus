@@ -108,34 +108,29 @@ public:
 class ThrowingFileSystem : public AdblockPlus::IFileSystem
 {
 public:
-  void Read(const std::string& path, const ReadCallback& callback) const override
+  void Read(const std::string& fileName, const ReadCallback& callback) const override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Write(const std::string& path, const IOBuffer& data,
+  void Write(const std::string& fileName, const IOBuffer& data,
     const Callback& callback) override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Move(const std::string& fromPath, const std::string& toPath,
+  void Move(const std::string& fromFileName, const std::string& toFileName,
             const Callback& callback) override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Remove(const std::string& path, const Callback& callback) override
+  void Remove(const std::string& fileName, const Callback& callback) override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Stat(const std::string& path, const StatCallback& callback) const override
-  {
-    throw std::runtime_error("Not implemented");
-  }
-
-  std::string Resolve(const std::string& path) const override
+  void Stat(const std::string& fileName, const StatCallback& callback) const override
   {
     throw std::runtime_error("Not implemented");
   }
@@ -165,16 +160,16 @@ public:
   {
   }
 
-  void Read(const std::string& path, const ReadCallback& callback) const override
+  void Read(const std::string& fileName, const ReadCallback& callback) const override
   {
-    scheduler([path, callback]
+    scheduler([fileName, callback]
     {
-      if (path == "patterns.ini")
+      if (fileName == "patterns.ini")
       {
-        std::string dummyData = "# Adblock Plus preferences\n[Subscription]\nurl=~fl~";
+        std::string dummyData = "# Adblock Plus preferences\n[Subscription]\nurl=~user~0000";
         callback(IOBuffer(dummyData.cbegin(), dummyData.cend()), "");
       }
-      else if (path == "prefs.json")
+      else if (fileName == "prefs.json")
       {
         std::string dummyData = "{}";
         callback(IOBuffer(dummyData.cbegin(), dummyData.cend()), "");
@@ -182,38 +177,32 @@ public:
     });
   }
 
-  void Write(const std::string& path, const IOBuffer& data,
+  void Write(const std::string& fileName, const IOBuffer& data,
              const Callback& callback) override
   {
   }
 
 
-  void Move(const std::string& fromPath, const std::string& toPath,
+  void Move(const std::string& fromFileName, const std::string& toFileName,
             const Callback& callback) override
   {
   }
 
-  void Remove(const std::string& path, const Callback& callback) override
+  void Remove(const std::string& fileName, const Callback& callback) override
   {
   }
 
-  void Stat(const std::string& path, const StatCallback& callback) const override
+  void Stat(const std::string& fileName, const StatCallback& callback) const override
   {
-    scheduler([path, callback]
+    scheduler([fileName, callback]
     {
       StatResult result;
-      if (path == "patterns.ini")
+      if (fileName == "patterns.ini")
       {
         result.exists = true;
-        result.isFile = true;
       }
       callback(result, "");
     });
-  }
-
-  std::string Resolve(const std::string& path) const override
-  {
-    return path;
   }
 public:
   Scheduler scheduler;

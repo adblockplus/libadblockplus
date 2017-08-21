@@ -29,25 +29,25 @@ namespace
   public:
     IOBuffer prefsContents;
 
-    void Read(const std::string& path, const ReadCallback& callback) const override
+    void Read(const std::string& fileName, const ReadCallback& callback) const override
     {
-      scheduler([this, path, callback]
+      scheduler([this, fileName, callback]
       {
-        if (path == "prefs.json" && !prefsContents.empty())
+        if (fileName == "prefs.json" && !prefsContents.empty())
         {
           callback(IOBuffer(prefsContents.cbegin(), prefsContents.cend()), "");
           return;
         }
 
-        LazyFileSystem::Read(path, callback);
+        LazyFileSystem::Read(fileName, callback);
       });
     }
 
-    void Write(const std::string& path, const IOBuffer& content, const Callback& callback) override
+    void Write(const std::string& fileName, const IOBuffer& content, const Callback& callback) override
     {
-      scheduler([this, path, content, callback]
+      scheduler([this, fileName, content, callback]
       {
-        if (path == "prefs.json")
+        if (fileName == "prefs.json")
         {
           prefsContents = content;
           callback("");
@@ -55,19 +55,19 @@ namespace
       });
     }
 
-    void Stat(const std::string& path, const StatCallback& callback) const override
+    void Stat(const std::string& fileName, const StatCallback& callback) const override
     {
-      scheduler([this, path, callback]
+      scheduler([this, fileName, callback]
       {
-        if (path == "prefs.json")
+        if (fileName == "prefs.json")
         {
           StatResult result;
-          result.exists = result.isFile = !prefsContents.empty();
+          result.exists = !prefsContents.empty();
           callback(result, "");
           return;
         }
 
-        LazyFileSystem::Stat(path, callback);
+        LazyFileSystem::Stat(fileName, callback);
       });
     }
   };
@@ -106,20 +106,16 @@ namespace
 TEST_F(PrefsTest, PrefsGetSet)
 {
   auto& filterEngine = CreateFilterEngine();
-  ASSERT_EQ("patterns.ini", filterEngine.GetPref("patternsfile").AsString());
   ASSERT_EQ(24, filterEngine.GetPref("patternsbackupinterval").AsInt());
   ASSERT_TRUE(filterEngine.GetPref("subscriptions_autoupdate").AsBool());
   ASSERT_TRUE(filterEngine.GetPref("foobar").IsUndefined());
 
-  ASSERT_ANY_THROW(filterEngine.SetPref("patternsfile", GetJsEngine().NewValue(0)));
   ASSERT_ANY_THROW(filterEngine.SetPref("patternsbackupinterval", GetJsEngine().NewValue(true)));
   ASSERT_ANY_THROW(filterEngine.SetPref("subscriptions_autoupdate", GetJsEngine().NewValue("foo")));
 
-  filterEngine.SetPref("patternsfile", GetJsEngine().NewValue("filters.ini"));
   filterEngine.SetPref("patternsbackupinterval", GetJsEngine().NewValue(48));
   filterEngine.SetPref("subscriptions_autoupdate", GetJsEngine().NewValue(false));
 
-  ASSERT_EQ("filters.ini", filterEngine.GetPref("patternsfile").AsString());
   ASSERT_EQ(48, filterEngine.GetPref("patternsbackupinterval").AsInt());
   ASSERT_FALSE(filterEngine.GetPref("subscriptions_autoupdate").AsBool());
 }
@@ -128,11 +124,9 @@ TEST_F(PrefsTest, PrefsPersist)
 {
   {
     auto& filterEngine = CreateFilterEngine();
-    ASSERT_EQ("patterns.ini", filterEngine.GetPref("patternsfile").AsString());
     ASSERT_EQ(24, filterEngine.GetPref("patternsbackupinterval").AsInt());
     ASSERT_TRUE(filterEngine.GetPref("subscriptions_autoupdate").AsBool());
 
-    filterEngine.SetPref("patternsfile", GetJsEngine().NewValue("filters.ini"));
     filterEngine.SetPref("patternsbackupinterval", GetJsEngine().NewValue(48));
     filterEngine.SetPref("subscriptions_autoupdate", GetJsEngine().NewValue(false));
   }
@@ -141,7 +135,6 @@ TEST_F(PrefsTest, PrefsPersist)
   {
     ResetPlatform();
     auto& filterEngine = CreateFilterEngine();
-    ASSERT_EQ("filters.ini", filterEngine.GetPref("patternsfile").AsString());
     ASSERT_EQ(48, filterEngine.GetPref("patternsbackupinterval").AsInt());
     ASSERT_FALSE(filterEngine.GetPref("subscriptions_autoupdate").AsBool());
   }

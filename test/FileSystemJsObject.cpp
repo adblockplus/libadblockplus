@@ -26,91 +26,80 @@ namespace
   public:
     bool success;
     IOBuffer contentToRead;
-    std::string lastWrittenPath;
+    std::string lastWrittenFile;
     IOBuffer lastWrittenContent;
     std::string movedFrom;
     std::string movedTo;
-    std::string removedPath;
-    mutable std::string statPath;
+    std::string removedFile;
+    mutable std::string statFile;
     bool statExists;
-    bool statIsDirectory;
-    bool statIsFile;
     int statLastModified;
 
     MockFileSystem() : success(true)
     {
     }
 
-    void Read(const std::string& path, const ReadCallback& callback) const override
+    void Read(const std::string& fileName, const ReadCallback& callback) const override
     {
       if (!success)
       {
-        callback(IOBuffer(), "Unable to read " + path);
+        callback(IOBuffer(), "Unable to read " + fileName);
         return;
       }
       callback(IOBuffer(contentToRead), "");
     }
 
-    void Write(const std::string& path, const IOBuffer& data,
+    void Write(const std::string& fileName, const IOBuffer& data,
                const Callback& callback) override
     {
       if (!success)
       {
-        callback("Unable to write to " + path);
+        callback("Unable to write to " + fileName);
         return;
       }
-      lastWrittenPath = path;
+      lastWrittenFile = fileName;
 
       lastWrittenContent = data;
       callback("");
     }
 
-    void Move(const std::string& fromPath, const std::string& toPath,
+    void Move(const std::string& fromFileName, const std::string& toFileName,
               const Callback& callback) override
     {
       if (!success)
       {
-        callback("Unable to move " + fromPath + " to " + toPath);
+        callback("Unable to move " + fromFileName + " to " + toFileName);
         return;
       }
-      movedFrom = fromPath;
-      movedTo = toPath;
+      movedFrom = fromFileName;
+      movedTo = toFileName;
       callback("");
     }
 
-    void Remove(const std::string& path, const Callback& callback) override
+    void Remove(const std::string& fileName, const Callback& callback) override
     {
       if (!success)
       {
-        callback("Unable to remove " + path);
+        callback("Unable to remove " + fileName);
         return;
       }
-      removedPath = path;
+      removedFile = fileName;
       callback("");
     }
 
-    void Stat(const std::string& path, const StatCallback& callback) const override
+    void Stat(const std::string& fileName, const StatCallback& callback) const override
     {
       StatResult result;
       std::string error;
       if (!success)
-        error = "Unable to stat " + path;
+        error = "Unable to stat " + fileName;
       else
       {
-        statPath = path;
+        statFile = fileName;
         result.exists = statExists;
-        result.isDirectory = statIsDirectory;
-        result.isFile = statIsFile;
         result.lastModified = statLastModified;
       }
       callback(result, error);
-    }
-
-    std::string Resolve(const std::string& path) const override
-    {
-      if (!success)
-        throw std::runtime_error("Unable to stat " + path);
-      return path;
     }
   };
 
@@ -169,7 +158,7 @@ TEST_F(FileSystemJsObjectTest, ReadError)
 TEST_F(FileSystemJsObjectTest, Write)
 {
   GetJsEngine().Evaluate("_fileSystem.write('foo', 'bar', function(e) {error = e})");
-  ASSERT_EQ("foo", mockFileSystem->lastWrittenPath);
+  ASSERT_EQ("foo", mockFileSystem->lastWrittenFile);
   ASSERT_EQ((AdblockPlus::IFileSystem::IOBuffer{'b', 'a', 'r'}),
             mockFileSystem->lastWrittenContent);
   ASSERT_TRUE(GetJsEngine().Evaluate("error").IsUndefined());
@@ -212,7 +201,7 @@ TEST_F(FileSystemJsObjectTest, MoveError)
 TEST_F(FileSystemJsObjectTest, Remove)
 {
   GetJsEngine().Evaluate("_fileSystem.remove('foo', function(e) {error = e})");
-  ASSERT_EQ("foo", mockFileSystem->removedPath);
+  ASSERT_EQ("foo", mockFileSystem->removedFile);
   ASSERT_TRUE(GetJsEngine().Evaluate("error").IsUndefined());
 }
 
@@ -232,15 +221,11 @@ TEST_F(FileSystemJsObjectTest, RemoveError)
 TEST_F(FileSystemJsObjectTest, Stat)
 {
   mockFileSystem->statExists = true;
-  mockFileSystem->statIsDirectory= false;
-  mockFileSystem->statIsFile = true;
   mockFileSystem->statLastModified = 1337;
   GetJsEngine().Evaluate("_fileSystem.stat('foo', function(r) {result = r})");
-  ASSERT_EQ("foo", mockFileSystem->statPath);
+  ASSERT_EQ("foo", mockFileSystem->statFile);
   ASSERT_TRUE(GetJsEngine().Evaluate("result.error").IsUndefined());
   ASSERT_TRUE(GetJsEngine().Evaluate("result.exists").AsBool());
-  ASSERT_FALSE(GetJsEngine().Evaluate("result.isDirectory").AsBool());
-  ASSERT_TRUE(GetJsEngine().Evaluate("result.isFile").AsBool());
   ASSERT_EQ(1337, GetJsEngine().Evaluate("result.lastModified").AsInt());
 }
 

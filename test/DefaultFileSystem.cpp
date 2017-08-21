@@ -27,7 +27,7 @@ using AdblockPlus::SchedulerTask;
 
 namespace
 {
-  const std::string testPath = "libadblockplus-t\xc3\xa4st-file";
+  const std::string testFileName = "libadblockplus-t\xc3\xa4st-file";
 
   class DefaultFileSystemTest : public ::testing::Test
   {
@@ -43,7 +43,7 @@ namespace
     void WriteString(const std::string& content)
     {
       bool hasRun = false;
-      fileSystem->Write(testPath,
+      fileSystem->Write(testFileName,
         IFileSystem::IOBuffer(content.cbegin(), content.cend()),
         [&hasRun](const std::string& error)
       {
@@ -72,7 +72,7 @@ TEST_F(DefaultFileSystemTest, WriteReadRemove)
   WriteString("foo");
 
   bool hasReadRun = false;
-  fileSystem->Read(testPath,
+  fileSystem->Read(testFileName,
     [this, &hasReadRun](IFileSystem::IOBuffer&& content, const std::string& error)
   {
     EXPECT_TRUE(error.empty());
@@ -84,7 +84,7 @@ TEST_F(DefaultFileSystemTest, WriteReadRemove)
   EXPECT_TRUE(hasReadRun);
 
   bool hasRemoveRun = false;
-  fileSystem->Remove(testPath, [&hasRemoveRun](const std::string& error)
+  fileSystem->Remove(testFileName, [&hasRemoveRun](const std::string& error)
   {
     EXPECT_TRUE(error.empty());
     hasRemoveRun = true;
@@ -102,8 +102,6 @@ TEST_F(DefaultFileSystemTest, StatWorkingDirectory)
     {
       EXPECT_TRUE(error.empty());
       ASSERT_TRUE(result.exists);
-      ASSERT_TRUE(result.isDirectory);
-      ASSERT_FALSE(result.isFile);
       ASSERT_NE(0, result.lastModified);
       hasStatRun = true;
     });
@@ -117,13 +115,11 @@ TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
   WriteString("foo");
 
   bool hasStatOrigFileExistsRun = false;
-  fileSystem->Stat(testPath,
+  fileSystem->Stat(testFileName,
     [&hasStatOrigFileExistsRun](const IFileSystem::StatResult& result, const std::string& error)
     {
       EXPECT_TRUE(error.empty());
       ASSERT_TRUE(result.exists);
-      ASSERT_TRUE(result.isFile);
-      ASSERT_FALSE(result.isDirectory);
       ASSERT_NE(0, result.lastModified);
       hasStatOrigFileExistsRun = true;
     });
@@ -131,9 +127,9 @@ TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
   PumpTask();
   EXPECT_TRUE(hasStatOrigFileExistsRun);
 
-  const std::string newTestPath = testPath + "-new";
+  const std::string newTestFileName = testFileName + "-new";
   bool hasMoveRun = false;
-  fileSystem->Move(testPath, newTestPath, [&hasMoveRun, newTestPath](const std::string& error)
+  fileSystem->Move(testFileName, newTestFileName, [&hasMoveRun, newTestFileName](const std::string& error)
   {
     EXPECT_TRUE(error.empty());
     hasMoveRun = true;
@@ -143,7 +139,7 @@ TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
   EXPECT_TRUE(hasMoveRun);
 
   bool hasStatOrigFileDontExistsRun = false;
-  fileSystem->Stat(testPath, [&hasStatOrigFileDontExistsRun](const IFileSystem::StatResult& result, const std::string& error)
+  fileSystem->Stat(testFileName, [&hasStatOrigFileDontExistsRun](const IFileSystem::StatResult& result, const std::string& error)
   {
     EXPECT_TRUE(error.empty());
     ASSERT_FALSE(result.exists);
@@ -154,7 +150,7 @@ TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
   EXPECT_TRUE(hasStatOrigFileDontExistsRun);
 
   bool hasStatNewFileExistsRun = false;
-  fileSystem->Stat(newTestPath, [&hasStatNewFileExistsRun](const IFileSystem::StatResult& result, const std::string& error)
+  fileSystem->Stat(newTestFileName, [&hasStatNewFileExistsRun](const IFileSystem::StatResult& result, const std::string& error)
   {
     EXPECT_TRUE(error.empty());
     ASSERT_TRUE(result.exists);
@@ -165,7 +161,7 @@ TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
   EXPECT_TRUE(hasStatNewFileExistsRun);
 
   bool hasRemoveRun = false;
-  fileSystem->Remove(newTestPath, [&hasRemoveRun](const std::string& error)
+  fileSystem->Remove(newTestFileName, [&hasRemoveRun](const std::string& error)
   {
     EXPECT_TRUE(error.empty());
     hasRemoveRun = true;
@@ -175,7 +171,7 @@ TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
   EXPECT_TRUE(hasRemoveRun);
 
   bool hasStatRemovedFileRun = false;
-  fileSystem->Stat(newTestPath, [&hasStatRemovedFileRun](const IFileSystem::StatResult& result, const std::string& error)
+  fileSystem->Stat(newTestFileName, [&hasStatRemovedFileRun](const IFileSystem::StatResult& result, const std::string& error)
   {
     EXPECT_TRUE(error.empty());
     ASSERT_FALSE(result.exists);
