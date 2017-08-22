@@ -19,10 +19,6 @@
 
 using namespace AdblockPlus;
 
-// This define enables NotificationMockWebRequestTest but to run it
-// one need to set INITIAL_DELAY to about 2000 msec in notification.js.
-//#define NotificationMockWebRequestTest_ENABLED
-
 namespace
 {
   class NotificationTest : public BaseJsTest
@@ -84,17 +80,16 @@ namespace
     }
   };
 
-#ifdef NotificationMockWebRequestTest_ENABLED
+
+  // To run this test one needs to set INITIAL_DELAY to about 2000 msec
+  // in notification.js.
   class NotificationMockWebRequestTest : public BaseJsTest
   {
   protected:
     bool isNotificationCallbackCalled;
     void SetUp()
     {
-      BaseJsTest::SetUp();
       isNotificationCallbackCalled = false;
-      jsEngine->SetFileSystem(
-        std::shared_ptr<LazyFileSystem>(new LazyFileSystem()));
       const char* responseJsonText = "{"
         "\"notifications\": [{"
           "\"id\": \"some id\","
@@ -105,11 +100,14 @@ namespace
           "\"title\": \"Title\""
         "}]"
         "}";
-      jsEngine->SetWebRequest(std::shared_ptr<MockWebRequest>(
-        new MockWebRequest(responseJsonText)));
-      jsEngine->SetLogSystem(LogSystemPtr(new DefaultLogSystem()));
-      filterEngine = FilterEngine::Create(jsEngine);
-      filterEngine->SetShowNotificationCallback(
+
+      ThrowingPlatformCreationParameters platformParams;
+      platformParams.fileSystem.reset(new LazyFileSystem());
+      platformParams.webRequest.reset(new MockWebRequest(responseJsonText));
+      platform.reset(new Platform(std::move(platformParams)));
+
+      auto& filterEngine = platform->GetFilterEngine();
+      filterEngine.SetShowNotificationCallback(
         [this](Notification&& notification) {
           isNotificationCallbackCalled = true;
           EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_INFORMATION, notification.GetType());
@@ -119,7 +117,6 @@ namespace
         });
     }
   };
-#endif
 }
 
 TEST_F(NotificationTest, NoNotifications)
@@ -127,13 +124,11 @@ TEST_F(NotificationTest, NoNotifications)
   EXPECT_FALSE(PeekNotification());
 }
 
-#ifdef NotificationMockWebRequestTest_ENABLED
-TEST_F(NotificationMockWebRequestTest, SingleNotification)
+TEST_F(NotificationMockWebRequestTest, DISABLED_SingleNotification)
 {
   AdblockPlus::Sleep(5000/*msec*/); // it's a hack
   EXPECT_TRUE(isNotificationCallbackCalled);
 }
-#endif
 
 TEST_F(NotificationTest, AddNotification)
 {
