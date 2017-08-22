@@ -70,7 +70,7 @@ namespace {
     AdblockPlus::JsValueList params;
     params.push_back(v1);
     params.push_back(v2);
-    return jsEngine.Evaluate("f = function(a, b) { return a == b };").Call(params).AsBool();
+    return jsEngine.Evaluate("(function(a, b) { return a == b })").Call(params).AsBool();
   }
 
 }

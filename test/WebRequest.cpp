@@ -160,8 +160,8 @@ TEST_F(MockWebRequestTest, BadCall)
 TEST_F(MockWebRequestTest, SuccessfulRequest)
 {
   auto& jsEngine = GetJsEngine();
-  jsEngine.Evaluate("_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
-  ASSERT_TRUE(jsEngine.Evaluate("this.foo").IsUndefined());
+  jsEngine.Evaluate("let foo; _webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  ASSERT_TRUE(jsEngine.Evaluate("foo").IsUndefined());
   ProcessPendingWebRequests();
   ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("foo.status").AsInt());
   ASSERT_EQ(123, jsEngine.Evaluate("foo.responseStatus").AsInt());
@@ -175,8 +175,8 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
   auto& jsEngine = GetJsEngine();
   // This URL should redirect to easylist-downloads.adblockplus.org and we
   // should get the actual filter list back.
-  jsEngine.Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
-  WaitForVariable("this.foo", jsEngine);
+  jsEngine.Evaluate("let foo; _webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  WaitForVariable("foo", jsEngine);
   ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
   ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("foo.status").AsInt());
   ASSERT_EQ(200, jsEngine.Evaluate("foo.responseStatus").AsInt());
@@ -212,8 +212,8 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 TEST_F(DefaultWebRequestTest, DummyWebRequest)
 {
   auto& jsEngine = GetJsEngine();
-  jsEngine.Evaluate("_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
-  WaitForVariable("this.foo", jsEngine);
+  jsEngine.Evaluate("let foo; _webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  WaitForVariable("foo", jsEngine);
   ASSERT_EQ(IWebRequest::NS_ERROR_FAILURE, jsEngine.Evaluate("foo.status").AsInt());
   ASSERT_EQ(0, jsEngine.Evaluate("foo.responseStatus").AsInt());
   ASSERT_EQ("", jsEngine.Evaluate("foo.responseText").AsString());

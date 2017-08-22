@@ -48,8 +48,11 @@ namespace
   class V8Initializer
   {
     V8Initializer()
-      : platform(v8::platform::CreateDefaultPlatform())
+      : platform{nullptr}
     {
+      std::string cmd = "--use_strict";
+      v8::V8::SetFlagsFromString(cmd.c_str(), cmd.length());
+      platform = v8::platform::CreateDefaultPlatform();
       v8::V8::InitializePlatform(platform);
       v8::V8::Initialize();
     }

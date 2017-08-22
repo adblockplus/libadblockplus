@@ -34,18 +34,18 @@ namespace
 
 TEST_F(GlobalJsObjectTest, SetTimeout)
 {
-  GetJsEngine().Evaluate("setTimeout(function() {foo = 'bar';}, 100)");
-  ASSERT_TRUE(GetJsEngine().Evaluate("this.foo").IsUndefined());
+  GetJsEngine().Evaluate("let foo; setTimeout(function() {foo = 'bar';}, 100)");
+  ASSERT_TRUE(GetJsEngine().Evaluate("foo").IsUndefined());
   AdblockPlus::Sleep(200);
-  ASSERT_EQ("bar", GetJsEngine().Evaluate("this.foo").AsString());
+  ASSERT_EQ("bar", GetJsEngine().Evaluate("foo").AsString());
 }
 
 TEST_F(GlobalJsObjectTest, SetTimeoutWithArgs)
 {
-  GetJsEngine().Evaluate("setTimeout(function(s) {foo = s;}, 100, 'foobar')");
-  ASSERT_TRUE(GetJsEngine().Evaluate("this.foo").IsUndefined());
+  GetJsEngine().Evaluate("let foo; setTimeout(function(s) {foo = s;}, 100, 'foobar')");
+  ASSERT_TRUE(GetJsEngine().Evaluate("foo").IsUndefined());
   AdblockPlus::Sleep(200);
-  ASSERT_EQ("foobar", GetJsEngine().Evaluate("this.foo").AsString());
+  ASSERT_EQ("foobar", GetJsEngine().Evaluate("foo").AsString());
 }
 
 TEST_F(GlobalJsObjectTest, SetTimeoutWithInvalidArgs)
@@ -56,9 +56,9 @@ TEST_F(GlobalJsObjectTest, SetTimeoutWithInvalidArgs)
 
 TEST_F(GlobalJsObjectTest, SetMultipleTimeouts)
 {
-  GetJsEngine().Evaluate("foo = []");
+  GetJsEngine().Evaluate("let foo = []");
   GetJsEngine().Evaluate("setTimeout(function(s) {foo.push('1');}, 100)");
   GetJsEngine().Evaluate("setTimeout(function(s) {foo.push('2');}, 150)");
   AdblockPlus::Sleep(200);
-  ASSERT_EQ("1,2", GetJsEngine().Evaluate("this.foo").AsString());
+  ASSERT_EQ("1,2", GetJsEngine().Evaluate("foo").AsString());
 }
