@@ -140,7 +140,7 @@ namespace AdblockPlus
     IWebRequest& GetWebRequest();
 
     /**
-     * @see `SetLogSystem()`.
+     * @return The LogSystem implementation.
      */
     LogSystem& GetLogSystem();
 
