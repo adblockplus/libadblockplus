@@ -99,7 +99,6 @@ namespace AdblockPlus
 
     /**
      * An opaque structure representing ID of stored JsValueList.
-     * 
      */
     class JsWeakValuesID
     {
