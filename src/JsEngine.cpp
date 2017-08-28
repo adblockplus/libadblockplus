@@ -72,23 +72,41 @@ namespace
       static V8Initializer initializer;
     }
   };
+
+  /**
+  * Scope based isolate manager. Creates a new isolate instance on
+  * constructing and disposes it on destructing. In addition it initilizes V8.
+  */
+  class ScopedV8Isolate : public AdblockPlus::IV8IsolateProvider
+  {
+  public:
+    ScopedV8Isolate()
+    {
+      V8Initializer::Init();
+      v8::Isolate::CreateParams isolateParams;
+      isolateParams.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+      isolate = v8::Isolate::New(isolateParams);
+    }
+
+    ~ScopedV8Isolate()
+    {
+      isolate->Dispose();
+      isolate = nullptr;
+    }
+
+    v8::Isolate* Get() override
+    {
+      return isolate;
+    }
+  private:
+    ScopedV8Isolate(const ScopedV8Isolate&);
+    ScopedV8Isolate& operator=(const ScopedV8Isolate&);
+
+    v8::Isolate* isolate;
+  };
 }
 
 using namespace AdblockPlus;
-
-AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
-{
-  V8Initializer::Init();
-  v8::Isolate::CreateParams isolateParams;
-  isolateParams.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-  isolate = v8::Isolate::New(isolateParams);
-}
-
-AdblockPlus::ScopedV8Isolate::~ScopedV8Isolate()
-{
-  isolate->Dispose();
-  isolate = nullptr;
-}
 
 JsEngine::JsWeakValuesList::~JsWeakValuesList()
 {
@@ -130,15 +148,20 @@ void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
   callback.Call(timerParams);
 }
 
-AdblockPlus::JsEngine::JsEngine(Platform& platform)
+AdblockPlus::JsEngine::JsEngine(Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate)
   : platform(platform)
+  , isolate(std::move(isolate))
 {
 }
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::New(const AppInfo& appInfo,
-  Platform& platform)
+  Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate)
 {
-  JsEnginePtr result(new JsEngine(platform));
+  if (!isolate)
+  {
+    isolate.reset(new ScopedV8Isolate());
+  }
+  JsEnginePtr result(new JsEngine(platform, std::move(isolate)));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());

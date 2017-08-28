@@ -50,6 +50,7 @@ namespace AdblockPlus
    */
   LogSystemPtr CreateDefaultLogSystem();
 
+  class IV8IsolateProvider;
   class JsEngine;
 
   /**
@@ -93,12 +94,14 @@ namespace AdblockPlus
     ~Platform();
 
     /**
-     * Ensures that JsEngine is constructed.
+     * Ensures that JsEngine is constructed. If JsEngine is already present
+     * then the parameters are ignored.
      *
-     * @param appInfo Information about the app, if jsEngine is already present
-     *        then the value is ignored.
+     * @param appInfo Information about the app, 
+     * @param isolate A provider of v8::Isolate, if the value is nullptr then
+     *        a default implementation is used.
      */
-    void SetUpJsEngine(const AppInfo& appInfo = AppInfo());
+    void SetUpJsEngine(const AppInfo& appInfo = AppInfo(), std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
 
     /**
      * Retrieves the `JsEngine` instance. It calls SetUpJsEngine if JsEngine is

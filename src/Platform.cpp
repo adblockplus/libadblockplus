@@ -64,12 +64,12 @@ Platform::~Platform()
 {
 }
 
-void Platform::SetUpJsEngine(const AppInfo& appInfo)
+void Platform::SetUpJsEngine(const AppInfo& appInfo, std::unique_ptr<IV8IsolateProvider> isolate)
 {
   std::lock_guard<std::mutex> lock(modulesMutex);
   if (jsEngine)
     return;
-  jsEngine = JsEngine::New(appInfo, *this);
+  jsEngine = JsEngine::New(appInfo, *this, std::move(isolate));
 }
 
 JsEngine& Platform::GetJsEngine()

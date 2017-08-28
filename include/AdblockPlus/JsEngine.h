@@ -53,23 +53,18 @@ namespace AdblockPlus
   typedef std::shared_ptr<JsEngine> JsEnginePtr;
 
   /**
-   * Scope based isolate manager. Creates a new isolate instance on
-   * constructing and disposes it on destructing.
+   * Provides with isolate. The main aim of this iterface is to delegate a
+   * proper initialization and deinitialization of v8::Isolate to an embedder.
    */
-  class ScopedV8Isolate
+  struct IV8IsolateProvider
   {
-  public:
-    ScopedV8Isolate();
-    ~ScopedV8Isolate();
-    v8::Isolate* Get()
-    {
-      return isolate;
-    }
-  private:
-    ScopedV8Isolate(const ScopedV8Isolate&);
-    ScopedV8Isolate& operator=(const ScopedV8Isolate&);
+    virtual ~IV8IsolateProvider() {}
 
-    v8::Isolate* isolate;
+    /**
+     * Returns v8::Isolate. All subsequent calls of this method should return
+     * the same pointer to v8::Isolate as the first call.
+     */
+    virtual v8::Isolate* Get() = 0;
   };
 
   /**
@@ -112,9 +107,11 @@ namespace AdblockPlus
      * @param appInfo Information about the app.
      * @param platform AdblockPlus platform providing with necessary
      *        dependencies.
+     * @param isolate A provider of v8::Isolate, if the value is nullptr then
+     *        a default implementation is used.
      * @return New `JsEngine` instance.
      */
-    static JsEnginePtr New(const AppInfo& appInfo, Platform& platform);
+    static JsEnginePtr New(const AppInfo& appInfo, Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
     /**
      * Registers the callback function for an event.
      * @param eventName Event name. Note that this can be any string - it's a
@@ -255,7 +252,7 @@ namespace AdblockPlus
      */
     v8::Isolate* GetIsolate()
     {
-      return isolate.Get();
+      return isolate->Get();
     }
 
     /**
@@ -274,14 +271,14 @@ namespace AdblockPlus
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
-    explicit JsEngine(Platform& platform);
+    explicit JsEngine(Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate);
 
     JsValue GetGlobalObject();
 
+    Platform& platform;
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.
-    ScopedV8Isolate isolate;
-    Platform& platform;
+    std::unique_ptr<IV8IsolateProvider> isolate;
 
     std::unique_ptr<v8::Global<v8::Context>> context;
     EventMap eventCallbacks;
