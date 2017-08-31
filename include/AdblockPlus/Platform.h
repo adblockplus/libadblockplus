@@ -30,7 +30,7 @@
 
 namespace AdblockPlus
 {
-  class IV8IsolateProvider;
+  struct IV8IsolateProvider;
   class JsEngine;
 
   /**
