@@ -19,6 +19,8 @@
 #include "BaseJsTest.h"
 #include "../src/Thread.h"
 
+using namespace AdblockPlus;
+
 namespace
 {
   class MockFileSystem : public AdblockPlus::IFileSystem
@@ -240,4 +242,166 @@ TEST_F(FileSystemJsObjectTest, StatError)
   mockFileSystem->success = false;
   GetJsEngine().Evaluate("let result; _fileSystem.stat('foo', function(r) {result = r})");
   ASSERT_FALSE(GetJsEngine().Evaluate("result.error").IsUndefined());
+}
+
+namespace
+{
+  class FileSystemJsObject_ReadFromFileTest : public FileSystemJsObjectTest
+  {
+  public:
+    typedef std::function<void(const std::string&)> ReadFromFileCallback;
+    typedef std::vector<std::string> Lines;
+
+    void readFromFile(const ReadFromFileCallback& onLine)
+    {
+      ASSERT_TRUE(onLine);
+      auto& jsEngine = GetJsEngine();
+      bool isOnDoneCalled = false;
+      jsEngine.SetEventCallback("onLine", [onLine](JsValueList&& /*line*/jsArgs)
+      {
+        ASSERT_EQ(1u, jsArgs.size());
+        EXPECT_TRUE(jsArgs[0].IsString());
+        onLine(jsArgs[0].AsString());
+      });
+      jsEngine.SetEventCallback("onDone", [this, &isOnDoneCalled](JsValueList&& /*error*/jsArgs)
+      {
+        isOnDoneCalled = true;
+        if (this->mockFileSystem->success)
+        {
+          EXPECT_EQ(0u, jsArgs.size()) << jsArgs[0].AsString();
+        }
+        else
+        {
+          ASSERT_EQ(1u, jsArgs.size());
+          EXPECT_TRUE(jsArgs[0].IsString());
+          EXPECT_FALSE(jsArgs[0].AsString().empty());
+        }
+      });
+      jsEngine.Evaluate(R"js(_fileSystem.readFromFile("foo",
+  (line) => _triggerEvent("onLine", line),
+  (error) =>
+  {
+    if (error)
+      _triggerEvent("onDone", error);
+    else
+      _triggerEvent("onDone");
+});)js");
+      EXPECT_TRUE(isOnDoneCalled);
+    }
+
+    void readFromFile_Lines(const std::string& content, const Lines& expected)
+    {
+      mockFileSystem->contentToRead.assign(content.begin(), content.end());
+      std::vector<std::string> readLines;
+      readFromFile([&readLines](const std::string& line)
+        {
+          readLines.emplace_back(line);
+        });
+
+      ASSERT_EQ(expected.size(), readLines.size());
+      for (Lines::size_type i = 0; i < expected.size(); ++i)
+      {
+        EXPECT_EQ(expected[i], readLines[i]);
+      }
+    }
+  };
+}
+
+TEST_F(FileSystemJsObject_ReadFromFileTest, NoFile)
+{
+  bool isOnLineCalled = false;
+  mockFileSystem->success = false;
+  readFromFile([&isOnLineCalled](const std::string& line)
+    {
+      isOnLineCalled = true;
+    });
+  EXPECT_FALSE(isOnLineCalled);
+}
+
+TEST_F(FileSystemJsObject_ReadFromFileTest, Lines)
+{
+  readFromFile_Lines({}, {""});
+  readFromFile_Lines({"\n"}, {""});
+  readFromFile_Lines({"\n\r"}, {""});
+  readFromFile_Lines({"\n\r\n"}, {""});
+
+  readFromFile_Lines({"line"}, {"line"});
+
+  readFromFile_Lines(
+    "first\n"
+    "second\r\n"
+    "third\r\n"
+    "\r\n"
+    "\n"
+    "last",
+    {"first", "second", "third", "last"});
+
+  readFromFile_Lines(
+    "first\n"
+    "second\r\n"
+    "third\n",
+    {"first", "second", "third"});
+
+  readFromFile_Lines(
+    "first\n"
+    "second\r\n"
+    "third\r\n",
+    {"first", "second", "third"});
+
+  readFromFile_Lines(
+    "first\n"
+    "second\r\n"
+    "third\r\n"
+    "\r\n"
+    "\n",
+    {"first", "second", "third"});
+
+  readFromFile_Lines(
+    "\n"
+    "first\n"
+    "second\r\n"
+    "third\r\n",
+    {"first", "second", "third"});
+}
+
+TEST_F(FileSystemJsObject_ReadFromFileTest, ProcessLineThrowsException)
+{
+  std::string content = "1\n2\n3";
+  mockFileSystem->contentToRead.assign(content.begin(), content.end());
+
+  std::vector<std::string> readLines;
+  auto& jsEngine = GetJsEngine();
+  std::string error;
+  jsEngine.SetEventCallback("onLine", [&readLines](JsValueList&& /*line*/jsArgs)
+  {
+    ASSERT_EQ(1u, jsArgs.size());
+    EXPECT_TRUE(jsArgs[0].IsString());
+    readLines.emplace_back(jsArgs[0].AsString());
+  });
+  jsEngine.SetEventCallback("onDone", [this, &error](JsValueList&& /*error*/jsArgs)
+  {
+    ASSERT_EQ(1u, jsArgs.size());
+    EXPECT_TRUE(jsArgs[0].IsString());
+    error = jsArgs[0].AsString();
+  });
+  jsEngine.Evaluate(R"js(
+let onLineCounter = 0;
+_fileSystem.readFromFile("foo",
+  (line) =>
+  {
+    if (onLineCounter++ == 2)
+    {
+      throw new Error("my-error");
+    }
+    _triggerEvent("onLine", line);
+  },
+  (error) =>
+  {
+    if (error)
+      _triggerEvent("onDone", error);
+    else
+      _triggerEvent("onDone");
+});)js");
+  EXPECT_EQ(2u, readLines.size());
+  EXPECT_EQ("Error: my-error at undefined:8", error);
 }

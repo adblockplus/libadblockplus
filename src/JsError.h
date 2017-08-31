@@ -29,6 +29,9 @@ namespace AdblockPlus
   public:
     JsError(const v8::Handle<v8::Value>& exception,
             const v8::Handle<v8::Message>& message);
+    static std::string ExceptionToString(const v8::Handle<v8::Value>& exception,
+      const v8::Handle<v8::Message>& message);
+
   };
 }
 
