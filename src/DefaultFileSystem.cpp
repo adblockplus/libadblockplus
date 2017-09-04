@@ -68,6 +68,15 @@ namespace
 #endif
 }
 
+DefaultFileSystemSync::DefaultFileSystemSync(const std::string& path)
+  : basePath(path)
+{
+  if (!basePath.empty() && *basePath.rbegin() == PATH_SEPARATOR)
+  {
+    basePath.resize(basePath.size() - 1);
+  }
+}
+
 IFileSystem::IOBuffer
 DefaultFileSystemSync::Read(const std::string& path) const
 {
@@ -180,16 +189,6 @@ std::string DefaultFileSystemSync::Resolve(const std::string& path) const
     {
       return path;
     }
-  }
-}
-
-void DefaultFileSystemSync::SetBasePath(const std::string& path)
-{
-  basePath = path;
-
-  if (*basePath.rbegin() == PATH_SEPARATOR)
-  {
-    basePath.resize(basePath.size() - 1);
   }
 }
 

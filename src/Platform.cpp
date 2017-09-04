@@ -37,14 +37,16 @@ TimerPtr AdblockPlus::CreateDefaultTimer()
   return TimerPtr(new DefaultTimer());
 }
 
-FileSystemPtr AdblockPlus::CreateDefaultFileSystem(const Scheduler& scheduler)
+FileSystemPtr AdblockPlus::CreateDefaultFileSystem(const Scheduler& scheduler, const std::string& basePath)
 {
-  return FileSystemPtr(new DefaultFileSystem(scheduler, std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync())));
+  return FileSystemPtr(new DefaultFileSystem(scheduler, std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(basePath))));
 }
 
-WebRequestPtr AdblockPlus::CreateDefaultWebRequest(const Scheduler& scheduler)
+WebRequestPtr AdblockPlus::CreateDefaultWebRequest(const Scheduler& scheduler, WebRequestSyncPtr syncImpl)
 {
-  return WebRequestPtr(new DefaultWebRequest(scheduler, std::unique_ptr<DefaultWebRequestSync>(new DefaultWebRequestSync())));
+  if (!syncImpl)
+    syncImpl.reset(new DefaultWebRequestSync());
+  return WebRequestPtr(new DefaultWebRequest(scheduler, std::move(syncImpl)));
 }
 
 LogSystemPtr AdblockPlus::CreateDefaultLogSystem()

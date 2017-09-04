@@ -38,12 +38,12 @@ namespace AdblockPlus
   /**
    * A factory to construct DefaultFileSystem.
    */
-  FileSystemPtr CreateDefaultFileSystem(const Scheduler& scheduler);
+  FileSystemPtr CreateDefaultFileSystem(const Scheduler& scheduler, const std::string& basePath = std::string());
 
   /**
    * A factory to construct DefaultWebRequest.
    */
-  WebRequestPtr CreateDefaultWebRequest(const Scheduler& scheduler);
+  WebRequestPtr CreateDefaultWebRequest(const Scheduler& scheduler, WebRequestSyncPtr syncImpl = nullptr);
 
   /**
    * A factory to construct LogSystem.

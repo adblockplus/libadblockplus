@@ -20,7 +20,7 @@
 
 using namespace AdblockPlus;
 
-DefaultWebRequest::DefaultWebRequest(const Scheduler& scheduler, std::unique_ptr<DefaultWebRequestSync>&& syncImpl)
+DefaultWebRequest::DefaultWebRequest(const Scheduler& scheduler, WebRequestSyncPtr syncImpl)
   : scheduler(scheduler), syncImpl(std::move(syncImpl))
 {
 

@@ -114,6 +114,17 @@ namespace AdblockPlus
    * Unique smart pointer to an instance of `IWebRequest` implementation.
    */
   typedef std::unique_ptr<IWebRequest> WebRequestPtr;
+
+
+  /**
+   * Private functionality.
+   */
+  struct IWebRequestSync
+  {
+    virtual ~IWebRequestSync() {}
+    virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
+  };
+  typedef std::unique_ptr<IWebRequestSync> WebRequestSyncPtr;
 }
 
 #endif

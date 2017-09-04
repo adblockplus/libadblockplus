@@ -38,19 +38,13 @@ namespace AdblockPlus
   class DefaultFileSystemSync
   {
   public:
+    explicit DefaultFileSystemSync(const std::string& basePath);
     IFileSystem::IOBuffer Read(const std::string& path) const;
     void Write(const std::string& path, const IFileSystem::IOBuffer& data);
     void Move(const std::string& fromPath, const std::string& toPath);
     void Remove(const std::string& path);
     IFileSystem::StatResult Stat(const std::string& path) const;
     std::string Resolve(const std::string& fileName) const;
-
-    /**
-     * Sets the base path, all paths are considered relative to it.
-     * @param path Base path.
-     */
-    void SetBasePath(const std::string& path);
-
   protected:
     std::string basePath;
   };
