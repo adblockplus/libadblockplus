@@ -63,10 +63,10 @@ int main()
     appInfo.applicationVersion = "1.0";
     appInfo.locale = "en-US";
 
-    AdblockPlus::Platform platform;
-    platform.SetUpJsEngine(appInfo);
-    AdblockPlus::JsEngine& jsEngine = platform.GetJsEngine();
-    auto& filterEngine = platform.GetFilterEngine();
+    auto platform = AdblockPlus::DefaultPlatformBuilder().CreatePlatform();
+    platform->SetUpJsEngine(appInfo);
+    AdblockPlus::JsEngine& jsEngine = platform->GetJsEngine();
+    auto& filterEngine = platform->GetFilterEngine();
 
     CommandMap commands;
     Add(commands, new GcCommand(jsEngine));

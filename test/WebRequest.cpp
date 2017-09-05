@@ -18,6 +18,7 @@
 #include <sstream>
 #include "BaseJsTest.h"
 #include "../src/Thread.h"
+#include "../src/DefaultWebRequest.h"
 #include <atomic>
 #include <mutex>
 
@@ -25,6 +26,10 @@ using namespace AdblockPlus;
 
 namespace
 {
+  WebRequestPtr CreateDefaultWebRequest(const Scheduler& scheduler)
+  {
+    return WebRequestPtr(new DefaultWebRequest(scheduler, WebRequestSyncPtr(new DefaultWebRequestSync())));
+  }
   class BaseWebRequestTest : public BaseJsTest
   {
   protected:

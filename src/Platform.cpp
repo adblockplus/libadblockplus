@@ -21,6 +21,7 @@
 #include "DefaultTimer.h"
 #include "DefaultWebRequest.h"
 #include "DefaultFileSystem.h"
+#include <stdexcept>
 
 using namespace AdblockPlus;
 
@@ -30,36 +31,23 @@ namespace
   {
     std::thread(task).detach();
   }
+
+  template<typename T>
+  void ValidatePlatformCreationParameter(const std::unique_ptr<T>& param, const char* paramName)
+  {
+    if (!param)
+      throw std::logic_error(paramName + std::string(" must not be nullptr"));
+  }
 }
 
-TimerPtr AdblockPlus::CreateDefaultTimer()
-{
-  return TimerPtr(new DefaultTimer());
-}
-
-FileSystemPtr AdblockPlus::CreateDefaultFileSystem(const Scheduler& scheduler, const std::string& basePath)
-{
-  return FileSystemPtr(new DefaultFileSystem(scheduler, std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(basePath))));
-}
-
-WebRequestPtr AdblockPlus::CreateDefaultWebRequest(const Scheduler& scheduler, WebRequestSyncPtr syncImpl)
-{
-  if (!syncImpl)
-    syncImpl.reset(new DefaultWebRequestSync());
-  return WebRequestPtr(new DefaultWebRequest(scheduler, std::move(syncImpl)));
-}
-
-LogSystemPtr AdblockPlus::CreateDefaultLogSystem()
-{
-  return LogSystemPtr(new DefaultLogSystem());
-}
+#define ASSIGN_PLATFORM_PARAM(param) ValidatePlatformCreationParameter(param = std::move(creationParameters.param), #param)
 
 Platform::Platform(CreationParameters&& creationParameters)
 {
-  logSystem = creationParameters.logSystem ? std::move(creationParameters.logSystem) : CreateDefaultLogSystem();
-  timer = creationParameters.timer ? std::move(creationParameters.timer) : CreateDefaultTimer();
-  fileSystem = creationParameters.fileSystem ? std::move(creationParameters.fileSystem) : CreateDefaultFileSystem(::DummyScheduler);
-  webRequest = creationParameters.webRequest ? std::move(creationParameters.webRequest) : CreateDefaultWebRequest(::DummyScheduler);
+  ASSIGN_PLATFORM_PARAM(logSystem);
+  ASSIGN_PLATFORM_PARAM(timer);
+  ASSIGN_PLATFORM_PARAM(fileSystem);
+  ASSIGN_PLATFORM_PARAM(webRequest);
 }
 
 Platform::~Platform()
@@ -125,4 +113,78 @@ IWebRequest& Platform::GetWebRequest()
 LogSystem& Platform::GetLogSystem()
 {
   return *logSystem;
+}
+
+namespace
+{
+  class DefaultPlatform : public Platform
+  {
+  public:
+    typedef std::shared_ptr<Scheduler> AsyncExecutorPtr;
+    explicit DefaultPlatform(const AsyncExecutorPtr& asyncExecutor, CreationParameters&& creationParams)
+      : Platform(std::move(creationParams)), asyncExecutor(asyncExecutor)
+    {
+    }
+    ~DefaultPlatform()
+    {
+      asyncExecutor.reset();
+    }
+  private:
+    AsyncExecutorPtr asyncExecutor;
+  };
+}
+
+Scheduler DefaultPlatformBuilder::GetDefaultAsyncExecutor()
+{
+  if (!defaultScheduler)
+  {
+    asyncExecutor = std::make_shared<Scheduler>(::DummyScheduler);
+    std::weak_ptr<Scheduler> weakExecutor = asyncExecutor;
+    defaultScheduler = [weakExecutor](const SchedulerTask& task)
+    {
+      if (auto executor = weakExecutor.lock())
+      {
+        (*executor)(task);
+      }
+    };
+  }
+  return defaultScheduler;
+}
+
+void DefaultPlatformBuilder::CreateDefaultTimer()
+{
+  timer.reset(new DefaultTimer());
+}
+
+void DefaultPlatformBuilder::CreateDefaultFileSystem(const std::string& basePath)
+{
+  fileSystem.reset(new DefaultFileSystem(GetDefaultAsyncExecutor(), std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(basePath))));
+}
+
+void DefaultPlatformBuilder::CreateDefaultWebRequest(std::unique_ptr<IWebRequestSync> webRequest)
+{
+  if (!webRequest)
+    webRequest.reset(new DefaultWebRequestSync());
+  this->webRequest.reset(new DefaultWebRequest(GetDefaultAsyncExecutor(), std::move(webRequest)));
+}
+
+void DefaultPlatformBuilder::CreateDefaultLogSystem()
+{
+  logSystem.reset(new DefaultLogSystem());
+}
+
+std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
+{
+  if (!logSystem)
+    CreateDefaultLogSystem();
+  if (!timer)
+    CreateDefaultTimer();
+  if (!fileSystem)
+    CreateDefaultFileSystem();
+  if (!webRequest)
+    CreateDefaultWebRequest();
+
+  std::unique_ptr<Platform> platform(new DefaultPlatform(asyncExecutor, std::move(*this)));
+  asyncExecutor.reset();
+  return platform;
 }

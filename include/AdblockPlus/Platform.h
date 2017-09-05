@@ -30,26 +30,6 @@
 
 namespace AdblockPlus
 {
-  /**
-   * A factory to construct DefaultTimer.
-   */
-  TimerPtr CreateDefaultTimer();
-
-  /**
-   * A factory to construct DefaultFileSystem.
-   */
-  FileSystemPtr CreateDefaultFileSystem(const Scheduler& scheduler, const std::string& basePath = std::string());
-
-  /**
-   * A factory to construct DefaultWebRequest.
-   */
-  WebRequestPtr CreateDefaultWebRequest(const Scheduler& scheduler, WebRequestSyncPtr syncImpl = nullptr);
-
-  /**
-   * A factory to construct LogSystem.
-   */
-  LogSystemPtr CreateDefaultLogSystem();
-
   class IV8IsolateProvider;
   class JsEngine;
 
@@ -91,7 +71,7 @@ namespace AdblockPlus
      * implementation is chosen.
      */
     explicit Platform(CreationParameters&& creationParameters = CreationParameters());
-    ~Platform();
+    virtual ~Platform();
 
     /**
      * Ensures that JsEngine is constructed. If JsEngine is already present
@@ -156,6 +136,52 @@ namespace AdblockPlus
     std::mutex modulesMutex;
     std::shared_ptr<JsEngine> jsEngine;
     std::shared_future<FilterEnginePtr> filterEngine;
+  };
+
+  /**
+   * A helper class allowing to construct a default Platform and to obtain
+   * the Scheduler used by Platform before the latter is constructed.
+   */
+  class DefaultPlatformBuilder : public Platform::CreationParameters
+  {
+  public:
+    /**
+     * Constructs a default executor for asynchronous tasks. When Platform
+     * is being destroyed it starts to ignore new tasks and waits for finishing
+     * of already running tasks.
+     * @return Scheduler allowing to execute tasks asynchronously.
+     */
+    Scheduler GetDefaultAsyncExecutor();
+
+    /**
+     * Constructs default implementation of `ITimer`.
+     */
+    void CreateDefaultTimer();
+
+    /**
+     * Constructs default implementation of `IFileSystem`.
+     * @param basePath A working directory for file system operations.
+     */
+    void CreateDefaultFileSystem(const std::string& basePath = std::string());
+
+    /**
+     * Constructs default implementation of `IWebRequest`.
+     */
+    void CreateDefaultWebRequest(WebRequestSyncPtr webRequest = nullptr);
+
+    /**
+     * Constructs default implementation of `LogSystem`.
+     */
+    void CreateDefaultLogSystem();
+
+    /**
+     * Constructs Platform with default implementations of platform interfaces
+     * when a corresponding field is nullptr and with a default Scheduler.
+     */
+    std::unique_ptr<Platform> CreatePlatform();
+  private:
+    std::shared_ptr<Scheduler> asyncExecutor;
+    Scheduler defaultScheduler;
   };
 }
 

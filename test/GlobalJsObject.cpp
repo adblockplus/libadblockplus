@@ -17,6 +17,7 @@
 
 #include "BaseJsTest.h"
 #include "../src/Thread.h"
+#include "../src/DefaultTimer.h"
 
 namespace
 {
@@ -26,7 +27,7 @@ namespace
     void SetUp() override
     {
       ThrowingPlatformCreationParameters params;
-      params.timer = AdblockPlus::CreateDefaultTimer();
+      params.timer.reset(new AdblockPlus::DefaultTimer());
       platform.reset(new AdblockPlus::Platform(std::move(params)));
     }
   };

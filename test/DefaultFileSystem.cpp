@@ -18,23 +18,29 @@
 #include <sstream>
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
-
+#include "../src/DefaultFileSystem.h"
 #include "BaseJsTest.h"
 
 using AdblockPlus::IFileSystem;
 using AdblockPlus::FileSystemPtr;
 using AdblockPlus::SchedulerTask;
 
+using namespace AdblockPlus;
 namespace
 {
   const std::string testFileName = "libadblockplus-t\xc3\xa4st-file";
+
+  FileSystemPtr CreateDefaultFileSystem(const Scheduler& scheduler)
+  {
+    return FileSystemPtr(new DefaultFileSystem(scheduler, std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(""))));
+  }
 
   class DefaultFileSystemTest : public ::testing::Test
   {
   public:
     void SetUp() override
     {
-      fileSystem = AdblockPlus::CreateDefaultFileSystem([this](const SchedulerTask& task)
+      fileSystem = CreateDefaultFileSystem([this](const SchedulerTask& task)
       {
         fileSystemTasks.emplace_back(task);
       });
