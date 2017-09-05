@@ -208,6 +208,78 @@ public:
   Scheduler scheduler;
 };
 
+class InMemoryFileSystem : public LazyFileSystem
+{
+  std::map<std::string, IOBuffer> files;
+public:
+  using LazyFileSystem::LazyFileSystem;
+  void Read(const std::string& fileName, const ReadCallback& callback) const override
+  {
+    scheduler([this, fileName, callback]()
+    {
+      auto ii_file = files.find(fileName);
+      if (ii_file == files.end())
+      {
+        callback(IOBuffer(), "File not found, " + fileName);
+        return;
+      }
+      callback(IOBuffer(ii_file->second), "");
+    });
+  }
+
+  void Write(const std::string& fileName, const IOBuffer& data,
+    const Callback& callback) override
+  {
+    scheduler([this, fileName, data, callback]()
+    {
+      files[fileName] = data;
+      callback("");
+    });
+  }
+
+  void Move(const std::string& fromFileName, const std::string& toFileName,
+    const Callback& callback) override
+  {
+    scheduler([this, fromFileName, toFileName, callback]()
+    {
+      auto ii_fromFile = files.find(fromFileName);
+      if (ii_fromFile == files.end())
+      {
+        callback("File (from) not found, " + fromFileName);
+        return;
+      }
+      Write(toFileName, ii_fromFile->second, [this, fromFileName, callback](const std::string& error)
+      {
+        if (!error.empty())
+        {
+          callback(error);
+          return;
+        }
+        Remove(fromFileName, callback);
+      });
+    });
+  }
+
+  void Remove(const std::string& fileName, const Callback& callback) override
+  {
+    scheduler([this, fileName, callback]()
+    {
+      files.erase(fileName);
+      callback("");
+    });
+  }
+
+  void Stat(const std::string& fileName, const StatCallback& callback) const override
+  {
+    scheduler([this, fileName, callback]()
+    {
+      StatResult result;
+      result.exists = files.find(fileName) != files.end();
+      callback(result, "");
+    });
+  }
+};
+
 AdblockPlus::FilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
   AdblockPlus::Platform& platform,
   const AdblockPlus::FilterEngine::CreationParameters& creationParams = AdblockPlus::FilterEngine::CreationParameters());

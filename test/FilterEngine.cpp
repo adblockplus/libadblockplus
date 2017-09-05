@@ -72,29 +72,16 @@ namespace
   typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
   typedef FilterEngineTestGeneric<NoFilesFileSystem, LazyLogSystem> FilterEngineTestNoData;
 
-  class FilterEngineWithFreshFolder : public BaseJsTest
+  class FilterEngineWithInMemoryFS : public BaseJsTest
   {
+    LazyFileSystem* fileSystem;
   protected:
-    FileSystemPtr fileSystem;
-    std::list<SchedulerTask> fileSystemTasks;
-
-    void SetUp() override
-    {
-      fileSystem = CreateDefaultFileSystem([this](const SchedulerTask& task)
-      {
-        fileSystemTasks.emplace_back(task);
-      });
-      // Since there is neither in memory FS nor functionality to work with
-      // directories use the hack: manually clean the directory.
-      removeFileIfExists("patterns.ini");
-      removeFileIfExists("prefs.json");
-    }
     void InitPlatformAndAppInfo(const AppInfo& appInfo = AppInfo())
     {
       ThrowingPlatformCreationParameters platformParams;
       platformParams.logSystem.reset(new LazyLogSystem());
       platformParams.timer.reset(new NoopTimer());
-      platformParams.fileSystem = fileSystem;
+      platformParams.fileSystem.reset(fileSystem = new InMemoryFileSystem());
       platformParams.webRequest.reset(new NoopWebRequest());
       platform.reset(new Platform(std::move(platformParams)));
       platform->SetUpJsEngine(appInfo);
@@ -102,56 +89,8 @@ namespace
 
     FilterEngine& CreateFilterEngine(const FilterEngine::CreationParameters& creationParams = FilterEngine::CreationParameters())
     {
-      bool isFilterEngineReady = false;
-      platform->CreateFilterEngineAsync(creationParams, [&isFilterEngineReady](const FilterEngine& filterEngine)
-      {
-        isFilterEngineReady = true;
-      });
-      while (!isFilterEngineReady && !fileSystemTasks.empty())
-      {
-        (*fileSystemTasks.begin())();
-        fileSystemTasks.pop_front();
-      }
+      ::CreateFilterEngine(*fileSystem, *platform, creationParams);
       return platform->GetFilterEngine();
-    }
-
-    void TearDown() override
-    {
-      removeFileIfExists("patterns.ini");
-      removeFileIfExists("prefs.json");
-      fileSystem.reset();
-      BaseJsTest::TearDown();
-    }
-    void removeFileIfExists(const std::string& fileName)
-    {
-      bool hasStatRun = false;
-      bool doesFileExists;
-      fileSystem->Stat(fileName, [&hasStatRun, &doesFileExists](const IFileSystem::StatResult& stats, const std::string& error)
-      {
-        EXPECT_TRUE(error.empty()) << error;
-        doesFileExists = stats.exists;
-        hasStatRun = true;
-      });
-      while (!hasStatRun && !fileSystemTasks.empty())
-      {
-        (*fileSystemTasks.begin())();
-        fileSystemTasks.pop_front();
-      }
-
-      if (!doesFileExists)
-        return;
-
-      bool hasRemoveRun = false;
-      fileSystem->Remove(fileName, [&hasRemoveRun](const std::string& error)
-      {
-        EXPECT_TRUE(error.empty()) << error;
-        hasRemoveRun = true;
-      });
-      while (!hasStatRun && !fileSystemTasks.empty())
-      {
-        (*fileSystemTasks.begin())();
-        fileSystemTasks.pop_front();
-      }
     }
   };
 
@@ -699,7 +638,7 @@ TEST_F(FilterEngineTest, ElemhideWhitelisting)
       documentUrls1));
 }
 
-TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
+TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
 {
   AppInfo appInfo;
   appInfo.locale = "zh";
@@ -726,7 +665,7 @@ TEST_F(FilterEngineWithFreshFolder, LangAndAASubscriptionsAreChosenOnFirstRun)
   EXPECT_TRUE(filterEngine.IsAAEnabled());
 }
 
-TEST_F(FilterEngineWithFreshFolder, DisableSubscriptionsAutoSelectOnFirstRun)
+TEST_F(FilterEngineWithInMemoryFS, DisableSubscriptionsAutoSelectOnFirstRun)
 {
   InitPlatformAndAppInfo();
   FilterEngine::CreationParameters createParams;
