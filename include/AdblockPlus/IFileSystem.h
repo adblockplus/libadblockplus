@@ -125,9 +125,9 @@ namespace AdblockPlus
   };
 
   /**
-   * Shared smart pointer to a `IFileSystem` instance.
+   * Unique smart pointer to to a `IFileSystem` instance.
    */
-  typedef std::shared_ptr<IFileSystem> FileSystemPtr;
+  typedef std::unique_ptr<IFileSystem> FileSystemPtr;
 }
 
 #endif

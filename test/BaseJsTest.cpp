@@ -62,6 +62,6 @@ ThrowingPlatformCreationParameters::ThrowingPlatformCreationParameters()
 {
   logSystem.reset(new ThrowingLogSystem());
   timer.reset(new ThrowingTimer());
-  fileSystem = std::make_shared<ThrowingFileSystem>();
+  fileSystem.reset(new ThrowingFileSystem());
   webRequest.reset(new ThrowingWebRequest());
 }

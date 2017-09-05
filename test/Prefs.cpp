@@ -26,9 +26,12 @@ namespace
 {
   class TestFileSystem : public LazyFileSystem
   {
+    IOBuffer& prefsContents;
   public:
-    IOBuffer prefsContents;
-
+    explicit TestFileSystem(IOBuffer& prefsContent)
+      : prefsContents(prefsContent)
+    {
+    }
     void Read(const std::string& fileName, const ReadCallback& callback) const override
     {
       scheduler([this, fileName, callback]
@@ -74,19 +77,19 @@ namespace
 
   class PrefsTest : public BaseJsTest
   {
+    LazyFileSystem* fileSystem;
   protected:
-    std::shared_ptr<TestFileSystem> fileSystem;
+    IFileSystem::IOBuffer prefsContent;
 
     void SetUp()
     {
-      fileSystem = std::make_shared<TestFileSystem>();
       ResetPlatform();
     }
 
     void ResetPlatform()
     {
       ThrowingPlatformCreationParameters platformParams;
-      platformParams.fileSystem = fileSystem;
+      platformParams.fileSystem.reset(fileSystem = new TestFileSystem(prefsContent));
       platformParams.webRequest.reset(new NoopWebRequest());
       platformParams.logSystem.reset(new LazyLogSystem());
       platformParams.timer.reset(new NoopTimer());
@@ -130,7 +133,7 @@ TEST_F(PrefsTest, PrefsPersist)
     filterEngine.SetPref("patternsbackupinterval", GetJsEngine().NewValue(48));
     filterEngine.SetPref("subscriptions_autoupdate", GetJsEngine().NewValue(false));
   }
-  ASSERT_FALSE(fileSystem->prefsContents.empty());
+  ASSERT_FALSE(prefsContent.empty());
 
   {
     ResetPlatform();
@@ -144,7 +147,7 @@ TEST_F(PrefsTest, UnknownPrefs)
 {
   using IOBuffer = AdblockPlus::IFileSystem::IOBuffer;
   std::string content = "{\"foobar\":2, \"patternsbackupinterval\": 12}";
-  fileSystem->prefsContents = IOBuffer(content.cbegin(), content.cend());
+  prefsContent = IOBuffer(content.cbegin(), content.cend());
   auto& filterEngine = CreateFilterEngine();
   ASSERT_TRUE(filterEngine.GetPref("foobar").IsUndefined());
   ASSERT_EQ(12, filterEngine.GetPref("patternsbackupinterval").AsInt());
@@ -154,7 +157,7 @@ TEST_F(PrefsTest, SyntaxFailure)
 {
   using IOBuffer = AdblockPlus::IFileSystem::IOBuffer;
   std::string content = "{\"patternsbackupinterval\": 6, \"foo\"}";
-  fileSystem->prefsContents = IOBuffer(content.cbegin(), content.cend());
+  prefsContent = IOBuffer(content.cbegin(), content.cend());
   ASSERT_EQ(24, CreateFilterEngine().GetPref("patternsbackupinterval").AsInt());
 }
 
@@ -202,7 +205,7 @@ TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
     ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").AsBool());
     filterEngine.SetPref("suppress_first_run_page", GetJsEngine().NewValue(false));
   }
-  ASSERT_FALSE(fileSystem->prefsContents.empty());
+  ASSERT_FALSE(prefsContent.empty());
 
   {
     ResetPlatform();

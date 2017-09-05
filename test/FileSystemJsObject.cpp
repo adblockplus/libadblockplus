@@ -113,18 +113,15 @@ namespace
     error = jsEngine.Evaluate("result.error").AsString();
   }
 
-  typedef std::shared_ptr<MockFileSystem> MockFileSystemPtr;
-
   class FileSystemJsObjectTest : public BaseJsTest
   {
   protected:
-    MockFileSystemPtr mockFileSystem;
+    MockFileSystem* mockFileSystem;
 
     void SetUp()
     {
-      mockFileSystem = MockFileSystemPtr(new MockFileSystem());
       ThrowingPlatformCreationParameters params;
-      params.fileSystem = mockFileSystem;
+      params.fileSystem.reset(mockFileSystem = new MockFileSystem());
       platform.reset(new AdblockPlus::Platform(std::move(params)));
     }
   };
