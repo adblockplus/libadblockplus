@@ -73,7 +73,7 @@ Filter::Type Filter::GetType() const
   else if (className == "ElemHideException")
     return TYPE_ELEMHIDE_EXCEPTION;
   else if (className == "ElemHideEmulationFilter")
-    return TYPE_TYPE_ELEMHIDE_EMULATION;
+    return TYPE_ELEMHIDE_EMULATION;
   else if (className == "CommentFilter")
     return TYPE_COMMENT;
   else

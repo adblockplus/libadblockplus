@@ -51,7 +51,7 @@ namespace AdblockPlus
      */
     enum Type {TYPE_BLOCKING, TYPE_EXCEPTION,
                TYPE_ELEMHIDE, TYPE_ELEMHIDE_EXCEPTION,
-               TYPE_TYPE_ELEMHIDE_EMULATION,
+               TYPE_ELEMHIDE_EMULATION,
                TYPE_COMMENT, TYPE_INVALID};
 
     /**
