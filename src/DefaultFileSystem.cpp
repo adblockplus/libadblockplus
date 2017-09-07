@@ -71,7 +71,7 @@ namespace
 DefaultFileSystemSync::DefaultFileSystemSync(const std::string& path)
   : basePath(path)
 {
-  if (!basePath.empty() && *basePath.rbegin() == PATH_SEPARATOR)
+  if (basePath.size() > 1 && *basePath.rbegin() == PATH_SEPARATOR)
   {
     basePath.resize(basePath.size() - 1);
   }
@@ -183,7 +183,10 @@ std::string DefaultFileSystemSync::Resolve(const std::string& path) const
   if (path.length() && *path.begin() != PATH_SEPARATOR)
 #endif
     {
-      return basePath + PATH_SEPARATOR + path;
+      if (*basePath.rbegin() != PATH_SEPARATOR)
+        return basePath + PATH_SEPARATOR + path;
+      else
+        return basePath + path;
     }
     else
     {

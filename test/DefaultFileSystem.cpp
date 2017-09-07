@@ -15,6 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <memory>
 #include <sstream>
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
@@ -71,6 +72,57 @@ namespace
     std::list<SchedulerTask> fileSystemTasks;
     FileSystemPtr fileSystem;
   };
+}
+
+#ifdef _WIN32
+#define SLASH_STRING "\\"
+#else
+#define SLASH_STRING "/"
+#endif
+
+TEST(DefaultFileSystemBasePathTest, BasePathAndResolveTest)
+{
+  class TestFSSync : public DefaultFileSystemSync
+  {
+  public:
+    explicit TestFSSync(const std::string& basePath)
+      : DefaultFileSystemSync(basePath)
+      {
+      }
+    const std::string& base() const
+      {
+        return basePath;
+      }
+  };
+
+  {
+    auto fs = std::unique_ptr<TestFSSync>(new TestFSSync(""));
+    EXPECT_EQ("", fs->base());
+    std::string fullPath = fs->Resolve("bar" SLASH_STRING "baz.txt");
+    EXPECT_EQ("bar" SLASH_STRING "baz.txt", fullPath);
+  }
+  {
+    auto fs = std::unique_ptr<TestFSSync>(new TestFSSync(SLASH_STRING));
+    EXPECT_EQ(SLASH_STRING, fs->base());
+    std::string fullPath = fs->Resolve("bar" SLASH_STRING "baz.txt");
+    EXPECT_EQ(SLASH_STRING "bar" SLASH_STRING "baz.txt", fullPath);
+  }
+  {
+    auto fs = std::unique_ptr<TestFSSync>(
+      new TestFSSync(SLASH_STRING "foo" SLASH_STRING));
+    EXPECT_EQ(SLASH_STRING "foo", fs->base());
+    std::string fullPath = fs->Resolve("bar" SLASH_STRING "baz.txt");
+    EXPECT_EQ(SLASH_STRING "foo" SLASH_STRING "bar" SLASH_STRING "baz.txt",
+              fullPath);
+  }
+  {
+    auto fs = std::unique_ptr<TestFSSync>(
+      new TestFSSync(SLASH_STRING "foo"));
+    EXPECT_EQ(SLASH_STRING "foo", fs->base());
+    std::string fullPath = fs->Resolve("bar" SLASH_STRING "baz.txt");
+    EXPECT_EQ(SLASH_STRING "foo" SLASH_STRING "bar" SLASH_STRING "baz.txt",
+              fullPath);
+  }
 }
 
 TEST_F(DefaultFileSystemTest, WriteReadRemove)
