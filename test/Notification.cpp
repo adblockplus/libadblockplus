@@ -80,13 +80,13 @@ namespace
     }
   };
 
-
   // To run this test one needs to set INITIAL_DELAY to about 2000 msec
   // in notification.js.
   class NotificationMockWebRequestTest : public BaseJsTest
   {
   protected:
     bool isNotificationCallbackCalled;
+    DelayedTimer::SharedTasks timerTasks;
     void SetUp()
     {
       isNotificationCallbackCalled = false;
@@ -101,11 +101,14 @@ namespace
         "}]"
         "}";
 
+      LazyFileSystem* fileSystem;
       ThrowingPlatformCreationParameters platformParams;
-      platformParams.fileSystem.reset(new LazyFileSystem());
+      platformParams.timer = DelayedTimer::New(timerTasks);
+      platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest.reset(new MockWebRequest(responseJsonText));
       platform.reset(new Platform(std::move(platformParams)));
 
+      CreateFilterEngine(*fileSystem, *platform);
       auto& filterEngine = platform->GetFilterEngine();
       filterEngine.SetShowNotificationCallback(
         [this](Notification&& notification) {
@@ -124,9 +127,15 @@ TEST_F(NotificationTest, NoNotifications)
   EXPECT_FALSE(PeekNotification());
 }
 
-TEST_F(NotificationMockWebRequestTest, DISABLED_SingleNotification)
+TEST_F(NotificationMockWebRequestTest, SingleNotification)
 {
-  AdblockPlus::Sleep(5000/*msec*/); // it's a hack
+  auto& filterEngine = platform->GetFilterEngine();
+  auto ii = timerTasks->begin();
+  while(!isNotificationCallbackCalled && ii != timerTasks->end()) {
+    ii->callback();
+    ii = timerTasks->erase(ii);
+    filterEngine.ShowNextNotification();
+  }
   EXPECT_TRUE(isNotificationCallbackCalled);
 }
 
