@@ -107,31 +107,24 @@ namespace AdblockPlus
      */
     FilterEngine& GetFilterEngine();
 
-    /**
-    * @return The asynchronous ITimer implementation.
-     */
-    ITimer& GetTimer();
+    typedef std::function<void(ITimer&)> WithTimerCallback;
+    virtual void WithTimer(const WithTimerCallback&);
 
-    /**
-     * @return The asynchronous IFileSystem implementation.
-     */
-    IFileSystem& GetFileSystem();
+    typedef std::function<void(IFileSystem&)> WithFileSystemCallback;
+    virtual void WithFileSystem(const WithFileSystemCallback&);
 
-    /**
-    * @return The asynchronous IWebRequest implementation.
-    */
-    IWebRequest& GetWebRequest();
+    typedef std::function<void(IWebRequest&)> WithWebRequestCallback;
+    virtual void WithWebRequest(const WithWebRequestCallback&);
 
-    /**
-     * @return The LogSystem implementation.
-     */
-    LogSystem& GetLogSystem();
+    typedef std::function<void(LogSystem&)> WithLogSystemCallback;
+    virtual void WithLogSystem(const WithLogSystemCallback&);
 
-  private:
+  protected:
     LogSystemPtr logSystem;
     TimerPtr timer;
     FileSystemPtr fileSystem;
     WebRequestPtr webRequest;
+  private:
     // used for creation and deletion of modules.
     std::mutex modulesMutex;
     std::shared_ptr<JsEngine> jsEngine;

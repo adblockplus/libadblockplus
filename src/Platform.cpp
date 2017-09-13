@@ -95,24 +95,28 @@ FilterEngine& Platform::GetFilterEngine()
   return *std::shared_future<FilterEnginePtr>(filterEngine).get();
 }
 
-ITimer& Platform::GetTimer()
+void Platform::WithTimer(const WithTimerCallback& callback)
 {
-  return *timer;
+  if (timer && callback)
+    callback(*timer);
 }
 
-IFileSystem& Platform::GetFileSystem()
+void Platform::WithFileSystem(const WithFileSystemCallback& callback)
 {
-  return *fileSystem;
+  if (fileSystem && callback)
+    callback(*fileSystem);
 }
 
-IWebRequest& Platform::GetWebRequest()
+void Platform::WithWebRequest(const WithWebRequestCallback& callback)
 {
-  return *webRequest;
+  if (webRequest && callback)
+    callback(*webRequest);
 }
 
-LogSystem& Platform::GetLogSystem()
+void Platform::WithLogSystem(const WithLogSystemCallback& callback)
 {
-  return *logSystem;
+  if (logSystem && callback)
+    callback(*logSystem);
 }
 
 namespace
@@ -125,13 +129,57 @@ namespace
       : Platform(std::move(creationParams)), asyncExecutor(asyncExecutor)
     {
     }
-    ~DefaultPlatform()
-    {
-      asyncExecutor.reset();
-    }
+    ~DefaultPlatform();
+
+    void WithTimer(const WithTimerCallback&) override;
+    void WithFileSystem(const WithFileSystemCallback&) override;
+    void WithWebRequest(const WithWebRequestCallback&) override;
+    void WithLogSystem(const WithLogSystemCallback&) override;
+
   private:
     AsyncExecutorPtr asyncExecutor;
+    std::recursive_mutex interfacesMutex;
   };
+
+  DefaultPlatform::~DefaultPlatform()
+  {
+    asyncExecutor.reset();
+    LogSystemPtr tmpLogSystem;
+    TimerPtr tmpTimer;
+    FileSystemPtr tmpFileSystem;
+    WebRequestPtr tmpWebRequest;
+    {
+      std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
+      tmpLogSystem = std::move(logSystem);
+      tmpTimer = std::move(timer);
+      tmpFileSystem = std::move(fileSystem);
+      tmpWebRequest = std::move(webRequest);
+    }
+  }
+
+  void DefaultPlatform::WithTimer(const WithTimerCallback& callback)
+  {
+    std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
+    Platform::WithTimer(callback);
+  }
+
+  void DefaultPlatform::WithFileSystem(const WithFileSystemCallback& callback)
+  {
+    std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
+    Platform::WithFileSystem(callback);
+  }
+
+  void DefaultPlatform::WithWebRequest(const WithWebRequestCallback& callback)
+  {
+    std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
+    Platform::WithWebRequest(callback);
+  }
+
+  void DefaultPlatform::WithLogSystem(const WithLogSystemCallback& callback)
+  {
+    std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
+    Platform::WithLogSystem(callback);
+  }
 }
 
 Scheduler DefaultPlatformBuilder::GetDefaultAsyncExecutor()

@@ -131,11 +131,17 @@ void JsEngine::ScheduleTimer(const v8::FunctionCallbackInfo<v8::Value>& argument
   auto timerParamsID = jsEngine->StoreJsValues(jsValueArguments);
 
   std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-  jsEngine->platform.GetTimer().SetTimer(std::chrono::milliseconds(arguments[1]->IntegerValue()), [weakJsEngine, timerParamsID]
-  {
-    if (auto jsEngine = weakJsEngine.lock())
-      jsEngine->CallTimerTask(timerParamsID);
-  });
+  jsEngine->platform.WithTimer(
+    [arguments, weakJsEngine, timerParamsID](ITimer& timer)
+    {
+      timer.SetTimer(
+        std::chrono::milliseconds(
+          arguments[1]->IntegerValue()), [weakJsEngine, timerParamsID]
+          {
+            if (auto jsEngine = weakJsEngine.lock())
+              jsEngine->CallTimerTask(timerParamsID);
+          });
+    });
 }
 
 void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
