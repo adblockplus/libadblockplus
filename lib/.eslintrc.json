@@ -1,0 +1,14 @@
+{
+  "env": {
+    "commonjs": true
+  },
+  "globals": {
+    "console": true,
+    "setTimeout": true,
+    "_triggerEvent": true,
+    "_appInfo": true,
+    "_fileSystem": true,
+    "_webRequest": true,
+    "_preconfiguredPrefs": true
+  }
+}

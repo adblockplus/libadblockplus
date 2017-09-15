@@ -270,3 +270,14 @@ Let's say that v8 is stored in `libadblockplus/v8-bins`.
     [ANDROID_NDK_ROOT=....] make [android_...] LIBV8_LIB_DIR=../v8-bins/libs LIBV8_INCLUDE_DIR=../v8-bins/include
 
 The rest is the same.
+
+Linting
+-------
+
+You can lint the code using [ESLint](http://eslint.org).
+
+    npm run eslint
+
+In order to set up ESLint and
+[configuration eslint-config-eyeo](https://hg.adblockplus.org/codingtools/file/tip/eslint-config-eyeo) you need [Node.js 7 or higher](https://nodejs.org/) and once it is installed please run `npm install` in the repository directory.
+
