@@ -9,6 +9,10 @@
     "_appInfo": true,
     "_fileSystem": true,
     "_webRequest": true,
-    "_preconfiguredPrefs": true
+    "_preconfiguredPrefs": true,
+    "onShutdown": true,
+    "extractHostFromURL": true,
+    "isThirdParty": true,
+    "Cu": true
   }
 }
