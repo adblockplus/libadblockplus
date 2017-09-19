@@ -5,7 +5,7 @@
     'libv8_no_build%': 0,
     'conditions': [[
       'OS=="win"', {
-        'libv8_lib_dir%': 'v8/build/<(CONFIGURATION_NAME)',
+        'libv8_lib_dir%': 'v8/third_party/v8/src/<(CONFIGURATION_NAME)',
         'libv8_libs': [
           '-lv8_libplatform',
           '-lv8_base_0',
