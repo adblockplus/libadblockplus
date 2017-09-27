@@ -1,0 +1,35 @@
+version: 1.0.{build}
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+image: Visual Studio 2015
+configuration:
+- Release
+- Debug
+platform:
+- x64
+- Win32 
+clone_depth: 1
+init:
+- cmd: echo %Platform% %Configuration%
+install:
+- cmd: .appveyor\prepare-prebuilt-v8.cmd
+- C:\msys64\usr\bin\bash -lc "cd ${APPVEYOR_BUILD_FOLDER}; sed -i '/third_party\/v8/d' dependencies"
+- cmd: ensure_dependencies.py
+environment:
+  URL_PREFIX: https://v8.eyeofiles.com/75b799aaf5f294d484021fe478cb24fa03ae02b4/
+before_build:
+- cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8 libv8_no_build=true"
+- cmd: createsolution.bat
+- cmd: >-
+    if "%Platform%"=="Win32" set arch="ia32"
+
+    if "%Platform%"=="x64" set arch="x64"
+
+build_script:
+- cmd: msbuild "build/%arch%/libadblockplus.sln" /m /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+test_script:
+- cmd: build\%arch%\%Configuration%\tests.exe --gtest_output=xml:tests.xml
+after_test:
+- ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
+deploy: off
