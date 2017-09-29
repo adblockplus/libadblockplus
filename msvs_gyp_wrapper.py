@@ -16,7 +16,7 @@ orig_fix_path = gyp.generator.msvs._FixPath
 # Don't touch following js2c and build-v8 parameters
 dont_expand = [
 # js2c
-  'CORE', 'EXPERIMENTAL', 'off', 'EXTRAS', 'EXPERIMENTAL_EXTRAS',
+  'CORE', 'EXTRAS', 'EXPERIMENTAL_EXTRAS',
 # build-v8
   'ia32', 'x64'
 ]

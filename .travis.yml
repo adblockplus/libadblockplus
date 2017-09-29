@@ -22,7 +22,7 @@ python: '2.7'
 
 env:
   global:
-  - URL_PREFIX=https://v8.eyeofiles.com/75b799aaf5f294d484021fe478cb24fa03ae02b4/
+  - URL_PREFIX=https://v8.eyeofiles.com/v8-9a4991959e231351e52266b631cbd36f8341bdc3/
   matrix:
   - BUILD_ACTION=test
   - BUILD_ACTION=android_arm ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r12b

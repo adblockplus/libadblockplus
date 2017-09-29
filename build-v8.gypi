@@ -11,6 +11,21 @@
   'conditions': [
     ['OS=="win"', {
       'target_defaults': {
+        'configurations': {
+          'Debug': {
+            'conditions': [
+              ['target_arch=="x64"', {
+                'msvs_settings': {
+                  'VCCLCompilerTool': {
+                    'AdditionalOptions': [
+                      '/bigobj', # compiling fatal error C1128: number of sections exceeded object file format limit: compile with /bigobj
+                    ]
+                  }
+                }
+              }]
+            ],
+          }
+        },
         'msvs_settings': {
           'VCCLCompilerTool': {
             'WarningLevel': 0,

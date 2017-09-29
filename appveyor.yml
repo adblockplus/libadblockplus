@@ -17,7 +17,7 @@ install:
 - C:\msys64\usr\bin\bash -lc "cd ${APPVEYOR_BUILD_FOLDER}; sed -i '/third_party\/v8/d' dependencies"
 - cmd: ensure_dependencies.py
 environment:
-  URL_PREFIX: https://v8.eyeofiles.com/75b799aaf5f294d484021fe478cb24fa03ae02b4/
+  URL_PREFIX: https://v8.eyeofiles.com/v8-9a4991959e231351e52266b631cbd36f8341bdc3/
 before_build:
 - cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8 libv8_no_build=true"
 - cmd: createsolution.bat
