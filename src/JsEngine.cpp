@@ -85,7 +85,13 @@ AdblockPlus::ScopedV8Isolate::ScopedV8Isolate()
 
 AdblockPlus::ScopedV8Isolate::~ScopedV8Isolate()
 {
-  isolate->Dispose();
+  auto capturedIsolatePtr = isolate;
+  std::thread([capturedIsolatePtr]
+  {
+    std::chrono::seconds timeout(60 * 10);
+    std::this_thread::sleep_for(timeout);
+    capturedIsolatePtr->Dispose();
+  }).detach();
   isolate = nullptr;
 }
 
