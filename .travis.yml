@@ -41,7 +41,7 @@ before_script:
   - if [[ -n "$ANDROID_NDK_ROOT" ]]; then unzip -q third_party/android-ndk.zip -d third_party/ ; fi
 
 script:
-  - make ${BUILD_ACTION} LIBV8_LIB_DIR=../third_party/prebuilt-v8/ LIBV8_INCLUDE_DIR=third_party/prebuilt-v8/include
+  - travis_wait 30 make ${BUILD_ACTION} LIBV8_LIB_DIR=../third_party/prebuilt-v8/ LIBV8_INCLUDE_DIR=third_party/prebuilt-v8/include
 
 notifications:
   email: false

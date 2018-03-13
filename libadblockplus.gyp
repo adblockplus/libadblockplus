@@ -24,11 +24,16 @@
       '<(libv8_include_dir)'
     ],
     'sources': [
+      'include/AdblockPlus/ActiveObject.h',
+      'include/AdblockPlus/AsyncExecutor.h',
       'include/AdblockPlus/ITimer.h',
       'include/AdblockPlus/IWebRequest.h',
       'include/AdblockPlus/IFileSystem.h',
       'include/AdblockPlus/Scheduler.h',
       'include/AdblockPlus/Platform.h',
+      'include/AdblockPlus/SynchronizedCollection.h',
+      'src/ActiveObject.cpp',
+      'src/AsyncExecutor.cpp',
       'src/AppInfoJsObject.cpp',
       'src/ConsoleJsObject.cpp',
       'src/DefaultLogSystem.cpp',
@@ -188,6 +193,7 @@
       'libadblockplus'
     ],
     'sources': [
+      'test/AsyncExecutor.cpp',
       'test/BaseJsTest.h',
       'test/BaseJsTest.cpp',
       'test/AppInfoJsObject.cpp',

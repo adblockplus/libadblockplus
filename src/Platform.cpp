@@ -18,6 +18,7 @@
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/FilterEngine.h>
 #include <AdblockPlus/DefaultLogSystem.h>
+#include <AdblockPlus/AsyncExecutor.h>
 #include "DefaultTimer.h"
 #include "DefaultWebRequest.h"
 #include "DefaultFileSystem.h"
@@ -27,11 +28,6 @@ using namespace AdblockPlus;
 
 namespace
 {
-  void DummyScheduler(const AdblockPlus::SchedulerTask& task)
-  {
-    std::thread(task).detach();
-  }
-
   template<typename T>
   void ValidatePlatformCreationParameter(const std::unique_ptr<T>& param, const char* paramName)
   {
@@ -121,10 +117,34 @@ void Platform::WithLogSystem(const WithLogSystemCallback& callback)
 
 namespace
 {
+  class SharedAsyncExecutor {
+  public:
+    SharedAsyncExecutor()
+      : executor(new AsyncExecutor())
+    {
+    }
+    void Dispatch(const std::function<void()>& task) {
+      std::lock_guard<std::mutex> lock(asyncExecutorMutex);
+      if (!executor)
+        return;
+      executor->Dispatch(task);
+    }
+    void Invalidate() {
+      std::unique_ptr<AsyncExecutor> tmp;
+      {
+        std::lock_guard<std::mutex> lock(asyncExecutorMutex);
+        tmp = move(executor);
+      }
+    }
+  private:
+    std::mutex asyncExecutorMutex;
+    std::unique_ptr<AsyncExecutor> executor;
+  };
+
   class DefaultPlatform : public Platform
   {
   public:
-    typedef std::shared_ptr<Scheduler> AsyncExecutorPtr;
+    typedef std::shared_ptr<SharedAsyncExecutor> AsyncExecutorPtr;
     explicit DefaultPlatform(const AsyncExecutorPtr& asyncExecutor, CreationParameters&& creationParams)
       : Platform(std::move(creationParams)), asyncExecutor(asyncExecutor)
     {
@@ -143,7 +163,7 @@ namespace
 
   DefaultPlatform::~DefaultPlatform()
   {
-    asyncExecutor.reset();
+    asyncExecutor->Invalidate();
     LogSystemPtr tmpLogSystem;
     TimerPtr tmpTimer;
     FileSystemPtr tmpFileSystem;
@@ -184,18 +204,6 @@ namespace
 
 Scheduler DefaultPlatformBuilder::GetDefaultAsyncExecutor()
 {
-  if (!defaultScheduler)
-  {
-    asyncExecutor = std::make_shared<Scheduler>(::DummyScheduler);
-    std::weak_ptr<Scheduler> weakExecutor = asyncExecutor;
-    defaultScheduler = [weakExecutor](const SchedulerTask& task)
-    {
-      if (auto executor = weakExecutor.lock())
-      {
-        (*executor)(task);
-      }
-    };
-  }
   return defaultScheduler;
 }
 
@@ -223,6 +231,11 @@ void DefaultPlatformBuilder::CreateDefaultLogSystem()
 
 std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
 {
+  auto sharedAsyncExecutor = std::make_shared<SharedAsyncExecutor>();
+  defaultScheduler = [sharedAsyncExecutor](const SchedulerTask& task)
+  {
+    sharedAsyncExecutor->Dispatch(task);
+  };
   if (!logSystem)
     CreateDefaultLogSystem();
   if (!timer)
@@ -232,7 +245,6 @@ std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
   if (!webRequest)
     CreateDefaultWebRequest();
 
-  std::unique_ptr<Platform> platform(new DefaultPlatform(asyncExecutor, std::move(*this)));
-  asyncExecutor.reset();
+  std::unique_ptr<Platform> platform(new DefaultPlatform(sharedAsyncExecutor, std::move(*this)));
   return platform;
 }

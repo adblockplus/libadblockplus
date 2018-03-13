@@ -173,7 +173,6 @@ namespace AdblockPlus
      */
     std::unique_ptr<Platform> CreatePlatform();
   private:
-    std::shared_ptr<Scheduler> asyncExecutor;
     Scheduler defaultScheduler;
   };
 }
