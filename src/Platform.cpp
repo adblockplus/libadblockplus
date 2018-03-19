@@ -117,35 +117,10 @@ void Platform::WithLogSystem(const WithLogSystemCallback& callback)
 
 namespace
 {
-  class SharedAsyncExecutor {
-  public:
-    SharedAsyncExecutor()
-      : executor(new AsyncExecutor())
-    {
-    }
-    void Dispatch(const std::function<void()>& task) {
-      std::lock_guard<std::mutex> lock(asyncExecutorMutex);
-      if (!executor)
-        return;
-      executor->Dispatch(task);
-    }
-    void Invalidate() {
-      std::unique_ptr<AsyncExecutor> tmp;
-      {
-        std::lock_guard<std::mutex> lock(asyncExecutorMutex);
-        tmp = move(executor);
-      }
-    }
-  private:
-    std::mutex asyncExecutorMutex;
-    std::unique_ptr<AsyncExecutor> executor;
-  };
-
   class DefaultPlatform : public Platform
   {
   public:
-    typedef std::shared_ptr<SharedAsyncExecutor> AsyncExecutorPtr;
-    explicit DefaultPlatform(const AsyncExecutorPtr& asyncExecutor, CreationParameters&& creationParams)
+    explicit DefaultPlatform(DefaultPlatformBuilder::AsyncExecutorPtr asyncExecutor, CreationParameters&& creationParams)
       : Platform(std::move(creationParams)), asyncExecutor(asyncExecutor)
     {
     }
@@ -157,7 +132,7 @@ namespace
     void WithLogSystem(const WithLogSystemCallback&) override;
 
   private:
-    AsyncExecutorPtr asyncExecutor;
+    DefaultPlatformBuilder::AsyncExecutorPtr asyncExecutor;
     std::recursive_mutex interfacesMutex;
   };
 
@@ -202,6 +177,15 @@ namespace
   }
 }
 
+DefaultPlatformBuilder::DefaultPlatformBuilder()
+{
+  auto sharedAsyncExecutor = this->sharedAsyncExecutor = std::make_shared<OptionalAsyncExecutor>();
+  defaultScheduler = [sharedAsyncExecutor](const SchedulerTask& task)
+  {
+    sharedAsyncExecutor->Dispatch(task);
+  };
+}
+
 Scheduler DefaultPlatformBuilder::GetDefaultAsyncExecutor()
 {
   return defaultScheduler;
@@ -231,11 +215,7 @@ void DefaultPlatformBuilder::CreateDefaultLogSystem()
 
 std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
 {
-  auto sharedAsyncExecutor = std::make_shared<SharedAsyncExecutor>();
-  defaultScheduler = [sharedAsyncExecutor](const SchedulerTask& task)
-  {
-    sharedAsyncExecutor->Dispatch(task);
-  };
+  
   if (!logSystem)
     CreateDefaultLogSystem();
   if (!timer)
@@ -245,6 +225,6 @@ std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
   if (!webRequest)
     CreateDefaultWebRequest();
 
-  std::unique_ptr<Platform> platform(new DefaultPlatform(sharedAsyncExecutor, std::move(*this)));
+  std::unique_ptr<Platform> platform(new DefaultPlatform(std::move(sharedAsyncExecutor), std::move(*this)));
   return platform;
 }

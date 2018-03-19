@@ -62,4 +62,54 @@ namespace AdblockPlus
     SyncThreads threads;
     ActiveObject threadCollector;
   };
+
+  /**
+   * This class provides the same interface as `AsyncExecutor` but allows in
+   * a thread-safe manner invalidate internally held implementation of
+   * `AsyncExecutor`. Any subsequent calls of `Dispatch` have no effect,
+   * what allows to safely share `AsyncExecutor` but control it's operability.
+   */
+  class OptionalAsyncExecutor
+  {
+  public:
+    /**
+     * Contructor.
+     *
+     * Initially constructed the class behaves as `AsyncExecutor`.
+     */
+    OptionalAsyncExecutor()
+      : executor(new AsyncExecutor())
+    {
+    }
+
+    /**
+     * Creates a new thread in which the `call` will be executed.
+     * @param call is a function object which is called within a worker thread,
+     *        different from the caller thread. There is no effect if `call` is
+     *        empty or if `Invalidate` had been already called.
+     */
+    void Dispatch(const std::function<void()>& call)
+    {
+      std::lock_guard<std::mutex> lock(asyncExecutorMutex);
+      if (!executor)
+        return;
+      executor->Dispatch(call);
+    }
+
+    /**
+     * Destroys internally held `AsyncExecutor`, any subsequent calls of
+     * `Dispatch` have no effect.
+     */
+    void Invalidate()
+    {
+      std::unique_ptr<AsyncExecutor> tmp;
+      {
+        std::lock_guard<std::mutex> lock(asyncExecutorMutex);
+        tmp = move(executor);
+      }
+    }
+  private:
+    std::mutex asyncExecutorMutex;
+    std::unique_ptr<AsyncExecutor> executor;
+  };
 }

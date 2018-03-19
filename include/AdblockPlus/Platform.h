@@ -32,6 +32,7 @@ namespace AdblockPlus
 {
   struct IV8IsolateProvider;
   class JsEngine;
+  class OptionalAsyncExecutor;
 
   /**
    * AdblockPlus platform is the main component providing access to other
@@ -139,6 +140,13 @@ namespace AdblockPlus
   {
   public:
     /**
+     * Private
+     */
+    typedef std::shared_ptr<OptionalAsyncExecutor> AsyncExecutorPtr;
+
+    DefaultPlatformBuilder();
+
+    /**
      * Constructs a default executor for asynchronous tasks. When Platform
      * is being destroyed it starts to ignore new tasks and waits for finishing
      * of already running tasks.
@@ -173,6 +181,7 @@ namespace AdblockPlus
      */
     std::unique_ptr<Platform> CreatePlatform();
   private:
+    AsyncExecutorPtr sharedAsyncExecutor;
     Scheduler defaultScheduler;
   };
 }
