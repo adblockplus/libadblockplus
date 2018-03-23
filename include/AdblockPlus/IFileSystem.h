@@ -69,18 +69,20 @@ namespace AdblockPlus
     /**
      * Callback type for the asynchronous Read call.
      * @param Output char array with file content.
-     * @param An error string. Empty if success.
      */
-    typedef std::function<void(IOBuffer&&,
-                               const std::string&)> ReadCallback;
+    typedef std::function<void(IOBuffer&&)> ReadCallback;
 
     /**
      * Reads from a file.
      * @param fileName File name.
-     * @param callback The function called on completion with the input data.
+     * @param doneCallback The function called on completion with the input
+     *   data. If this function throws then the implementation should call
+     *   `errorCallback`.
+     * @param errorCallback The function called if an error occured.
      */
     virtual void Read(const std::string& fileName,
-                      const ReadCallback& callback) const = 0;
+                      const ReadCallback& doneCallback,
+                      const Callback& errorCallback) const = 0;
 
     /**
      * Writes to a file.

@@ -108,7 +108,7 @@ public:
 class ThrowingFileSystem : public AdblockPlus::IFileSystem
 {
 public:
-  void Read(const std::string& fileName, const ReadCallback& callback) const override
+  void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
   {
     throw std::runtime_error("Not implemented");
   }
@@ -160,20 +160,22 @@ public:
   {
   }
 
-  void Read(const std::string& fileName, const ReadCallback& callback) const override
+  void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
   {
-    scheduler([fileName, callback]
+    scheduler([fileName, callback, errorCallback]
     {
       if (fileName == "patterns.ini")
       {
         std::string dummyData = "# Adblock Plus preferences\n[Subscription]\nurl=~user~0000";
-        callback(IOBuffer(dummyData.cbegin(), dummyData.cend()), "");
+        callback(IOBuffer(dummyData.cbegin(), dummyData.cend()));
       }
       else if (fileName == "prefs.json")
       {
         std::string dummyData = "{}";
-        callback(IOBuffer(dummyData.cbegin(), dummyData.cend()), "");
+        callback(IOBuffer(dummyData.cbegin(), dummyData.cend()));
       }
+      else
+        errorCallback("File not found, " + fileName);
     });
   }
 
@@ -213,17 +215,15 @@ class InMemoryFileSystem : public LazyFileSystem
   std::map<std::string, IOBuffer> files;
 public:
   using LazyFileSystem::LazyFileSystem;
-  void Read(const std::string& fileName, const ReadCallback& callback) const override
+  void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
   {
-    scheduler([this, fileName, callback]()
+    scheduler([this, fileName, callback, errorCallback]()
     {
       auto ii_file = files.find(fileName);
-      if (ii_file == files.end())
-      {
-        callback(IOBuffer(), "File not found, " + fileName);
-        return;
-      }
-      callback(IOBuffer(ii_file->second), "");
+      if (ii_file != files.end())
+        callback(IOBuffer(ii_file->second));
+      else
+        errorCallback("File not found, " + fileName);
     });
   }
 

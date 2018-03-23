@@ -41,14 +41,19 @@ namespace
     {
     }
 
-    void Read(const std::string& fileName, const ReadCallback& callback) const override
+    void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
     {
-      if (!success)
-      {
-        callback(IOBuffer(), "Unable to read " + fileName);
-        return;
-      }
-      callback(IOBuffer(contentToRead), "");
+      if (success)
+        try
+        {
+          callback(IOBuffer(contentToRead));
+        }
+        catch (const std::exception& ex)
+        {
+          errorCallback(ex.what());
+        }
+      else
+        errorCallback("Unable to read " + fileName);
     }
 
     void Write(const std::string& fileName, const IOBuffer& data,
@@ -108,7 +113,7 @@ namespace
   void ReadFile(AdblockPlus::JsEngine& jsEngine, std::string& content,
                 std::string& error)
   {
-    jsEngine.Evaluate("let result; _fileSystem.read('', function(r) {result = r})");
+    jsEngine.Evaluate("let result = {}; _fileSystem.read('', function(r) {result.content = r.content;}, function(r) {result.error = r.error;})");
     content = jsEngine.Evaluate("result.content").AsString();
     error = jsEngine.Evaluate("result.error").AsString();
   }
@@ -151,7 +156,7 @@ TEST_F(FileSystemJsObjectTest, ReadError)
   std::string error;
   ReadFile(GetJsEngine(), content, error);
   ASSERT_NE("", error);
-  ASSERT_EQ("", content);
+  ASSERT_EQ("undefined", content);
 }
 
 TEST_F(FileSystemJsObjectTest, Write)
@@ -276,13 +281,9 @@ namespace
       });
       jsEngine.Evaluate(R"js(_fileSystem.readFromFile("foo",
   (line) => _triggerEvent("onLine", line),
-  (error) =>
-  {
-    if (error)
-      _triggerEvent("onDone", error);
-    else
-      _triggerEvent("onDone");
-});)js");
+  () =>_triggerEvent("onDone"),
+  (error) => _triggerEvent("onDone", error));
+)js");
       EXPECT_TRUE(isOnDoneCalled);
     }
 
@@ -392,13 +393,9 @@ _fileSystem.readFromFile("foo",
     }
     _triggerEvent("onLine", line);
   },
-  (error) =>
-  {
-    if (error)
-      _triggerEvent("onDone", error);
-    else
-      _triggerEvent("onDone");
-});)js");
+  () => _triggerEvent("onDone"),
+  (error) => _triggerEvent("onDone", error));
+)js");
   EXPECT_EQ(2u, readLines.size());
   EXPECT_EQ("Error: my-error at undefined:8", error);
 }

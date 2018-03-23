@@ -130,16 +130,21 @@ TEST_F(DefaultFileSystemTest, WriteReadRemove)
   WriteString("foo");
 
   bool hasReadRun = false;
+  bool hasErrorRun = false;
   fileSystem->Read(testFileName,
-    [this, &hasReadRun](IFileSystem::IOBuffer&& content, const std::string& error)
-  {
-    EXPECT_TRUE(error.empty());
-    EXPECT_EQ("foo", std::string(content.cbegin(), content.cend()));
-    hasReadRun = true;
-  });
+    [this, &hasReadRun](IFileSystem::IOBuffer&& content)
+    {
+      EXPECT_EQ("foo", std::string(content.cbegin(), content.cend()));
+      hasReadRun = true;
+    }, [&hasErrorRun](const std::string& error)
+    {
+      hasErrorRun = true;
+    });
   EXPECT_FALSE(hasReadRun);
+  EXPECT_FALSE(hasErrorRun);
   PumpTask();
   EXPECT_TRUE(hasReadRun);
+  EXPECT_FALSE(hasErrorRun);
 
   bool hasRemoveRun = false;
   fileSystem->Remove(testFileName, [&hasRemoveRun](const std::string& error)

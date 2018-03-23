@@ -54,7 +54,8 @@ namespace AdblockPlus
   public:
     explicit DefaultFileSystem(const Scheduler& scheduler, std::unique_ptr<DefaultFileSystemSync> syncImpl);
     void Read(const std::string& fileName,
-              const ReadCallback& callback) const override;
+              const ReadCallback& doneCallback,
+              const Callback& errorCallback) const override;
     void Write(const std::string& fileName,
                const IOBuffer& data,
                const Callback& callback) override;

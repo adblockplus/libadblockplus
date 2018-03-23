@@ -32,17 +32,16 @@ namespace
       : prefsContents(prefsContent)
     {
     }
-    void Read(const std::string& fileName, const ReadCallback& callback) const override
+    void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
     {
-      scheduler([this, fileName, callback]
+      scheduler([this, fileName, callback, errorCallback]
       {
         if (fileName == "prefs.json" && !prefsContents.empty())
         {
-          callback(IOBuffer(prefsContents.cbegin(), prefsContents.cend()), "");
+          callback(IOBuffer(prefsContents.cbegin(), prefsContents.cend()));
           return;
         }
-
-        LazyFileSystem::Read(fileName, callback);
+        LazyFileSystem::Read(fileName, callback, errorCallback);
       });
     }
 

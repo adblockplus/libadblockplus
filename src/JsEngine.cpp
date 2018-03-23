@@ -321,6 +321,17 @@ JsValueList JsEngine::TakeJsValues(const JsWeakValuesID& id)
   return retValue;
 }
 
+JsValueList JsEngine::GetJsValues(const JsWeakValuesID& id)
+{
+  JsValueList retValue;
+  JsContext context(*this);
+  for (const auto& v8Value : id.iterator->values)
+  {
+    retValue.emplace_back(JsValue(shared_from_this(), v8::Local<v8::Value>::New(GetIsolate(), v8Value)));
+  }
+  return retValue;
+}
+
 AdblockPlus::JsValueList AdblockPlus::JsEngine::ConvertArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments)
 {
   const JsContext context(*this);

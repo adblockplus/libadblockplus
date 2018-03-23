@@ -201,15 +201,15 @@ DefaultFileSystem::DefaultFileSystem(const Scheduler& scheduler, std::unique_ptr
 }
 
 void DefaultFileSystem::Read(const std::string& fileName,
-                             const ReadCallback& callback) const
+                             const ReadCallback& doneCallback,
+                             const Callback& errorCallback) const
 {
-  scheduler([this, fileName, callback]
+  scheduler([this, fileName, doneCallback, errorCallback]
   {
     std::string error;
     try
     {
-      auto data = syncImpl->Read(Resolve(fileName));
-      callback(std::move(data), error);
+      doneCallback(syncImpl->Read(Resolve(fileName)));
       return;
     }
     catch (std::exception& e)
@@ -220,7 +220,15 @@ void DefaultFileSystem::Read(const std::string& fileName,
     {
       error =  "Unknown error while reading from " + fileName + " as " + Resolve(fileName);
     }
-    callback(IOBuffer(), error);
+
+    try
+    {
+      errorCallback(error);
+    }
+    catch (...)
+    {
+      // there is no way to catch an exception thrown from the error callback.
+    }
   });
 }
 

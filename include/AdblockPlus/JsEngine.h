@@ -218,6 +218,14 @@ namespace AdblockPlus
      */
     JsValueList TakeJsValues(const JsWeakValuesID& id);
 
+    /**
+     * Extracts earlier stored `JsValue`s from `JsEgnine` but does not remove
+     * them, one still must call `TakeJsValues`.
+     * @param id `JsWeakValuesID` of values.
+     * @return `JsValueList` of stored values.
+     */
+    JsValueList GetJsValues(const JsWeakValuesID& id);
+
     /*
      * Private functionality required to implement timers.
      * @param arguments `v8::FunctionCallbackInfo` is the arguments received in C++

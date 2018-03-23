@@ -32,127 +32,178 @@ using AdblockPlus::Utils::ThrowExceptionInJS;
 
 namespace
 {
-  void ReadCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
+  namespace ReadCallback
   {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
-
-    v8::Isolate* isolate = arguments.GetIsolate();
-    if (converted.size() != 2)
-      return ThrowExceptionInJS(isolate, "_fileSystem.read requires 2 parameters");
-    if (!converted[1].IsFunction())
-      return ThrowExceptionInJS(isolate, "Second argument to _fileSystem.read must be a function");
-
-    JsValueList values;
-    values.push_back(converted[1]);
-    auto weakCallback = jsEngine->StoreJsValues(values);
-    std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-    auto fileName = converted[0].AsString();
-    jsEngine->GetPlatform().WithFileSystem(
-      [weakJsEngine, weakCallback, fileName](IFileSystem& fileSystem)
+    struct WeakData
+    {
+    public:
+      WeakData(const JsEnginePtr& jsEngine,
+        JsEngine::JsWeakValuesID weakResolveCallback,
+        JsEngine::JsWeakValuesID weakRejectCallback)
+        : weakJsEngine(jsEngine)
+        , weakResolveCallback(weakResolveCallback)
+        , weakRejectCallback(weakRejectCallback)
       {
-        fileSystem.Read(fileName,
-          [weakJsEngine, weakCallback]
-          (IFileSystem::IOBuffer&& content, const std::string& error)
-          {
-            auto jsEngine = weakJsEngine.lock();
-            if (!jsEngine)
-              return;
-
-            const JsContext context(*jsEngine);
-            auto result = jsEngine->NewObject();
-            result.SetStringBufferProperty("content", std::move(content));
-            if (!error.empty())
-              result.SetProperty("error", error);
-            jsEngine->TakeJsValues(weakCallback)[0].Call(result);
-          });
-      });
-  }
-
-  inline bool IsEndOfLine(char c)
-  {
-    return c == 10 || c == 13;
-  }
-
-  inline StringBuffer::const_iterator SkipEndOfLine(StringBuffer::const_iterator ii, StringBuffer::const_iterator end)
-  {
-    while (ii != end && IsEndOfLine(*ii))
-      ++ii;
-    return ii;
-  }
-
-  inline StringBuffer::const_iterator AdvanceToEndOfLine(StringBuffer::const_iterator ii, StringBuffer::const_iterator end)
-  {
-    while (ii != end && !IsEndOfLine(*ii))
-      ++ii;
-    return ii;
-  }
-
-  void ReadFromFileCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
-  {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
-
-    v8::Isolate* isolate = arguments.GetIsolate();
-    if (converted.size() != 3)
-      return ThrowExceptionInJS(isolate, "_fileSystem.readFromFile requires 3 parameters");
-    if (!converted[1].IsFunction())
-      return ThrowExceptionInJS(isolate, "Second argument to _fileSystem.readFromFile must be a function (listener callback)");
-    if (!converted[2].IsFunction())
-      return ThrowExceptionInJS(isolate, "Third argument to _fileSystem.readFromFile must be a function (done callback)");
-
-    JsValueList values;
-    values.push_back(converted[1]);
-    values.push_back(converted[2]);
-    auto weakCallback = jsEngine->StoreJsValues(values);
-    std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-    auto fileName = converted[0].AsString();
-    jsEngine->GetPlatform().WithFileSystem(
-      [weakJsEngine, weakCallback, fileName](IFileSystem& fileSystem)
+      }
+      virtual ~WeakData()
       {
-        fileSystem.Read(fileName,
-          [weakJsEngine, weakCallback]
-          (IFileSystem::IOBuffer&& content, const std::string& error)
-          {
-            auto jsEngine = weakJsEngine.lock();
-            if (!jsEngine)
-              return;
+        auto jsEngine = weakJsEngine.lock();
+        if (!jsEngine)
+          return;
+        jsEngine->TakeJsValues(weakResolveCallback);
+        jsEngine->TakeJsValues(weakRejectCallback);
+      }
+      std::weak_ptr<JsEngine> weakJsEngine;
+      JsEngine::JsWeakValuesID weakResolveCallback;
+      JsEngine::JsWeakValuesID weakRejectCallback;
+    };
 
-            const JsContext context(*jsEngine);
+    static void V8Callback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
+    {
+      AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+      AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
-            auto jsValues = jsEngine->TakeJsValues(weakCallback);
-            if (!error.empty())
+      v8::Isolate* isolate = arguments.GetIsolate();
+      if (converted.size() != 3)
+        return ThrowExceptionInJS(isolate, "_fileSystem.read requires 3 parameters");
+      if (!converted[1].IsFunction())
+        return ThrowExceptionInJS(isolate, "Second argument to _fileSystem.read must be a function");
+      if (!converted[2].IsFunction())
+        return ThrowExceptionInJS(isolate, "Third argument to _fileSystem.read must be a function");
+
+      auto weakResolveCallback = jsEngine->StoreJsValues({converted[1]});
+      auto weakRejectCallback = jsEngine->StoreJsValues({converted[2]});
+      auto weakData = std::make_shared<WeakData>(jsEngine, weakResolveCallback, weakRejectCallback);
+      auto fileName = converted[0].AsString();
+      jsEngine->GetPlatform().WithFileSystem(
+        [weakData, fileName](IFileSystem& fileSystem)
+        {
+          fileSystem.Read(fileName, [weakData](IFileSystem::IOBuffer&& content)
             {
-              jsValues[1].Call(jsEngine->NewValue(error));
-              return;
-            }
-
-            auto processFunc = jsValues[0].UnwrapValue().As<v8::Function>();
-
-            auto globalContext = context.GetV8Context()->Global();
-            if (!globalContext->IsObject())
-              throw std::runtime_error("`this` pointer has to be an object");
-
-            const v8::TryCatch tryCatch;
-
-            const auto contentEnd = content.cend();
-            auto stringBegin = SkipEndOfLine(content.begin(), contentEnd);
-            do
-            {
-              auto stringEnd = AdvanceToEndOfLine(stringBegin, contentEnd);
-              auto jsLine = Utils::StringBufferToV8String(jsEngine->GetIsolate(), StringBuffer(stringBegin, stringEnd)).As<v8::Value>();
-              processFunc->Call(globalContext, 1, &jsLine);
-              if (tryCatch.HasCaught())
-              {
-                jsValues[1].Call(jsEngine->NewValue(JsError::ExceptionToString(tryCatch.Exception(), tryCatch.Message())));
+              auto jsEngine = weakData->weakJsEngine.lock();
+              if (!jsEngine)
                 return;
-              }
-              stringBegin = SkipEndOfLine(stringEnd, contentEnd);
-            } while (stringBegin != contentEnd);
-            jsValues[1].Call();
-          });
-      });
-  }
+              const JsContext context(*jsEngine);
+              auto result = jsEngine->NewObject();
+              result.SetStringBufferProperty("content", content);
+              jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call(result);
+            },
+            [weakData](const std::string& error)
+            {
+              if (error.empty())
+                return;
+              auto jsEngine = weakData->weakJsEngine.lock();
+              if (!jsEngine)
+                return;
+              const JsContext context(*jsEngine);
+              jsEngine->GetJsValues(weakData->weakRejectCallback)[0].Call(jsEngine->NewValue(error));
+            });
+        });
+    } // V8Callback
+  } // namespace ReadCallback
+
+  namespace ReadFromFileCallback
+  {
+    inline bool IsEndOfLine(char c)
+    {
+      return c == 10 || c == 13;
+    }
+
+    inline StringBuffer::const_iterator SkipEndOfLine(StringBuffer::const_iterator ii, StringBuffer::const_iterator end)
+    {
+      while (ii != end && IsEndOfLine(*ii))
+        ++ii;
+      return ii;
+    }
+
+    inline StringBuffer::const_iterator AdvanceToEndOfLine(StringBuffer::const_iterator ii, StringBuffer::const_iterator end)
+    {
+      while (ii != end && !IsEndOfLine(*ii))
+        ++ii;
+      return ii;
+    }
+
+    struct WeakData : ReadCallback::WeakData
+    {
+    public:
+      WeakData(const JsEnginePtr& jsEngine,
+        JsEngine::JsWeakValuesID weakResolveCallback,
+        JsEngine::JsWeakValuesID weakRejectCallback,
+        JsEngine::JsWeakValuesID weakProcessFunc)
+        : ReadCallback::WeakData(jsEngine, weakResolveCallback, weakRejectCallback)
+        , weakProcessFunc(weakProcessFunc)
+      {
+      }
+      ~WeakData()
+      {
+        auto jsEngine = weakJsEngine.lock();
+        if (!jsEngine)
+          return;
+        jsEngine->TakeJsValues(weakProcessFunc);
+      }
+      JsEngine::JsWeakValuesID weakProcessFunc;
+    };
+
+    void V8Callback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
+    {
+      AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+      AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
+
+      v8::Isolate* isolate = arguments.GetIsolate();
+      if (converted.size() != 4)
+        return ThrowExceptionInJS(isolate, "_fileSystem.readFromFile requires 4 parameters");
+      if (!converted[1].IsFunction())
+        return ThrowExceptionInJS(isolate, "Second argument to _fileSystem.readFromFile must be a function (listener callback)");
+      if (!converted[2].IsFunction())
+        return ThrowExceptionInJS(isolate, "Third argument to _fileSystem.readFromFile must be a function (done callback)");
+      if (!converted[3].IsFunction())
+        return ThrowExceptionInJS(isolate, "Third argument to _fileSystem.readFromFile must be a function (error callback)");
+
+      auto weakProcessFunc = jsEngine->StoreJsValues({converted[1]});
+      auto weakResolveCallback = jsEngine->StoreJsValues({converted[2]});
+      auto weakRejectCallback = jsEngine->StoreJsValues({converted[3]});
+      auto weakData = std::make_shared<WeakData>(jsEngine, weakResolveCallback, weakRejectCallback, weakProcessFunc);
+      auto fileName = converted[0].AsString();
+      jsEngine->GetPlatform().WithFileSystem([weakData, fileName](IFileSystem& fileSystem)
+        {
+          fileSystem.Read(fileName, [weakData](IFileSystem::IOBuffer&& content)
+            {
+              auto jsEngine = weakData->weakJsEngine.lock();
+              if (!jsEngine)
+                return;
+
+              const JsContext context(*jsEngine);
+              auto jsValues = jsEngine->GetJsValues(weakData->weakProcessFunc);
+              auto processFunc = jsValues[0].UnwrapValue().As<v8::Function>();
+              auto globalContext = context.GetV8Context()->Global();
+              if (!globalContext->IsObject())
+                throw std::runtime_error("`this` pointer has to be an object");
+
+              const v8::TryCatch tryCatch;
+              const auto contentEnd = content.cend();
+              auto stringBegin = SkipEndOfLine(content.begin(), contentEnd);
+              do
+              {
+                auto stringEnd = AdvanceToEndOfLine(stringBegin, contentEnd);
+                auto jsLine = Utils::StringBufferToV8String(jsEngine->GetIsolate(), StringBuffer(stringBegin, stringEnd)).As<v8::Value>();
+                processFunc->Call(globalContext, 1, &jsLine);
+                if (tryCatch.HasCaught())
+                  throw JsError(tryCatch.Exception(), tryCatch.Message());
+                stringBegin = SkipEndOfLine(stringEnd, contentEnd);
+              } while (stringBegin != contentEnd);
+              jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call();
+            }, [weakData](const std::string& error)
+            {
+              if (error.empty())
+                return;
+              auto jsEngine = weakData->weakJsEngine.lock();
+              if (!jsEngine)
+                return;
+              jsEngine->GetJsValues(weakData->weakRejectCallback)[0].Call(jsEngine->NewValue(error));
+            });
+        });
+    } // V8Callback
+  } // namespace ReadFromFileCallback
 
   void WriteCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
@@ -307,8 +358,8 @@ namespace
 
 JsValue& FileSystemJsObject::Setup(JsEngine& jsEngine, JsValue& obj)
 {
-  obj.SetProperty("read", jsEngine.NewCallback(::ReadCallback));
-  obj.SetProperty("readFromFile", jsEngine.NewCallback(::ReadFromFileCallback));
+  obj.SetProperty("read", jsEngine.NewCallback(::ReadCallback::V8Callback));
+  obj.SetProperty("readFromFile", jsEngine.NewCallback(::ReadFromFileCallback::V8Callback));
   obj.SetProperty("write", jsEngine.NewCallback(::WriteCallback));
   obj.SetProperty("move", jsEngine.NewCallback(::MoveCallback));
   obj.SetProperty("remove", jsEngine.NewCallback(::RemoveCallback));
