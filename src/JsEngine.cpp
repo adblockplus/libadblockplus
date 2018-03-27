@@ -190,7 +190,7 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::Evaluate(const std::string& source,
     const std::string& filename)
 {
   const JsContext context(*this);
-  const v8::TryCatch tryCatch;
+  const v8::TryCatch tryCatch(GetIsolate());
   const v8::Handle<v8::Script> script = CompileScript(GetIsolate(), source,
     filename);
   CheckTryCatch(tryCatch);
@@ -232,7 +232,7 @@ void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName, AdblockPl
 
 void AdblockPlus::JsEngine::Gc()
 {
-  while (!GetIsolate()->IdleNotification(1000));
+  while (!GetIsolate()->IdleNotificationDeadline(1000));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(const std::string& val)

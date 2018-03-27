@@ -179,7 +179,7 @@ namespace
               if (!globalContext->IsObject())
                 throw std::runtime_error("`this` pointer has to be an object");
 
-              const v8::TryCatch tryCatch;
+              const v8::TryCatch tryCatch(jsEngine->GetIsolate());
               const auto contentEnd = content.cend();
               auto stringBegin = SkipEndOfLine(content.begin(), contentEnd);
               do

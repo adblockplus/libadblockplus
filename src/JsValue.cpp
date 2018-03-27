@@ -284,7 +284,7 @@ JsValue JsValue::Call(std::vector<v8::Handle<v8::Value>>& args, v8::Local<v8::Ob
 
   const JsContext context(*jsEngine);
 
-  const v8::TryCatch tryCatch;
+  const v8::TryCatch tryCatch(jsEngine->GetIsolate());
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(UnwrapValue());
   v8::Local<v8::Value> result = func->Call(thisObj, args.size(),
     args.size() ? &args[0] : nullptr);
