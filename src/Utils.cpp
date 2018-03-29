@@ -26,7 +26,7 @@
 
 using namespace AdblockPlus;
 
-std::string Utils::FromV8String(const v8::Handle<v8::Value>& value)
+std::string Utils::FromV8String(const v8::Local<v8::Value>& value)
 {
   v8::String::Utf8Value stringValue(value);
   if (stringValue.length())
@@ -35,7 +35,7 @@ std::string Utils::FromV8String(const v8::Handle<v8::Value>& value)
     return std::string();
 }
 
-StringBuffer Utils::StringBufferFromV8String(const v8::Handle<v8::Value>& value)
+StringBuffer Utils::StringBufferFromV8String(const v8::Local<v8::Value>& value)
 {
   v8::String::Utf8Value stringValue(value);
   if (stringValue.length())

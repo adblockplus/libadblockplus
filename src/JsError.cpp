@@ -19,14 +19,14 @@
 
 using namespace AdblockPlus;
 
-JsError::JsError(const v8::Handle<v8::Value>& exception,
-    const v8::Handle<v8::Message>& message)
+JsError::JsError(const v8::Local<v8::Value>& exception,
+    const v8::Local<v8::Message>& message)
   : std::runtime_error(ExceptionToString(exception, message))
 {
 }
 
-std::string JsError::ExceptionToString(const v8::Handle<v8::Value>& exception,
-  const v8::Handle<v8::Message>& message)
+std::string JsError::ExceptionToString(const v8::Local<v8::Value>& exception,
+  const v8::Local<v8::Message>& message)
 {
   std::stringstream error;
   error << *v8::String::Utf8Value(exception);

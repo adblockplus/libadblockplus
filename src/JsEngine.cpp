@@ -25,14 +25,14 @@
 
 namespace
 {
-  v8::Handle<v8::Script> CompileScript(v8::Isolate* isolate,
+  v8::Local<v8::Script> CompileScript(v8::Isolate* isolate,
     const std::string& source, const std::string& filename)
   {
     using AdblockPlus::Utils::ToV8String;
-    const v8::Handle<v8::String> v8Source = ToV8String(isolate, source);
+    const v8::Local<v8::String> v8Source = ToV8String(isolate, source);
     if (filename.length())
     {
-      const v8::Handle<v8::String> v8Filename = ToV8String(isolate, filename);
+      const v8::Local<v8::String> v8Filename = ToV8String(isolate, filename);
       return v8::Script::Compile(v8Source, v8Filename);
     }
     else
@@ -191,7 +191,7 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::Evaluate(const std::string& source,
 {
   const JsContext context(*this);
   const v8::TryCatch tryCatch(GetIsolate());
-  const v8::Handle<v8::Script> script = CompileScript(GetIsolate(), source,
+  const v8::Local<v8::Script> script = CompileScript(GetIsolate(), source,
     filename);
   CheckTryCatch(tryCatch);
   v8::Local<v8::Value> result = script->Run();

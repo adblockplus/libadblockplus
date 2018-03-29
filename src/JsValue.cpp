@@ -25,7 +25,7 @@
 using namespace AdblockPlus;
 
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
-      v8::Handle<v8::Value> value)
+      v8::Local<v8::Value> value)
     : jsEngine(jsEngine),
       value(new v8::Global<v8::Value>(jsEngine->GetIsolate(), value))
 {
@@ -188,7 +188,7 @@ AdblockPlus::JsValue AdblockPlus::JsValue::GetProperty(const std::string& name) 
   return JsValue(jsEngine, obj->Get(property));
 }
 
-void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Handle<v8::Value> val)
+void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Local<v8::Value> val)
 {
   if (!IsObject())
     throw std::runtime_error("Attempting to set property on a non-object");
@@ -246,7 +246,7 @@ std::string AdblockPlus::JsValue::GetClass() const
 JsValue JsValue::Call(const JsValueList& params) const
 {
   const JsContext context(*jsEngine);
-  std::vector<v8::Handle<v8::Value>> argv;
+  std::vector<v8::Local<v8::Value>> argv;
   for (const auto& param : params)
     argv.push_back(param.UnwrapValue());
 
@@ -258,7 +258,7 @@ JsValue JsValue::Call(const JsValueList& params, const JsValue& thisValue) const
   const JsContext context(*jsEngine);
   v8::Local<v8::Object> thisObj = v8::Local<v8::Object>::Cast(thisValue.UnwrapValue());
 
-  std::vector<v8::Handle<v8::Value>> argv;
+  std::vector<v8::Local<v8::Value>> argv;
   for (const auto& param : params)
     argv.push_back(param.UnwrapValue());
 
@@ -269,13 +269,13 @@ JsValue JsValue::Call(const JsValue& arg) const
 {
   const JsContext context(*jsEngine);
 
-  std::vector<v8::Handle<v8::Value>> argv;
+  std::vector<v8::Local<v8::Value>> argv;
   argv.push_back(arg.UnwrapValue());
 
   return Call(argv, context.GetV8Context()->Global());
 }
 
-JsValue JsValue::Call(std::vector<v8::Handle<v8::Value>>& args, v8::Local<v8::Object> thisObj) const
+JsValue JsValue::Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Object> thisObj) const
 {
   if (!IsFunction())
     throw std::runtime_error("Attempting to call a non-function");
