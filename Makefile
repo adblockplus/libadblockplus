@@ -128,7 +128,7 @@ build-v8-android: v8_android_multi_${HOST_OS}_${ANDROID_ARCH}
 
 android_multi: ${BUILD_V8} ensure_dependencies
 	GYP_DEFINES="${GYP_PARAMETERS} ${ABP_GYP_PARAMETERS}" \
-	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r12b libadblockplus.gyp
+	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r16b libadblockplus.gyp
 	$(ANDROID_NDK_ROOT)/ndk-build -C ${BUILD_DIR} installed_modules \
 	BUILDTYPE=Release \
 	APP_ABI=$(ANDROID_ABI) \
@@ -138,6 +138,8 @@ android_multi: ${BUILD_V8} ensure_dependencies
 	APP_BUILD_SCRIPT=Makefile \
 	NDK_PROJECT_PATH=. \
 	NDK_OUT=. \
+        LOCAL_DISABLE_FATAL_LINKER_WARNINGS=true \
+        LOCAL_LDFLAGS="-Wl,--allow-multiple-definition" \
 	NDK_APP_DST_DIR=$(ANDROID_DEST_DIR)
 endif
 

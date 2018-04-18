@@ -2,7 +2,7 @@ version: 1.0.{build}
 pull_requests:
   do_not_increment_build_number: true
 skip_tags: true
-image: Visual Studio 2015
+image: Visual Studio 2017
 configuration:
 - Release
 - Debug
@@ -17,7 +17,7 @@ install:
 - C:\msys64\usr\bin\bash -lc "cd ${APPVEYOR_BUILD_FOLDER}; sed -i '/third_party\/v8/d' dependencies"
 - cmd: ensure_dependencies.py
 environment:
-  URL_PREFIX: https://v8.eyeofiles.com/v8-9a4991959e231351e52266b631cbd36f8341bdc3/
+  URL_PREFIX: https://v8.eyeofiles.com/v8-3cdaf01c4043e19965efc5ef48df5314960b898f/
 before_build:
 - cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8 libv8_no_build=true"
 - cmd: createsolution.bat

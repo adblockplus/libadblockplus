@@ -22,12 +22,12 @@ python: '2.7'
 
 env:
   global:
-  - URL_PREFIX=https://v8.eyeofiles.com/v8-9a4991959e231351e52266b631cbd36f8341bdc3/
+  - URL_PREFIX=https://v8.eyeofiles.com/v8-3cdaf01c4043e19965efc5ef48df5314960b898f/
   matrix:
   - BUILD_ACTION=test
-  - BUILD_ACTION=android_arm ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r12b
-  - BUILD_ACTION=android_x86 ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r12b
-  - BUILD_ACTION=android_arm64 ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r12b
+  - BUILD_ACTION=android_arm ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r16b
+  - BUILD_ACTION=android_x86 ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r16b
+  - BUILD_ACTION=android_arm64 ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r16b
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
@@ -36,8 +36,8 @@ before_script:
   - bash .travis/prepare-prebuilt-v8.sh
   - sed -i.bak '/third_party\/v8/d' dependencies
   - ./ensure_dependencies.py
-  - if [[ -n "$ANDROID_NDK_ROOT" && "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip -O third_party/android-ndk.zip ; fi
-  - if [[ -n "$ANDROID_NDK_ROOT" && "$TRAVIS_OS_NAME" == "osx" ]]; then wget https://dl.google.com/android/repository/android-ndk-r12b-darwin-x86_64.zip -O third_party/android-ndk.zip ; fi
+  - if [[ -n "$ANDROID_NDK_ROOT" && "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O third_party/android-ndk.zip ; fi
+  - if [[ -n "$ANDROID_NDK_ROOT" && "$TRAVIS_OS_NAME" == "osx" ]]; then wget https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip -O third_party/android-ndk.zip ; fi
   - if [[ -n "$ANDROID_NDK_ROOT" ]]; then unzip -q third_party/android-ndk.zip -d third_party/ ; fi
 
 script:

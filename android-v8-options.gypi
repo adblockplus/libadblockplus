@@ -2,6 +2,7 @@
   'variables': {
     'want_separate_host_toolset%': 1,
     'android_ndk_root': '<!(echo ${ANDROID_NDK_ROOT})',
+    'android_ndk_version': 'r16b',
     'clang_dir': '/usr/',
     'make_clang_dir': '/usr/',
   },

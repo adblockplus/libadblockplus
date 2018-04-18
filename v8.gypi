@@ -66,8 +66,7 @@
             'build-v8.cmd',
             '$(MSBuildBinPath)',
             '<(target_arch)',
-            '<(CONFIGURATION_NAME)',
-            '$(PlatformToolset)'
+            '<(CONFIGURATION_NAME)'
           ]
         }],
       }]

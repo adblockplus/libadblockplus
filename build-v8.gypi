@@ -6,9 +6,21 @@
     'v8_use_external_startup_data': 0,
     'v8_use_snapshot': 1,
     'v8_random_seed%': 0,
+    'v8_android_log_stdout': 1,
   },
 
+  'target_defaults': {
+    'defines': [
+      '__ANDROID_API__=16',
+    ],
+  },
   'conditions': [
+    ['OS=="linux" or OS=="mac"', {
+      'target_defaults': {
+        'cflags': [ '-fPIC' ],
+        'cflags_cc': [ '-fPIC' ]
+      }
+    }],
     ['OS=="win"', {
       'target_defaults': {
         'configurations': {
