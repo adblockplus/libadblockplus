@@ -15,7 +15,7 @@
     ],
   },
   'conditions': [
-    ['OS=="linux" or OS=="mac"', {
+    ['OS=="linux" or OS=="mac" or OS=="android"', {
       'target_defaults': {
         'cflags': [ '-fPIC' ],
         'cflags_cc': [ '-fPIC' ]
