@@ -1,7 +1,4 @@
-V8_DIR :=$(shell pwd -L)/third_party/v8/
 HOST_ARCH :=$(shell python third_party/detect_v8_host_arch.py)
-
-GYP_PARAMETERS=host_arch=${HOST_ARCH}
 
 ifndef HOST_OS
   raw_OS = $(shell uname -s)
@@ -12,66 +9,52 @@ ifndef HOST_OS
   endif
 endif
 
-ifndef BUILD_DIR
-  BUILD_DIR=$(shell pwd -L)/build
-endif
+TARGET_OS ?= ${HOST_OS}
+TARGET_ARCH ?= ${HOST_ARCH}
+Configuration ?= debug
 
-ifneq "$(and ${LIBV8_LIB_DIR}, ${LIBV8_INCLUDE_DIR})" ""
-BUILD_V8=do-nothing
-ABP_GYP_PARAMETERS+= libv8_lib_dir=${LIBV8_LIB_DIR} libv8_include_dir=${LIBV8_INCLUDE_DIR}
-else
-BUILD_V8=build-v8
-endif
+BUILD_DIR ?=$(shell pwd -L)/build
 
-ifneq ($(ANDROID_ARCH),)
-ANDROID_PLATFORM_LEVEL=android-9
-GYP_PARAMETERS+= OS=android target_arch=${ANDROID_ARCH}
-ifeq ($(ANDROID_ARCH),arm)
+ifeq (${TARGET_OS},android)
+Configuration ?= release
+ANDROID_PLATFORM_LEVEL=android-16
+ANDROID_FIXES=
+ifeq ($(TARGET_ARCH),arm)
 ANDROID_ABI = armeabi-v7a
-else ifeq ($(ANDROID_ARCH),ia32)
+ANDROID_FIXES="LOCAL_LDFLAGS=\"-Wl,--allow-multiple-definition\""
+else ifeq ($(TARGET_ARCH),ia32)
 ANDROID_ABI = x86
-else ifeq ($(ANDROID_ARCH),arm64)
+else ifeq ($(TARGET_ARCH),arm64)
 ANDROID_ABI = arm64-v8a
 # minimal platform having arch-arm64, see ndk/platforms
 ANDROID_PLATFORM_LEVEL=android-21
 else
-$(error "Unsupported Android architecture: $(ANDROID_ARCH))
+$(error "Unsupported Android architecture: $(TARGET_ARCH)")
 endif
-ANDROID_DEST_DIR = android_$(ANDROID_ARCH).release
-
-ifeq "$(and ${LIBV8_LIB_DIR}, ${LIBV8_INCLUDE_DIR})" ""
-ABP_GYP_PARAMETERS+= libv8_lib_dir=${ANDROID_DEST_DIR}
-BUILD_V8=build-v8-android
 endif
 
-else # if ${ANDROID_ARCH} is empty
-TARGET_ARCH=${HOST_ARCH}
-ifdef ARCH
-TARGET_ARCH=${ARCH}
-endif
-GYP_PARAMETERS+= OS=${HOST_OS} target_arch=${TARGET_ARCH}
-endif
+# linux,osx
+#   x64, ia32
+#     debug, release
+# android
+#   arm, arm64, ia32
+#     release
 
+GYP_PARAMETERS=host_arch=${HOST_ARCH} OS=${TARGET_OS} target_arch=${TARGET_ARCH}
+ifneq "$(and ${LIBV8_LIB_DIR}, ${LIBV8_INCLUDE_DIR})" ""
+GYP_PARAMETERS+= libv8_lib_dir=${LIBV8_LIB_DIR} libv8_include_dir=${LIBV8_INCLUDE_DIR}
+else
+$(error "V8 directories are not specified")
+endif
 
 TEST_EXECUTABLE = ${BUILD_DIR}/out/Debug/tests
 
-.PHONY: do-nothing all test clean docs build-v8 build-v8-android v8_android_multi android_multi android_x86 \
-	android_arm ensure_dependencies
+.PHONY: all test clean docs ensure_dependencies
 
 .DEFAULT_GOAL:=all
 
-do-nothing:
-
 ensure_dependencies:
 	python ensure_dependencies.py
-
-build-v8: ensure_dependencies
-	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I build-v8.gypi --generator-output=${BUILD_DIR}/v8 ${V8_DIR}src/v8.gyp
-	make -C ${BUILD_DIR}/v8 v8_snapshot v8_libplatform v8_libsampler
-
-all: ${BUILD_V8} ensure_dependencies 
-	GYP_DEFINES="${GYP_PARAMETERS} ${ABP_GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=${BUILD_DIR} libadblockplus.gyp
-	$(MAKE) -C ${BUILD_DIR}
 
 test: all
 ifdef FILTER
@@ -86,60 +69,24 @@ docs:
 clean:
 	$(RM) -r ${BUILD_DIR} docs
 
-android_x86:
-	ANDROID_ARCH="ia32" $(MAKE) android_multi
-
-android_arm:
-	ANDROID_ARCH="arm" $(MAKE) android_multi
-
-android_arm64:
-	ANDROID_ARCH="arm64" $(MAKE) android_multi
-
-ifneq ($(ANDROID_ARCH),)
-v8_android_multi: ensure_dependencies
-	cd third_party/v8 && GYP_GENERATORS=make-android \
-	  GYP_DEFINES="${GYP_PARAMETERS} v8_target_arch=${ANDROID_ARCH}" \
-	  PYTHONPATH="${V8_DIR}tools/generate_shim_headers:${V8_DIR}gypfiles:${PYTHONPATH}" \
-	  python ../../make_gyp_wrapper.py \
-	    --generator-output=${BUILD_DIR} src/v8.gyp \
-	    -Igypfiles/standalone.gypi \
-	    --depth=. \
-	    -S.android_${ANDROID_ARCH}.release \
-	    -I../../android-v8-options.gypi
-	cd third_party/v8 && make \
-	  -C ${BUILD_DIR} \
-	  -f Makefile.android_${ANDROID_ARCH}.release \
-	  v8_snapshot v8_libplatform v8_libsampler \
-	  BUILDTYPE=Release \
-	  builddir=${BUILD_DIR}/android_${ANDROID_ARCH}.release
-
-v8_android_multi_linux_${ANDROID_ARCH}: v8_android_multi
-
-v8_android_multi_mac_ia32: v8_android_multi
-	find ${BUILD_DIR}/android_ia32.release/ -depth 1 -iname \*.a -exec ${ANDROID_NDK_ROOT}/toolchains/x86-4.9/prebuilt/darwin-x86_64/bin/i686-linux-android-ranlib {} \;
-
-v8_android_multi_mac_arm: v8_android_multi
-	find ${BUILD_DIR}/android_arm.release/ -depth 1 -iname \*.a -exec ${ANDROID_NDK_ROOT}/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/bin/arm-linux-androideabi-ranlib {} \;
-
-v8_android_multi_mac_arm64: v8_android_multi
-	find ${BUILD_DIR}/android_arm64.release/ -depth 1 -iname \*.a -exec ${ANDROID_NDK_ROOT}/toolchains/aarch64-linux-android-4.9/prebuilt/darwin-x86_64/bin/aarch64-linux-android-ranlib {} \;
-
-build-v8-android: v8_android_multi_${HOST_OS}_${ANDROID_ARCH}
-
-android_multi: ${BUILD_V8} ensure_dependencies
-	GYP_DEFINES="${GYP_PARAMETERS} ${ABP_GYP_PARAMETERS}" \
+ifeq ($(TARGET_OS),android)
+all: ensure_dependencies
+	GYP_DEFINES="${GYP_PARAMETERS}" \
 	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r16b libadblockplus.gyp
 	$(ANDROID_NDK_ROOT)/ndk-build -C ${BUILD_DIR} installed_modules \
 	BUILDTYPE=Release \
 	APP_ABI=$(ANDROID_ABI) \
 	APP_PLATFORM=${ANDROID_PLATFORM_LEVEL} \
 	APP_PIE=true \
-	APP_STL=c++_static \
+	APP_STL=c++_shared \
 	APP_BUILD_SCRIPT=Makefile \
 	NDK_PROJECT_PATH=. \
 	NDK_OUT=. \
-        LOCAL_DISABLE_FATAL_LINKER_WARNINGS=true \
-        LOCAL_LDFLAGS="-Wl,--allow-multiple-definition" \
-	NDK_APP_DST_DIR=$(ANDROID_DEST_DIR)
-endif
+	${ANDROID_FIXES} \
+	NDK_APP_DST_DIR=android-$(TARGET_ARCH).release
+else
+all: ensure_dependencies 
+	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=${BUILD_DIR} libadblockplus.gyp
+	$(MAKE) -C ${BUILD_DIR}
 
+endif

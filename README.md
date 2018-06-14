@@ -12,27 +12,34 @@ them by running the following:
 
     ./ensure_dependencies.py
 
+Additionally one should provide V8 headers in order to build libadblockplus
+library and V8 prebuilt libraries in order to link a binary (executable, shared
+object/DLL), even libadblockplus tests. The last time is was tested against V8
+6.7.
+For more details see below.
+
 Building
 --------
 
 ### Supported target platforms and prerequisites
 
-You need a C++11 compatible compiler to build libadblockplus.
+You need a C++14 compatible compiler to build libadblockplus. Below there is
+the list of tested tools.
 
 Win32:
-* At least v140 Visual C++ toolset (available in Microsoft Visual Studio 2015).
+* At least v141 Visual C++ toolset (available in Microsoft Visual Studio 2017).
 
 Linux:
-* g++ 5.2
+* g++ 7.3
 
 Mac:
-* clang 3.6 for OS X/macOS (Xcode should be installed and its developer tools should be "selected").
+* Apple LLVM 9.1.0 for OS X/macOS (Xcode should be installed and its developer tools should be "selected").
 
 Android:
 * The host system should be Linux or OS X
-* android-ndk-r12b Here are the links for downloading
-  [OS X](https://dl.google.com/android/repository/android-ndk-r12b-darwin-x86_64.zip), 
-  [Linux 64](https://dl.google.com/android/repository/android-ndk-r12b-linux-x86_64.zip).
+* android-ndk-r16b, here are the links for downloading
+  [OS X](https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip), 
+  [Linux 64](https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip).
 * g++ multilib
 
 If you have a compilation issue with another compiler please [create an issue](https://issues.adblockplus.org/).
@@ -41,13 +48,18 @@ You also need Python 2.7 and ensure that `python.exe` is in your `PATH`.
 
 ### Unix
 
+* Prepare V8 and set environment variables LIBV8_LIB_DIR and LIBV8_INCLUDE_DIR.
+LIBV8_INCLUDE_DIR should point to the include directory of V8, e.g.
+`.../v8/include` and there should be `libv8_monolith.a` in the directory
+LIBV8_LIB_DIR.
+
 Using Make:
 
     make
 
-The default target architecture is the architecture of a host. In order to build for a different architecture pass `ARCH` to `make`, e.g. run:
+The default target architecture is the architecture of a host. In order to build for a different architecture pass `TARGET_ARCH` to `make`, e.g. run:
 
-    make ARCH=ia32
+    make TARGET_ARCH=ia32
 
 supported values are `ia32` and `x64`.
     
@@ -56,9 +68,9 @@ To build and run the tests:
 
     make test
 
-Likewise, use the following with `ARCH`:
+Likewise, use the following with `TARGET_ARCH`:
 
-    make test ARCH=ia32
+    make test TARGET_ARCH=ia32
 
 To run specific tests, you can specify a filter:
 
@@ -66,31 +78,41 @@ To run specific tests, you can specify a filter:
 
 ### Windows
 
-* Execute `createsolution.bat` to generate project files, this will create
-`build\ia32\libadblockplus.sln` (solution for the 32 bit build) and
-`build\x64\libadblockplus.sln` (solution for the 64 bit build). Unfortunately,
-V8 doesn't support creating both from the same project files.
+* Prepare V8. Let's say V8 is prepared in `build/v8`. There should be V8
+headers in `build/v8/include` and binaries in
+`build/v8/win-%PLATFORM%.%CONFIGURATION%`, e.g ensure that there is
+`v8_monolith.lib` available as `build/v8/win-x64.release/v8_monolith.lib`.
+
+* Set GYP variable `v8_dir` pointing to the prepared V8, `<path to build/v8>`.
+E.g. `set "GYP_DEFINES=v8_dir=e:/v8-6.7"` and execute `createsolution.bat` to
+generate project files, this will create `build\ia32\libadblockplus.sln`
+(solution for the 32 bit build) and `build\x64\libadblockplus.sln` (solution
+for the 64 bit build).
+
 * Open `build\ia32\libadblockplus.sln` or `build\x64\libadblockplus.sln` in
 Visual Studio and build the solution there. Alternatively you can use the
 `msbuild` command line tool, e.g. run `msbuild /m build\ia32\libadblockplus.sln`
 from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
 
-Tested on Microsoft Visual Studio 2015 Community Edition.
+Tested on Microsoft Visual Studio 2017 Community Edition.
+
+For more details see CI configuration for appveyor.
 
 ### Building for Android
 
-First set ANDROID_NDK_ROOT environment variable to your Android NDK directory.
+Configure V8 as for Unix and set ANDROID_NDK_ROOT environment variable to your
+Android NDK directory.
 
 To build for *x86* arch run:
 
-    make android_x86
+    make TARGET_OS=android TARGET_ARCH=ia32
 
 To build for *arm* or *arm64* arch run:
 
-    make android_arm
+    make TARGET_OS=android TARGET_ARCH=arm
 
 or
-    make android_arm64
+    make TARGET_OS=android TARGET_ARCH=arm64
 
 Usage
 -----
@@ -253,23 +275,10 @@ The shell is automatically built by `make`, you can run it as follows:
 
 Just run the project *abpshell*.
 
-Building with prebuilt V8
+Building V8
 -------------------------
 
-This functionality is only for internal usage.
-
-## How to use it:
-Let's say that v8 is stored in `libadblockplus/v8-bins`.
-### Windows
-
-    set "GYP_DEFINES=libv8_include_dir=../../v8-bins/win/include libv8_lib_dir=../../v8-bins/win/Win32/<(CONFIGURATION_NAME) libv8_no_build=true"
-    createsolution.bat
-
-### *nix
-
-    [ANDROID_NDK_ROOT=....] make [android_...] LIBV8_LIB_DIR=../v8-bins/libs LIBV8_INCLUDE_DIR=../v8-bins/include
-
-The rest is the same.
+Just in case one can find args files to build V8 in `v8-args` directory.
 
 Linting
 -------

@@ -17,7 +17,6 @@
   'targets': [{
     'target_name': 'libadblockplus',
     'type': '<(library)',
-    'dependencies': ['<@(libv8_build_targets)'],
     'xcode_settings':{},
     'include_dirs': [
       'include',

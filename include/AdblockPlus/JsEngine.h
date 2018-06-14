@@ -39,7 +39,7 @@ namespace v8
   class Value;
   class Context;
   template<typename T> class FunctionCallbackInfo;
-  typedef void(*FunctionCallback)(const FunctionCallbackInfo<v8::Value>& info);
+  typedef void(*FunctionCallback)(const FunctionCallbackInfo<Value>& info);
 }
 
 namespace AdblockPlus

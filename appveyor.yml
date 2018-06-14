@@ -14,12 +14,11 @@ init:
 - cmd: echo %Platform% %Configuration%
 install:
 - cmd: .appveyor\prepare-prebuilt-v8.cmd
-- C:\msys64\usr\bin\bash -lc "cd ${APPVEYOR_BUILD_FOLDER}; sed -i '/third_party\/v8/d' dependencies"
 - cmd: ensure_dependencies.py
 environment:
-  URL_PREFIX: https://v8.eyeofiles.com/v8-3cdaf01c4043e19965efc5ef48df5314960b898f/
+  URL_PREFIX: https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/
 before_build:
-- cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8 libv8_no_build=true"
+- cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8"
 - cmd: createsolution.bat
 - cmd: >-
     if "%Platform%"=="Win32" set arch="ia32"
