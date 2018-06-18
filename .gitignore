@@ -2,3 +2,4 @@
 /docs
 *.pyc
 /node_modules
+/third_party/prebuilt-v8

@@ -48,10 +48,26 @@ You also need Python 2.7 and ensure that `python.exe` is in your `PATH`.
 
 ### Unix
 
+You need V8 prior to building. Two options:
+
+* Use the default prebuild V8 by invoking the make target
+`get-prebuilt-v8`. This will download and extract the prebuilt V8 for
+your setup. The default environment will be set by the Makefile at
+build time. If you are cross compiling use the same options as below
+to invoke make.
+
+If you switch target platform using the same source tree, you should
+manually remove the `third_party/prebuilt-v8` directory and redownload
+again with the right options.
+
+Or
+
 * Prepare V8 and set environment variables LIBV8_LIB_DIR and LIBV8_INCLUDE_DIR.
 LIBV8_INCLUDE_DIR should point to the include directory of V8, e.g.
 `.../v8/include` and there should be `libv8_monolith.a` in the directory
 LIBV8_LIB_DIR.
+
+To build:
 
 Using Make:
 
@@ -62,7 +78,6 @@ The default target architecture is the architecture of a host. In order to build
     make TARGET_ARCH=ia32
 
 supported values are `ia32` and `x64`.
-    
 
 To build and run the tests:
 

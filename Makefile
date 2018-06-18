@@ -4,10 +4,16 @@ ifndef HOST_OS
   raw_OS = $(shell uname -s)
   ifeq (${raw_OS},Linux)
     HOST_OS=linux
+    TRAVIS_OS_NAME=linux
   else ifeq (${raw_OS},Darwin)
     HOST_OS=mac
+    TRAVIS_OS_NAME=osx
   endif
 endif
+
+# Default V8 directories
+LIBV8_INCLUDE_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/include
+LIBV8_LIB_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/
 
 TARGET_OS ?= ${HOST_OS}
 TARGET_ARCH ?= ${HOST_ARCH}
@@ -65,6 +71,12 @@ endif
 
 docs:
 	doxygen
+
+get-prebuilt-v8:
+	URL_PREFIX="https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/" \
+	TARGET_OS=${TARGET_OS} TARGET_ARCH=${TARGET_ARCH} \
+	TRAVIS_OS_NAME=${TRAVIS_OS_NAME} Configuration=${Configuration} \
+	bash .travis/prepare-prebuilt-v8.sh
 
 clean:
 	$(RM) -r ${BUILD_DIR} docs
