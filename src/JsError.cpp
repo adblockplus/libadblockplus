@@ -19,23 +19,28 @@
 
 using namespace AdblockPlus;
 
-JsError::JsError(const v8::Local<v8::Value>& exception,
+JsError::JsError(v8::Isolate* isolate, const v8::Local<v8::Value>& exception,
     const v8::Local<v8::Message>& message)
-  : std::runtime_error(ExceptionToString(exception, message))
+  : std::runtime_error(ExceptionToString(isolate, exception, message))
 {
 }
 
-std::string JsError::ExceptionToString(const v8::Local<v8::Value>& exception,
+std::string JsError::ExceptionToString(v8::Isolate* isolate, const v8::Local<v8::Value>& exception,
   const v8::Local<v8::Message>& message)
 {
   std::stringstream error;
-  error << *v8::String::Utf8Value(exception);
+  error << *v8::String::Utf8Value(isolate, exception);
   if (!message.IsEmpty())
   {
     error << " at ";
-    error << *v8::String::Utf8Value(message->GetScriptResourceName());
+    error << *v8::String::Utf8Value(isolate, message->GetScriptResourceName());
     error << ":";
-    error << message->GetLineNumber();
+    auto maybeLineNumber = message->GetLineNumber(isolate->GetCurrentContext());
+    int lineNumber = 0;
+    if (maybeLineNumber.To(&lineNumber))
+      error << lineNumber;
+    else
+      error << "unknown line";
   }
   return error.str();
 }

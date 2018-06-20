@@ -179,16 +179,18 @@ namespace
               if (!globalContext->IsObject())
                 throw std::runtime_error("`this` pointer has to be an object");
 
-              const v8::TryCatch tryCatch(jsEngine->GetIsolate());
+              auto isolate = jsEngine->GetIsolate();
+              const v8::TryCatch tryCatch(isolate);
               const auto contentEnd = content.cend();
               auto stringBegin = SkipEndOfLine(content.begin(), contentEnd);
+              auto v8Context = isolate->GetCurrentContext();
               do
               {
                 auto stringEnd = AdvanceToEndOfLine(stringBegin, contentEnd);
-                auto jsLine = Utils::StringBufferToV8String(jsEngine->GetIsolate(), StringBuffer(stringBegin, stringEnd)).As<v8::Value>();
-                processFunc->Call(globalContext, 1, &jsLine);
+                auto jsLine = Utils::StringBufferToV8String(isolate, StringBuffer(stringBegin, stringEnd)).As<v8::Value>();
+                processFunc->Call(v8Context, globalContext, 1, &jsLine);
                 if (tryCatch.HasCaught())
-                  throw JsError(tryCatch.Exception(), tryCatch.Message());
+                  throw JsError(isolate, tryCatch.Exception(), tryCatch.Message());
                 stringBegin = SkipEndOfLine(stringEnd, contentEnd);
               } while (stringBegin != contentEnd);
               jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call();

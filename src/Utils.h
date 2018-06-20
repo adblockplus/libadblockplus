@@ -31,8 +31,8 @@ namespace AdblockPlus
 {
   namespace Utils
   {
-    std::string FromV8String(const v8::Local<v8::Value>& value);
-    StringBuffer StringBufferFromV8String(const v8::Local<v8::Value>& value);
+    std::string FromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>& value);
+    StringBuffer StringBufferFromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>& value);
     v8::Local<v8::String> ToV8String(v8::Isolate* isolate, const std::string& str);
     v8::Local<v8::String> StringBufferToV8String(v8::Isolate* isolate, const StringBuffer& bytes);
     void ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str);

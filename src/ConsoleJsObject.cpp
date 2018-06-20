@@ -43,7 +43,7 @@ namespace
 
     std::stringstream source;
     v8::Local<v8::StackFrame> frame = v8::StackTrace::CurrentStackTrace(arguments.GetIsolate(), 1)->GetFrame(0);
-    source << AdblockPlus::Utils::FromV8String(frame->GetScriptName());
+    source << AdblockPlus::Utils::FromV8String(arguments.GetIsolate(), frame->GetScriptName());
     source << ":" << frame->GetLineNumber();
 
     jsEngine->GetPlatform().WithLogSystem(
@@ -90,13 +90,13 @@ namespace
     {
       v8::Local<v8::StackFrame> frame = frames->GetFrame(i);
       traceback << (i + 1) << ": ";
-      std::string name = AdblockPlus::Utils::FromV8String(frame->GetFunctionName());
+      std::string name = AdblockPlus::Utils::FromV8String(arguments.GetIsolate(), frame->GetFunctionName());
       if (name.size())
         traceback << name;
       else
         traceback << "/* anonymous */";
       traceback << "() at ";
-      traceback << AdblockPlus::Utils::FromV8String(frame->GetScriptName());
+      traceback << AdblockPlus::Utils::FromV8String(arguments.GetIsolate(), frame->GetScriptName());
       traceback << ":" << frame->GetLineNumber();
       traceback << std::endl;
     }

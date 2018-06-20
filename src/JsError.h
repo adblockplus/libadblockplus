@@ -27,9 +27,10 @@ namespace AdblockPlus
   class JsError : public std::runtime_error
   {
   public:
-    JsError(const v8::Local<v8::Value>& exception,
+    JsError(v8::Isolate* isolate,
+            const v8::Local<v8::Value>& exception,
             const v8::Local<v8::Message>& message);
-    static std::string ExceptionToString(const v8::Local<v8::Value>& exception,
+    static std::string ExceptionToString(v8::Isolate* isolate, const v8::Local<v8::Value>& exception,
       const v8::Local<v8::Message>& message);
 
   };

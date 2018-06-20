@@ -124,13 +124,13 @@ bool AdblockPlus::JsValue::IsFunction() const
 std::string AdblockPlus::JsValue::AsString() const
 {
   const JsContext context(*jsEngine);
-  return Utils::FromV8String(UnwrapValue());
+  return Utils::FromV8String(jsEngine->GetIsolate(), UnwrapValue());
 }
 
 StringBuffer AdblockPlus::JsValue::AsStringBuffer() const
 {
   const JsContext context(*jsEngine);
-  return Utils::StringBufferFromV8String(UnwrapValue());
+  return Utils::StringBufferFromV8String(jsEngine->GetIsolate(), UnwrapValue());
 }
 
 int64_t AdblockPlus::JsValue::AsInt() const
@@ -240,7 +240,7 @@ std::string AdblockPlus::JsValue::GetClass() const
 
   const JsContext context(*jsEngine);
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
-  return Utils::FromV8String(obj->GetConstructorName());
+  return Utils::FromV8String(jsEngine->GetIsolate(), obj->GetConstructorName());
 }
 
 JsValue JsValue::Call(const JsValueList& params) const
@@ -288,9 +288,8 @@ JsValue JsValue::Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Obj
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(UnwrapValue());
   v8::Local<v8::Value> result = func->Call(thisObj, args.size(),
     args.size() ? &args[0] : nullptr);
-
   if (tryCatch.HasCaught())
-    throw JsError(tryCatch.Exception(), tryCatch.Message());
+    throw JsError(jsEngine->GetIsolate(), tryCatch.Exception(), tryCatch.Message());
 
   return JsValue(jsEngine, result);
 }

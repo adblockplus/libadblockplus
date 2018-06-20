@@ -39,10 +39,10 @@ namespace
       return v8::Script::Compile(v8Source);
   }
 
-  void CheckTryCatch(const v8::TryCatch& tryCatch)
+  void CheckTryCatch(v8::Isolate* isolate, const v8::TryCatch& tryCatch)
   {
     if (tryCatch.HasCaught())
-      throw AdblockPlus::JsError(tryCatch.Exception(), tryCatch.Message());
+      throw AdblockPlus::JsError(isolate, tryCatch.Exception(), tryCatch.Message());
   }
 
   class V8Initializer
@@ -190,12 +190,13 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::Evaluate(const std::string& source,
     const std::string& filename)
 {
   const JsContext context(*this);
-  const v8::TryCatch tryCatch(GetIsolate());
-  const v8::Local<v8::Script> script = CompileScript(GetIsolate(), source,
+  auto isolate = GetIsolate();
+  const v8::TryCatch tryCatch(isolate);
+  const v8::Local<v8::Script> script = CompileScript(isolate, source,
     filename);
-  CheckTryCatch(tryCatch);
+  CheckTryCatch(isolate, tryCatch);
   v8::Local<v8::Value> result = script->Run();
-  CheckTryCatch(tryCatch);
+  CheckTryCatch(isolate, tryCatch);
   return JsValue(shared_from_this(), result);
 }
 
