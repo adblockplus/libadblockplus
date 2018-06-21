@@ -11,13 +11,13 @@ ifndef HOST_OS
   endif
 endif
 
-# Default V8 directories
-LIBV8_INCLUDE_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/include
-LIBV8_LIB_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/
-
 TARGET_OS ?= ${HOST_OS}
 TARGET_ARCH ?= ${HOST_ARCH}
 Configuration ?= debug
+
+# Default V8 directories
+LIBV8_INCLUDE_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/include
+LIBV8_LIB_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/${TARGET_OS}-${TARGET_ARCH}-${Configuration}
 
 BUILD_DIR ?=$(shell pwd -L)/build
 

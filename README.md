@@ -56,7 +56,7 @@ your setup. The default environment will be set by the Makefile at
 build time. If you are cross compiling use the same options as below
 to invoke make.
 
-If you switch target platform using the same source tree, you should
+If you switch the version of V8 using the same source tree, you should
 manually remove the `third_party/prebuilt-v8` directory and redownload
 again with the right options.
 
