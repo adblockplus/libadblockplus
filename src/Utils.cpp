@@ -26,6 +26,12 @@
 
 using namespace AdblockPlus;
 
+void Utils::CheckTryCatch(v8::Isolate* isolate, const v8::TryCatch& tryCatch)
+{
+  if (tryCatch.HasCaught())
+    throw AdblockPlus::JsError(isolate, tryCatch.Exception(), tryCatch.Message());
+}
+
 std::string Utils::FromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>& value)
 {
   v8::String::Utf8Value stringValue(isolate, value);

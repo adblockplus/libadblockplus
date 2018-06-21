@@ -27,10 +27,33 @@
 
 #include "AdblockPlus/JsValue.h"
 
+#include "JsError.h"
+
 namespace AdblockPlus
 {
   namespace Utils
   {
+    void CheckTryCatch(v8::Isolate* isolate, const v8::TryCatch& tryCatch);
+
+    /*
+     * Check for exception and then that a MaybeLocal<> isn't empty,
+     * and throw a JsError if it is, otherwise return the Local<>
+     * Call using the macro %CHECKED_MAYBE to get the location.
+     */
+    template<class T>
+    v8::Local<T> CheckedToLocal(v8::Isolate* isolate,
+      v8::MaybeLocal<T>&& value, const v8::TryCatch& tryCatch,
+      const char* filename, int line)
+    {
+      CheckTryCatch(isolate, tryCatch);
+      if (value.IsEmpty())
+        throw AdblockPlus::JsError("Empty value at ", filename, line);
+      return value.ToLocalChecked();
+    }
+
+#define CHECKED_TO_LOCAL(isolate, value, tryCatch)                      \
+    AdblockPlus::Utils::CheckedToLocal(isolate, value, tryCatch, __FILE__, __LINE__)
+
     std::string FromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>& value);
     StringBuffer StringBufferFromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>& value);
     v8::Local<v8::String> ToV8String(v8::Isolate* isolate, const std::string& str);

@@ -30,9 +30,11 @@ namespace AdblockPlus
     JsError(v8::Isolate* isolate,
             const v8::Local<v8::Value>& exception,
             const v8::Local<v8::Message>& message);
+    JsError(const char* message, const char* filename, int line);
     static std::string ExceptionToString(v8::Isolate* isolate, const v8::Local<v8::Value>& exception,
       const v8::Local<v8::Message>& message);
-
+    static std::string ErrorToString(const char* message,
+      const char* filename, int line);
   };
 }
 

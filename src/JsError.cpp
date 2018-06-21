@@ -44,3 +44,18 @@ std::string JsError::ExceptionToString(v8::Isolate* isolate, const v8::Local<v8:
   }
   return error.str();
 }
+
+JsError::JsError(const char* message, const char* filename, int line)
+  : std::runtime_error(ErrorToString(message, filename, line))
+{
+}
+
+std::string JsError::ErrorToString(const char* message, const char* filename, int line)
+{
+  std::stringstream error;
+  error << message;
+  error << filename;
+  error << ":";
+  error << line;
+  return error.str();
+}
