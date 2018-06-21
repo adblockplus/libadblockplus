@@ -12,12 +12,12 @@ ifndef HOST_OS
 endif
 
 TARGET_OS ?= ${HOST_OS}
-TARGET_ARCH ?= ${HOST_ARCH}
+ABP_TARGET_ARCH ?= ${HOST_ARCH}
 Configuration ?= debug
 
 # Default V8 directories
 LIBV8_INCLUDE_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/include
-LIBV8_LIB_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/${TARGET_OS}-${TARGET_ARCH}-${Configuration}
+LIBV8_LIB_DIR ?= $(shell pwd -L)/third_party/prebuilt-v8/${TARGET_OS}-${ABP_TARGET_ARCH}-${Configuration}
 
 BUILD_DIR ?=$(shell pwd -L)/build
 
@@ -25,17 +25,17 @@ ifeq (${TARGET_OS},android)
 Configuration ?= release
 ANDROID_PLATFORM_LEVEL=android-16
 ANDROID_FIXES=
-ifeq ($(TARGET_ARCH),arm)
+ifeq ($(ABP_TARGET_ARCH),arm)
 ANDROID_ABI = armeabi-v7a
 ANDROID_FIXES="LOCAL_LDFLAGS=\"-Wl,--allow-multiple-definition\""
-else ifeq ($(TARGET_ARCH),ia32)
+else ifeq ($(ABP_TARGET_ARCH),ia32)
 ANDROID_ABI = x86
-else ifeq ($(TARGET_ARCH),arm64)
+else ifeq ($(ABP_TARGET_ARCH),arm64)
 ANDROID_ABI = arm64-v8a
 # minimal platform having arch-arm64, see ndk/platforms
 ANDROID_PLATFORM_LEVEL=android-21
 else
-$(error "Unsupported Android architecture: $(TARGET_ARCH)")
+$(error "Unsupported Android architecture: $(ABP_TARGET_ARCH)")
 endif
 endif
 
@@ -46,7 +46,7 @@ endif
 #   arm, arm64, ia32
 #     release
 
-GYP_PARAMETERS=host_arch=${HOST_ARCH} OS=${TARGET_OS} target_arch=${TARGET_ARCH}
+GYP_PARAMETERS=host_arch=${HOST_ARCH} OS=${TARGET_OS} target_arch=${ABP_TARGET_ARCH}
 ifneq "$(and ${LIBV8_LIB_DIR}, ${LIBV8_INCLUDE_DIR})" ""
 GYP_PARAMETERS+= libv8_lib_dir=${LIBV8_LIB_DIR} libv8_include_dir=${LIBV8_INCLUDE_DIR}
 else
@@ -74,7 +74,7 @@ docs:
 
 get-prebuilt-v8:
 	URL_PREFIX="https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/" \
-	TARGET_OS=${TARGET_OS} TARGET_ARCH=${TARGET_ARCH} \
+	TARGET_OS=${TARGET_OS} ABP_TARGET_ARCH=${ABP_TARGET_ARCH} \
 	TRAVIS_OS_NAME=${TRAVIS_OS_NAME} Configuration=${Configuration} \
 	bash .travis/prepare-prebuilt-v8.sh
 
@@ -96,7 +96,7 @@ all: ensure_dependencies
 	NDK_PROJECT_PATH=. \
 	NDK_OUT=. \
 	${ANDROID_FIXES} \
-	NDK_APP_DST_DIR=android-$(TARGET_ARCH).release
+	NDK_APP_DST_DIR=android-$(ABP_TARGET_ARCH).release
 else
 SUB_ACTION ?= all
 all: ensure_dependencies 

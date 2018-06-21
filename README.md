@@ -73,9 +73,9 @@ Using Make:
 
     make
 
-The default target architecture is the architecture of a host. In order to build for a different architecture pass `TARGET_ARCH` to `make`, e.g. run:
+The default target architecture is the architecture of a host. In order to build for a different architecture pass `ABP_TARGET_ARCH` to `make`, e.g. run:
 
-    make TARGET_ARCH=ia32
+    make ABP_TARGET_ARCH=ia32
 
 supported values are `ia32` and `x64`.
 
@@ -83,9 +83,9 @@ To build and run the tests:
 
     make test
 
-Likewise, use the following with `TARGET_ARCH`:
+Likewise, use the following with `ABP_TARGET_ARCH`:
 
-    make test TARGET_ARCH=ia32
+    make test ABP_TARGET_ARCH=ia32
 
 To run specific tests, you can specify a filter:
 
@@ -120,14 +120,14 @@ Android NDK directory.
 
 To build for *x86* arch run:
 
-    make TARGET_OS=android TARGET_ARCH=ia32
+    make TARGET_OS=android ABP_TARGET_ARCH=ia32
 
 To build for *arm* or *arm64* arch run:
 
-    make TARGET_OS=android TARGET_ARCH=arm
+    make TARGET_OS=android ABP_TARGET_ARCH=arm
 
 or
-    make TARGET_OS=android TARGET_ARCH=arm64
+    make TARGET_OS=android ABP_TARGET_ARCH=arm64
 
 Usage
 -----

@@ -12,7 +12,6 @@ addons:
     sources:
     - 'ubuntu-toolchain-r-test'
     packages:
-    - g++-multilib
     - binutils-gold
     - libcurl4-openssl-dev
     - g++-7
@@ -26,9 +25,9 @@ env:
   - ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r16b
   matrix:
   - BUILD_ACTION=test
-  - BUILD_ACTION=all TARGET_OS=android Configuration=release TARGET_ARCH=arm
-  - BUILD_ACTION=all TARGET_OS=android Configuration=release TARGET_ARCH=arm64
-  - BUILD_ACTION=all TARGET_OS=android Configuration=release TARGET_ARCH=ia32
+  - BUILD_ACTION=all TARGET_OS=android Configuration=release ABP_TARGET_ARCH=arm
+  - BUILD_ACTION=all TARGET_OS=android Configuration=release ABP_TARGET_ARCH=arm64
+  - BUILD_ACTION=all TARGET_OS=android Configuration=release ABP_TARGET_ARCH=ia32
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
