@@ -82,10 +82,11 @@ clean:
 	$(RM) -r ${BUILD_DIR} docs
 
 ifeq ($(TARGET_OS),android)
+SUB_ACTION ?= installed_modules
 all: ensure_dependencies
 	GYP_DEFINES="${GYP_PARAMETERS}" \
 	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r16b libadblockplus.gyp
-	$(ANDROID_NDK_ROOT)/ndk-build -C ${BUILD_DIR} installed_modules \
+	$(ANDROID_NDK_ROOT)/ndk-build -C ${BUILD_DIR} ${SUB_ACTION} \
 	BUILDTYPE=Release \
 	APP_ABI=$(ANDROID_ABI) \
 	APP_PLATFORM=${ANDROID_PLATFORM_LEVEL} \
@@ -97,8 +98,9 @@ all: ensure_dependencies
 	${ANDROID_FIXES} \
 	NDK_APP_DST_DIR=android-$(TARGET_ARCH).release
 else
+SUB_ACTION ?= all
 all: ensure_dependencies 
 	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=${BUILD_DIR} libadblockplus.gyp
-	$(MAKE) -C ${BUILD_DIR}
+	$(MAKE) -C ${BUILD_DIR} ${SUB_ACTION}
 
 endif
