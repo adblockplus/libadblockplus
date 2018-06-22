@@ -47,8 +47,8 @@ namespace
     {
       std::string cmd = "--use_strict";
       v8::V8::SetFlagsFromString(cmd.c_str(), cmd.length());
-      platform = v8::platform::CreateDefaultPlatform();
-      v8::V8::InitializePlatform(platform);
+      platform = v8::platform::NewDefaultPlatform();
+      v8::V8::InitializePlatform(platform.get());
       v8::V8::Initialize();
     }
 
@@ -56,9 +56,8 @@ namespace
     {
       v8::V8::Dispose();
       v8::V8::ShutdownPlatform();
-      delete platform;
     }
-    v8::Platform* platform;
+    std::unique_ptr<v8::Platform> platform;
   public:
     static void Init()
     {
