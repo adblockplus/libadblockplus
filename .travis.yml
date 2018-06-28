@@ -7,6 +7,8 @@ os:
 dist: trusty
 sudo: false
 
+compiler: clang
+
 addons:
   apt:
     sources:
@@ -14,7 +16,6 @@ addons:
     packages:
     - binutils-gold
     - libcurl4-openssl-dev
-    - g++-7
     - p7zip-full
 
 python: '2.7'
@@ -32,7 +33,6 @@ env:
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install p7zip; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export CXX=g++-7 CC=gcc-7; fi
   - make get-prebuilt-v8
   - ./ensure_dependencies.py
   - if [[ "${TARGET_OS}" == "android" && "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O third_party/android-ndk.zip ; fi

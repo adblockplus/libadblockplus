@@ -30,10 +30,13 @@ Win32:
 * At least v141 Visual C++ toolset (available in Microsoft Visual Studio 2017).
 
 Linux:
-* g++ 7.3
+* clang 5.0
+We use libc++ instead of the libstdc++ that gcc uses, since by default v8 build
+with libc++.
 
 Mac:
-* Apple LLVM 9.1.0 for OS X/macOS (Xcode should be installed and its developer tools should be "selected").
+* Apple LLVM 9.0.0 for OS X/macOS (Xcode should be installed and its
+  developer tools should be "selected").
 
 Android:
 * The host system should be Linux or OS X

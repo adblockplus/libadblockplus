@@ -14,7 +14,7 @@
         # Adding -fpermissive to solve this.
         # See https://issues.adblockplus.org/ticket/4950
         # We might be able to do without after upgrading V8.
-        'cflags_cc': [ '-fno-rtti', '-std=c++14', '-fexceptions', '-fpermissive' ],
+        'cflags_cc': [ '-fno-rtti', '-std=c++14', '-fexceptions', '-fpermissive', '-stdlib=libc++' ],
         'cflags!': [ '-Werror', ],
         'ldflags': [ '-pthread', ],
       },

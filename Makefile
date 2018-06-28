@@ -5,6 +5,7 @@ ifndef HOST_OS
   ifeq (${raw_OS},Linux)
     HOST_OS=linux
     TRAVIS_OS_NAME=linux
+    CXX=clang++
   else ifeq (${raw_OS},Darwin)
     HOST_OS=mac
     TRAVIS_OS_NAME=osx
