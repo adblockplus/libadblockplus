@@ -5,7 +5,9 @@ ifndef HOST_OS
   ifeq (${raw_OS},Linux)
     HOST_OS=linux
     TRAVIS_OS_NAME=linux
-    CXX=clang++
+    ifeq ($(origin CXX),default)
+      CXX=clang++
+    endif
   else ifeq (${raw_OS},Darwin)
     HOST_OS=mac
     TRAVIS_OS_NAME=osx
@@ -100,8 +102,11 @@ all: ensure_dependencies
 	NDK_APP_DST_DIR=android-$(ABP_TARGET_ARCH).release
 else
 SUB_ACTION ?= all
+ifdef CXX
+CXX_PARAM:=CXX=${CXX}
+endif
 all: ensure_dependencies 
 	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=${BUILD_DIR} libadblockplus.gyp
-	$(MAKE) -C ${BUILD_DIR} ${SUB_ACTION}
+	$(MAKE) -C ${BUILD_DIR} ${SUB_ACTION} ${CXX_PARAM}
 
 endif
