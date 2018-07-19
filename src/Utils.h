@@ -29,6 +29,8 @@
 
 #include "JsError.h"
 
+#define ArraySize(a) (sizeof(a) / sizeof(a[0]))
+
 namespace AdblockPlus
 {
   namespace Utils

@@ -534,57 +534,6 @@ namespace AdblockPlus
       ContentTypeMask contentTypeMask,
       const std::vector<std::string>& documentUrls) const;
   };
-
-  /**
-   * Component of libadblockplus responsible for Update checks for the application.
-   */
-  class Updater
-  {
-  public:
-    explicit Updater(const JsEnginePtr& jsEngine, const JsEngine::EvaluateCallback& callback);
-
-    /**
-     * Callback type invoked when an update becomes available.
-     * The parameter is the download URL of the update.
-     */
-    typedef std::function<void(const std::string&)> UpdateAvailableCallback;
-
-    /**
-     * Callback type invoked when a manually triggered update check finishes.
-     * The parameter is an optional error message.
-     */
-    typedef std::function<void(const std::string&)> UpdateCheckDoneCallback;
-
-    /**
-     * Sets the callback invoked when an application update becomes available.
-     * @param callback Callback to invoke.
-     */
-    void SetUpdateAvailableCallback(const UpdateAvailableCallback& callback);
-
-    /**
-     * Removes the callback invoked when an application update becomes
-     * available.
-     */
-    void RemoveUpdateAvailableCallback();
-
-    /**
-     * Forces an immediate update check.
-     * `Updater` will automatically check for updates in regular intervals,
-     * so applications should only call this when the user triggers an update
-     * check manually.
-     * @param callback Optional callback to invoke when the update check is
-     *        finished. The string parameter will be empty when the update check
-     *        succeeded, or contain an error message if it failed.
-     *        Note that the callback will be invoked whether updates are
-     *        available or not - to react to updates being available, use
-     *        `Updater::SetUpdateAvailableCallback()`.
-     */
-    void ForceUpdateCheck(const UpdateCheckDoneCallback& callback = UpdateCheckDoneCallback());
-
-  private:
-    JsEnginePtr jsEngine;
-    int updateCheckId;
-  };
 }
 
 #endif

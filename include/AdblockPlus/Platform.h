@@ -25,6 +25,7 @@
 #include "AppInfo.h"
 #include "Scheduler.h"
 #include "FilterEngine.h"
+#include "Updater.h"
 #include <mutex>
 #include <future>
 #include <set>

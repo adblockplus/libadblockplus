@@ -23,23 +23,15 @@
 #include <thread>
 
 #include <AdblockPlus.h>
+#include "Utils.h"
 #include "JsContext.h"
 #include "Thread.h"
 #include <mutex>
 #include <condition_variable>
 
-#define ArraySize(a) (sizeof(a) / sizeof(a[0]))
-
 using namespace AdblockPlus;
 
 namespace {
-
-    /*
-     * TODO: Clarify JS dependencies for FilterEngine and Updater
-     * so both are using only required JS files.
-     * Now both tables are the same with full list of JS files.
-     */
-
     static std::string filterEngineJsFiles[] = {
       "compat.js",
       "info.js",
@@ -65,39 +57,6 @@ namespace {
       "synchronizer.js",
       "filterUpdateRegistration.js",
       "subscriptions.xml",
-      "updater.js",
-      "api.js",
-      "publicSuffixList.js",
-      "punycode.js",
-      "basedomain.js"
-    };
-
-    static std::string updaterJsFiles[] = {
-      "compat.js",
-      "info.js",
-      "io.js",
-      "prefs.js",
-      "utils.js",
-      "elemHideHitRegistration.js",
-      "events.js",
-      "coreUtils.js",
-      "filterNotifier.js",
-      "init.js",
-      "common.js",
-      "filterClasses.js",
-      "subscriptionClasses.js",
-      "filterStorage.js",
-      "elemHide.js",
-      "elemHideEmulation.js",
-      "matcher.js",
-      "filterListener.js",
-      "downloader.js",
-      "notification.js",
-      "notificationShowRegistration.js",
-      "synchronizer.js",
-      "filterUpdateRegistration.js",
-      "subscriptions.xml",
-      "updater.js",
       "api.js",
       "publicSuffixList.js",
       "punycode.js",
@@ -639,45 +598,4 @@ FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
   }
   while (urlIterator != documentUrls.end());
   return FilterPtr();
-}
-
-
-Updater::Updater(const JsEnginePtr& jsEngine, const JsEngine::EvaluateCallback& evaluateCallback)
-  : jsEngine(jsEngine), updateCheckId(0)
-{
-  // Load adblockplus scripts
-  for(size_t i = 0; i < ArraySize(updaterJsFiles); ++i)
-    evaluateCallback(updaterJsFiles[i]);
-}
-
-void Updater::SetUpdateAvailableCallback(const Updater::UpdateAvailableCallback& callback)
-{
-  jsEngine->SetEventCallback("updateAvailable", [this, callback](JsValueList&& params)
-  {
-    if (params.size() >= 1 && !params[0].IsNull())
-      callback(params[0].AsString());
-  });
-}
-
-void Updater::RemoveUpdateAvailableCallback()
-{
-  jsEngine->RemoveEventCallback("updateAvailable");
-}
-
-void Updater::ForceUpdateCheck(const Updater::UpdateCheckDoneCallback& callback)
-{
-  JsValue func = jsEngine->Evaluate("API.forceUpdateCheck");
-  JsValueList params;
-  if (callback)
-  {
-    std::string eventName = "_updateCheckDone" + std::to_string(++updateCheckId);
-    jsEngine->SetEventCallback(eventName, [this, eventName, callback](JsValueList&& params)
-    {
-      std::string error(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
-      callback(error);
-      jsEngine->RemoveEventCallback(eventName);
-    });
-    params.push_back(jsEngine->NewValue(eventName));
-  }
-  func.Call(params);
 }
