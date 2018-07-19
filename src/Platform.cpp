@@ -19,12 +19,16 @@
 #include <AdblockPlus/FilterEngine.h>
 #include <AdblockPlus/DefaultLogSystem.h>
 #include <AdblockPlus/AsyncExecutor.h>
+#include "JsContext.h"
 #include "DefaultTimer.h"
 #include "DefaultWebRequest.h"
 #include "DefaultFileSystem.h"
 #include <stdexcept>
 
 using namespace AdblockPlus;
+
+
+extern std::string jsSources[];
 
 namespace
 {
@@ -64,6 +68,26 @@ JsEngine& Platform::GetJsEngine()
   return *jsEngine;
 }
 
+JsEngine::EvaluateCallback Platform::GetEvaluateCallback()
+{
+    // GetEvaluateCallback() method assumes that jsEngine is already created
+    return [this](const std::string& filename)
+    {
+      if (evaluatedJsSources.find(filename) != evaluatedJsSources.end())
+        return; //NO-OP, file was already evaluated
+
+      // Lock the JS engine while we are loading scripts
+      const JsContext context(*jsEngine);
+      for (int i = 0; !jsSources[i].empty(); i += 2)
+        if (jsSources[i] == filename)
+        {
+          jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+          evaluatedJsSources.insert(filename);
+          break;
+      }
+    };
+}
+
 void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& parameters,
   const OnFilterEngineCreatedCallback& onCreated)
 {
@@ -77,18 +101,33 @@ void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& p
   }
 
   GetJsEngine(); // ensures that JsEngine is instantiated
-  FilterEngine::CreateAsync(jsEngine, [this, onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
-  {
-    filterEnginePromise->set_value(filterEngine);
-    if (onCreated)
-      onCreated(*filterEngine);
-  }, parameters);
+  FilterEngine::CreateAsync(
+    jsEngine,
+    GetEvaluateCallback(),
+    [this, onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
+    {
+      filterEnginePromise->set_value(filterEngine);
+      if (onCreated)
+        onCreated(*filterEngine);
+    },
+    parameters
+  );
 }
 
 FilterEngine& Platform::GetFilterEngine()
 {
   CreateFilterEngineAsync();
   return *std::shared_future<FilterEnginePtr>(filterEngine).get();
+}
+
+Updater& Platform::GetUpdater()
+{
+  if (updater == nullptr)
+  {
+      GetJsEngine(); // ensures that JsEngine is instantiated
+      updater = std::make_shared<Updater>(jsEngine, GetEvaluateCallback());
+  }
+  return *updater;
 }
 
 void Platform::WithTimer(const WithTimerCallback& callback)

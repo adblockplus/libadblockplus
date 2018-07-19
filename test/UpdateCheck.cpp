@@ -87,7 +87,7 @@ namespace
 
     void ForceUpdateCheck()
     {
-      platform->GetFilterEngine().ForceUpdateCheck([this](const std::string& error)
+      platform->GetUpdater().ForceUpdateCheck([this](const std::string& error)
       {
         updateCallbackCalled = true;
         updateError = error;
@@ -277,7 +277,7 @@ TEST_F(UpdateCheckTest, SetRemoveUpdateAvailableCallback)
   CreateFilterEngine();
 
   int timesCalled = 0;
-  platform->GetFilterEngine().SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
+  platform->GetUpdater().SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
   {
     ++timesCalled;
   });
@@ -292,7 +292,7 @@ TEST_F(UpdateCheckTest, SetRemoveUpdateAvailableCallback)
   // handler for "updateAvailable" event.
   EXPECT_FALSE(eventCallbackCalled);
 
-  platform->GetFilterEngine().RemoveUpdateAvailableCallback();
+  platform->GetUpdater().RemoveUpdateAvailableCallback();
   ForceUpdateCheck();
 
   // ensure that the was the corresponding request

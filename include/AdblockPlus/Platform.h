@@ -27,6 +27,8 @@
 #include "FilterEngine.h"
 #include <mutex>
 #include <future>
+#include <set>
+#include <string>
 
 namespace AdblockPlus
 {
@@ -108,6 +110,11 @@ namespace AdblockPlus
      */
     FilterEngine& GetFilterEngine();
 
+    /**
+     * Retrieves the Updater component instance.
+     */
+    Updater& GetUpdater();
+
     typedef std::function<void(ITimer&)> WithTimerCallback;
     virtual void WithTimer(const WithTimerCallback&);
 
@@ -125,11 +132,15 @@ namespace AdblockPlus
     TimerPtr timer;
     FileSystemPtr fileSystem;
     WebRequestPtr webRequest;
+    JsEngine::EvaluateCallback evaluateCallback;
   private:
     // used for creation and deletion of modules.
     std::mutex modulesMutex;
     std::shared_ptr<JsEngine> jsEngine;
     std::shared_future<FilterEnginePtr> filterEngine;
+    std::shared_ptr<Updater> updater;
+    std::set<std::string> evaluatedJsSources;
+    JsEngine::EvaluateCallback GetEvaluateCallback();
   };
 
   /**

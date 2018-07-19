@@ -21,6 +21,7 @@
 #include <functional>
 #include <map>
 #include <list>
+#include <set>
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
@@ -142,6 +143,12 @@ namespace AdblockPlus
      */
     JsValue Evaluate(const std::string& source,
         const std::string& filename = "");
+
+    /**
+     * Callback type for evaluating JS expression.
+     * The parameter is the JS file name containing the expression.
+     */
+    typedef std::function<void(const std::string&)> EvaluateCallback;
 
     /**
      * Initiates a garbage collection.
@@ -293,6 +300,7 @@ namespace AdblockPlus
     std::mutex eventCallbacksMutex;
     JsWeakValuesLists jsWeakValuesLists;
     std::mutex jsWeakValuesListsMutex;
+    std::set<std::string> evaluatedJsSources;
   };
 }
 

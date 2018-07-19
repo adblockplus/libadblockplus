@@ -28,9 +28,82 @@
 #include <mutex>
 #include <condition_variable>
 
+#define ArraySize(a) (sizeof(a) / sizeof(a[0]))
+
 using namespace AdblockPlus;
 
-extern std::string jsSources[];
+namespace {
+
+    /*
+     * TODO: Clarify JS dependencies for FilterEngine and Updater
+     * so both are using only required JS files.
+     * Now both tables are the same with full list of JS files.
+     */
+
+    static std::string filterEngineJsFiles[] = {
+      "compat.js",
+      "info.js",
+      "io.js",
+      "prefs.js",
+      "utils.js",
+      "elemHideHitRegistration.js",
+      "events.js",
+      "coreUtils.js",
+      "filterNotifier.js",
+      "init.js",
+      "common.js",
+      "filterClasses.js",
+      "subscriptionClasses.js",
+      "filterStorage.js",
+      "elemHide.js",
+      "elemHideEmulation.js",
+      "matcher.js",
+      "filterListener.js",
+      "downloader.js",
+      "notification.js",
+      "notificationShowRegistration.js",
+      "synchronizer.js",
+      "filterUpdateRegistration.js",
+      "subscriptions.xml",
+      "updater.js",
+      "api.js",
+      "publicSuffixList.js",
+      "punycode.js",
+      "basedomain.js"
+    };
+
+    static std::string updaterJsFiles[] = {
+      "compat.js",
+      "info.js",
+      "io.js",
+      "prefs.js",
+      "utils.js",
+      "elemHideHitRegistration.js",
+      "events.js",
+      "coreUtils.js",
+      "filterNotifier.js",
+      "init.js",
+      "common.js",
+      "filterClasses.js",
+      "subscriptionClasses.js",
+      "filterStorage.js",
+      "elemHide.js",
+      "elemHideEmulation.js",
+      "matcher.js",
+      "filterListener.js",
+      "downloader.js",
+      "notification.js",
+      "notificationShowRegistration.js",
+      "synchronizer.js",
+      "filterUpdateRegistration.js",
+      "subscriptions.xml",
+      "updater.js",
+      "api.js",
+      "publicSuffixList.js",
+      "punycode.js",
+      "basedomain.js"
+    };
+}
 
 Filter::Filter(JsValue&& value)
     : JsValue(std::move(value))
@@ -183,11 +256,13 @@ bool Subscription::operator==(const Subscription& subscription) const
 }
 
 FilterEngine::FilterEngine(const JsEnginePtr& jsEngine)
-  : jsEngine(jsEngine), firstRun(false), updateCheckId(0)
+  : jsEngine(jsEngine), firstRun(false)
 {
+
 }
 
 void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
+  const JsEngine::EvaluateCallback& evaluateCallback,
   const FilterEngine::OnCreatedCallback& onCreated,
   const FilterEngine::CreationParameters& params)
 {
@@ -228,7 +303,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       isSubscriptionDownloadAllowedCallback(params[0].IsString() ? &allowedConnectionType : nullptr, callJsCallback);
     });
   }
-  
+
   jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated](JsValueList&& params)
   {
     filterEngine->firstRun = params.size() && params[0].AsBool();
@@ -246,19 +321,16 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       filterEngine->GetJsEngine().NotifyLowMemory();
   });
 
-  // Lock the JS engine while we are loading scripts, no timeouts should fire
-  // until we are done.
-  const JsContext context(*jsEngine);
   // Set the preconfigured prefs
   auto preconfiguredPrefsObject = jsEngine->NewObject();
   for (const auto& pref : params.preconfiguredPrefs)
-  {
     preconfiguredPrefsObject.SetProperty(pref.first, pref.second);
-  }
   jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
+
   // Load adblockplus scripts
-  for (int i = 0; !jsSources[i].empty(); i += 2)
-    jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+  for(size_t i = 0; i < ArraySize(filterEngineJsFiles); ++i)
+    evaluateCallback(filterEngineJsFiles[i]);
+
 }
 
 namespace
@@ -491,40 +563,6 @@ std::string FilterEngine::GetHostFromURL(const std::string& url) const
   return func.Call(jsEngine->NewValue(url)).AsString();
 }
 
-void FilterEngine::SetUpdateAvailableCallback(
-    const FilterEngine::UpdateAvailableCallback& callback)
-{
-  jsEngine->SetEventCallback("updateAvailable", [this, callback](JsValueList&& params)
-  {
-    if (params.size() >= 1 && !params[0].IsNull())
-      callback(params[0].AsString());
-  });
-}
-
-void FilterEngine::RemoveUpdateAvailableCallback()
-{
-  jsEngine->RemoveEventCallback("updateAvailable");
-}
-
-void FilterEngine::ForceUpdateCheck(
-    const FilterEngine::UpdateCheckDoneCallback& callback)
-{
-  JsValue func = jsEngine->Evaluate("API.forceUpdateCheck");
-  JsValueList params;
-  if (callback)
-  {
-    std::string eventName = "_updateCheckDone" + std::to_string(++updateCheckId);
-    jsEngine->SetEventCallback(eventName, [this, eventName, callback](JsValueList&& params)
-    {
-      std::string error(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
-      callback(error);
-      jsEngine->RemoveEventCallback(eventName);
-    });
-    params.push_back(jsEngine->NewValue(eventName));
-  }
-  func.Call(params);
-}
-
 void FilterEngine::SetFilterChangeCallback(const FilterChangeCallback& callback)
 {
   jsEngine->SetEventCallback("filterChange", [this, callback](JsValueList&& params)
@@ -601,4 +639,45 @@ FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
   }
   while (urlIterator != documentUrls.end());
   return FilterPtr();
+}
+
+
+Updater::Updater(const JsEnginePtr& jsEngine, const JsEngine::EvaluateCallback& evaluateCallback)
+  : jsEngine(jsEngine), updateCheckId(0)
+{
+  // Load adblockplus scripts
+  for(size_t i = 0; i < ArraySize(updaterJsFiles); ++i)
+    evaluateCallback(updaterJsFiles[i]);
+}
+
+void Updater::SetUpdateAvailableCallback(const Updater::UpdateAvailableCallback& callback)
+{
+  jsEngine->SetEventCallback("updateAvailable", [this, callback](JsValueList&& params)
+  {
+    if (params.size() >= 1 && !params[0].IsNull())
+      callback(params[0].AsString());
+  });
+}
+
+void Updater::RemoveUpdateAvailableCallback()
+{
+  jsEngine->RemoveEventCallback("updateAvailable");
+}
+
+void Updater::ForceUpdateCheck(const Updater::UpdateCheckDoneCallback& callback)
+{
+  JsValue func = jsEngine->Evaluate("API.forceUpdateCheck");
+  JsValueList params;
+  if (callback)
+  {
+    std::string eventName = "_updateCheckDone" + std::to_string(++updateCheckId);
+    jsEngine->SetEventCallback(eventName, [this, eventName, callback](JsValueList&& params)
+    {
+      std::string error(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
+      callback(error);
+      jsEngine->RemoveEventCallback(eventName);
+    });
+    params.push_back(jsEngine->NewValue(eventName));
+  }
+  func.Call(params);
 }
