@@ -21,6 +21,7 @@
 #include <functional>
 #include <string>
 #include <AdblockPlus/JsEngine.h>
+#include <AdblockPlus/JsValue.h>
 
 namespace AdblockPlus
 {
@@ -69,6 +70,20 @@ namespace AdblockPlus
      *        `Updater::SetUpdateAvailableCallback()`.
      */
     void ForceUpdateCheck(const UpdateCheckDoneCallback& callback = UpdateCheckDoneCallback());
+
+    /**
+     * Retrieves a preference value.
+     * @param pref Preference name.
+     * @return Preference value, or `null` if it doesn't exist.
+     */
+    JsValue GetPref(const std::string& pref) const;
+
+    /**
+     * Sets a preference value.
+     * @param pref Preference name.
+     * @param value New value of the preference.
+     */
+    void SetPref(const std::string& pref, const JsValue& value);
 
   private:
     JsEnginePtr jsEngine;

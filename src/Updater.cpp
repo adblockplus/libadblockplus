@@ -17,6 +17,7 @@
 
 #include <AdblockPlus.h>
 #include "Utils.h"
+#include <cassert>
 
 using namespace AdblockPlus;
 
@@ -31,14 +32,25 @@ namespace {
       "common.js",
       "downloader.js",
       "updater.js",
-      "apiUpdater.js",
-      "basedomain.js"
+      "apiUpdater.js"
     };
 }
 
 Updater::Updater(const JsEnginePtr& jsEngine, const JsEngine::EvaluateCallback& evaluateCallback)
   : jsEngine(jsEngine), updateCheckId(0)
 {
+  // Hack to enable downloads from JS (see compat.js)
+  jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [this](JsValueList&& params)
+  {
+    // param[0] - nullable string Prefs.allowed_connection_type
+    // param[1] - function(Boolean)
+    bool areArgumentsValid = params.size() == 2 && (params[0].IsNull() || params[0].IsString()) && params[1].IsFunction();
+    assert(areArgumentsValid && "Invalid argument: there should be two args and the second one should be a function");
+    if (!areArgumentsValid)
+      return;
+    params[1].Call(this->jsEngine->NewValue(true));
+  });
+
   // Set empty preconfigured prefs
   auto preconfiguredPrefsObject = jsEngine->NewObject();
   jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
@@ -77,5 +89,20 @@ void Updater::ForceUpdateCheck(const Updater::UpdateCheckDoneCallback& callback)
     });
     params.push_back(jsEngine->NewValue(eventName));
   }
+  func.Call(params);
+}
+
+JsValue Updater::GetPref(const std::string& pref) const
+{
+  JsValue func = jsEngine->Evaluate("API_UPDATER.getPref");
+  return func.Call(jsEngine->NewValue(pref));
+}
+
+void Updater::SetPref(const std::string& pref, const JsValue& value)
+{
+  JsValue func = jsEngine->Evaluate("API_UPDATER.setPref");
+  JsValueList params;
+  params.push_back(jsEngine->NewValue(pref));
+  params.push_back(value);
   func.Call(params);
 }
