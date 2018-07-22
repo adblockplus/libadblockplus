@@ -21,7 +21,6 @@
 #include <functional>
 #include <map>
 #include <list>
-#include <set>
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
@@ -300,7 +299,6 @@ namespace AdblockPlus
     std::mutex eventCallbacksMutex;
     JsWeakValuesLists jsWeakValuesLists;
     std::mutex jsWeakValuesListsMutex;
-    std::set<std::string> evaluatedJsSources;
   };
 }
 

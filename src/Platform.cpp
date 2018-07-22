@@ -84,7 +84,7 @@ JsEngine::EvaluateCallback Platform::GetEvaluateCallback()
           jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
           evaluatedJsSources.insert(filename);
           break;
-      }
+        }
     };
 }
 
