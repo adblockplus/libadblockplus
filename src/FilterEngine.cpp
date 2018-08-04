@@ -23,7 +23,6 @@
 #include <thread>
 
 #include <AdblockPlus.h>
-#include "Utils.h"
 #include "JsContext.h"
 #include "Thread.h"
 #include <mutex>
@@ -31,8 +30,10 @@
 
 using namespace AdblockPlus;
 
-namespace {
-    static std::string filterEngineJsFiles[] = {
+namespace
+{
+    const std::string filterEngineJsFiles[] =
+    {
       "compat.js",
       "info.js",
       "io.js",
@@ -221,7 +222,7 @@ FilterEngine::FilterEngine(const JsEnginePtr& jsEngine)
 }
 
 void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
-  const JsEngine::EvaluateCallback& evaluateCallback,
+  const EvaluateCallback& evaluateCallback,
   const FilterEngine::OnCreatedCallback& onCreated,
   const FilterEngine::CreationParameters& params)
 {
@@ -262,7 +263,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       isSubscriptionDownloadAllowedCallback(params[0].IsString() ? &allowedConnectionType : nullptr, callJsCallback);
     });
   }
-
+  
   jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated](JsValueList&& params)
   {
     filterEngine->firstRun = params.size() && params[0].AsBool();
@@ -280,15 +281,20 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       filterEngine->GetJsEngine().NotifyLowMemory();
   });
 
+  // Lock the JS engine while we are loading scripts, no timeouts should fire
+  // until we are done.
+  const JsContext context(*jsEngine);
   // Set the preconfigured prefs
   auto preconfiguredPrefsObject = jsEngine->NewObject();
   for (const auto& pref : params.preconfiguredPrefs)
+  {
     preconfiguredPrefsObject.SetProperty(pref.first, pref.second);
+  }
   jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
 
   // Load adblockplus scripts
-  for(size_t i = 0; i < ArraySize(filterEngineJsFiles); ++i)
-    evaluateCallback(filterEngineJsFiles[i]);
+  for (const auto& filterEngineJsFile: filterEngineJsFiles)
+    evaluateCallback(filterEngineJsFile);
 
 }
 

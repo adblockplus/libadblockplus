@@ -16,13 +16,14 @@
  */
 
 #include <AdblockPlus.h>
-#include "Utils.h"
-#include <cassert>
+#include "JsContext.h"
 
 using namespace AdblockPlus;
 
-namespace {
-    static std::string updaterJsFiles[] = {
+namespace
+{
+    const std::string updaterJsFiles[] =
+    {
       "compat.js",
       "info.js",
       "prefs.js",
@@ -36,28 +37,14 @@ namespace {
     };
 }
 
-Updater::Updater(const JsEnginePtr& jsEngine, const JsEngine::EvaluateCallback& evaluateCallback)
+Updater::Updater(const JsEnginePtr& jsEngine, const EvaluateCallback& evaluateCallback)
   : jsEngine(jsEngine), updateCheckId(0)
 {
-  // Hack to enable downloads from JS (see compat.js)
-  jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [this](JsValueList&& params)
-  {
-    // param[0] - nullable string Prefs.allowed_connection_type
-    // param[1] - function(Boolean)
-    bool areArgumentsValid = params.size() == 2 && (params[0].IsNull() || params[0].IsString()) && params[1].IsFunction();
-    assert(areArgumentsValid && "Invalid argument: there should be two args and the second one should be a function");
-    if (!areArgumentsValid)
-      return;
-    params[1].Call(this->jsEngine->NewValue(true));
-  });
-
-  // Set empty preconfigured prefs
-  auto preconfiguredPrefsObject = jsEngine->NewObject();
-  jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
-
-  // Load adblockplus scripts
-  for(size_t i = 0; i < ArraySize(updaterJsFiles); ++i)
-    evaluateCallback(updaterJsFiles[i]);
+  // Lock the JS engine while we are loading scripts, no timeouts should fire
+  // until we are done.
+  const JsContext context(*jsEngine);
+  for (const auto& updaterJsFile: updaterJsFiles)
+    evaluateCallback(updaterJsFile);
 }
 
 void Updater::SetUpdateAvailableCallback(const Updater::UpdateAvailableCallback& callback)

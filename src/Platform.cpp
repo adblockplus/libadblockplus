@@ -19,7 +19,6 @@
 #include <AdblockPlus/FilterEngine.h>
 #include <AdblockPlus/DefaultLogSystem.h>
 #include <AdblockPlus/AsyncExecutor.h>
-#include "JsContext.h"
 #include "DefaultTimer.h"
 #include "DefaultWebRequest.h"
 #include "DefaultFileSystem.h"
@@ -68,7 +67,7 @@ JsEngine& Platform::GetJsEngine()
   return *jsEngine;
 }
 
-JsEngine::EvaluateCallback Platform::GetEvaluateCallback()
+std::function<void(const std::string&)> Platform::GetEvaluateCallback()
 {
     // GetEvaluateCallback() method assumes that jsEngine is already created
     return [this](const std::string& filename)
@@ -76,8 +75,6 @@ JsEngine::EvaluateCallback Platform::GetEvaluateCallback()
       if (evaluatedJsSources.find(filename) != evaluatedJsSources.end())
         return; //NO-OP, file was already evaluated
 
-      // Lock the JS engine while we are loading scripts
-      const JsContext context(*jsEngine);
       for (int i = 0; !jsSources[i].empty(); i += 2)
         if (jsSources[i] == filename)
         {

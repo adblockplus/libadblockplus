@@ -31,8 +31,6 @@ namespace AdblockPlus
   class Updater
   {
   public:
-    explicit Updater(const JsEnginePtr& jsEngine, const JsEngine::EvaluateCallback& callback);
-
     /**
      * Callback type invoked when an update becomes available.
      * The parameter is the download URL of the update.
@@ -56,6 +54,12 @@ namespace AdblockPlus
      * available.
      */
     void RemoveUpdateAvailableCallback();
+
+    /**
+     * Callback type for evaluating JS expression.
+     * The parameter is the JS file name containing the expression.
+     */
+    typedef std::function<void(const std::string&)> EvaluateCallback;
 
     /**
      * Forces an immediate update check.
@@ -84,6 +88,8 @@ namespace AdblockPlus
      * @param value New value of the preference.
      */
     void SetPref(const std::string& pref, const JsValue& value);
+
+    explicit Updater(const JsEnginePtr& jsEngine, const EvaluateCallback& callback);
 
   private:
     JsEnginePtr jsEngine;

@@ -144,12 +144,6 @@ namespace AdblockPlus
         const std::string& filename = "");
 
     /**
-     * Callback type for evaluating JS expression.
-     * The parameter is the JS file name containing the expression.
-     */
-    typedef std::function<void(const std::string&)> EvaluateCallback;
-
-    /**
      * Initiates a garbage collection.
      */
     void Gc();

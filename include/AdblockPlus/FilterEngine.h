@@ -275,6 +275,12 @@ namespace AdblockPlus
     typedef std::function<void(const FilterEnginePtr&)> OnCreatedCallback;
 
     /**
+     * Callback type for evaluating JS expression.
+     * The parameter is the JS file name containing the expression.
+     */
+    typedef std::function<void(const std::string&)> EvaluateCallback;
+
+    /**
      * Asynchronously constructs FilterEngine.
      * @param jsEngine `JsEngine` instance used to run JavaScript code
      *        internally.
@@ -283,7 +289,7 @@ namespace AdblockPlus
      * @param parameters optional creation parameters.
      */
     static void CreateAsync(const JsEnginePtr& jsEngine,
-      const JsEngine::EvaluateCallback& evaluateCallback,
+      const EvaluateCallback& evaluateCallback,
       const OnCreatedCallback& onCreated,
       const CreationParameters& parameters = CreationParameters());
 

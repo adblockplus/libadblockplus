@@ -30,6 +30,7 @@
 #include <future>
 #include <set>
 #include <string>
+#include <functional>
 
 namespace AdblockPlus
 {
@@ -133,7 +134,6 @@ namespace AdblockPlus
     TimerPtr timer;
     FileSystemPtr fileSystem;
     WebRequestPtr webRequest;
-    JsEngine::EvaluateCallback evaluateCallback;
   private:
     // used for creation and deletion of modules.
     std::mutex modulesMutex;
@@ -141,7 +141,7 @@ namespace AdblockPlus
     std::shared_future<FilterEnginePtr> filterEngine;
     std::shared_ptr<Updater> updater;
     std::set<std::string> evaluatedJsSources;
-    JsEngine::EvaluateCallback GetEvaluateCallback();
+    std::function<void(const std::string&)> GetEvaluateCallback();
   };
 
   /**
