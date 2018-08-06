@@ -29,11 +29,16 @@ namespace
     const std::string& source, const std::string& filename)
   {
     using AdblockPlus::Utils::ToV8String;
-    const v8::Local<v8::String> v8Source = ToV8String(isolate, source);
+    auto maybeV8Source = ToV8String(isolate, source);
+    if (maybeV8Source.IsEmpty())
+      return v8::MaybeLocal<v8::Script>();
+    const v8::Local<v8::String> v8Source = maybeV8Source.ToLocalChecked();
     if (filename.length())
     {
-      const v8::Local<v8::String> v8Filename = ToV8String(isolate, filename);
-      v8::ScriptOrigin scriptOrigin(v8Filename);
+      auto maybeV8Filename = ToV8String(isolate, filename);
+      if (maybeV8Filename.IsEmpty())
+        return v8::MaybeLocal<v8::Script>();
+      v8::ScriptOrigin scriptOrigin(maybeV8Filename.ToLocalChecked());
       return v8::Script::Compile(isolate->GetCurrentContext(), v8Source, &scriptOrigin);
     }
     else
@@ -186,9 +191,9 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::Evaluate(const std::string& source,
   const JsContext context(*this);
   auto isolate = GetIsolate();
   const v8::TryCatch tryCatch(isolate);
-  auto script = CHECKED_TO_LOCAL(
+  auto script = CHECKED_TO_LOCAL_WITH_TRY_CATCH(
     isolate, CompileScript(isolate, source, filename), tryCatch);
-  auto result = CHECKED_TO_LOCAL(
+  auto result = CHECKED_TO_LOCAL_WITH_TRY_CATCH(
     isolate, script->Run(isolate->GetCurrentContext()), tryCatch);
   return JsValue(shared_from_this(), result);
 }
@@ -232,7 +237,9 @@ void AdblockPlus::JsEngine::Gc()
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(const std::string& val)
 {
   const JsContext context(*this);
-  return JsValue(shared_from_this(), Utils::ToV8String(GetIsolate(), val));
+  auto isolate = GetIsolate();
+  return JsValue(shared_from_this(),
+    CHECKED_TO_LOCAL(isolate, Utils::ToV8String(isolate, val)));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(int64_t val)

@@ -17,11 +17,20 @@
 
 #include "BaseJsTest.h"
 
+#include "../src/Utils.h"
+
 namespace
 {
   class JsValueTest : public BaseJsTest
   {
   };
+}
+
+TEST_F(JsValueTest, Checked)
+{
+  auto value = v8::MaybeLocal<bool>();
+  ASSERT_ANY_THROW(CHECKED_TO_LOCAL(GetJsEngine().GetIsolate(),
+                                    std::move(value)));
 }
 
 TEST_F(JsValueTest, UndefinedValue)
@@ -161,6 +170,7 @@ TEST_F(JsValueTest, ObjectValue)
   ASSERT_EQ("Foo", value.GetClass());
   ASSERT_EQ(3u, value.GetOwnPropertyNames().size());
   ASSERT_ANY_THROW(value.Call());
+  ASSERT_TRUE(value.GetProperty("bar").IsUndefined());
 }
 
 TEST_F(JsValueTest, ArrayValue)

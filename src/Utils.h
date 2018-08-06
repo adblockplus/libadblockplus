@@ -42,22 +42,26 @@ namespace AdblockPlus
      */
     template<class T>
     v8::Local<T> CheckedToLocal(v8::Isolate* isolate,
-      v8::MaybeLocal<T>&& value, const v8::TryCatch& tryCatch,
+      v8::MaybeLocal<T>&& value, const v8::TryCatch* tryCatch,
       const char* filename, int line)
     {
-      CheckTryCatch(isolate, tryCatch);
+      if (tryCatch)
+        CheckTryCatch(isolate, *tryCatch);
       if (value.IsEmpty())
         throw AdblockPlus::JsError("Empty value at ", filename, line);
       return value.ToLocalChecked();
     }
 
-#define CHECKED_TO_LOCAL(isolate, value, tryCatch)                      \
-    AdblockPlus::Utils::CheckedToLocal(isolate, value, tryCatch, __FILE__, __LINE__)
+#define CHECKED_TO_LOCAL_WITH_TRY_CATCH(isolate, value, tryCatch) \
+    AdblockPlus::Utils::CheckedToLocal((isolate), (value), &(tryCatch), __FILE__, __LINE__)
+
+#define CHECKED_TO_LOCAL(isolate, value) \
+    AdblockPlus::Utils::CheckedToLocal((isolate), (value), nullptr, __FILE__, __LINE__)
 
     std::string FromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>& value);
     StringBuffer StringBufferFromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>& value);
-    v8::Local<v8::String> ToV8String(v8::Isolate* isolate, const std::string& str);
-    v8::Local<v8::String> StringBufferToV8String(v8::Isolate* isolate, const StringBuffer& bytes);
+    v8::MaybeLocal<v8::String> ToV8String(v8::Isolate* isolate, const std::string& str);
+    v8::MaybeLocal<v8::String> StringBufferToV8String(v8::Isolate* isolate, const StringBuffer& bytes);
     void ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str);
 
     // Code for templated function has to be in a header file, can't be in .cpp

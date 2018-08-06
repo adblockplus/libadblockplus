@@ -187,10 +187,16 @@ namespace
               do
               {
                 auto stringEnd = AdvanceToEndOfLine(stringBegin, contentEnd);
-                auto jsLine = Utils::StringBufferToV8String(isolate, StringBuffer(stringBegin, stringEnd)).As<v8::Value>();
-                processFunc->Call(v8Context, globalContext, 1, &jsLine);
-                if (tryCatch.HasCaught())
-                  throw JsError(isolate, tryCatch.Exception(), tryCatch.Message());
+                auto jsLine = CHECKED_TO_LOCAL_WITH_TRY_CATCH(
+                  isolate,
+                  Utils::StringBufferToV8String(
+                    isolate, StringBuffer(stringBegin, stringEnd)),
+                  tryCatch).As<v8::Value>();
+
+                CHECKED_TO_LOCAL_WITH_TRY_CATCH(
+                  isolate, processFunc->Call(v8Context, globalContext, 1, &jsLine),
+                  tryCatch);
+
                 stringBegin = SkipEndOfLine(stringEnd, contentEnd);
               } while (stringBegin != contentEnd);
               jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call();

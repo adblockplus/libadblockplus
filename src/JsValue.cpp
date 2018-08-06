@@ -183,17 +183,22 @@ AdblockPlus::JsValue AdblockPlus::JsValue::GetProperty(const std::string& name) 
     throw std::runtime_error("Attempting to get property of a non-object");
 
   const JsContext context(*jsEngine);
-  v8::Local<v8::String> property = Utils::ToV8String(jsEngine->GetIsolate(), name);
+  auto isolate = jsEngine->GetIsolate();
+  v8::Local<v8::String> property = CHECKED_TO_LOCAL(
+    isolate, Utils::ToV8String(isolate, name));
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
-  return JsValue(jsEngine, obj->Get(property));
+  return JsValue(jsEngine, CHECKED_TO_LOCAL(
+    isolate, obj->Get(isolate->GetCurrentContext(), property)));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Local<v8::Value> val)
 {
   if (!IsObject())
     throw std::runtime_error("Attempting to set property on a non-object");
+  auto isolate = jsEngine->GetIsolate();
 
-  v8::Local<v8::String> property = Utils::ToV8String(jsEngine->GetIsolate(), name);
+  v8::Local<v8::String> property = CHECKED_TO_LOCAL(
+    isolate, Utils::ToV8String(isolate, name));
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
   obj->Set(property, val);
 }
@@ -206,13 +211,19 @@ v8::Local<v8::Value> AdblockPlus::JsValue::UnwrapValue() const
 void AdblockPlus::JsValue::SetProperty(const std::string& name, const std::string& val)
 {
   const JsContext context(*jsEngine);
-  SetProperty(name, Utils::ToV8String(jsEngine->GetIsolate(), val));
+  auto isolate = jsEngine->GetIsolate();
+
+  SetProperty(name, CHECKED_TO_LOCAL(
+    isolate, Utils::ToV8String(jsEngine->GetIsolate(), val)));
 }
 
 void AdblockPlus::JsValue::SetStringBufferProperty(const std::string& name, const StringBuffer& val)
 {
   const JsContext context(*jsEngine);
-  SetProperty(name, Utils::StringBufferToV8String(jsEngine->GetIsolate(), val));
+  auto isolate = jsEngine->GetIsolate();
+
+  SetProperty(name, CHECKED_TO_LOCAL(
+    isolate, Utils::StringBufferToV8String(isolate, val)));
 }
 
 void AdblockPlus::JsValue::SetProperty(const std::string& name, int64_t val)
@@ -283,13 +294,13 @@ JsValue JsValue::Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Obj
     throw std::runtime_error("`this` pointer has to be an object");
 
   const JsContext context(*jsEngine);
+  auto isolate = jsEngine->GetIsolate();
 
-  const v8::TryCatch tryCatch(jsEngine->GetIsolate());
+  const v8::TryCatch tryCatch(isolate);
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(UnwrapValue());
-  v8::Local<v8::Value> result = func->Call(thisObj, args.size(),
-    args.size() ? &args[0] : nullptr);
-  if (tryCatch.HasCaught())
-    throw JsError(jsEngine->GetIsolate(), tryCatch.Exception(), tryCatch.Message());
+  auto result = CHECKED_TO_LOCAL_WITH_TRY_CATCH(
+    isolate, func->Call(isolate->GetCurrentContext(),
+      thisObj, args.size(), args.size() ? &args[0] : nullptr), tryCatch);
 
   return JsValue(jsEngine, result);
 }

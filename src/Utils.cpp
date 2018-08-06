@@ -50,22 +50,29 @@ StringBuffer Utils::StringBufferFromV8String(v8::Isolate* isolate, const v8::Loc
     return IFileSystem::IOBuffer();
 }
 
-v8::Local<v8::String> Utils::ToV8String(v8::Isolate* isolate, const std::string& str)
+v8::MaybeLocal<v8::String> Utils::ToV8String(v8::Isolate* isolate, const std::string& str)
 {
   return v8::String::NewFromUtf8(isolate, str.c_str(),
-    v8::String::NewStringType::kNormalString, str.length());
+    v8::NewStringType::kNormal, str.length());
 }
 
-v8::Local<v8::String> Utils::StringBufferToV8String(v8::Isolate* isolate, const StringBuffer& str)
+v8::MaybeLocal<v8::String> Utils::StringBufferToV8String(v8::Isolate* isolate, const StringBuffer& str)
 {
   return v8::String::NewFromUtf8(isolate,
     reinterpret_cast<const char*>(str.data()),
-    v8::String::NewStringType::kNormalString, str.size());
+    v8::NewStringType::kNormal, str.size());
 }
 
 void Utils::ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str)
 {
-  isolate->ThrowException(Utils::ToV8String(isolate, str));
+  auto maybe = Utils::ToV8String(isolate, str);
+  if (maybe.IsEmpty())
+  {
+    isolate->ThrowException(
+      Utils::ToV8String(isolate, "Unknown Exception").ToLocalChecked());
+  }
+  else
+    isolate->ThrowException(maybe.ToLocalChecked());
 }
 
 #ifdef _WIN32
