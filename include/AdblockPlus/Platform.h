@@ -141,6 +141,7 @@ namespace AdblockPlus
     std::shared_future<FilterEnginePtr> filterEngine;
     std::shared_ptr<Updater> updater;
     std::set<std::string> evaluatedJsSources;
+    std::mutex evaluatedJsSourcesMutex;
     std::function<void(const std::string&)> GetEvaluateCallback();
   };
 

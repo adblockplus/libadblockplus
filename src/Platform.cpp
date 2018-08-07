@@ -72,6 +72,7 @@ std::function<void(const std::string&)> Platform::GetEvaluateCallback()
     // GetEvaluateCallback() method assumes that jsEngine is already created
     return [this](const std::string& filename)
     {
+      std::lock_guard<std::mutex> lock(evaluatedJsSourcesMutex);
       if (evaluatedJsSources.find(filename) != evaluatedJsSources.end())
         return; //NO-OP, file was already evaluated
 
@@ -119,11 +120,15 @@ FilterEngine& Platform::GetFilterEngine()
 
 Updater& Platform::GetUpdater()
 {
-  if (updater == nullptr)
   {
-      GetJsEngine(); // ensures that JsEngine is instantiated
-      updater = std::make_shared<Updater>(jsEngine, GetEvaluateCallback());
+    std::lock_guard<std::mutex> lock(modulesMutex);
+    if (updater)
+      return *updater;
   }
+  GetJsEngine(); // ensures that JsEngine is instantiated
+  std::lock_guard<std::mutex> lock(modulesMutex);
+  if (!updater)
+    updater = std::make_shared<Updater>(jsEngine, GetEvaluateCallback());
   return *updater;
 }
 

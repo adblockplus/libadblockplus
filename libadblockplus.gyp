@@ -209,7 +209,8 @@
       'test/Prefs.cpp',
       'test/ReferrerMapping.cpp',
       'test/UpdateCheck.cpp',
-      'test/WebRequest.cpp'
+      'test/WebRequest.cpp',
+      'test/UpdaterAndFilterEngineCreation.cpp'
     ],
     'msvs_settings': {
       'VCLinkerTool': {
