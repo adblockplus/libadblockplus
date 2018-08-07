@@ -221,7 +221,7 @@ TEST_F(JsValueTest, JsValueCallSingleArg)
   EXPECT_EQ(10, func.Call(GetJsEngine().NewValue(5)).AsInt());
 }
 
-TEST_F(JsValueTest, ThrowingCoversion)
+TEST_F(JsValueTest, ThrowingConversion)
 {
   const std::string source("\
     function Foo() {\
@@ -231,5 +231,5 @@ TEST_F(JsValueTest, ThrowingCoversion)
     new Foo()");
   auto value = GetJsEngine().Evaluate(source);
   ASSERT_EQ("", value.AsString());
-  ASSERT_EQ(0, value.AsInt());
+  ASSERT_ANY_THROW(value.AsInt());
 }

@@ -130,12 +130,15 @@ void JsEngine::ScheduleTimer(const v8::FunctionCallbackInfo<v8::Value>& argument
   auto timerParamsID = jsEngine->StoreJsValues(jsValueArguments);
 
   std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
+
+  int64_t millis = CHECKED_TO_VALUE(
+    arguments[1]->IntegerValue(arguments.GetIsolate()->GetCurrentContext()));
+
   jsEngine->platform.WithTimer(
-    [arguments, weakJsEngine, timerParamsID](ITimer& timer)
+    [millis, weakJsEngine, timerParamsID](ITimer& timer)
     {
       timer.SetTimer(
-        std::chrono::milliseconds(
-          arguments[1]->IntegerValue()), [weakJsEngine, timerParamsID]
+        std::chrono::milliseconds(millis), [weakJsEngine, timerParamsID]
           {
             if (auto jsEngine = weakJsEngine.lock())
               jsEngine->CallTimerTask(timerParamsID);
@@ -264,14 +267,15 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(
     const v8::FunctionCallback& callback)
 {
   const JsContext context(*this);
-
+  auto isolate = GetIsolate();
   // Note: we are leaking this weak pointer, no obvious way to destroy it when
   // it's no longer used
   std::weak_ptr<JsEngine>* data =
       new std::weak_ptr<JsEngine>(shared_from_this());
-  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(GetIsolate(), callback,
-      v8::External::New(GetIsolate(), data));
-  return JsValue(shared_from_this(), templ->GetFunction());
+  v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, callback,
+      v8::External::New(isolate, data));
+  return JsValue(shared_from_this(),
+      CHECKED_TO_LOCAL(isolate, templ->GetFunction(isolate->GetCurrentContext())));
 }
 
 AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments)

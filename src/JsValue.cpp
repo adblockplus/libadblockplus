@@ -136,13 +136,17 @@ StringBuffer AdblockPlus::JsValue::AsStringBuffer() const
 int64_t AdblockPlus::JsValue::AsInt() const
 {
   const JsContext context(*jsEngine);
-  return UnwrapValue()->IntegerValue();
+  auto currentContext = jsEngine->GetIsolate()->GetCurrentContext();
+  auto value = UnwrapValue()->IntegerValue(currentContext);
+  return CHECKED_TO_VALUE(std::move(value));
 }
 
 bool AdblockPlus::JsValue::AsBool() const
 {
   const JsContext context(*jsEngine);
-  return UnwrapValue()->BooleanValue();
+  auto currentContext = jsEngine->GetIsolate()->GetCurrentContext();
+  auto value = UnwrapValue()->BooleanValue(currentContext);
+  return CHECKED_TO_VALUE(std::move(value));
 }
 
 AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
@@ -151,12 +155,15 @@ AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
     throw std::runtime_error("Cannot convert a non-array to list");
 
   const JsContext context(*jsEngine);
+  auto isolate = jsEngine->GetIsolate();
+  auto currentContext = isolate->GetCurrentContext();
   JsValueList result;
   v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(UnwrapValue());
   uint32_t length = array->Length();
   for (uint32_t i = 0; i < length; i++)
   {
-    v8::Local<v8::Value> item = array->Get(i);
+    v8::Local<v8::Value> item = CHECKED_TO_LOCAL(
+      isolate, array->Get(currentContext, i));
     result.push_back(JsValue(jsEngine, item));
   }
   return result;
@@ -168,8 +175,11 @@ std::vector<std::string> AdblockPlus::JsValue::GetOwnPropertyNames() const
     throw std::runtime_error("Attempting to get propert list for a non-object");
 
   const JsContext context(*jsEngine);
+  auto isolate = jsEngine->GetIsolate();
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(UnwrapValue());
-  JsValueList properties = JsValue(jsEngine, object->GetOwnPropertyNames()).AsList();
+  auto propertyNames = CHECKED_TO_LOCAL(isolate,
+    object->GetOwnPropertyNames(isolate->GetCurrentContext()));
+  JsValueList properties = JsValue(jsEngine, propertyNames).AsList();
   std::vector<std::string> result;
   for (const auto& property : properties)
     result.push_back(property.AsString());
@@ -200,7 +210,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Local<v8::Va
   v8::Local<v8::String> property = CHECKED_TO_LOCAL(
     isolate, Utils::ToV8String(isolate, name));
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());
-  obj->Set(property, val);
+  CHECKED_TO_VALUE(obj->Set(isolate->GetCurrentContext(), property, val));
 }
 
 v8::Local<v8::Value> AdblockPlus::JsValue::UnwrapValue() const
