@@ -15,12 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#include <thread>
-#include <vector>
-#include <chrono>
 #include <string>
 #include <memory>
+#include <array>
+
+#include <AdblockPlus/AsyncExecutor.h>
 
 #include "BaseJsTest.h"
 
@@ -34,9 +33,8 @@ namespace
 
     static const size_t COUNT = 100;
     const std::string PROP_NAME = "patternsbackupinterval";
-    std::vector<std::thread> threadsVector;
-    Updater* updaterAddrArray[COUNT];
-    FilterEngine* filterAddrArray[COUNT];
+    std::array<Updater*, COUNT> updaterAddrArray;
+    std::array<FilterEngine*, COUNT> filterAddrArray;
     DelayedWebRequest::SharedTasks webRequestTasks;
     DelayedTimer::SharedTasks timerTasks;
 
@@ -49,9 +47,8 @@ namespace
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest = DelayedWebRequest::New(webRequestTasks);
       platform.reset(new Platform(std::move(platformParams)));
-      threadsVector.reserve(COUNT);
-      std::uninitialized_fill(updaterAddrArray, updaterAddrArray + COUNT, nullptr);
-      std::uninitialized_fill(filterAddrArray, filterAddrArray + COUNT, nullptr);
+      std::uninitialized_fill(updaterAddrArray.begin(), updaterAddrArray.end(), nullptr);
+      std::uninitialized_fill(filterAddrArray.begin(), filterAddrArray.end(), nullptr);
     }
 
     void CallGetUpdaterSimultaneously()
@@ -73,41 +70,28 @@ namespace
 
     void CallGetSimultaneously(bool isUpdater, bool isFilterEngine)
     {
+      AsyncExecutor asyncExecutor;
       for (size_t idx = 0; idx < COUNT; ++idx)
-        threadsVector.push_back(
-          std::thread([this, idx, isUpdater, isFilterEngine]() -> void {
-            Updater* updaterAddr = nullptr;
-            FilterEngine* filterEngineAddr = nullptr;
-            if (isUpdater && isFilterEngine)
+        asyncExecutor.Dispatch(([this, idx, isUpdater, isFilterEngine]() -> void {
+          if (isUpdater && isFilterEngine)
+          {
+            // some randomization in order of calling gets
+            if (idx % 2)
             {
-              // some randomization in order of calling gets
-              if (idx % 2)
-              {
-                updaterAddr = &(platform->GetUpdater());
-                filterEngineAddr = &(platform->GetFilterEngine());
-              }
-              else
-              {
-                filterEngineAddr = &(platform->GetFilterEngine());
-                updaterAddr = &(platform->GetUpdater());
-              }
+              updaterAddrArray[idx] = &(platform->GetUpdater());
+              filterAddrArray[idx] = &(platform->GetFilterEngine());
             }
-            else if (isUpdater)
-              updaterAddr = &(platform->GetUpdater());
-            else if (isFilterEngine)
-              filterEngineAddr = &(platform->GetFilterEngine());
-
-            if (updaterAddr != nullptr)
-              updaterAddrArray[idx] = updaterAddr;
-
-            if (filterEngineAddr != nullptr)
-              filterAddrArray[idx] = filterEngineAddr;
-          }));
-
-      // join the threads
-      for (auto& th: threadsVector)
-        if (th.joinable())
-          th.join();
+            else
+            {
+              filterAddrArray[idx] = &(platform->GetFilterEngine());
+              updaterAddrArray[idx] = &(platform->GetUpdater());
+            }
+          }
+          else if (isUpdater)
+            updaterAddrArray[idx] = &(platform->GetUpdater());
+          else if (isFilterEngine)
+            filterAddrArray[idx] = &(platform->GetFilterEngine());
+        }));
     }
   };
 }
@@ -116,6 +100,7 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestFilterEngineSingleInstance)
 {
     CallGetFilterEngineSimultaneously();
     FilterEngine* filterEngineAddr = filterAddrArray[0];
+    ASSERT_NE(filterEngineAddr, nullptr);
     for (size_t i = 1; i < COUNT; ++i)
       ASSERT_EQ(filterEngineAddr, filterAddrArray[i]);
 }
@@ -124,6 +109,7 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterSingleInstance)
 {
     CallGetUpdaterSimultaneously();
     Updater* updaterAddr = updaterAddrArray[0];
+    ASSERT_NE(updaterAddr, nullptr);
     for (size_t i = 1; i < COUNT; ++i)
       ASSERT_EQ(updaterAddr, updaterAddrArray[i]);
 }
@@ -131,14 +117,15 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterSingleInstance)
 TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationsDontCollide)
 {
     CallGetUpdaterAndGetFilterEngineSimultaneously();
+    ASSERT_NE(filterAddrArray[0], nullptr);
     ASSERT_EQ(filterAddrArray[0], filterAddrArray[COUNT - 1]);
+    ASSERT_NE(updaterAddrArray[0], nullptr);
     ASSERT_EQ(updaterAddrArray[0], updaterAddrArray[COUNT - 1]);
 }
 
 TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrder1)
 {
     Updater& updater = platform->GetUpdater();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     FilterEngine& filterEngine = platform->GetFilterEngine();
 
     int propFromUpdater = updater.GetPref(PROP_NAME).AsInt();
@@ -156,7 +143,6 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrd
 TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrder2)
 {
     FilterEngine& filterEngine = platform->GetFilterEngine();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     Updater& updater = platform->GetUpdater();
 
     int propFromFilterEngine = filterEngine.GetPref(PROP_NAME).AsInt();
