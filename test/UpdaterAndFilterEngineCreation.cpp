@@ -100,7 +100,7 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestFilterEngineSingleInstance)
 {
     CallGetFilterEngineSimultaneously();
     FilterEngine* filterEngineAddr = filterAddrArray[0];
-    ASSERT_NE(filterEngineAddr, nullptr);
+    EXPECT_NE(nullptr, filterEngineAddr);
     for (size_t i = 1; i < COUNT; ++i)
       ASSERT_EQ(filterEngineAddr, filterAddrArray[i]);
 }
@@ -109,7 +109,7 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterSingleInstance)
 {
     CallGetUpdaterSimultaneously();
     Updater* updaterAddr = updaterAddrArray[0];
-    ASSERT_NE(updaterAddr, nullptr);
+    EXPECT_NE(nullptr, updaterAddr);
     for (size_t i = 1; i < COUNT; ++i)
       ASSERT_EQ(updaterAddr, updaterAddrArray[i]);
 }
@@ -117,10 +117,10 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterSingleInstance)
 TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationsDontCollide)
 {
     CallGetUpdaterAndGetFilterEngineSimultaneously();
-    ASSERT_NE(filterAddrArray[0], nullptr);
-    ASSERT_EQ(filterAddrArray[0], filterAddrArray[COUNT - 1]);
-    ASSERT_NE(updaterAddrArray[0], nullptr);
-    ASSERT_EQ(updaterAddrArray[0], updaterAddrArray[COUNT - 1]);
+    EXPECT_NE(nullptr, filterAddrArray[0]);
+    EXPECT_NE(nullptr, updaterAddrArray[0]);
+    EXPECT_EQ(filterAddrArray[0], filterAddrArray[COUNT - 1]);
+    EXPECT_EQ(updaterAddrArray[0], updaterAddrArray[COUNT - 1]);
 }
 
 TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrder1)
@@ -130,14 +130,14 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrd
 
     int propFromUpdater = updater.GetPref(PROP_NAME).AsInt();
     int propFromFilterEngine = filterEngine.GetPref(PROP_NAME).AsInt();
-    ASSERT_EQ(propFromUpdater, propFromFilterEngine);
+    EXPECT_EQ(propFromUpdater, propFromFilterEngine);
 
     int newPropValue = 8;
     updater.SetPref(PROP_NAME, GetJsEngine().NewValue(newPropValue));
     propFromUpdater = updater.GetPref(PROP_NAME).AsInt();
     propFromFilterEngine = filterEngine.GetPref(PROP_NAME).AsInt();
-    ASSERT_EQ(propFromUpdater, newPropValue);
-    ASSERT_EQ(propFromFilterEngine, newPropValue);
+    EXPECT_EQ(newPropValue, propFromUpdater);
+    EXPECT_EQ(newPropValue, propFromFilterEngine);
 }
 
 TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrder2)
@@ -147,12 +147,12 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrd
 
     int propFromFilterEngine = filterEngine.GetPref(PROP_NAME).AsInt();
     int propFromUpdater = updater.GetPref(PROP_NAME).AsInt();
-    ASSERT_EQ(propFromUpdater, propFromFilterEngine);
+    EXPECT_EQ(propFromUpdater, propFromFilterEngine);
 
     int newPropValue = 18;
     filterEngine.SetPref(PROP_NAME, GetJsEngine().NewValue(newPropValue));
     propFromFilterEngine = filterEngine.GetPref(PROP_NAME).AsInt();
     propFromUpdater = updater.GetPref(PROP_NAME).AsInt();
-    ASSERT_EQ(propFromUpdater, newPropValue);
-    ASSERT_EQ(propFromFilterEngine, newPropValue);
+    EXPECT_EQ(newPropValue, propFromUpdater);
+    EXPECT_EQ(newPropValue, propFromFilterEngine);
 }
