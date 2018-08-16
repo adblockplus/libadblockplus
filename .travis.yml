@@ -22,12 +22,17 @@ python: '2.7'
 
 env:
   global:
-  - URL_PREFIX=https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/
+  - URL_PREFIX=https://v8.eyeofiles.com/v8-${!V8_COMMIT}/
   - ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r16b
   - libv8_show_warnings="true"
   matrix:
-  - ABP_OS_SCRIPT=nix
-  - ABP_OS_SCRIPT=android
+# 6.7.288.11
+  - V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=nix
+  - V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=android
+# https://github.com/adblockplus/v8-googlesource/commit/3cdaf01c4043e19965efc5ef48df5314960b898f
+# 6.5.254.41
+  - V8_COMMIT=3cdaf01c4043e19965efc5ef48df5314960b898f ABP_OS_SCRIPT=nix
+  - V8_COMMIT=3cdaf01c4043e19965efc5ef48df5314960b898f ABP_OS_SCRIPT=android
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
