@@ -18,7 +18,7 @@ install:
 environment:
   URL_PREFIX: https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/
 before_build:
-- cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8 libv8_show_warnings=\"true\""
+- cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8 libv8_show_warnings=true"
 - cmd: createsolution.bat
 - cmd: >-
     if "%Platform%"=="Win32" set arch="ia32"
