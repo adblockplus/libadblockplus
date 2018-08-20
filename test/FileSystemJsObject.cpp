@@ -21,6 +21,8 @@
 
 using namespace AdblockPlus;
 
+extern std::string jsSources[];
+
 namespace
 {
   class MockFileSystem : public AdblockPlus::IFileSystem
@@ -398,4 +400,27 @@ _fileSystem.readFromFile("foo",
 )js");
   EXPECT_EQ(2u, readLines.size());
   EXPECT_EQ("Error: my-error at undefined:8", error);
+}
+
+TEST_F(FileSystemJsObjectTest, MoveNonExistingFile)
+{
+  mockFileSystem->success = false;
+  auto& jsEngine = GetJsEngine();
+  const std::vector<std::string> jsFiles = {"compat.js", "io.js"};
+  for (int i = 0; !jsSources[i].empty(); i += 2)
+  {
+    if (jsFiles.end() != std::find(jsFiles.begin(), jsFiles.end(), jsSources[i]))
+    {
+      jsEngine.Evaluate(jsSources[i + 1], jsSources[i]);
+    }
+  }
+  jsEngine.Evaluate(R"js(
+    let hasError = false;
+    let isNextHandlerCalled = false;
+    require("io").IO.renameFile("foo", "bar")
+      .catch((e) => {hasError = e})
+      .then(() => isNextHandlerCalled = true);
+  )js");
+  EXPECT_EQ("Unable to move foo to bar", jsEngine.Evaluate("hasError").AsString());
+  EXPECT_TRUE(jsEngine.Evaluate("isNextHandlerCalled").AsBool());
 }
