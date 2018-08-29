@@ -23,8 +23,13 @@ Building
 
 ### Supported target platforms and prerequisites
 
-You need a C++14 compatible compiler to build libadblockplus. Below there is
+General:
+* You need a C++14 compatible compiler to build libadblockplus. Below there is
 the list of tested tools.
+
+* 7z
+We use 7z for prebuilt V8. In order to install it on a debian-based system
+one can use `p7zip-full` package, or `p7zip-plugins` on rpm-based.
 
 Win32:
 * At least v141 Visual C++ toolset (available in Microsoft Visual Studio 2017).
