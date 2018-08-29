@@ -24,6 +24,7 @@ env:
   global:
   - URL_PREFIX=https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/
   - ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r16b
+  - libv8_show_warnings="true"
   matrix:
   - BUILD_ACTION=test
   - BUILD_ACTION=all TARGET_OS=android Configuration=release ABP_TARGET_ARCH=arm

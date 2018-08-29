@@ -15,4 +15,14 @@
       }]
     ]
   },
+  'target_defaults': {
+    'conditions': [[
+      'libv8_show_warnings=="true"', {
+        'defines': [
+          'V8_DEPRECATION_WARNINGS',
+          'V8_IMMINENT_DEPRECATION_WARNINGS'
+        ]
+      }
+    ]]
+  }
 }
