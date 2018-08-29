@@ -46,6 +46,11 @@
       'Release': {}
     },
     'msvs_cygwin_shell': 0,
+    'msvs_settings': {
+      'VCCLCompilerTool': {
+        'WarningLevel': '3',
+      }
+    },
     'target_conditions': [
       ['_type=="static_library"', {
         'standalone_static_library': 1
