@@ -11,11 +11,7 @@ compiler: clang
 
 addons:
   apt:
-    sources:
-    - 'ubuntu-toolchain-r-test'
     packages:
-    - binutils-gold
-    - libcurl4-openssl-dev
     - p7zip-full
 
 python: '2.7'
@@ -33,6 +29,13 @@ env:
 # 6.5.254.41
   - V8_COMMIT=3cdaf01c4043e19965efc5ef48df5314960b898f ABP_OS_SCRIPT=nix
   - V8_COMMIT=3cdaf01c4043e19965efc5ef48df5314960b898f ABP_OS_SCRIPT=android
+
+matrix:
+  exclude:
+  - os: linux
+    env: V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=nix
+  - os: linux
+    env: V8_COMMIT=3cdaf01c4043e19965efc5ef48df5314960b898f ABP_OS_SCRIPT=nix
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi

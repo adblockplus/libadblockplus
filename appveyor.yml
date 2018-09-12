@@ -2,21 +2,44 @@ version: 1.0.{build}
 pull_requests:
   do_not_increment_build_number: true
 skip_tags: true
-image: Visual Studio 2017
-configuration:
-- Release
-- Debug
-platform:
-- x64
-- Win32 
+
 clone_depth: 1
+
 init:
 - cmd: echo %Platform% %Configuration%
+
 install:
+- sh: sudo apt-get update -qy
+- sh: sudo apt-get install -qy clang libc++-dev libc++abi-dev
+# hack to figure out the absence of __cxxabi_config.h, required by gtest
+# it's fixed in newer versions of libc++abi-dev
+# https://ubuntu.pkgs.org/16.04/ubuntu-universe-amd64/libc++abi-dev_3.7.0-1_amd64.deb.html
+# https://ubuntu.pkgs.org/18.04/ubuntu-universe-amd64/libc++abi-dev_6.0-2_amd64.deb.html
+- sh: sudo ln -s /usr/include/libcxxabi/__cxxabi_config.h /usr/include/c++/v1/__cxxabi_config.h
 - cmd: .appveyor\prepare-prebuilt-v8.cmd
+- sh: make get-prebuilt-v8
 - cmd: ensure_dependencies.py
+- sh: python ensure_dependencies.py
+
 environment:
-  URL_PREFIX: https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/
+  global:
+    URL_PREFIX: https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/
+  matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
+    Configuration: Debug
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    platform: x64
+    Configuration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    platform: x64
+    Configuration: Debug
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    platform: Win32
+    Configuration: Release
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    platform: Win32
+    Configuration: Debug
+
 before_build:
 - cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8 libv8_show_warnings=true"
 - cmd: createsolution.bat
@@ -27,8 +50,10 @@ before_build:
 
 build_script:
 - cmd: msbuild "build/%arch%/libadblockplus.sln" /m /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+- sh: make
 test_script:
 - cmd: build\%arch%\%Configuration%\tests.exe --gtest_output=xml:tests.xml
+- sh: ./build/out/Debug/tests --gtest_output=xml:tests.xml
 after_test:
 - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
 deploy: off
