@@ -240,7 +240,7 @@ namespace AdblockPlus
     /**
      * Callback type invoked when the filters change.
      * The first parameter is the action event code (see
-     * [FilterNotifier.triggerListeners](https://adblockplus.org/jsdoc/adblockpluscore/FilterNotifier.html#.triggerListeners)
+     * [filterNotifier.on](https://adblockplus.org/jsdoc/adblockpluscore/EventEmitter.html#on)
      * for the full list).
      * The second parameter is the filter/subscription object affected, if any.
      */
