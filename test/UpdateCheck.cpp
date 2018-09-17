@@ -48,7 +48,7 @@ namespace
       updateCallbackCalled = false;
     }
 
-    void CreateFilterEngine()
+    void CreateUpdater()
     {
       LazyFileSystem* fileSystem;
       ThrowingPlatformCreationParameters platformParams;
@@ -64,7 +64,7 @@ namespace
         eventCallbackParams = std::move(params);
       });
 
-      ::CreateFilterEngine(*fileSystem, *platform);
+      platform->GetUpdater();
     }
 
     // Returns a URL or the empty string if there is no such request.
@@ -87,7 +87,7 @@ namespace
 
     void ForceUpdateCheck()
     {
-      platform->GetFilterEngine().ForceUpdateCheck([this](const std::string& error)
+      platform->GetUpdater().ForceUpdateCheck([this](const std::string& error)
       {
         updateCallbackCalled = true;
         updateError = error;
@@ -107,7 +107,7 @@ TEST_F(UpdateCheckTest, RequestFailure)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = false;
 
-  CreateFilterEngine();
+  CreateUpdater();
   ForceUpdateCheck();
 
   auto requestUrl = ProcessPendingUpdateWebRequest();
@@ -116,7 +116,7 @@ TEST_F(UpdateCheckTest, RequestFailure)
   ASSERT_TRUE(updateCallbackCalled);
   ASSERT_FALSE(updateError.empty());
 
-  std::string expectedUrl(platform->GetFilterEngine().GetPref("update_url_release").AsString());
+  std::string expectedUrl(platform->GetUpdater().GetPref("update_url_release").AsString());
   std::string platform = GetJsEngine().Evaluate("require('info').platform").AsString();
   std::string platformVersion = GetJsEngine().Evaluate("require('info').platformVersion").AsString();
 
@@ -144,7 +144,7 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  CreateFilterEngine();
+  CreateUpdater();
   ForceUpdateCheck();
 
   auto requestUrl = ProcessPendingUpdateWebRequest();
@@ -155,7 +155,7 @@ TEST_F(UpdateCheckTest, UpdateAvailable)
   ASSERT_TRUE(updateCallbackCalled);
   ASSERT_TRUE(updateError.empty());
 
-  std::string expectedUrl(platform->GetFilterEngine().GetPref("update_url_devbuild").AsString());
+  std::string expectedUrl(platform->GetUpdater().GetPref("update_url_devbuild").AsString());
   std::string platform = GetJsEngine().Evaluate("require('info').platform").AsString();
   std::string platformVersion = GetJsEngine().Evaluate("require('info').platformVersion").AsString();
 
@@ -183,7 +183,7 @@ TEST_F(UpdateCheckTest, ApplicationUpdateAvailable)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  CreateFilterEngine();
+  CreateUpdater();
   ForceUpdateCheck();
 
   ProcessPendingUpdateWebRequest();
@@ -206,7 +206,7 @@ TEST_F(UpdateCheckTest, WrongApplication)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  CreateFilterEngine();
+  CreateUpdater();
   ForceUpdateCheck();
 
   ProcessPendingUpdateWebRequest();
@@ -228,7 +228,7 @@ TEST_F(UpdateCheckTest, WrongVersion)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  CreateFilterEngine();
+  CreateUpdater();
   ForceUpdateCheck();
 
   ProcessPendingUpdateWebRequest();
@@ -250,7 +250,7 @@ TEST_F(UpdateCheckTest, WrongURL)
   appInfo.applicationVersion = "2";
   appInfo.developmentBuild = true;
 
-  CreateFilterEngine();
+  CreateUpdater();
   ForceUpdateCheck();
 
   ProcessPendingUpdateWebRequest();
@@ -274,10 +274,10 @@ TEST_F(UpdateCheckTest, SetRemoveUpdateAvailableCallback)
 
   appInfo.name = "test";
   appInfo.version = "1.0.1";
-  CreateFilterEngine();
+  CreateUpdater();
 
   int timesCalled = 0;
-  platform->GetFilterEngine().SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
+  platform->GetUpdater().SetUpdateAvailableCallback([&timesCalled](const std::string&)->void
   {
     ++timesCalled;
   });
@@ -288,11 +288,11 @@ TEST_F(UpdateCheckTest, SetRemoveUpdateAvailableCallback)
 
   EXPECT_EQ(1, timesCalled);
 
-  // FilterEngine::SetUpdateAvailableCallback overriddes previously installed on JsEngine
+  // Updater::SetUpdateAvailableCallback overriddes previously installed on JsEngine
   // handler for "updateAvailable" event.
   EXPECT_FALSE(eventCallbackCalled);
 
-  platform->GetFilterEngine().RemoveUpdateAvailableCallback();
+  platform->GetUpdater().RemoveUpdateAvailableCallback();
   ForceUpdateCheck();
 
   // ensure that the was the corresponding request
