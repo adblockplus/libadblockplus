@@ -49,7 +49,8 @@ before_build:
     if "%Platform%"=="x64" set arch="x64"
 
 build_script:
-- cmd: msbuild "build/%arch%/libadblockplus.sln" /m /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+- cmd: msbuild "build/%arch%/tests.sln" /m /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+- cmd: msbuild "build/%arch%/abpshell.sln" /m /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 - sh: make
 test_script:
 - cmd: build\%arch%\%Configuration%\tests.exe --gtest_output=xml:tests.xml

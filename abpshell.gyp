@@ -6,14 +6,14 @@
       'libadblockplus.gyp:libadblockplus'
     ],
     'sources': [
-      'src/Main.cpp',
-      'src/Command.cpp',
-      'src/GcCommand.cpp',
-      'src/HelpCommand.cpp',
-      'src/FiltersCommand.cpp',
-      'src/MatchesCommand.cpp',
-      'src/PrefsCommand.cpp',
-      'src/SubscriptionsCommand.cpp'
+      'shell/src/Main.cpp',
+      'shell/src/Command.cpp',
+      'shell/src/GcCommand.cpp',
+      'shell/src/HelpCommand.cpp',
+      'shell/src/FiltersCommand.cpp',
+      'shell/src/MatchesCommand.cpp',
+      'shell/src/PrefsCommand.cpp',
+      'shell/src/SubscriptionsCommand.cpp'
     ],
     'msvs_settings': {
       'VCLinkerTool': {
