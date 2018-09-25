@@ -1,6 +1,7 @@
 {
   'variables': {
     'v8_dir%': 'build/v8/',
+    'libv8_show_warnings%': 0,
     'libv8_include_dir%': '>(v8_dir)/include',
     'libv8_lib_dir%': '>(v8_dir)/<(OS)-<(target_arch).<(CONFIGURATION_NAME)',
     'conditions': [[
