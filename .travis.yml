@@ -18,17 +18,13 @@ python: '2.7'
 
 env:
   global:
-  - URL_PREFIX=https://v8.eyeofiles.com/v8-${!V8_COMMIT}/
+  - URL_PREFIX_PREFIX=https://v8.eyeofiles.com/v8- # add V8_COMMIT
   - ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r16b
   - libv8_show_warnings="true"
   matrix:
 # 6.7.288.11
   - V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=nix
   - V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=android
-# https://github.com/adblockplus/v8-googlesource/commit/3cdaf01c4043e19965efc5ef48df5314960b898f
-# 6.5.254.41
-  - V8_COMMIT=3cdaf01c4043e19965efc5ef48df5314960b898f ABP_OS_SCRIPT=nix
-  - V8_COMMIT=3cdaf01c4043e19965efc5ef48df5314960b898f ABP_OS_SCRIPT=android
 
 matrix:
   exclude:
@@ -44,6 +40,7 @@ before_script:
   - if [[ "${ABP_OS_SCRIPT}" == "android" && "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O third_party/android-ndk.zip ; fi
   - if [[ "${ABP_OS_SCRIPT}" == "android" && "$TRAVIS_OS_NAME" == "osx" ]]; then wget https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip -O third_party/android-ndk.zip ; fi
   - if [[ "${ABP_OS_SCRIPT}" == "android" ]]; then unzip -q third_party/android-ndk.zip -d third_party/ ; fi
+  - export URL_PREFIX=${URL_PREFIX_PREFIX}${V8_COMMIT}/
 
 script:
   - bash ./.travis/${ABP_OS_SCRIPT}-script.sh

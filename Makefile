@@ -58,6 +58,8 @@ endif
 
 TEST_EXECUTABLE = ${BUILD_DIR}/out/Debug/tests
 
+URL_PREFIX ?= "https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/"
+
 .PHONY: all test clean docs ensure_dependencies
 
 .DEFAULT_GOAL:=all
@@ -76,7 +78,7 @@ docs:
 	doxygen
 
 get-prebuilt-v8:
-	URL_PREFIX="https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/" \
+	URL_PREFIX=${URL_PREFIX} \
 	TARGET_OS=${TARGET_OS} ABP_TARGET_ARCH=${ABP_TARGET_ARCH} \
 	TRAVIS_OS_NAME=${TRAVIS_OS_NAME} Configuration=${Configuration} \
 	bash .travis/prepare-prebuilt-v8.sh
