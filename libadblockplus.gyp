@@ -13,7 +13,7 @@
       }
     }
   ]],
-  'includes': ['v8.gypi', 'shell/shell.gyp'],
+  'includes': ['v8.gypi'],
   'targets': [{
     'target_name': 'libadblockplus',
     'type': '<(library)',
@@ -61,16 +61,19 @@
       'include_dirs': ['include'],
       'conditions': [[
         'OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '<@(libv8_libs)',
+              '-lwinmm'
+            ],
+          },
           'msvs_settings': {
             'VCLinkerTool': {
               'AdditionalLibraryDirectories': ['<(libv8_lib_dir)'],
             }
           }
         }
-      ]],
-    },
-    'conditions': [
-      ['OS=="linux" or OS=="mac"', {
+      ], ['OS=="linux" or OS=="mac"', {
         'link_settings': {
           'libraries': [
             '<@(libv8_libs)'
@@ -79,19 +82,14 @@
             '<(libv8_lib_dir)'
           ]
         }
-      }],
-      ['OS=="win"', {
-        'link_settings': {
-          'libraries': [
-            '<@(libv8_libs)',
-            '-lwinmm'
-          ],
-        },
-      }],
-      ['OS=="android"', {
+      }], ['OS=="android"', {
         'user_libraries': [
           '<@(libv8_libs)'
         ],
+      }]],
+    },
+    'conditions': [
+      ['OS=="android"', {
         'standalone_static_library': 1, # disable thin archives
       }],
       ['have_curl==1',
@@ -185,38 +183,5 @@
         '--after', '<@(load_after_files)',
       ]
     }]
-  },
-  {
-    'target_name': 'tests',
-    'type': 'executable',
-    'xcode_settings': {},
-    'dependencies': [
-      'googletest.gyp:googletest_main',
-      'libadblockplus'
-    ],
-    'sources': [
-      'test/AsyncExecutor.cpp',
-      'test/BaseJsTest.h',
-      'test/BaseJsTest.cpp',
-      'test/AppInfoJsObject.cpp',
-      'test/ConsoleJsObject.cpp',
-      'test/DefaultFileSystem.cpp',
-      'test/FileSystemJsObject.cpp',
-      'test/FilterEngine.cpp',
-      'test/GlobalJsObject.cpp',
-      'test/JsEngine.cpp',
-      'test/JsValue.cpp',
-      'test/Notification.cpp',
-      'test/Prefs.cpp',
-      'test/ReferrerMapping.cpp',
-      'test/UpdateCheck.cpp',
-      'test/WebRequest.cpp'
-    ],
-    'msvs_settings': {
-      'VCLinkerTool': {
-        'SubSystem': '1',   # Console
-        'EntryPointSymbol': 'mainCRTStartup',
-      },
-    },
   }]
 }
