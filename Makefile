@@ -58,7 +58,7 @@ endif
 
 TEST_EXECUTABLE = ${BUILD_DIR}/out/Debug/tests
 
-URL_PREFIX ?= "https://v8.eyeofiles.com/v8-$(shell sed -nr 's/.*V8_COMMIT=(\S*).*/\1/p' .travis.yml|head -n1)/"
+URL_PREFIX ?= "https://v8.eyeofiles.com/v8-$(shell sed -nE 's/.*V8_COMMIT=(\S*).*/\1/p' .travis.yml|head -n1)/"
 
 .PHONY: all test clean docs ensure_dependencies
 
