@@ -11,11 +11,6 @@ init:
 install:
 - sh: sudo apt-get update -qy
 - sh: sudo apt-get install -qy clang libc++-dev libc++abi-dev
-# hack to figure out the absence of __cxxabi_config.h, required by gtest
-# it's fixed in newer versions of libc++abi-dev
-# https://ubuntu.pkgs.org/16.04/ubuntu-universe-amd64/libc++abi-dev_3.7.0-1_amd64.deb.html
-# https://ubuntu.pkgs.org/18.04/ubuntu-universe-amd64/libc++abi-dev_6.0-2_amd64.deb.html
-- sh: sudo ln -s /usr/include/libcxxabi/__cxxabi_config.h /usr/include/c++/v1/__cxxabi_config.h
 - cmd: .appveyor\prepare-prebuilt-v8.cmd
 - sh: make get-prebuilt-v8
 - cmd: ensure_dependencies.py
@@ -25,7 +20,7 @@ environment:
   global:
     URL_PREFIX: https://v8.eyeofiles.com/v8-9a7be49a7a6e435d8a7d435c4879340a3cc7524c/
   matrix:
-  - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
+  - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu1804
     Configuration: Debug
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     platform: x64
