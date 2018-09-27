@@ -22,6 +22,9 @@ env:
   - ANDROID_NDK_ROOT=${TRAVIS_BUILD_DIR}/third_party/android-ndk-r16b
   - libv8_show_warnings="true"
   matrix:
+# 6.9.427.22
+  - V8_COMMIT=9a7be49a7a6e435d8a7d435c4879340a3cc7524c ABP_OS_SCRIPT=nix
+  - V8_COMMIT=9a7be49a7a6e435d8a7d435c4879340a3cc7524c ABP_OS_SCRIPT=android
 # 6.7.288.11
   - V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=nix
   - V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=android
@@ -29,9 +32,9 @@ env:
 matrix:
   exclude:
   - os: linux
-    env: V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=nix
+    env: V8_COMMIT=9a7be49a7a6e435d8a7d435c4879340a3cc7524c ABP_OS_SCRIPT=nix
   - os: linux
-    env: V8_COMMIT=3cdaf01c4043e19965efc5ef48df5314960b898f ABP_OS_SCRIPT=nix
+    env: V8_COMMIT=4fc9a2fe7f8a7ef1e7966185b39b3b541792669a ABP_OS_SCRIPT=nix
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi

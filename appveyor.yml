@@ -23,7 +23,7 @@ install:
 
 environment:
   global:
-    URL_PREFIX: https://v8.eyeofiles.com/v8-4fc9a2fe7f8a7ef1e7966185b39b3b541792669a/
+    URL_PREFIX: https://v8.eyeofiles.com/v8-9a7be49a7a6e435d8a7d435c4879340a3cc7524c/
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
     Configuration: Debug
