@@ -23,6 +23,9 @@
 #include "JsContext.h"
 #include "Utils.h"
 #include <AdblockPlus/Platform.h>
+#include "v8-compat-api.h"
+
+using namespace AdblockPlus::V8CompatApi;
 
 namespace
 {
@@ -42,8 +45,9 @@ namespace
     }
 
     std::stringstream source;
-    v8::Local<v8::StackFrame> frame = v8::StackTrace::CurrentStackTrace(arguments.GetIsolate(), 1)->GetFrame(0);
-    source << AdblockPlus::Utils::FromV8String(arguments.GetIsolate(), frame->GetScriptName());
+    auto isolate = arguments.GetIsolate();
+    v8::Local<v8::StackFrame> frame = StackTrace_GetFrame(isolate, v8::StackTrace::CurrentStackTrace(isolate, 1), 0);
+    source << AdblockPlus::Utils::FromV8String(isolate, frame->GetScriptName());
     source << ":" << frame->GetLineNumber();
 
     jsEngine->GetPlatform().WithLogSystem(
@@ -84,19 +88,20 @@ namespace
     const AdblockPlus::JsContext context(*jsEngine);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
+    auto isolate = arguments.GetIsolate();
     std::stringstream traceback;
-    v8::Local<v8::StackTrace> frames = v8::StackTrace::CurrentStackTrace(arguments.GetIsolate(), 100);
+    v8::Local<v8::StackTrace> frames = v8::StackTrace::CurrentStackTrace(isolate, 100);
     for (int i = 0, l = frames->GetFrameCount(); i < l; i++)
     {
-      v8::Local<v8::StackFrame> frame = frames->GetFrame(i);
+      v8::Local<v8::StackFrame> frame = StackTrace_GetFrame(isolate, frames, i);
       traceback << (i + 1) << ": ";
-      std::string name = AdblockPlus::Utils::FromV8String(arguments.GetIsolate(), frame->GetFunctionName());
+      std::string name = AdblockPlus::Utils::FromV8String(isolate, frame->GetFunctionName());
       if (name.size())
         traceback << name;
       else
         traceback << "/* anonymous */";
       traceback << "() at ";
-      traceback << AdblockPlus::Utils::FromV8String(arguments.GetIsolate(), frame->GetScriptName());
+      traceback << AdblockPlus::Utils::FromV8String(isolate, frame->GetScriptName());
       traceback << ":" << frame->GetLineNumber();
       traceback << std::endl;
     }
