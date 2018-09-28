@@ -11,7 +11,7 @@ if [[ "${TARGET_OS}" != "android" ]]; then
 if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
 PREBUILT_V8_ARCHIVE=osx-x64-debug.tar.xz
 elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-PREBUILT_V8_ARCHIVE=u14.04-x64-debug.tar.xz
+PREBUILT_V8_ARCHIVE=u18.04-x64-debug.tar.xz
 fi
 fi
 

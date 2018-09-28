@@ -15,9 +15,13 @@
         # See https://issues.adblockplus.org/ticket/4950
         # We might be able to do without after upgrading V8.
         'cflags_cc': [ '-fno-rtti', '-std=c++14', '-fexceptions', '-fpermissive', '-stdlib=libc++' ],
-        'cflags!': [ '-Werror', ],
-        'ldflags': [ '-pthread', ],
+        'ldflags': [ '-pthread'],
       },
+    }],
+    ['OS=="linux"', {
+      'target_defaults': {
+        'ldflags': ['-lc++']
+      }
     }],
     ['OS=="mac"', {
       'xcode_settings': {
