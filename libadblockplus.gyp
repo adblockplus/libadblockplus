@@ -44,6 +44,7 @@
       'src/DefaultWebRequest.cpp',
       'src/FileSystemJsObject.cpp',
       'src/FilterEngine.cpp',
+      'src/Updater.cpp',
       'src/GlobalJsObject.cpp',
       'src/JsContext.cpp',
       'src/JsEngine.cpp',
@@ -160,6 +161,7 @@
         ],
         'load_after_files': [
           'lib/api.js',
+          'lib/apiUpdater.js',
           'lib/publicSuffixList.js',
           'lib/punycode.js',
           'lib/basedomain.js',

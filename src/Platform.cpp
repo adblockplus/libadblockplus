@@ -26,6 +26,9 @@
 
 using namespace AdblockPlus;
 
+
+extern std::string jsSources[];
+
 namespace
 {
   template<typename T>
@@ -64,6 +67,25 @@ JsEngine& Platform::GetJsEngine()
   return *jsEngine;
 }
 
+std::function<void(const std::string&)> Platform::GetEvaluateCallback()
+{
+    // GetEvaluateCallback() method assumes that jsEngine is already created
+    return [this](const std::string& filename)
+    {
+      std::lock_guard<std::mutex> lock(evaluatedJsSourcesMutex);
+      if (evaluatedJsSources.find(filename) != evaluatedJsSources.end())
+        return; //NO-OP, file was already evaluated
+
+      for (int i = 0; !jsSources[i].empty(); i += 2)
+        if (jsSources[i] == filename)
+        {
+          jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+          evaluatedJsSources.insert(filename);
+          break;
+        }
+    };
+}
+
 void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& parameters,
   const OnFilterEngineCreatedCallback& onCreated)
 {
@@ -77,18 +99,37 @@ void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& p
   }
 
   GetJsEngine(); // ensures that JsEngine is instantiated
-  FilterEngine::CreateAsync(jsEngine, [this, onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
-  {
-    filterEnginePromise->set_value(filterEngine);
-    if (onCreated)
-      onCreated(*filterEngine);
-  }, parameters);
+  FilterEngine::CreateAsync(
+    jsEngine,
+    GetEvaluateCallback(),
+    [this, onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
+    {
+      filterEnginePromise->set_value(filterEngine);
+      if (onCreated)
+        onCreated(*filterEngine);
+    },
+    parameters
+  );
 }
 
 FilterEngine& Platform::GetFilterEngine()
 {
   CreateFilterEngineAsync();
   return *std::shared_future<FilterEnginePtr>(filterEngine).get();
+}
+
+Updater& Platform::GetUpdater()
+{
+  {
+    std::lock_guard<std::mutex> lock(modulesMutex);
+    if (updater)
+      return *updater;
+  }
+  GetJsEngine(); // ensures that JsEngine is instantiated
+  std::lock_guard<std::mutex> lock(modulesMutex);
+  if (!updater)
+    updater = std::make_shared<Updater>(jsEngine, GetEvaluateCallback());
+  return *updater;
 }
 
 void Platform::WithTimer(const WithTimerCallback& callback)
