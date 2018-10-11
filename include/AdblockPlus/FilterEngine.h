@@ -187,7 +187,6 @@ namespace AdblockPlus
    * It handles:
    * - Filter management and matching.
    * - Subscription management and synchronization.
-   * - Update checks for the application.
    */
   class FilterEngine
   {
@@ -224,18 +223,6 @@ namespace AdblockPlus
      * in JavaScript where it is converted into 32 bit signed integer.
      */
     typedef int32_t ContentTypeMask;
-
-    /**
-     * Callback type invoked when an update becomes available.
-     * The parameter is the download URL of the update.
-     */
-    typedef std::function<void(const std::string&)> UpdateAvailableCallback;
-
-    /**
-     * Callback type invoked when a manually triggered update check finishes.
-     * The parameter is an optional error message.
-     */
-    typedef std::function<void(const std::string&)> UpdateCheckDoneCallback;
 
     /**
      * Callback type invoked when the filters change.
@@ -288,6 +275,12 @@ namespace AdblockPlus
     typedef std::function<void(const FilterEnginePtr&)> OnCreatedCallback;
 
     /**
+     * Callback type for evaluating JS expression.
+     * The parameter is the JS file name containing the expression.
+     */
+    typedef std::function<void(const std::string&)> EvaluateCallback;
+
+    /**
      * Asynchronously constructs FilterEngine.
      * @param jsEngine `JsEngine` instance used to run JavaScript code
      *        internally.
@@ -296,6 +289,7 @@ namespace AdblockPlus
      * @param parameters optional creation parameters.
      */
     static void CreateAsync(const JsEnginePtr& jsEngine,
+      const EvaluateCallback& evaluateCallback,
       const OnCreatedCallback& onCreated,
       const CreationParameters& parameters = CreationParameters());
 
@@ -477,32 +471,6 @@ namespace AdblockPlus
     std::string GetHostFromURL(const std::string& url) const;
 
     /**
-     * Sets the callback invoked when an application update becomes available.
-     * @param callback Callback to invoke.
-     */
-    void SetUpdateAvailableCallback(const UpdateAvailableCallback& callback);
-
-    /**
-     * Removes the callback invoked when an application update becomes
-     * available.
-     */
-    void RemoveUpdateAvailableCallback();
-
-    /**
-     * Forces an immediate update check.
-     * `FilterEngine` will automatically check for updates in regular intervals,
-     * so applications should only call this when the user triggers an update
-     * check manually.
-     * @param callback Optional callback to invoke when the update check is
-     *        finished. The string parameter will be empty when the update check
-     *        succeeded, or contain an error message if it failed.
-     *        Note that the callback will be invoked whether updates are
-     *        available or not - to react to updates being available, use
-     *        `FilterEngine::SetUpdateAvailableCallback()`.
-     */
-    void ForceUpdateCheck(const UpdateCheckDoneCallback& callback = UpdateCheckDoneCallback());
-
-    /**
      * Sets the callback invoked when the filters change.
      * @param callback Callback to invoke.
      */
@@ -558,7 +526,6 @@ namespace AdblockPlus
   private:
     JsEnginePtr jsEngine;
     bool firstRun;
-    int updateCheckId;
     static const std::map<ContentType, std::string> contentTypes;
 
     explicit FilterEngine(const JsEnginePtr& jsEngine);

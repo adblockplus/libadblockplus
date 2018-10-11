@@ -30,7 +30,43 @@
 
 using namespace AdblockPlus;
 
-extern std::string jsSources[];
+namespace
+{
+    const std::string filterEngineJsFiles[] =
+    {
+      "compat.js",
+      "info.js",
+      "io.js",
+      "prefs.js",
+      "utils.js",
+      "elemHideHitRegistration.js",
+      "events.js",
+      "coreUtils.js",
+      "filterNotifier.js",
+      "init.js",
+      "common.js",
+      "elemHideExceptions.js",
+      "filterClasses.js",
+      "snippets.js",
+      "subscriptionClasses.js",
+      "iniParser.js",
+      "filterStorage.js",
+      "elemHide.js",
+      "elemHideEmulation.js",
+      "matcher.js",
+      "filterListener.js",
+      "downloader.js",
+      "notification.js",
+      "notificationShowRegistration.js",
+      "synchronizer.js",
+      "filterUpdateRegistration.js",
+      "subscriptions.xml",
+      "api.js",
+      "publicSuffixList.js",
+      "punycode.js",
+      "basedomain.js"
+    };
+}
 
 Filter::Filter(JsValue&& value)
     : JsValue(std::move(value))
@@ -183,11 +219,13 @@ bool Subscription::operator==(const Subscription& subscription) const
 }
 
 FilterEngine::FilterEngine(const JsEnginePtr& jsEngine)
-  : jsEngine(jsEngine), firstRun(false), updateCheckId(0)
+  : jsEngine(jsEngine), firstRun(false)
 {
+
 }
 
 void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
+  const EvaluateCallback& evaluateCallback,
   const FilterEngine::OnCreatedCallback& onCreated,
   const FilterEngine::CreationParameters& params)
 {
@@ -256,9 +294,11 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
     preconfiguredPrefsObject.SetProperty(pref.first, pref.second);
   }
   jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
+
   // Load adblockplus scripts
-  for (int i = 0; !jsSources[i].empty(); i += 2)
-    jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+  for (const auto& filterEngineJsFile: filterEngineJsFiles)
+    evaluateCallback(filterEngineJsFile);
+
 }
 
 namespace
@@ -489,40 +529,6 @@ std::string FilterEngine::GetHostFromURL(const std::string& url) const
 {
   JsValue func = jsEngine->Evaluate("API.getHostFromUrl");
   return func.Call(jsEngine->NewValue(url)).AsString();
-}
-
-void FilterEngine::SetUpdateAvailableCallback(
-    const FilterEngine::UpdateAvailableCallback& callback)
-{
-  jsEngine->SetEventCallback("updateAvailable", [this, callback](JsValueList&& params)
-  {
-    if (params.size() >= 1 && !params[0].IsNull())
-      callback(params[0].AsString());
-  });
-}
-
-void FilterEngine::RemoveUpdateAvailableCallback()
-{
-  jsEngine->RemoveEventCallback("updateAvailable");
-}
-
-void FilterEngine::ForceUpdateCheck(
-    const FilterEngine::UpdateCheckDoneCallback& callback)
-{
-  JsValue func = jsEngine->Evaluate("API.forceUpdateCheck");
-  JsValueList params;
-  if (callback)
-  {
-    std::string eventName = "_updateCheckDone" + std::to_string(++updateCheckId);
-    jsEngine->SetEventCallback(eventName, [this, eventName, callback](JsValueList&& params)
-    {
-      std::string error(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
-      callback(error);
-      jsEngine->RemoveEventCallback(eventName);
-    });
-    params.push_back(jsEngine->NewValue(eventName));
-  }
-  func.Call(params);
 }
 
 void FilterEngine::SetFilterChangeCallback(const FilterChangeCallback& callback)
