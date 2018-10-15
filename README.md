@@ -37,7 +37,8 @@ Win32:
 Linux:
 * clang 5.0
 We use libc++ instead of the libstdc++ that gcc uses, since by default v8 build
-with libc++.
+with libc++. Make sure you have the right development package installed for
+libc++: `libc++-dev` on Debian/Ubuntu, `libcxx-devel` on RedHat/Fedora.
 
 Mac:
 * Apple LLVM 9.0.0 for OS X/macOS (Xcode should be installed and its
