@@ -638,6 +638,68 @@ TEST_F(FilterEngineTest, ElemhideWhitelisting)
       documentUrls1));
 }
 
+TEST_F(FilterEngineTest, ElementHidingSelectorsListEmpty)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("example.org");
+
+  ASSERT_EQ(sels.size(), 0);
+}
+
+
+TEST_F(FilterEngineTest, ElementHidingSelectorsList)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  // other type of filters
+  filterEngine.GetFilter("/testcasefiles/blocking/addresspart/abptestcasepath/").AddToList();
+  filterEngine.GetFilter("example.org###testcase-eh-id").AddToList();
+
+  // element hiding selectors
+  filterEngine.GetFilter("###testcase-eh-id").AddToList();
+  filterEngine.GetFilter("example.org###testcase-eh-id").AddToList();
+  filterEngine.GetFilter("example.org##.testcase-eh-class").AddToList();
+  filterEngine.GetFilter("example.org##.testcase-container > .testcase-eh-descendant").AddToList();
+
+  // other site
+  filterEngine.GetFilter("othersite.com###testcase-eh-id").AddToList();
+  
+  std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("example.org");
+
+  ASSERT_EQ(sels.size(), 4);  
+  ASSERT_EQ(sels[0], "#testcase-eh-id");
+  ASSERT_EQ(sels[1], "#testcase-eh-id");
+  ASSERT_EQ(sels[2], ".testcase-eh-class");
+  ASSERT_EQ(sels[3], ".testcase-container > .testcase-eh-descendant");
+}
+
+TEST_F(FilterEngineTest, ElementHidingSelectorsListSingleGeneric)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  // element hiding selectors
+  filterEngine.GetFilter("###testcase-eh-id").AddToList();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("");
+
+  ASSERT_EQ(sels.size(), 1);
+  ASSERT_EQ(sels[0], "#testcase-eh-id");
+}
+
+TEST_F(FilterEngineTest, ElementHidingSelectorsListSingleDomain)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  // element hiding selectors
+  filterEngine.GetFilter("example.org##.testcase - eh - class").AddToList();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("example.org");
+
+  ASSERT_EQ(sels.size(), 1);
+  ASSERT_EQ(sels[0], ".testcase - eh - class");
+}
+
 TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
 {
   AppInfo appInfo;
