@@ -647,7 +647,6 @@ TEST_F(FilterEngineTest, ElementHidingSelectorsListEmpty)
   ASSERT_EQ(sels.size(), 0);
 }
 
-
 TEST_F(FilterEngineTest, ElementHidingSelectorsList)
 {
   auto& filterEngine = GetFilterEngine();
