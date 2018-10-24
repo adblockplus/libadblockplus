@@ -768,6 +768,103 @@ TEST_F(FilterEngineTest, ElementHidingSelectorsListDiff)
   EXPECT_TRUE(selsNonExisting.empty());
 }
 
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListEmpty)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+
+  EXPECT_EQ(0u, sels.size());
+}
+
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  // other type of filters
+  filterEngine.GetFilter("/testcasefiles/blocking/addresspart/abptestcasepath/").AddToList();
+  filterEngine.GetFilter("example.org###testcase-eh-id").AddToList();
+
+  // element hiding emulatiion selectors
+  filterEngine.GetFilter("example.org#?#div:-abp-properties(width: 213px)").AddToList();
+  filterEngine.GetFilter("example.org#?#div:-abp-has(>div>img.testcase-es-has)").AddToList();
+  filterEngine.GetFilter("example.org#?#span:-abp-contains(ESContainsTarget)").AddToList();
+  filterEngine.GetFilter("~foo.example.org, example.org#?#div:-abp-properties(width: 213px)").AddToList();
+  filterEngine.GetFilter("~othersiteneg.org#?#div:-abp-properties(width: 213px)").AddToList();
+
+  // other site
+  filterEngine.GetFilter("othersite.com###testcase-eh-id").AddToList();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+
+  EXPECT_EQ(4u, sels.size());
+  EXPECT_EQ("div:-abp-properties(width: 213px)", sels[0]);
+  EXPECT_EQ("div:-abp-has(>div>img.testcase-es-has)", sels[1]);
+  EXPECT_EQ("span:-abp-contains(ESContainsTarget)", sels[2]);
+  EXPECT_EQ("div:-abp-properties(width: 213px)", sels[3]);
+}
+
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListSingleDomain)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  // element hiding emulation selector
+  filterEngine.GetFilter("example.org#?#div:-abp-properties(width: 213px)").AddToList();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+
+  EXPECT_EQ(1u, sels.size());
+  EXPECT_EQ("div:-abp-properties(width: 213px)", sels[0]);
+}
+
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDup)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  // element hiding emulation selectors - duplicates
+  filterEngine.GetFilter("example.org#?#dup").AddToList();
+  filterEngine.GetFilter("example.org#?#dup").AddToList();
+  filterEngine.GetFilter("othersite.org#?#dup").AddToList();
+  filterEngine.GetFilter("~foo.example.org#?#dup").AddToList();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+
+  // no dups
+  EXPECT_EQ(1u, sels.size());
+  EXPECT_EQ("dup", sels[0]);
+
+  // these make duplicates
+  filterEngine.GetFilter("~foo.example.org, example.org#?#dup").AddToList();
+  filterEngine.GetFilter("~bar.example.org, example.org#?#dup").AddToList();
+
+  std::vector<std::string> selsDup = filterEngine.GetElementHidingEmulationSelectors("example.org");
+
+  // dups
+  EXPECT_EQ(3u, selsDup.size());
+  EXPECT_EQ("dup", selsDup[0]);
+  EXPECT_EQ("dup", selsDup[1]);
+  EXPECT_EQ("dup", selsDup[2]);
+}
+
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDiff)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  filterEngine.GetFilter("example1.org#?#div:-abp-properties(width: 213px)").AddToList();
+  filterEngine.GetFilter("example2.org#?#div:-abp-properties(width: 213px)").AddToList();
+
+  std::vector<std::string> sels1 = filterEngine.GetElementHidingEmulationSelectors("example1.org");
+  EXPECT_EQ(1u, sels1.size());
+  EXPECT_EQ("div:-abp-properties(width: 213px)", sels1[0]);
+
+  std::vector<std::string> sels2 = filterEngine.GetElementHidingEmulationSelectors("example2.org");
+  EXPECT_EQ(1u, sels2.size());
+  EXPECT_EQ("div:-abp-properties(width: 213px)", sels2[0]);
+
+  std::vector<std::string> selsGen = filterEngine.GetElementHidingEmulationSelectors("");
+  EXPECT_EQ(0u, selsGen.size());
+}
+
 TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
 {
   AppInfo appInfo;

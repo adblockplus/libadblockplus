@@ -451,6 +451,14 @@ namespace AdblockPlus
     std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
 
     /**
+     * Retrieves CSS selectors for all element hiding emulation filters active on the
+     * supplied domain.
+     * @param domain Domain to retrieve CSS selectors for.
+     * @return List of CSS selectors.
+     */
+    std::vector<std::string> GetElementHidingEmulationSelectors(const std::string& domain) const;
+
+    /**
      * Retrieves a preference value.
      * @param pref Preference name.
      * @return Preference value, or `null` if it doesn't exist.
