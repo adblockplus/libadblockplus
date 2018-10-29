@@ -644,31 +644,37 @@ TEST_F(FilterEngineTest, ElementHidingSelectorsListEmpty)
 
   std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("example.org");
 
-  EXPECT_EQ(0u, sels.size());
+  EXPECT_TRUE(sels.empty());
 }
 
 TEST_F(FilterEngineTest, ElementHidingSelectorsList)
 {
   auto& filterEngine = GetFilterEngine();
 
-  // other type of filters
-  filterEngine.GetFilter("/testcasefiles/blocking/addresspart/abptestcasepath/").AddToList();
-  filterEngine.GetFilter("example.org#?#div:-abp-properties(width: 213px)").AddToList();
+  std::vector<std::string> filters =
+  {
+    // other type of filters
+    "/testcasefiles/blocking/addresspart/abptestcasepath/",
+    "example.org#?#div:-abp-properties(width: 213px)",
 
-  // element hiding selectors
-  filterEngine.GetFilter("###testcase-eh-id").AddToList();
-  filterEngine.GetFilter("example.org###testcase-eh-id").AddToList();
-  filterEngine.GetFilter("example.org##.testcase-eh-class").AddToList();
-  filterEngine.GetFilter("example.org##.testcase-container > .testcase-eh-descendant").AddToList();
-  filterEngine.GetFilter("~foo.example.org, example.org##foo").AddToList();
-  filterEngine.GetFilter("~othersiteneg.org##testneg").AddToList();
+    // element hiding selectors
+    "###testcase-eh-id",
+    "example.org###testcase-eh-id",
+    "example.org##.testcase-eh-class",
+    "example.org##.testcase-container > .testcase-eh-descendant",
+    "~foo.example.org,example.org##foo",
+    "~othersiteneg.org##testneg",
 
-  // other site
-  filterEngine.GetFilter("othersite.com###testcase-eh-id").AddToList();
-  
+    // other site
+    "othersite.com###testcase-eh-id"
+  };
+
+  for (const auto& filter : filters)
+    filterEngine.GetFilter(filter).AddToList();
+
   std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("example.org");
 
-  EXPECT_EQ(6u, sels.size());  
+  ASSERT_EQ(6u, sels.size());
   EXPECT_EQ("#testcase-eh-id", sels[0]);
   EXPECT_EQ("#testcase-eh-id", sels[1]);
   EXPECT_EQ(".testcase-eh-class", sels[2]);
@@ -686,7 +692,7 @@ TEST_F(FilterEngineTest, ElementHidingSelectorsListSingleGeneric)
 
   std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("");
 
-  EXPECT_EQ(1u, sels.size());
+  ASSERT_EQ(1u, sels.size());
   EXPECT_EQ("#testcase-eh-id", sels[0]);
 }
 
@@ -699,7 +705,7 @@ TEST_F(FilterEngineTest, ElementHidingSelectorsListSingleDomain)
 
   std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("example.org");
 
-  EXPECT_EQ(1u, sels.size());
+  ASSERT_EQ(1u, sels.size());
   EXPECT_EQ(".testcase - eh - class", sels[0]);
 }
 
@@ -715,20 +721,25 @@ TEST_F(FilterEngineTest, ElementHidingSelectorsListDup)
   std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("example.org");
 
   // no dups
-  EXPECT_EQ(1u, sels.size());
+  ASSERT_EQ(1u, sels.size());
   EXPECT_EQ("#dup", sels[0]);
 
   // this makes duplicates
-  filterEngine.GetFilter("~foo.example.org, example.org###dup").AddToList();
-  filterEngine.GetFilter("~bar.example.org, example.org###dup").AddToList();
+  filterEngine.GetFilter("~foo.example.org,example.org###dup").AddToList();
+  filterEngine.GetFilter("~bar.example.org,example.org###dup").AddToList();
 
   std::vector<std::string> selsDup = filterEngine.GetElementHidingSelectors("example.org");
 
   // dups
-  EXPECT_EQ(3u, selsDup.size());
+  ASSERT_EQ(3u, selsDup.size());
   EXPECT_EQ("#dup", selsDup[0]);
   EXPECT_EQ("#dup", selsDup[1]);
   EXPECT_EQ("#dup", selsDup[2]);
+
+  std::vector<std::string> selsBar = filterEngine.GetElementHidingSelectors("bar.example.org");
+  ASSERT_EQ(2u, selsBar.size());
+  EXPECT_EQ("#dup", selsBar[0]);
+  EXPECT_EQ("#dup", selsBar[1]);
 }
 
 TEST_F(FilterEngineTest, ElementHidingSelectorsListDiff)
@@ -739,15 +750,18 @@ TEST_F(FilterEngineTest, ElementHidingSelectorsListDiff)
   filterEngine.GetFilter("example2.org###testcase-eh-id").AddToList();
 
   std::vector<std::string> sels1 = filterEngine.GetElementHidingSelectors("example1.org");
-  EXPECT_EQ(1u, sels1.size());
+  ASSERT_EQ(1u, sels1.size());
   EXPECT_EQ("#testcase-eh-id", sels1[0]);
 
   std::vector<std::string> sels2 = filterEngine.GetElementHidingSelectors("example2.org");
-  EXPECT_EQ(1u, sels2.size());
+  ASSERT_EQ(1u, sels2.size());
   EXPECT_EQ("#testcase-eh-id", sels2[0]);
 
   std::vector<std::string> selsGen = filterEngine.GetElementHidingSelectors("");
-  EXPECT_EQ(0u, selsGen.size());
+  EXPECT_TRUE(selsGen.empty());
+
+  std::vector<std::string> selsNonExisting = filterEngine.GetElementHidingSelectors("non-existing-domain.com");
+  EXPECT_TRUE(selsNonExisting.empty());
 }
 
 TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
