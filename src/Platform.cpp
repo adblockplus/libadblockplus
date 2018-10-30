@@ -102,7 +102,7 @@ void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& p
   FilterEngine::CreateAsync(
     jsEngine,
     GetEvaluateCallback(),
-    [this, onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
+    [onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
     {
       filterEnginePromise->set_value(filterEngine);
       if (onCreated)

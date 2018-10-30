@@ -429,7 +429,7 @@ void FilterEngine::SetShowNotificationCallback(const ShowNotificationCallback& c
   if (!callback)
     return;
 
-  jsEngine->SetEventCallback("_showNotification", [this, callback](JsValueList&& params)
+  jsEngine->SetEventCallback("_showNotification", [callback](JsValueList&& params)
   {
     if (params.size() < 1 || !params[0].IsObject())
       return;

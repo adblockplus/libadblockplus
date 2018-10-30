@@ -132,7 +132,7 @@ TEST_F(DefaultFileSystemTest, WriteReadRemove)
   bool hasReadRun = false;
   bool hasErrorRun = false;
   fileSystem->Read(testFileName,
-    [this, &hasReadRun](IFileSystem::IOBuffer&& content)
+    [&hasReadRun](IFileSystem::IOBuffer&& content)
     {
       EXPECT_EQ("foo", std::string(content.cbegin(), content.cend()));
       hasReadRun = true;
