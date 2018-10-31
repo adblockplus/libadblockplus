@@ -49,7 +49,7 @@ Updater::Updater(const JsEnginePtr& jsEngine, const EvaluateCallback& evaluateCa
 
 void Updater::SetUpdateAvailableCallback(const Updater::UpdateAvailableCallback& callback)
 {
-  jsEngine->SetEventCallback("updateAvailable", [this, callback](JsValueList&& params)
+  jsEngine->SetEventCallback("updateAvailable", [callback](JsValueList&& params)
   {
     if (params.size() >= 1 && !params[0].IsNull())
       callback(params[0].AsString());

@@ -378,7 +378,7 @@ TEST_F(FileSystemJsObject_ReadFromFileTest, ProcessLineThrowsException)
     EXPECT_TRUE(jsArgs[0].IsString());
     readLines.emplace_back(jsArgs[0].AsString());
   });
-  jsEngine.SetEventCallback("onDone", [this, &error](JsValueList&& /*error*/jsArgs)
+  jsEngine.SetEventCallback("onDone", [&error](JsValueList&& /*error*/jsArgs)
   {
     ASSERT_EQ(1u, jsArgs.size());
     EXPECT_TRUE(jsArgs[0].IsString());
