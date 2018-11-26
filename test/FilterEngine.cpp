@@ -201,6 +201,8 @@ TEST_F(FilterEngineTest, FilterCreation)
   ASSERT_EQ(AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION, filter4.GetType());
   AdblockPlus::Filter filter5 = filterEngine.GetFilter("  foo  ");
   ASSERT_EQ(filter1, filter5);
+  AdblockPlus::Filter filter6 = filterEngine.GetFilter("example.com#?#foo");
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_ELEMHIDE_EMULATION, filter6.GetType());
 }
 
 TEST_F(FilterEngineTest, FilterProperties)
@@ -773,7 +775,17 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListEmpty)
   auto& filterEngine = GetFilterEngine();
 
   std::vector<std::string> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  EXPECT_TRUE(sels.empty());
+}
 
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsWhitelist)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  filterEngine.GetFilter("@@||example.org#?#foo").AddToList();
+  filterEngine.GetFilter("@@||example.org#?#bar").AddToList();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
   EXPECT_TRUE(sels.empty());
 }
 
@@ -787,12 +799,15 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
     "/testcasefiles/blocking/addresspart/abptestcasepath/",
     "example.org###testcase-eh-id",
 
-    // element hiding emulatiion selectors
+    // element hiding emulation selectors
     "example.org#?#div:-abp-properties(width: 213px)",
     "example.org#?#div:-abp-has(>div>img.testcase-es-has)",
     "example.org#?#span:-abp-contains(ESContainsTarget)",
     "~foo.example.org,example.org#?#div:-abp-properties(width: 213px)",
     "~othersiteneg.org#?#div:-abp-properties(width: 213px)",
+
+    // whitelisted
+    "@@||example.org#?#foo",
 
     // other site
     "othersite.com###testcase-eh-id"
@@ -823,7 +838,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListSingleDomain)
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels[0]);
 }
 
-TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDup)
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListNoDuplicates)
 {
   auto& filterEngine = GetFilterEngine();
 
@@ -838,18 +853,24 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDup)
   // no dups
   ASSERT_EQ(1u, sels.size());
   EXPECT_EQ("dup", sels[0]);
+}
 
-  // these make duplicates
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDuplicates)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  // element hiding emulation selectors - duplicates
+  filterEngine.GetFilter("example.org#?#dup").AddToList();
   filterEngine.GetFilter("~foo.example.org,example.org#?#dup").AddToList();
   filterEngine.GetFilter("~bar.example.org,example.org#?#dup").AddToList();
 
-  std::vector<std::string> selsDup = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<std::string> selsDups = filterEngine.GetElementHidingEmulationSelectors("example.org");
 
   // dups
-  ASSERT_EQ(3u, selsDup.size());
-  EXPECT_EQ("dup", selsDup[0]);
-  EXPECT_EQ("dup", selsDup[1]);
-  EXPECT_EQ("dup", selsDup[2]);
+  ASSERT_EQ(3u, selsDups.size());
+  EXPECT_EQ("dup", selsDups[0]);
+  EXPECT_EQ("dup", selsDups[1]);
+  EXPECT_EQ("dup", selsDups[2]);
 
   std::vector<std::string> selsBar = filterEngine.GetElementHidingEmulationSelectors("bar.example.org");
   ASSERT_EQ(2u, selsBar.size());
@@ -863,6 +884,8 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDiff)
 
   filterEngine.GetFilter("example1.org#?#div:-abp-properties(width: 213px)").AddToList();
   filterEngine.GetFilter("example2.org#?#div:-abp-properties(width: 213px)").AddToList();
+  // whitelisted
+  filterEngine.GetFilter("@@||example2.org#?#div:-abp-properties(width: 213px)").AddToList();
 
   std::vector<std::string> sels1 = filterEngine.GetElementHidingEmulationSelectors("example1.org");
   ASSERT_EQ(1u, sels1.size());
@@ -871,9 +894,25 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDiff)
   std::vector<std::string> sels2 = filterEngine.GetElementHidingEmulationSelectors("example2.org");
   ASSERT_EQ(1u, sels2.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels2[0]);
+}
+
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsGeneric)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  filterEngine.GetFilter("example1.org#?#foo").AddToList();
+  filterEngine.GetFilter("@@||example2.org#?#bar").AddToList();
 
   std::vector<std::string> selsGen = filterEngine.GetElementHidingEmulationSelectors("");
   EXPECT_TRUE(selsGen.empty());
+}
+
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsNonExisting)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  filterEngine.GetFilter("example1.org#?#foo").AddToList();
+  filterEngine.GetFilter("@@||example2.org#?#bar").AddToList();
 
   std::vector<std::string> selsNonExisting = filterEngine.GetElementHidingEmulationSelectors("non-existing-domain.com");
   EXPECT_TRUE(selsNonExisting.empty());
