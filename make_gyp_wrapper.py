@@ -78,7 +78,7 @@ import sys
 import types
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(os.path.join(base_dir, 'third_party', 'gyp', 'pylib'))
+sys.path.insert(0, os.path.join(base_dir, 'third_party', 'gyp', 'pylib'))
 import gyp
 from gyp.generator.make import MakefileWriter, QuoteIfNecessary
 
