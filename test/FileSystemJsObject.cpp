@@ -115,7 +115,7 @@ namespace
   void ReadFile(AdblockPlus::JsEngine& jsEngine, std::string& content,
                 std::string& error)
   {
-    jsEngine.Evaluate("let result = {}; _fileSystem.read('', function(r) {result.content = r.content;}, function(r) {result.error = r.error;})");
+    jsEngine.Evaluate("let result = {}; _fileSystem.read('', function(r) {result.content = r.content;}, function(error) {result.error = error;})");
     content = jsEngine.Evaluate("result.content").AsString();
     error = jsEngine.Evaluate("result.error").AsString();
   }
@@ -157,8 +157,9 @@ TEST_F(FileSystemJsObjectTest, ReadError)
   std::string content;
   std::string error;
   ReadFile(GetJsEngine(), content, error);
-  ASSERT_NE("", error);
-  ASSERT_EQ("undefined", content);
+  EXPECT_NE("", error);
+  EXPECT_NE("undefined", error);
+  EXPECT_EQ("undefined", content);
 }
 
 TEST_F(FileSystemJsObjectTest, Write)
