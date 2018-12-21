@@ -323,6 +323,7 @@ namespace
     contentTypes[FilterEngine::CONTENT_TYPE_FONT] = "FONT";
     contentTypes[FilterEngine::CONTENT_TYPE_MEDIA] = "MEDIA";
     contentTypes[FilterEngine::CONTENT_TYPE_ELEMHIDE] = "ELEMHIDE";
+    contentTypes[FilterEngine::CONTENT_TYPE_POPUP] = "POPUP";
     contentTypes[FilterEngine::CONTENT_TYPE_GENERICBLOCK] = "GENERICBLOCK";
     contentTypes[FilterEngine::CONTENT_TYPE_GENERICHIDE] = "GENERICHIDE";
     return contentTypes;

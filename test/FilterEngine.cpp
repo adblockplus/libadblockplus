@@ -409,6 +409,10 @@ TEST_F(FilterEngineTest, MatchesWithContentTypeMask)
   filterEngine.GetFilter("@@notbanner.gif").AddToList();
   filterEngine.GetFilter("blockme").AddToList();
   filterEngine.GetFilter("@@||example.doc^$document").AddToList();
+  filterEngine.GetFilter("||popexample.com^$popup").AddToList();
+
+  EXPECT_TRUE(filterEngine.Matches("http://popexample.com/",
+    AdblockPlus::FilterEngine::CONTENT_TYPE_POPUP, ""));
 
   EXPECT_FALSE(filterEngine.Matches("http://example.org/foobar.gif",
     AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, ""))
