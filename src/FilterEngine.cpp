@@ -511,13 +511,13 @@ std::vector<std::string> FilterEngine::GetElementHidingSelectors(const std::stri
   return selectors;
 }
 
-std::vector<std::string> FilterEngine::GetElementHidingEmulationSelectors(const std::string& domain) const
+std::vector<FilterEngine::EmulationSelector> FilterEngine::GetElementHidingEmulationSelectors(const std::string& domain) const
 {
   JsValue func = jsEngine->Evaluate("API.getElementHidingEmulationSelectors");
   JsValueList result = func.Call(jsEngine->NewValue(domain)).AsList();
-  std::vector<std::string> selectors;
+  std::vector<FilterEngine::EmulationSelector> selectors;
   for (const auto& r : result)
-    selectors.push_back(r.AsString());
+    selectors.push_back({r.GetProperty("selector").AsString(), r.GetProperty("text").AsString()});
   return selectors;
 }
 
