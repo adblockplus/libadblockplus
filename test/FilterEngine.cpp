@@ -782,8 +782,8 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsWhitelist)
 {
   auto& filterEngine = GetFilterEngine();
 
-  filterEngine.GetFilter("@@||example.org#?#foo").AddToList();
-  filterEngine.GetFilter("@@||example.org#?#bar").AddToList();
+  filterEngine.GetFilter("||example.org#@#foo").AddToList();
+  filterEngine.GetFilter("||example.org#@#bar").AddToList();
 
   std::vector<FilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
   EXPECT_TRUE(sels.empty());
@@ -807,7 +807,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
     "~othersiteneg.org#?#div:-abp-properties(width: 213px)",
 
     // whitelisted
-    "@@||example.org#?#foo",
+    "||example.org#@#foo",
 
     // other site
     "othersite.com###testcase-eh-id"
@@ -889,7 +889,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDiff)
   filterEngine.GetFilter("example1.org#?#div:-abp-properties(width: 213px)").AddToList();
   filterEngine.GetFilter("example2.org#?#div:-abp-properties(width: 213px)").AddToList();
   // whitelisted
-  filterEngine.GetFilter("@@||example2.org#?#div:-abp-properties(width: 213px)").AddToList();
+  filterEngine.GetFilter("||example2.org#@#div:-abp-properties(width: 213px)").AddToList();
 
   std::vector<FilterEngine::EmulationSelector> sels1 = filterEngine.GetElementHidingEmulationSelectors("example1.org");
   ASSERT_EQ(1u, sels1.size());
@@ -905,7 +905,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsGeneric)
   auto& filterEngine = GetFilterEngine();
 
   filterEngine.GetFilter("example1.org#?#foo").AddToList();
-  filterEngine.GetFilter("@@||example2.org#?#bar").AddToList();
+  filterEngine.GetFilter("||example2.org#@#bar").AddToList();
 
   std::vector<FilterEngine::EmulationSelector> selsGen = filterEngine.GetElementHidingEmulationSelectors("");
   EXPECT_TRUE(selsGen.empty());
@@ -916,7 +916,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsNonExisting)
   auto& filterEngine = GetFilterEngine();
 
   filterEngine.GetFilter("example1.org#?#foo").AddToList();
-  filterEngine.GetFilter("@@||example2.org#?#bar").AddToList();
+  filterEngine.GetFilter("||example2.org#@#bar").AddToList();
 
   std::vector<FilterEngine::EmulationSelector> selsNonExisting = filterEngine.GetElementHidingEmulationSelectors("non-existing-domain.com");
   EXPECT_TRUE(selsNonExisting.empty());
