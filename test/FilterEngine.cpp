@@ -925,7 +925,6 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDuplicates)
   EXPECT_EQ("~foo.example.org,example.org#?#dup", selsDups[1].text);
   EXPECT_EQ("~bar.example.org,example.org#?#dup", selsDups[2].text);
 
-
   std::vector<FilterEngine::EmulationSelector> selsBar = filterEngine.GetElementHidingEmulationSelectors("bar.example.org");
   ASSERT_EQ(2u, selsBar.size());
   EXPECT_EQ("dup", selsBar[0].selector);
