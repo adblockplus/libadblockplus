@@ -958,6 +958,13 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsGeneric)
 
   filterEngine.GetFilter("example1.org#?#foo").AddToList();
   filterEngine.GetFilter("example2.org#@#bar").AddToList();
+  
+  // there are no generic el-hiding emulation filters.
+  // this should have no effect on selectors returned and the type should be invalid
+  auto genFilter = filterEngine.GetFilter("#?#foo");
+  genFilter.AddToList();
+
+  EXPECT_EQ(AdblockPlus::Filter::TYPE_INVALID, genFilter.GetType());
 
   std::vector<FilterEngine::EmulationSelector> selsGen = filterEngine.GetElementHidingEmulationSelectors("");
   EXPECT_TRUE(selsGen.empty());
