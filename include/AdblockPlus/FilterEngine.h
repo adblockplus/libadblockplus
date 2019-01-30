@@ -226,6 +226,15 @@ namespace AdblockPlus
     typedef int32_t ContentTypeMask;
 
     /**
+     * Used in the return type of GetElementHidingEmulationSelectors
+     */
+    struct EmulationSelector
+    {
+      std::string selector;
+      std::string text;
+    };
+
+    /**
      * Callback type invoked when the filters change.
      * The first parameter is the action event code (see
      * [filterNotifier.on](https://adblockplus.org/jsdoc/adblockpluscore/EventEmitter.html#on)
@@ -449,6 +458,14 @@ namespace AdblockPlus
      * @return List of CSS selectors.
      */
     std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
+
+    /**
+     * Retrieves CSS selectors for all element hiding emulation filters active on the
+     * supplied domain.
+     * @param domain Domain to retrieve CSS selectors for.
+     * @return List of CSS selectors along with the text property.
+     */
+    std::vector<EmulationSelector> GetElementHidingEmulationSelectors(const std::string& domain) const;
 
     /**
      * Retrieves a preference value.
