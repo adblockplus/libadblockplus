@@ -50,6 +50,8 @@ namespace
   template<class LazyFileSystemT, class LogSystem>
   class FilterEngineTestGeneric : public BaseJsTest
   {
+  public:
+    std::string siteKey = "cNAQEBBQADSwAwSAJBAJRmzcpTevQqkWn6dJuX";
   protected:
     void SetUp() override
     {
@@ -555,6 +557,71 @@ TEST_F(FilterEngineTest, MatchesNestedFrameOnWhitelistedDomain)
                           documentUrls5);
   ASSERT_TRUE(match5);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match5->GetType());
+}
+
+TEST_F(FilterEngineTest, MatchesBlockingSiteKey)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.GetFilter("/script.js$sitekey=" + siteKey).AddToList();
+
+  AdblockPlus::FilterPtr match1 =
+    filterEngine.Matches("http://example.org/script.js", AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT,
+                         "http://example.org/");
+  ASSERT_FALSE(match1) << "should not match without siteKey";
+
+  AdblockPlus::FilterPtr match2 =
+    filterEngine.Matches("http://example.org/script.img", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+                         "http://example.org/", siteKey);
+  ASSERT_FALSE(match2) << "should not match different content type";
+
+  AdblockPlus::FilterPtr match3 =
+    filterEngine.Matches("http://example.org/script.js", AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT,
+                         "http://example.org/", siteKey);
+  ASSERT_TRUE(match3);
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match3->GetType());
+}
+
+TEST_F(FilterEngineTest, MatchesWhitelistedSiteKey)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.GetFilter("adbanner.gif").AddToList();
+  filterEngine.GetFilter("@@||ads.com$image,sitekey=" + siteKey).AddToList();
+
+  AdblockPlus::FilterPtr match1 =
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+                         "http://example.org/", siteKey);
+  ASSERT_TRUE(match1);
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match1->GetType());
+
+  AdblockPlus::FilterPtr match2 =
+    filterEngine.Matches("http://ads.com/adbanner.js", AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT,
+                         "http://example.org/", siteKey);
+  ASSERT_FALSE(match2) << "should not match different content type";
+}
+
+TEST_F(FilterEngineTest, MatchesWhitelistedSiteKeyFromNestedFrameRequest)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.GetFilter("adbanner.gif").AddToList();
+  filterEngine.GetFilter("@@adbanner.gif$domain=example.org,sitekey=" + siteKey).AddToList();
+
+  std::vector<std::string> documentUrls1;
+  documentUrls1.push_back("http://ads.com/frame/");
+  documentUrls1.push_back("http://example.com/");
+  AdblockPlus::FilterPtr match1 =
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+                          documentUrls1, siteKey);
+  ASSERT_TRUE(match1);
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match1->GetType());
+
+  std::vector<std::string> documentUrls2;
+  documentUrls2.push_back("http://ads.com/frame/");
+  documentUrls2.push_back("http://example.org/");
+  AdblockPlus::FilterPtr match2 =
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+                          documentUrls2, siteKey);
+  ASSERT_TRUE(match2);
+  ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match2->GetType());
 }
 
 TEST_F(FilterEngineTest, FirstRunFlag)
