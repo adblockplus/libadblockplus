@@ -51,7 +51,6 @@ namespace
   class FilterEngineTestGeneric : public BaseJsTest
   {
   public:
-    std::string siteKey = "cNAQEBBQADSwAwSAJBAJRmzcpTevQqkWn6dJuX";
   protected:
     void SetUp() override
     {
@@ -187,6 +186,22 @@ namespace
       EXPECT_TRUE(isSubscriptionDownloadStatusReceived);
       return subscription;
     }
+  };
+
+  class FilterEngineTestSiteKey : public FilterEngineTest
+  {
+  public:
+    const std::string siteKey = "cNAQEBBQADSwAwSAJBAJRmzcpTevQqkWn6dJuX";
+    const std::string uri = "/info/Liquidit%C3%A4t.html?ses=Y3JlPTEzNTUyNDE2OTImdGNpZD13d3cuYWZmaWxpbmV0LXZlcnplaWNobmlzLmRlNTB"
+                            "jNjAwNzIyNTlkNjQuNDA2MjE2MTImZmtpPTcyOTU2NiZ0YXNrPXNlYXJjaCZkb21haW49YWZmaWxpbmV0LXZlcnplaWNobmlzL"
+                            "mRlJnM9ZGZmM2U5MTEzZGNhMWYyMWEwNDcmbGFuZ3VhZ2U9ZGUmYV9pZD0yJmtleXdvcmQ9TGlxdWlkaXQlQzMlQTR0JnBvcz0"
+                            "yJmt3cz03Jmt3c2k9OA==&token=AG06ipCV1LptGtY_9gFnr0vBTPy4O0YTvwoTCObJ3N3ckrQCFYIA3wod2TwAjxgAIABQv5"
+                            "WiAlCH8qgOUJGr9g9QmuuEG1CDnK0pUPbRrk5QhqDgkQNxP4Qqhz9xZe4";
+    const std::string host = "www.affilinet-verzeichnis.de";
+    const std::string userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.21 (KHTML, like Gecko) Chrome/25.0.1349.2 Safari/537.21";
+    const std::string publicKey = "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANnylWw2vLY4hUn9w06zQKbhKBfvjFUCsdFlb6TdQhxb9RXWXuI4t31c+o8fYOv/s8q1LGP"
+                                  "ga3DE1L/tHU4LENMCAwEAAQ==";
+    const std::string signature = "nLH8Vbc1rzmy0Q+Xg+bvm43IEO42h8rq5D9C0WCn/Y3ykgAoV4npzm7eMlqBSwZBLA/0DuuVsfTJT9MOVaurcA==";
   };
 }
 
@@ -559,7 +574,23 @@ TEST_F(FilterEngineTest, MatchesNestedFrameOnWhitelistedDomain)
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match5->GetType());
 }
 
-TEST_F(FilterEngineTest, MatchesBlockingSiteKey)
+TEST_F(FilterEngineTestSiteKey, SiteKeySignatureVerifier)
+{
+  auto& filterEngine = GetFilterEngine();
+  ASSERT_FALSE(filterEngine.VerifySignature("", "", "", "", ""))
+    << "should fail with empty arguments";
+  ASSERT_FALSE(filterEngine.VerifySignature("publicKey", signature, uri, host, userAgent))
+    << "should fail with invalid publicKey format";
+  ASSERT_FALSE(filterEngine.VerifySignature(publicKey, "signature", uri, host, userAgent))
+    << "should fail with invalid signature format";
+  ASSERT_FALSE(filterEngine.VerifySignature(signature, publicKey, uri, host, siteKey))
+    << "should fail with mixed arguments";
+  ASSERT_FALSE(filterEngine.VerifySignature(publicKey, signature, host, uri, siteKey))
+    << "should fail with mixed arguments";
+  ASSERT_TRUE(filterEngine.VerifySignature(publicKey, signature, uri, host, userAgent));
+}
+
+TEST_F(FilterEngineTestSiteKey, MatchesBlockingSiteKey)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.GetFilter("/script.js$sitekey=" + siteKey).AddToList();
@@ -581,7 +612,7 @@ TEST_F(FilterEngineTest, MatchesBlockingSiteKey)
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match3->GetType());
 }
 
-TEST_F(FilterEngineTest, MatchesWhitelistedSiteKey)
+TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKey)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.GetFilter("adbanner.gif").AddToList();
@@ -599,7 +630,7 @@ TEST_F(FilterEngineTest, MatchesWhitelistedSiteKey)
   ASSERT_FALSE(match2) << "should not match different content type";
 }
 
-TEST_F(FilterEngineTest, MatchesWhitelistedSiteKeyFromNestedFrameRequest)
+TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKeyFromNestedFrameRequest)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.GetFilter("adbanner.gif").AddToList();
