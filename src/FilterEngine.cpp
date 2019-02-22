@@ -61,6 +61,9 @@ namespace
       "synchronizer.js",
       "filterUpdateRegistration.js",
       "subscriptions.xml",
+      "jsbn.js",
+      "rusha.js",
+      "rsa.js",
       "api.js",
       "publicSuffixList.js",
       "punycode.js",
@@ -587,6 +590,19 @@ int FilterEngine::CompareVersions(const std::string& v1, const std::string& v2) 
   params.push_back(jsEngine->NewValue(v2));
   JsValue func = jsEngine->Evaluate("API.compareVersions");
   return func.Call(params).AsInt();
+}
+
+bool FilterEngine::VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
+                                   const std::string& host, const std::string& userAgent) const
+{
+  JsValueList params;
+  params.push_back(jsEngine->NewValue(key));
+  params.push_back(jsEngine->NewValue(signature));
+  params.push_back(jsEngine->NewValue(uri));
+  params.push_back(jsEngine->NewValue(host));
+  params.push_back(jsEngine->NewValue(userAgent));
+  JsValue func = jsEngine->Evaluate("API.verifySignature");
+  return func.Call(params).AsBool();
 }
 
 FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,

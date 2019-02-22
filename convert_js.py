@@ -24,7 +24,8 @@ class CStringArray:
     def add(self, string):
         string = string.encode('utf-8').replace('\r', '')
         self._strings.append('std::string(buffer + %i, %i)' % (len(self._buffer), len(string)))
-        self._buffer.extend(map(lambda c: str(ord(c)), string))
+        # Patch for non ASCII characters like in comment in rusha.js which contains '≥'
+        self._buffer.extend(map(lambda c: str(ord(c) if 128 > ord(c) else ord(' ')), string))
 
     def write(self, outHandle, arrayName):
         print >>outHandle, '#include <string>'

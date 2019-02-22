@@ -532,6 +532,19 @@ namespace AdblockPlus
     int CompareVersions(const std::string& v1, const std::string& v2) const;
 
     /**
+    * Checks whether the sitekey signature is valid for the given public key and data,
+    * where data consists of (uri + "\0" + host + "\0" + userAgent).
+    * @param base64 encoded public key.
+    * @param base64 encoded signature.
+    * @param uri signed in signature.
+    * @param host signed in signature.
+    * @param userAgent signed in signature.
+    * @return `true` if (uri + "\0" + host + "\0" + userAgent) matches signature.
+    */
+    bool VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
+                         const std::string& host, const std::string& userAgent) const;
+
+    /**
      * Retrieves the `ContentType` for the supplied string.
      * @param contentType Content type string.
      * @return The `ContentType` for the string.
