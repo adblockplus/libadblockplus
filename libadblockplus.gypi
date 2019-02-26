@@ -25,6 +25,7 @@
         },
         'defines': [
           'WIN32',
+          '_ITERATOR_DEBUG_LEVEL=0' #Disabled due to linking errors on Windows 64 build, see: https://eyeogmbh.atlassian.net/browse/DP-12
         ],
         'link_settings': {
           'libraries': ['-lDbgHelp'],
