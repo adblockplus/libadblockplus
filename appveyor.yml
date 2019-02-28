@@ -18,7 +18,7 @@ install:
 
 environment:
   global:
-    URL_PREFIX: https://v8.eyeofiles.com/v8-5f246c123ea463b189ca0579c0a9074459e20a6f/
+    URL_PREFIX: https://v8.eyeofiles.com/v8-4d72a9931a125d21901d25d67896f0e40105bd16/
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu1804
     Configuration: Debug
@@ -34,6 +34,11 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     platform: Win32
     Configuration: Debug
+
+matrix:
+  exclude:
+  # Excluded due build errors on Windows 32 build, see: https://eyeogmbh.atlassian.net/browse/DP-12
+  - platform: Win32
 
 before_build:
 - cmd: set "GYP_DEFINES=libv8_include_dir=third_party/prebuilt-v8/include libv8_lib_dir=../../third_party/prebuilt-v8 libv8_show_warnings=true"

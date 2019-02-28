@@ -118,6 +118,8 @@ for the 64 bit build).
 Visual Studio and build the solution there. Alternatively you can use the
 `msbuild` command line tool, e.g. run `msbuild /m build\ia32\libadblockplus.sln`
 from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
+Due to linking errors with precompiled V8 binary we have disabled iterator
+checking by setting `_ITERATOR_DEBUG_LEVEL=0` in libadblockplus.gypi.
 
 Tested on Microsoft Visual Studio 2017 Community Edition.
 
