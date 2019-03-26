@@ -44,7 +44,6 @@ std::vector<std::string> ReferrerMapping::BuildReferrerChain(
   const std::string& url) const
 {
   std::vector<std::string> referrerChain;
-  referrerChain.push_back(url);
   // We need to limit the chain length to ensure we don't block indefinitely
   // if there's a referrer loop.
   const int maxChainLength = 10;

@@ -23,16 +23,16 @@ TEST(ReferrerMappingTest, EmptyReferrerChain)
   AdblockPlus::ReferrerMapping referrerMapping;
   std::vector<std::string> referrerChain =
     referrerMapping.BuildReferrerChain("first");
-  ASSERT_EQ(1u, referrerChain.size());
-  ASSERT_EQ("first", referrerChain[0]);
+  ASSERT_EQ(0u, referrerChain.size());
 }
 
 TEST(ReferrerMappingTest, TwoElementReferrerChain)
 {
   AdblockPlus::ReferrerMapping referrerMapping;
   referrerMapping.Add("second", "first");
+  referrerMapping.Add("third", "second");
   std::vector<std::string> referrerChain =
-    referrerMapping.BuildReferrerChain("second");
+    referrerMapping.BuildReferrerChain("third");
   ASSERT_EQ(2u, referrerChain.size());
   ASSERT_EQ("first", referrerChain[0]);
   ASSERT_EQ("second", referrerChain[1]);
@@ -52,7 +52,7 @@ TEST(ReferrerMappingTest, TenElementReferrerChain)
   referrerMapping.Add("tenth", "ninth");
   std::vector<std::string> referrerChain =
     referrerMapping.BuildReferrerChain("tenth");
-  ASSERT_EQ(10u, referrerChain.size());
+  ASSERT_EQ(9u, referrerChain.size());
   ASSERT_EQ("first", referrerChain[0]);
   ASSERT_EQ("second", referrerChain[1]);
   ASSERT_EQ("third", referrerChain[2]);
@@ -62,7 +62,6 @@ TEST(ReferrerMappingTest, TenElementReferrerChain)
   ASSERT_EQ("seventh", referrerChain[6]);
   ASSERT_EQ("eighth", referrerChain[7]);
   ASSERT_EQ("ninth", referrerChain[8]);
-  ASSERT_EQ("tenth", referrerChain[9]);
 }
 
 TEST(ReferrerMappingTest, CacheOnlyFiveUrls)
@@ -74,13 +73,13 @@ TEST(ReferrerMappingTest, CacheOnlyFiveUrls)
   referrerMapping.Add("fifth", "fourth");
   referrerMapping.Add("sixth", "fifth");
   referrerMapping.Add("seventh", "sixth");
+  referrerMapping.Add("eighth", "seventh");
   std::vector<std::string> referrerChain =
-    referrerMapping.BuildReferrerChain("seventh");
-  ASSERT_EQ(6u, referrerChain.size());
-  ASSERT_EQ("second", referrerChain[0]);
-  ASSERT_EQ("third", referrerChain[1]);
-  ASSERT_EQ("fourth", referrerChain[2]);
-  ASSERT_EQ("fifth", referrerChain[3]);
-  ASSERT_EQ("sixth", referrerChain[4]);
-  ASSERT_EQ("seventh", referrerChain[5]);
+    referrerMapping.BuildReferrerChain("eighth");
+  ASSERT_EQ(5u, referrerChain.size());
+  ASSERT_EQ("third", referrerChain[0]);
+  ASSERT_EQ("fourth", referrerChain[1]);
+  ASSERT_EQ("fifth", referrerChain[2]);
+  ASSERT_EQ("sixth", referrerChain[3]);
+  ASSERT_EQ("seventh", referrerChain[4]);
 }
