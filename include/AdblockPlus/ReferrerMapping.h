@@ -53,7 +53,7 @@ namespace AdblockPlus
      * Builds a chain of referrers for the supplied URL.
      * This should reconstruct a document's parent frame URLs.
      * @param url URL to build the chain for.
-     * @return List of URLs, starting with `url`.
+     * @return List of URLs, ended with immediate parent of `url`.
      */
     std::vector<std::string> BuildReferrerChain(const std::string& url) const;
 
