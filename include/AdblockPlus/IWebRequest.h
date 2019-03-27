@@ -99,7 +99,7 @@ namespace AdblockPlus
      * The parameter is the server response.
      */
     typedef std::function<void(const ServerResponse&)> GetCallback;
-    virtual ~IWebRequest() {};
+    virtual ~IWebRequest() {}
 
     /**
      * Performs a GET request.
