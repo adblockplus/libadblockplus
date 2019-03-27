@@ -33,7 +33,7 @@ namespace AdblockPlus
     * Callback type invoked after elapsing of timer timeout.
     */
     typedef std::function<void()> TimerCallback;
-    virtual ~ITimer() {};
+    virtual ~ITimer() {}
 
     /**
      * Sets a timer.
