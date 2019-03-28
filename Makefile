@@ -84,7 +84,7 @@ get-prebuilt-v8:
 	bash .travis/prepare-prebuilt-v8.sh
 
 clean:
-	$(RM) -r ${BUILD_DIR} docs
+	$(RM) -r ${BUILD_DIR} docs third_party/prebuilt-v8/
 
 ifeq ($(TARGET_OS),android)
 GYP_FILE ?= tests.gyp
