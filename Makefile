@@ -60,6 +60,10 @@ TEST_EXECUTABLE = ${BUILD_DIR}/out/Debug/tests
 
 URL_PREFIX ?= "https://v8.eyeofiles.com/v8-$(shell sed -nE 's/.*V8_COMMIT=([^\s]+) .*/\1/p' .travis.yml|head -n1)/"
 
+ifeq ($(WGET_QUIET),true)
+WGET_FLAGS=-q
+endif
+
 .PHONY: all test clean docs ensure_dependencies
 
 .DEFAULT_GOAL:=all
@@ -81,6 +85,7 @@ get-prebuilt-v8:
 	URL_PREFIX=${URL_PREFIX} \
 	TARGET_OS=${TARGET_OS} ABP_TARGET_ARCH=${ABP_TARGET_ARCH} \
 	TRAVIS_OS_NAME=${TRAVIS_OS_NAME} Configuration=${Configuration} \
+	WGET_FLAGS=${WGET_FLAGS} \
 	bash .travis/prepare-prebuilt-v8.sh
 
 clean:
