@@ -446,31 +446,34 @@ void FilterEngine::RemoveShowNotificationCallback()
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     ContentTypeMask contentTypeMask,
-    const std::string& documentUrl) const
+    const std::string& documentUrl,
+    const std::string& siteKey) const
 {
   std::vector<std::string> documentUrls;
   documentUrls.push_back(documentUrl);
-  return Matches(url, contentTypeMask, documentUrls);
+  return Matches(url, contentTypeMask, documentUrls, siteKey);
 }
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     ContentTypeMask contentTypeMask,
-    const std::vector<std::string>& documentUrls) const
+    const std::vector<std::string>& documentUrls,
+    const std::string& siteKey) const
 {
   if (documentUrls.empty())
-    return CheckFilterMatch(url, contentTypeMask, "");
+    return CheckFilterMatch(url, contentTypeMask, "", siteKey);
 
   std::string lastDocumentUrl = documentUrls.front();
   for (const auto& documentUrl : documentUrls) {
     AdblockPlus::FilterPtr match = CheckFilterMatch(documentUrl,
                                                     CONTENT_TYPE_DOCUMENT,
-                                                    lastDocumentUrl);
+                                                    lastDocumentUrl,
+                                                    siteKey);
     if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
       return match;
     lastDocumentUrl = documentUrl;
   }
 
-  return CheckFilterMatch(url, contentTypeMask, lastDocumentUrl);
+  return CheckFilterMatch(url, contentTypeMask, lastDocumentUrl, siteKey);
 }
 
 bool FilterEngine::IsDocumentWhitelisted(const std::string& url,
@@ -487,13 +490,15 @@ bool FilterEngine::IsElemhideWhitelisted(const std::string& url,
 
 AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
     ContentTypeMask contentTypeMask,
-    const std::string& documentUrl) const
+    const std::string& documentUrl,
+    const std::string& siteKey) const
 {
   JsValue func = jsEngine->Evaluate("API.checkFilterMatch");
   JsValueList params;
   params.push_back(jsEngine->NewValue(url));
   params.push_back(jsEngine->NewValue(contentTypeMask));
   params.push_back(jsEngine->NewValue(documentUrl));
+  params.push_back(jsEngine->NewValue(siteKey));
   JsValue result = func.Call(params);
   if (!result.IsNull())
     return FilterPtr(new Filter(std::move(result)));

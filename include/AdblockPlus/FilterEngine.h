@@ -399,12 +399,15 @@ namespace AdblockPlus
      *        Note that there will be more than one document if frames are
      *        involved, see
      *        Matches(const std::string&, const std::string&, const std::vector<std::string>&) const.
+     * @param siteKey
+     *        Optional: public key provided by the document.
      * @return Matching filter, or `null` if there was no match.
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     FilterPtr Matches(const std::string& url,
         ContentTypeMask contentTypeMask,
-        const std::string& documentUrl) const;
+        const std::string& documentUrl,
+        const std::string& siteKey = "") const;
 
     /**
      * Checks if any active filter matches the supplied URL.
@@ -416,12 +419,15 @@ namespace AdblockPlus
      *        If the application is not capable of identifying the frame
      *        structure, e.g. because it is a proxy, it can be approximated
      *        using `ReferrerMapping`.
+     * @param siteKey
+     *        Optional: public key provided by the document.
      * @return Matching filter, or a `null` if there was no match.
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     FilterPtr Matches(const std::string& url,
         ContentTypeMask contentTypeMask,
-        const std::vector<std::string>& documentUrls) const;
+        const std::vector<std::string>& documentUrls,
+        const std::string& siteKey = "") const;
 
     /**
      * Checks whether the document at the supplied URL is whitelisted.
@@ -569,7 +575,8 @@ namespace AdblockPlus
 
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,
-                               const std::string& documentUrl) const;
+                               const std::string& documentUrl,
+                               const std::string& siteKey) const;
     void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
       ContentTypeMask contentTypeMask, const std::string& documentUrl) const;
