@@ -34,6 +34,8 @@ void MatchesCommand::operator()(const std::string& arguments)
   argumentStream >> contentTypeStr;
   std::string documentUrl;
   argumentStream >> documentUrl;
+  std::string siteKey;
+  argumentStream >> siteKey;
   AdblockPlus::FilterEngine::ContentType contentType;
   try
   {
@@ -49,7 +51,7 @@ void MatchesCommand::operator()(const std::string& arguments)
     return;
   }
 
-  AdblockPlus::FilterPtr match = filterEngine.Matches(url, contentType, documentUrl);
+  AdblockPlus::FilterPtr match = filterEngine.Matches(url, contentType, documentUrl, siteKey);
   if (!match)
     std::cout << "No match" << std::endl;
   else if (match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
@@ -65,5 +67,5 @@ std::string MatchesCommand::GetDescription() const
 
 std::string MatchesCommand::GetUsage() const
 {
-  return name + " URL CONTENT_TYPE DOCUMENT_URL";
+  return name + " URL CONTENT_TYPE DOCUMENT_URL [SITEKEY]";
 }
