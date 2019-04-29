@@ -480,15 +480,16 @@ AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
 }
 
 bool FilterEngine::IsDocumentWhitelisted(const std::string& url,
-    const std::vector<std::string>& documentUrls) const
+    const std::vector<std::string>& documentUrls,
+    const std::string& sitekey) const
 {
-    return !!GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls);
+    return !!GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey);
 }
 
 bool FilterEngine::IsElemhideWhitelisted(const std::string& url,
-    const std::vector<std::string>& documentUrls) const
+    const std::vector<std::string>& documentUrls, const std::string& sitekey) const
 {
-    return !!GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls);
+    return !!GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey);
 }
 
 AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
@@ -606,9 +607,10 @@ bool FilterEngine::VerifySignature(const std::string& key, const std::string& si
 }
 
 FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
-  ContentTypeMask contentTypeMask, const std::string& documentUrl) const
+  ContentTypeMask contentTypeMask, const std::string& documentUrl,
+  const std::string& sitekey) const
 {
-  FilterPtr match = Matches(url, contentTypeMask, documentUrl);
+  FilterPtr match = Matches(url, contentTypeMask, documentUrl, sitekey);
   if (match && match->GetType() == Filter::TYPE_EXCEPTION)
   {
     return match;
@@ -618,11 +620,12 @@ FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
 
 FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
   ContentTypeMask contentTypeMask,
-  const std::vector<std::string>& documentUrls) const
+  const std::vector<std::string>& documentUrls,
+  const std::string& sitekey) const
 {
   if (documentUrls.empty())
   {
-    return GetWhitelistingFilter(url, contentTypeMask, "");
+    return GetWhitelistingFilter(url, contentTypeMask, "", sitekey);
   }
 
   std::vector<std::string>::const_iterator urlIterator = documentUrls.begin();
@@ -630,7 +633,7 @@ FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
   do
   {
     std::string parentUrl = *urlIterator++;
-    FilterPtr filter = GetWhitelistingFilter(currentUrl, contentTypeMask, parentUrl);
+    FilterPtr filter = GetWhitelistingFilter(currentUrl, contentTypeMask, parentUrl, sitekey);
     if (filter)
     {
       return filter;
