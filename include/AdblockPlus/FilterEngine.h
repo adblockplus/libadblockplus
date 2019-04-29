@@ -441,7 +441,8 @@ namespace AdblockPlus
      * @return `true` if the URL is whitelisted.
      */
     bool IsDocumentWhitelisted(const std::string& url,
-        const std::vector<std::string>& documentUrls) const;
+        const std::vector<std::string>& documentUrls,
+        const std::string& sitekey = "") const;
 
     /**
      * Checks whether element hiding is disabled at the supplied URL.
@@ -455,7 +456,8 @@ namespace AdblockPlus
      * @return `true` if element hiding is whitelisted for the supplied URL.
      */
     bool IsElemhideWhitelisted(const std::string& url,
-        const std::vector<std::string>& documentUrls) const;
+        const std::vector<std::string>& documentUrls,
+        const std::string& sitekey = "") const;
 
     /**
      * Retrieves CSS selectors for all element hiding filters active on the
@@ -579,10 +581,12 @@ namespace AdblockPlus
                                const std::string& siteKey) const;
     void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
-      ContentTypeMask contentTypeMask, const std::string& documentUrl) const;
+      ContentTypeMask contentTypeMask, const std::string& documentUrl,
+      const std::string& sitekey) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
       ContentTypeMask contentTypeMask,
-      const std::vector<std::string>& documentUrls) const;
+      const std::vector<std::string>& documentUrls,
+      const std::string& sitekey) const;
   };
 }
 
