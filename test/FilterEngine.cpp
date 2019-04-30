@@ -46,10 +46,9 @@ namespace
   template<class FileSystem, class LogSystem>
   class FilterEngineTestGeneric : public ::testing::Test
   {
-  public:
-    std::string siteKey = "cNAQEBBQADSwAwSAJBAJRmzcpTevQqkWn6dJuX";
   protected:
     FilterEnginePtr filterEngine;
+    std::string siteKey = "cNAQEBBQADSwAwSAJBAJRmzcpTevQqkWn6dJuX";
 
     void SetUp() override
     {
@@ -626,6 +625,73 @@ TEST_F(FilterEngineTest, MatchesWhitelistedSiteKeyFromNestedFrameRequest)
                           documentUrls2, siteKey);
   ASSERT_TRUE(match2);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match2->GetType());
+}
+
+TEST_F(FilterEngineTest, IsDocAndIsElemhideWhitelsitedMatchesWhitelistedSiteKey)
+{
+  filterEngine->GetFilter("adframe").AddToList();
+  auto docSiteKey = siteKey + "_document";
+  auto elemhideSiteKey = siteKey + "_elemhide";
+  filterEngine->GetFilter("@@$document,sitekey=" + docSiteKey).AddToList();
+  filterEngine->GetFilter("@@$elemhide,sitekey=" + elemhideSiteKey).AddToList();
+
+  {
+    // normally the frame is not whitelisted
+    std::vector<std::string> documentUrls;
+    documentUrls.push_back("http://example.com/");
+    documentUrls.push_back("http://ads.com/");
+    { // no sitekey
+      AdblockPlus::FilterPtr matchResult =
+        filterEngine->Matches("http://my-ads.com/adframe", AdblockPlus::FilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+                              documentUrls);
+      ASSERT_TRUE(matchResult);
+      EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, matchResult->GetType());
+    }
+    { // random sitekey
+      AdblockPlus::FilterPtr matchResult =
+        filterEngine->Matches("http://my-ads.com/adframe", AdblockPlus::FilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+                              documentUrls, siteKey);
+      ASSERT_TRUE(matchResult);
+      EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, matchResult->GetType());
+    }
+    if (false) // TODO: should be enabled during DP-235
+    { // the sitekey, but filter does not whitelist subdocument
+      AdblockPlus::FilterPtr matchResult =
+        filterEngine->Matches("http://my-ads.com/adframe", AdblockPlus::FilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+                              documentUrls, docSiteKey);
+      ASSERT_TRUE(matchResult);
+      EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, matchResult->GetType());
+    }
+  }
+
+  { // the frame itself
+    std::vector<std::string> documentUrls;
+    documentUrls.push_back("http://example.com/");
+    documentUrls.push_back("http://ads.com/");
+    // no sitekey
+    EXPECT_FALSE(filterEngine->IsDocumentWhitelisted("http://my-ads.com/adframe", documentUrls));
+    EXPECT_FALSE(filterEngine->IsElemhideWhitelisted("http://my-ads.com/adframe", documentUrls));
+    // random sitekey and the correct sitekey
+    EXPECT_FALSE(filterEngine->IsDocumentWhitelisted("http://my-ads.com/adframe", documentUrls, siteKey));
+    EXPECT_TRUE(filterEngine->IsDocumentWhitelisted("http://my-ads.com/adframe", documentUrls, docSiteKey));
+    EXPECT_FALSE(filterEngine->IsElemhideWhitelisted("http://my-ads.com/adframe", documentUrls, siteKey));
+    EXPECT_TRUE(filterEngine->IsElemhideWhitelisted("http://my-ads.com/adframe", documentUrls, elemhideSiteKey));
+  }
+
+  { // the frame withing a whitelisted frame
+    std::vector<std::string> documentUrls;
+    documentUrls.push_back("http://example.com/");
+    documentUrls.push_back("http:/my-ads.com/adframe");
+    documentUrls.push_back("http://ads.com/");
+    // no sitekey
+    EXPECT_FALSE(filterEngine->IsDocumentWhitelisted("http://some-ads.com", documentUrls));
+    EXPECT_FALSE(filterEngine->IsElemhideWhitelisted("http://some-ads.com", documentUrls));
+    // random sitekey and the correct sitekey
+    EXPECT_FALSE(filterEngine->IsDocumentWhitelisted("http://some-ads.com", documentUrls, siteKey));
+    EXPECT_TRUE(filterEngine->IsDocumentWhitelisted("http://some-ads.com", documentUrls, docSiteKey));
+    EXPECT_FALSE(filterEngine->IsElemhideWhitelisted("http://some-ads.com", documentUrls, siteKey));
+    EXPECT_TRUE(filterEngine->IsElemhideWhitelisted("http://some-ads.com", documentUrls, elemhideSiteKey));
+  }
 }
 
 TEST_F(FilterEngineTest, FirstRunFlag)
