@@ -32,7 +32,7 @@ matrix:
     env: V8_COMMIT=4d72a9931a125d21901d25d67896f0e40105bd16 ABP_OS_SCRIPT=nix
 #Disabled due to linking errors for mksnapshot, see: https://eyeogmbh.atlassian.net/browse/DP-12
   - os: osx
-    env: V8_COMMIT=4d72a9931a125d21901d25d67896f0e40105bd16
+    env: V8_COMMIT=4d72a9931a125d21901d25d67896f0e40105bd16 ABP_OS_SCRIPT=nix
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
