@@ -144,9 +144,7 @@ int64_t AdblockPlus::JsValue::AsInt() const
 bool AdblockPlus::JsValue::AsBool() const
 {
   const JsContext context(*jsEngine);
-  auto currentContext = jsEngine->GetIsolate()->GetCurrentContext();
-  auto value = UnwrapValue()->BooleanValue(currentContext);
-  return CHECKED_TO_VALUE(std::move(value));
+  return UnwrapValue()->BooleanValue(jsEngine->GetIsolate());
 }
 
 AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const
