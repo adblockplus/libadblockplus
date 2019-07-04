@@ -143,8 +143,7 @@ To build for *arm* or *arm64* arch run:
 or
     make TARGET_OS=android ABP_TARGET_ARCH=arm64
 
-Currently there is no support of building libadblockplus for Android on MS
-Windows.
+Currently there is no support of building libadblockplus for Android on Windows.
 
 Usage
 -----
