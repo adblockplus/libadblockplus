@@ -127,7 +127,7 @@ Tested on Microsoft Visual Studio 2017 Community Edition.
 
 For more details see CI configuration for appveyor.
 
-### Building for Android
+### Building for Android on *nix
 
 Configure V8 as for Unix and set ANDROID_NDK_ROOT environment variable to your
 Android NDK directory.
@@ -142,6 +142,8 @@ To build for *arm* or *arm64* arch run:
 
 or
     make TARGET_OS=android ABP_TARGET_ARCH=arm64
+
+Currently there is no support of building libadblockplus for Android on Windows.
 
 Usage
 -----
