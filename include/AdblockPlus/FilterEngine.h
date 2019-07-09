@@ -463,9 +463,10 @@ namespace AdblockPlus
      * Retrieves CSS selectors for all element hiding filters active on the
      * supplied domain.
      * @param domain Domain to retrieve CSS selectors for.
+     * @param specificOnly true if generic filters should not apply.
      * @return List of CSS selectors.
      */
-    std::vector<std::string> GetElementHidingSelectors(const std::string& domain) const;
+    std::vector<std::string> GetElementHidingSelectors(const std::string& domain, bool specificOnly = false) const;
 
     /**
      * Retrieves CSS selectors for all element hiding emulation filters active on the

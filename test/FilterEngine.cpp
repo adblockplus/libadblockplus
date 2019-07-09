@@ -936,6 +936,26 @@ TEST_F(FilterEngineTest, ElementHidingSelectorsListDiff)
   EXPECT_TRUE(selsNonExisting.empty());
 }
 
+TEST_F(FilterEngineTest, ElementHidingSelectorsListGenerichide)
+{
+  auto& filterEngine = GetFilterEngine();
+
+  filterEngine.GetFilter("##.testcase-generichide-generic").AddToList();
+  filterEngine.GetFilter("example.org##.testcase-generichide-notgeneric").AddToList();
+  filterEngine.GetFilter("@@||example.org$generichide").AddToList();
+
+  std::vector<std::string> sels = filterEngine.GetElementHidingSelectors("example.org");
+
+  ASSERT_EQ(2u, sels.size());
+  EXPECT_EQ(".testcase-generichide-generic", sels[0]);
+  EXPECT_EQ(".testcase-generichide-notgeneric", sels[1]);
+
+  std::vector<std::string> selsSpecificOnly = filterEngine.GetElementHidingSelectors("example.org", true);
+
+  ASSERT_EQ(1u, selsSpecificOnly.size());
+  EXPECT_EQ(".testcase-generichide-notgeneric", selsSpecificOnly[0]);
+}
+
 TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListEmpty)
 {
   auto& filterEngine = GetFilterEngine();
