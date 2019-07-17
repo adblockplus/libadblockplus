@@ -450,33 +450,42 @@ void FilterEngine::RemoveShowNotificationCallback()
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     ContentTypeMask contentTypeMask,
     const std::string& documentUrl,
-    const std::string& siteKey) const
+    const std::string& siteKey,
+    bool specificOnly) const
 {
   std::vector<std::string> documentUrls;
   documentUrls.push_back(documentUrl);
-  return Matches(url, contentTypeMask, documentUrls, siteKey);
+  return Matches(url, contentTypeMask, documentUrls, siteKey, specificOnly);
 }
 
 AdblockPlus::FilterPtr FilterEngine::Matches(const std::string& url,
     ContentTypeMask contentTypeMask,
     const std::vector<std::string>& documentUrls,
-    const std::string& siteKey) const
+    const std::string& siteKey,
+    bool specificOnly) const
 {
   if (documentUrls.empty())
-    return CheckFilterMatch(url, contentTypeMask, "", siteKey);
+    return CheckFilterMatch(url, contentTypeMask, "", siteKey, specificOnly);
 
   std::string lastDocumentUrl = documentUrls.front();
   for (const auto& documentUrl : documentUrls) {
     AdblockPlus::FilterPtr match = CheckFilterMatch(documentUrl,
                                                     CONTENT_TYPE_DOCUMENT,
                                                     lastDocumentUrl,
-                                                    siteKey);
+                                                    siteKey,
+                                                    specificOnly);
     if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
       return match;
     lastDocumentUrl = documentUrl;
   }
 
-  return CheckFilterMatch(url, contentTypeMask, lastDocumentUrl, siteKey);
+  return CheckFilterMatch(url, contentTypeMask, lastDocumentUrl, siteKey, specificOnly);
+}
+
+bool FilterEngine::IsGenericblockWhitelisted(const std::string& url,
+    const std::vector<std::string>& documentUrls, const std::string& sitekey) const
+{
+  return !!GetWhitelistingFilter(url, CONTENT_TYPE_GENERICBLOCK, documentUrls, sitekey);
 }
 
 bool FilterEngine::IsDocumentWhitelisted(const std::string& url,
@@ -495,7 +504,8 @@ bool FilterEngine::IsElemhideWhitelisted(const std::string& url,
 AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
     ContentTypeMask contentTypeMask,
     const std::string& documentUrl,
-    const std::string& siteKey) const
+    const std::string& siteKey,
+    bool specificOnly) const
 {
   JsValue func = jsEngine->Evaluate("API.checkFilterMatch");
   JsValueList params;
@@ -503,6 +513,7 @@ AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
   params.push_back(jsEngine->NewValue(contentTypeMask));
   params.push_back(jsEngine->NewValue(documentUrl));
   params.push_back(jsEngine->NewValue(siteKey));
+  params.push_back(jsEngine->NewValue(specificOnly));
   JsValue result = func.Call(params);
   if (!result.IsNull())
     return FilterPtr(new Filter(std::move(result)));
@@ -646,5 +657,5 @@ FilterPtr FilterEngine::GetWhitelistingFilter(const std::string& url,
     currentUrl = parentUrl;
   }
   while (urlIterator != documentUrls.end());
-  return FilterPtr();
+  return GetWhitelistingFilter(currentUrl, contentTypeMask, "", sitekey);
 }

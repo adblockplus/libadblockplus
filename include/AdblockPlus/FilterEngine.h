@@ -401,13 +401,15 @@ namespace AdblockPlus
      *        Matches(const std::string&, const std::string&, const std::vector<std::string>&) const.
      * @param siteKey
      *        Optional: public key provided by the document.
+     * @param specificOnly Optional: if set to `true` then skips generic filters.
      * @return Matching filter, or `null` if there was no match.
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     FilterPtr Matches(const std::string& url,
         ContentTypeMask contentTypeMask,
         const std::string& documentUrl,
-        const std::string& siteKey = "") const;
+        const std::string& siteKey = "",
+        bool specificOnly = false) const;
 
     /**
      * Checks if any active filter matches the supplied URL.
@@ -421,13 +423,35 @@ namespace AdblockPlus
      *        using `ReferrerMapping`.
      * @param siteKey
      *        Optional: public key provided by the document.
+     * @param specificOnly Optional: if set to `true` then skips generic filters.
      * @return Matching filter, or a `null` if there was no match.
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     FilterPtr Matches(const std::string& url,
         ContentTypeMask contentTypeMask,
         const std::vector<std::string>& documentUrls,
-        const std::string& siteKey = "") const;
+        const std::string& siteKey = "",
+        bool specificOnly = false) const;
+
+    /**
+     * Checks if any active genericblock filter exception matches the supplied URL.
+     * @param url URL to match which is actually first parent of URL for which we
+     *            want to check a $genericblock filter.
+     *            Value obtained by `IsGenericblockWhitelisted()` is used later
+     *            on as a `specificOnly` parameter value for `Matches()` call.
+     * @param documentUrl Chain of documents requesting the resource, starting
+     *        with the current URL's parent frame, ending with the
+     *        top-level frame.
+     *        If the application is not capable of identifying the frame
+     *        structure, e.g. because it is a proxy, it can be approximated
+     *        using `ReferrerMapping`.
+     * @param siteKey
+     *        Optional: public key provided by the document.
+     * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
+     */
+    bool IsGenericblockWhitelisted(const std::string& url,
+                                   const std::vector<std::string>& documentUrls,
+                                   const std::string& sitekey = "") const;
 
     /**
      * Checks whether the document at the supplied URL is whitelisted.
@@ -573,7 +597,8 @@ namespace AdblockPlus
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,
                                const std::string& documentUrl,
-                               const std::string& siteKey) const;
+                               const std::string& siteKey,
+                               bool specificOnly) const;
     void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
       ContentTypeMask contentTypeMask, const std::string& documentUrl,
