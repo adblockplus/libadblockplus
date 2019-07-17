@@ -402,6 +402,97 @@ TEST_F(FilterEngineTest, Matches)
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match12->GetType());
 }
 
+TEST_F(FilterEngineTest, GenericblockHierarchy)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.GetFilter("@@||example.com^$genericblock,domain=example.com").AddToList();
+
+  std::string currentUrl = "http://example.com/add.png";
+  std::string parentUrl = "http://example.com/frame.html";
+  std::vector<std::string> documentUrlsForCurrentUrl, documentUrlsForParentUrl;
+  documentUrlsForCurrentUrl.push_back("http://example.com/frame.html");
+  documentUrlsForCurrentUrl.push_back("http://example.net/index.html");
+  documentUrlsForParentUrl.push_back("http://example.net/index.html");
+
+  EXPECT_TRUE(filterEngine.IsGenericblockWhitelisted(currentUrl, documentUrlsForCurrentUrl));
+  EXPECT_FALSE(filterEngine.IsGenericblockWhitelisted(parentUrl, documentUrlsForParentUrl));
+
+  filterEngine.GetFilter("@@||example.com^$genericblock,domain=example.com").RemoveFromList();
+  filterEngine.GetFilter("@@||example.net^$genericblock").AddToList();
+  EXPECT_TRUE(filterEngine.IsGenericblockWhitelisted(parentUrl, documentUrlsForParentUrl));
+}
+
+/*
+ * This test shows how genericblock filter option works:
+ * Page http://testpages.adblockplus.org/en/exceptions/genericblock issues following requests:
+ * 1) http://testpages.adblockplus.org/testcasefiles/genericblock/target-generic.jpg
+ * 2) http://testpages.adblockplus.org/testcasefiles/genericblock/target-notgeneric.jpg
+ *
+ * Before genericblock filter is added ("@@||testpages.adblockplus.org/en/exceptions/genericblock$genericblock")
+ * both requests are blocked.
+ *
+ * After genericblock filter is added only 2) is blocked as there is a site-specific filter for this request
+ * ("/testcasefiles/genericblock/target-notgeneric.jpg$domain=testpages.adblockplus.org") and 1) passes as
+ * it has only a generic filter ("/testcasefiles/genericblock/target-generic.jpg").
+ */
+TEST_F(FilterEngineTest, GenericblockMatch)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.GetFilter("/testcasefiles/genericblock/target-generic.jpg").AddToList();
+  filterEngine.GetFilter("/testcasefiles/genericblock/target-notgeneric.jpg$domain=testpages.adblockplus.org").AddToList();
+  const std::string urlGeneric = "http://testpages.adblockplus.org/testcasefiles/genericblock/target-generic.jpg";
+  const std::string urlNotGeneric = "http://testpages.adblockplus.org/testcasefiles/genericblock/target-notgeneric.jpg";
+  const std::string firstParent = "http://testpages.adblockplus.org/en/exceptions/genericblock/frame.html";
+  AdblockPlus::FilterEngine::ContentType contentType = AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE;
+  std::vector<std::string> documentUrls, documentUrlsForGenericBlock;
+  documentUrls.push_back("http://testpages.adblockplus.org/testcasefiles/genericblock/frame.html");
+  documentUrls.push_back("http://testpages.adblockplus.org/en/exceptions/genericblock/");
+  documentUrlsForGenericBlock.push_back("http://testpages.adblockplus.org/en/exceptions/genericblock/");
+
+  bool specificOnly = filterEngine.IsGenericblockWhitelisted(firstParent, documentUrlsForGenericBlock);
+  EXPECT_FALSE(specificOnly);
+
+  AdblockPlus::FilterPtr match1 = filterEngine.Matches(urlNotGeneric, contentType, documentUrls, "", specificOnly);
+  ASSERT_TRUE(match1);
+  EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match1->GetType());
+
+  specificOnly = filterEngine.IsGenericblockWhitelisted(firstParent, documentUrlsForGenericBlock);
+  EXPECT_FALSE(specificOnly);
+
+  AdblockPlus::FilterPtr match2 = filterEngine.Matches(urlGeneric, contentType, documentUrls, "", specificOnly);
+  ASSERT_TRUE(match2);
+  EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match2->GetType());
+
+  // Now add genericblock filter and do the checks
+  filterEngine.GetFilter("@@||testpages.adblockplus.org/en/exceptions/genericblock$genericblock").AddToList();
+
+  specificOnly = filterEngine.IsGenericblockWhitelisted(firstParent, documentUrlsForGenericBlock);
+  EXPECT_TRUE(specificOnly);
+
+  match1 = filterEngine.Matches(urlNotGeneric, contentType, documentUrls, "", specificOnly);
+  ASSERT_TRUE(match1); // This is still blocked as a site-specific blocking filter applies
+  EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match1->GetType());
+
+  specificOnly = filterEngine.IsGenericblockWhitelisted(firstParent, documentUrlsForGenericBlock);
+  EXPECT_TRUE(specificOnly);
+
+  match2 = filterEngine.Matches(urlGeneric, contentType, documentUrls, "", specificOnly);
+  EXPECT_FALSE(match2); // Now with genericblock this request is not blocked
+}
+
+TEST_F(FilterEngineTest, GenericblockWithDomain)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.GetFilter("@@||foo.example.com^$genericblock,domain=example.net").AddToList();
+  filterEngine.GetFilter("@@||bar.example.com^$genericblock,domain=~example.net").AddToList();
+
+  std::vector<std::string> documentUrls;
+  documentUrls.push_back("http://example.net");
+
+  EXPECT_TRUE(filterEngine.IsGenericblockWhitelisted("http://foo.example.com", documentUrls));
+  EXPECT_FALSE(filterEngine.IsGenericblockWhitelisted("http://bar.example.com", documentUrls));
+}
+
 TEST_F(FilterEngineTest, MatchesOnWhitelistedDomain)
 {
   auto& filterEngine = GetFilterEngine();
@@ -778,6 +869,22 @@ TEST_F(FilterEngineTest, DocumentWhitelisting)
   ASSERT_FALSE(filterEngine.IsDocumentWhitelisted(
       "http://example.co.uk",
       documentUrls1));
+
+  filterEngine.GetFilter("||testpages.adblockplus.org/testcasefiles/document/*").AddToList();
+  filterEngine.GetFilter("@@testpages.adblockplus.org/en/exceptions/document^$document").AddToList();
+
+  // Frames hierarchy:
+  // - http://testpages.adblockplus.org/en/exceptions/document
+  //  - http://testpages.adblockplus.org/testcasefiles/document/frame.html
+  //   - http://testpages.adblockplus.org/testcasefiles/document/image.jpg
+
+  documentUrls1.clear();
+  documentUrls1.push_back("http://testpages.adblockplus.org/en/exceptions/document");
+
+  // Check for http://testpages.adblockplus.org/testcasefiles/document/image.jpg
+  EXPECT_TRUE(filterEngine.IsDocumentWhitelisted(
+      "http://testpages.adblockplus.org/testcasefiles/document/frame.html",
+      documentUrls1));
 }
 
 TEST_F(FilterEngineTest, ElemhideWhitelisting)
@@ -808,6 +915,28 @@ TEST_F(FilterEngineTest, ElemhideWhitelisting)
   ASSERT_FALSE(filterEngine.IsElemhideWhitelisted(
       "http://example.co.uk",
       documentUrls1));
+
+  filterEngine.GetFilter("testpages.adblockplus.org##.testcase-ex-elemhide").AddToList();
+  filterEngine.GetFilter("@@testpages.adblockplus.org/en/exceptions/elemhide^$elemhide").AddToList();
+  filterEngine.GetFilter("||testpages.adblockplus.org/testcasefiles/elemhide/image.jpg").AddToList();
+
+  // Frames hierarchy:
+  // - http://testpages.adblockplus.org/en/exceptions/elemhide
+  //  - http://testpages.adblockplus.org/testcasefiles/elemhide/frame.html
+  //   - http://testpages.adblockplus.org/testcasefiles/elemhide/image.jpg
+
+  documentUrls1.clear();
+  documentUrls1.push_back("http://testpages.adblockplus.org/en/exceptions/elemhide");
+
+  EXPECT_TRUE(filterEngine.IsElemhideWhitelisted(
+      "http://testpages.adblockplus.org/testcasefiles/elemhide/frame.html",
+      documentUrls1));
+  auto filter = filterEngine.Matches(
+      "http://testpages.adblockplus.org/testcasefiles/elemhide/image.jpg",
+      AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+      documentUrls1);
+  ASSERT_NE(nullptr, filter);
+  EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, filter->GetType());
 }
 
 TEST_F(FilterEngineTest, ElementHidingSelectorsListEmpty)
