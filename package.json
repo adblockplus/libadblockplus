@@ -4,7 +4,7 @@
   "license": "GPL-3.0",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^3.19.0",
+    "eslint": "^6.6.0",
     "eslint-config-eyeo": "1.0.4"
   },
   "scripts": {
