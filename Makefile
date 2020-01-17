@@ -97,6 +97,7 @@ all: ensure_dependencies
 	GYP_DEFINES="${GYP_PARAMETERS}" \
 	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r16b ${GYP_FILE}
 	$(ANDROID_NDK_ROOT)/ndk-build -C ${BUILD_DIR} installed_modules \
+	MAKEFLAGS="${ADDITIONALMAKEFLAGS}" \
 	BUILDTYPE=Release \
 	APP_ABI=$(ANDROID_ABI) \
 	APP_PLATFORM=${ANDROID_PLATFORM_LEVEL} \
