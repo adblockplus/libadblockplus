@@ -4,28 +4,22 @@ stages:
 build_libadblockplus:nix:
   stage: build
   before_script:
-    - sudo apt-get update
-    - sudo apt-get install -yyq build-essential python wget p7zip-full clang libc++-dev libc++abi-dev
-    - chmod u+x .travis/nix-script.sh
     # It seems gitlab does not create fully-fledged .git directory but we utilize .git/info/exclude
     # directly in ensure_dependencies.py and therefore we have to provide the directory path.
     - mkdir -p .git/info
   script:
-    - .travis/nix-script.sh
+    - export MAKEFLAGS="-j $(grep -c ^processor /proc/cpuinfo)"
+    - bash .travis/nix-script.sh
 
 build_libadblockplus:android:
   stage: build
+  variables:
+    WGET_FLAGS: "--quiet"
   before_script:
-    - sudo apt-get update
-    - sudo apt-get install -yyq build-essential python wget p7zip-full unzip
-    - wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O third_party/android-ndk.zip
-    - unzip -q third_party/android-ndk.zip -d third_party/
-    - chmod u+x .travis/android-script.sh
-    # It seems gitlab does not create fully-fledged .git directory but we utilize .git/info/exclude
-    # directly in ensure_dependencies.py and therefore we have to provide the directory path.
     - mkdir -p .git/info
   script:
-    - export ANDROID_NDK_ROOT="$(pwd)/third_party/android-ndk-r16b"
+    - export ADDITIONALMAKEFLAGS="-j $(grep -c ^processor /proc/cpuinfo)"
+    - export ANDROID_NDK_ROOT="/third_party/android-ndk-r16b" #NDK is part of the docker image
     - export V8_COMMIT=$(grep -m1 -o 'V8_COMMIT=.*' .travis.yml | cut -f2- -d= | cut -f1 -d\ )
     - export URL_PREFIX="https://v8.eyeofiles.com/v8-$V8_COMMIT/"
-    - .travis/android-script.sh
+    - bash .travis/android-script.sh
