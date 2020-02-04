@@ -18,7 +18,7 @@
 /**
  * @mainpage libadblockplus source code documentation
  * This is the source code documentation of libadblockplus. See the
- * <a href="https://hg.adblockplus.org/libadblockplus/file/default/README.md">README</a>
+ * <a href="https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/README.md">README</a>
  * for build instructions and basic usage.
  */
 
