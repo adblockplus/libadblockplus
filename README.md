@@ -331,7 +331,7 @@ You can lint the code using [ESLint](http://eslint.org).
     npm run eslint
 
 In order to set up ESLint and
-[configuration eslint-config-eyeo](https://hg.adblockplus.org/codingtools/file/tip/eslint-config-eyeo) you need [Node.js 7 or higher](https://nodejs.org/) and once it is installed please run `npm install` in the repository directory.
+[configuration eslint-config-eyeo](https://gitlab.com/eyeo/auxiliary/eyeo-coding-style/tree/master/eslint-config-eyeo) you need [Node.js 7 or higher](https://nodejs.org/) and once it is installed please run `npm install` in the repository directory.
 
 In order to learn about the usage of deprecated V8 API please set `libv8_show_warnings` to `"true"` on *nix, e.g.
 
