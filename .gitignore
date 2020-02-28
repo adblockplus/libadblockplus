@@ -3,3 +3,5 @@
 *.pyc
 /node_modules
 /third_party/prebuilt-v8
+/third_party/android-ndk*
+/third_party/v8*.?z

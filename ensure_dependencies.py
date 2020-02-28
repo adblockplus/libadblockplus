@@ -126,6 +126,13 @@ class Git():
 
     def ignore(self, target, repo):
         module = os.path.sep + os.path.relpath(target, repo)
+
+        # this is a hack that does not respect escaped '\' chars
+        # TODO needs a better way of doing that (pathlib in Python3?),
+        # however looks safe for now since its relative path and we have
+        # only repos without complicated names
+        module = module.replace("\\","/")
+
         exclude_file = os.path.join(repo, '.git', 'info', 'exclude')
         _ensure_line_exists(exclude_file, module)
 
@@ -289,7 +296,7 @@ def update_repo(target, type, revision):
         repo_types[type].update(target, resolved_revision, revision)
 
 
-def resolve_deps(repodir, level=0, self_update=True, overrideroots=None, skipdependencies=set()):
+def resolve_deps(repodir, level=0, self_update=False, overrideroots=None, skipdependencies=set()):
     config = read_deps(repodir)
     if config is None:
         if level == 0:
