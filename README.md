@@ -6,6 +6,8 @@ A C++ library offering the core functionality of Adblock Plus.
 Getting/updating the dependencies
 ---------------------------------
 
+> You need Python 2.7 and ensure that `python` binary is in your `PATH`.
+
 libadblockplus has dependencies that aren't part of this repository. They are
 retrieved and updated during the build process, but you can also manually update
 them by running the following:
@@ -46,15 +48,13 @@ Mac:
   developer tools should be "selected").
 
 Android:
-* The host system should be Linux or OS X
+* The host system should be Linux or OS X (for Windows 10 [see below](#build-for-android-on-windows))
 * android-ndk-r16b, here are the links for downloading
   [OS X](https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip), 
   [Linux 64](https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip).
 * g++ multilib
 
 If you have a compilation issue with another compiler please [create an issue](https://issues.adblockplus.org/).
-
-You also need Python 2.7 and ensure that `python.exe` is in your `PATH`.
 
 ### Unix
 
@@ -143,7 +143,19 @@ To build for *arm* or *arm64* arch run:
 or
     make TARGET_OS=android ABP_TARGET_ARCH=arm64
 
-Currently there is no support of building libadblockplus for Android on Windows.
+### Build for Android on Windows
+
+Build for Android can be performed in Windows 10 with WSL2 or with docker.
+Here we give instructions for WSL 2, feel free to add docker instructions.
+
+* Please, check [how to install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+* After installing,
+    * open PowerShell (or cmd)
+    * navigate to libadblockplus root
+    * run (once) the provision script: `wsl sudo ./build-scripts/provision.sh`.
+        * run it **only once** in order to prepare environment, no need to run it every time
+    * run build script `wsl ./build-scripts/build-android.sh`
+You might also run it from inside the WSL2, then do not prefix your commands with `wsl`.
 
 Usage
 -----
