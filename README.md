@@ -132,15 +132,20 @@ For more details see CI configuration for appveyor.
 Configure V8 as for Unix and set ANDROID_NDK_ROOT environment variable to your
 Android NDK directory.
 
-To build for *x86* arch run:
+To build for *x86* or *x64* arch run:
 
     make TARGET_OS=android ABP_TARGET_ARCH=ia32
+    
+or
+
+    make TARGET_OS=android ABP_TARGET_ARCH=x64
 
 To build for *arm* or *arm64* arch run:
 
     make TARGET_OS=android ABP_TARGET_ARCH=arm
 
 or
+
     make TARGET_OS=android ABP_TARGET_ARCH=arm64
 
 ### Build for Android on Windows
