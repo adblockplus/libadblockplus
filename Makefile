@@ -37,6 +37,9 @@ else ifeq ($(ABP_TARGET_ARCH),arm64)
 ANDROID_ABI = arm64-v8a
 # minimal platform having arch-arm64, see ndk/platforms
 ANDROID_PLATFORM_LEVEL=android-21
+else ifeq ($(ABP_TARGET_ARCH),x64)
+ANDROID_ABI = x86_64
+ANDROID_PLATFORM_LEVEL=android-21
 else
 $(error "Unsupported Android architecture: $(ABP_TARGET_ARCH)")
 endif
@@ -46,7 +49,7 @@ endif
 #   x64, ia32
 #     debug, release
 # android
-#   arm, arm64, ia32
+#   arm, arm64, ia32, x64
 #     release
 
 GYP_PARAMETERS=host_arch=${HOST_ARCH} OS=${TARGET_OS} target_arch=${ABP_TARGET_ARCH}
