@@ -484,13 +484,13 @@ namespace AdblockPlus
         const std::string& sitekey = "") const;
 
     /**
-     * Retrieves CSS selectors for all element hiding filters active on the
+     * Retrieves CSS style sheet for all element hiding filters active on the
      * supplied domain.
-     * @param domain Domain to retrieve CSS selectors for.
+     * @param domain Domain to retrieve CSS style sheet for.
      * @param specificOnly true if generic filters should not apply.
-     * @return List of CSS selectors.
+     * @return CSS style sheet.
      */
-    std::vector<std::string> GetElementHidingSelectors(const std::string& domain, bool specificOnly = false) const;
+    std::string GetElementHidingStyleSheet(const std::string& domain, bool specificOnly = false) const;
 
     /**
      * Retrieves CSS selectors for all element hiding emulation filters active on the
