@@ -521,18 +521,13 @@ AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
     return FilterPtr();
 }
 
-std::vector<std::string> FilterEngine::GetElementHidingSelectors(const std::string& domain, bool specificOnly) const
+std::string FilterEngine::GetElementHidingStyleSheet(const std::string& domain, bool specificOnly) const
 {
   JsValueList params;
   params.push_back(jsEngine->NewValue(domain));
   params.push_back(jsEngine->NewValue(specificOnly));
-  JsValue func = jsEngine->Evaluate("API.getElementHidingSelectors");
-  JsValueList result = func.Call(params).AsList();
-  std::vector<std::string> selectors;
-  selectors.reserve(result.size());
-  for (const auto& r: result)
-    selectors.push_back(r.AsString());
-  return selectors;
+  JsValue func = jsEngine->Evaluate("API.getElementHidingStyleSheet");
+  return func.Call(params).AsString();
 }
 
 std::vector<FilterEngine::EmulationSelector> FilterEngine::GetElementHidingEmulationSelectors(const std::string& domain) const

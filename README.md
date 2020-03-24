@@ -303,12 +303,12 @@ Aside from blocking requests, ad blockers typically also hide elements. This is
 done via a second type of filter that is completely ignored when matching URLs:
 [element hiding rules](https://adblockplus.org/en/filters#elemhide).
 
-You can retrieve a list of all CSS selectors for elements that should be hidden
+You can retrieve a CSS style sheet for elements that should be hidden
 using
-[`FilterEngine::GetElementHidingSelectors`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L493).
+[`FilterEngine::GetElementHidingStyleSheet`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L493).
 
-What libadblockplus clients typically do with this is to generate a CSS style
-sheet that is injected into each page.
+What libadblockplus clients typically do with this is to inject the CSS style
+sheet into each page.
 
 ### Disabling network requests from Adblock Plus on current connection
 
