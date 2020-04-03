@@ -3,6 +3,13 @@ libadblockplus
 
 A C++ library offering the core functionality of Adblock Plus.
 
+Git hooks
+----------
+
+This repo uses [pre-commit](https://pre-commit.com) to maintain agreed conventions in the repo. It should
+be [installed](https://pre-commit.com/#installation) (tldr; `pip install pre-commit` then `pre-commit install`)
+before making any new commits to the repo.
+
 Getting/updating the dependencies
 ---------------------------------
 
