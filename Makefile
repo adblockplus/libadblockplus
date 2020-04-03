@@ -116,7 +116,7 @@ SUB_ACTION ?= all
 ifdef CXX
 CXX_PARAM:=CXX=${CXX}
 endif
-all: ensure_dependencies 
+all: ensure_dependencies
 	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=${BUILD_DIR} abpshell.gyp tests.gyp
 	$(MAKE) -C ${BUILD_DIR} ${SUB_ACTION} ${CXX_PARAM}
 

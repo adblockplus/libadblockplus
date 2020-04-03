@@ -256,7 +256,7 @@ void DefaultPlatformBuilder::CreateDefaultLogSystem()
 
 std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
 {
-  
+
   if (!logSystem)
     CreateDefaultLogSystem();
   if (!timer)

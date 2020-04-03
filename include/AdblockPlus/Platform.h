@@ -82,7 +82,7 @@ namespace AdblockPlus
      * Ensures that JsEngine is constructed. If JsEngine is already present
      * then the parameters are ignored.
      *
-     * @param appInfo Information about the app, 
+     * @param appInfo Information about the app,
      * @param isolate A provider of v8::Isolate, if the value is nullptr then
      *        a default implementation is used.
      */
