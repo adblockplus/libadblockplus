@@ -106,7 +106,7 @@ def overridden_WriteAndroidNdkModuleRule(self, module_name, all_sources, link_de
             self.WriteLn("include $(PREBUILT_STATIC_LIBRARY)")
             self.WriteLn("ABP_STATIC_LIBRARIES_${{BUILDTYPE}} += {}".format(lib))
         self.WriteLn("endif")
-    orig_WriteList = self.WriteList 
+    orig_WriteList = self.WriteList
     def overridden_WriteList(self, orig_value_list, variable=None, prefix='', quoter=QuoteIfNecessary):
         value_list = orig_value_list[:]
         if variable == "LOCAL_STATIC_LIBRARIES":

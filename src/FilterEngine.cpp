@@ -269,7 +269,7 @@ void FilterEngine::CreateAsync(const JsEnginePtr& jsEngine,
       isSubscriptionDownloadAllowedCallback(params[0].IsString() ? &allowedConnectionType : nullptr, callJsCallback);
     });
   }
-  
+
   jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated](JsValueList&& params)
   {
     filterEngine->firstRun = params.size() && params[0].AsBool();

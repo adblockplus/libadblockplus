@@ -3,6 +3,13 @@ libadblockplus
 
 A C++ library offering the core functionality of Adblock Plus.
 
+Git hooks
+----------
+
+This repo uses [pre-commit](https://pre-commit.com) to maintain agreed conventions in the repo. It should
+be [installed](https://pre-commit.com/#installation) (tldr; `pip install pre-commit` then `pre-commit install`)
+before making any new commits to the repo.
+
 Getting/updating the dependencies
 ---------------------------------
 
@@ -50,7 +57,7 @@ Mac:
 Android:
 * The host system should be Linux or OS X (for Windows 10 [see below](#build-for-android-on-windows))
 * android-ndk-r16b, here are the links for downloading
-  [OS X](https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip), 
+  [OS X](https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip),
   [Linux 64](https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip).
 * g++ multilib
 
@@ -135,7 +142,7 @@ Android NDK directory.
 To build for *x86* or *x64* arch run:
 
     make TARGET_OS=android ABP_TARGET_ARCH=ia32
-    
+
 or
 
     make TARGET_OS=android ABP_TARGET_ARCH=x64
@@ -199,7 +206,7 @@ application to it.
     JsEngine& jsEngine = platform->GetJsEngine();
 
 `JsEngine` needs to store files, make web requests and write log messages. Default implementations
-are created using 
+are created using
 [`DefaultPlatformBuilder`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/Platform.h#L152).
 
 Depending on your application and platform, you might want to supply your own
