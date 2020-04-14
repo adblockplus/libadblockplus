@@ -1,3 +1,4 @@
+image: "registry.gitlab.com/eyeo/docker/libadblockplus_gitlab-runner:202004.1"
 stages:
   - build
   - generate_docs
@@ -28,12 +29,12 @@ build_libadblockplus:android:
 pages:
   stage: generate_docs
   script:
-  - doxygen
-  # https://docs.gitlab.com/ce/user/project/pages/getting_started_part_four.html#the-public-directory
-  # gitlab *requires* the directory to be named 'public'
-  - mv docs/html public
+    - doxygen
+    # https://docs.gitlab.com/ce/user/project/pages/getting_started_part_four.html#the-public-directory
+    # gitlab *requires* the directory to be named 'public'
+    - mv docs/html public
   artifacts:
     paths:
-    - public
+      - public
   only:
-  - master
+    - master
