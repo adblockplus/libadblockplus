@@ -168,7 +168,6 @@
         'load_after_files': [
           'lib/api.js',
           'lib/apiUpdater.js',
-          'lib/publicSuffixList.js',
           'lib/punycode.js',
           'lib/basedomain.js',
         ],

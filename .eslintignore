@@ -1,4 +1,3 @@
 lib/punycode.js
-lib/publicSuffixList.js
 lib/basedomain.js
 lib/compat.js

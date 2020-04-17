@@ -68,7 +68,6 @@ namespace
       "rusha.js",
       "rsa.js",
       "api.js",
-      "publicSuffixList.js",
       "punycode.js",
       "basedomain.js"
     };
