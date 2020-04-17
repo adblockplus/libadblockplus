@@ -352,7 +352,7 @@ TEST_F(FilterEngineTest, Matches)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.GetFilter("adbanner.gif").AddToList();
-  filterEngine.GetFilter("@@?notbanner").AddToList();
+  filterEngine.GetFilter("@@notbanner.gif").AddToList();
   filterEngine.GetFilter("tpbanner.gif$third-party").AddToList();
   filterEngine.GetFilter("fpbanner.gif$~third-party").AddToList();
   filterEngine.GetFilter("combanner.gif$domain=example.com").AddToList();
@@ -365,11 +365,11 @@ TEST_F(FilterEngineTest, Matches)
   ASSERT_TRUE(match2);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match2->GetType());
 
-  AdblockPlus::FilterPtr match3 = filterEngine.Matches("http://example.org/adbanner.gif?notbanner", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "");
+  AdblockPlus::FilterPtr match3 = filterEngine.Matches("http://example.org/notbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "");
   ASSERT_TRUE(match3);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match3->GetType());
 
-  AdblockPlus::FilterPtr match4 = filterEngine.Matches("http://example.org/adbanner.gif?notbanner", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "");
+  AdblockPlus::FilterPtr match4 = filterEngine.Matches("http://example.org/notbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "");
   ASSERT_TRUE(match4);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match4->GetType());
 
@@ -516,7 +516,7 @@ TEST_F(FilterEngineTest, MatchesWithContentTypeMask)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.GetFilter("adbanner.gif.js$script,image").AddToList();
-  filterEngine.GetFilter("@@?notbanner").AddToList();
+  filterEngine.GetFilter("@@notbanner.gif").AddToList();
   filterEngine.GetFilter("blockme").AddToList();
   filterEngine.GetFilter("@@||example.doc^$document").AddToList();
   filterEngine.GetFilter("||popexample.com^$popup").AddToList();
