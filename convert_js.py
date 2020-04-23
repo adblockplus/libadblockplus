@@ -68,7 +68,10 @@ def convertJsFile(array, file):
       jsFileContent = jsFile.read()
     referenceFileName = os.path.basename(file)
     array.add(referenceFileName)
-    array.add(jsTemplate % (re.sub("\\.jsm?$", "", referenceFileName), jsFileContent))
+    if referenceFileName.endswith('.json'):
+        array.add('require.scopes["../data/%s"] = %s;' % (referenceFileName, jsFileContent))
+    else:
+        array.add(jsTemplate % (re.sub("\\.jsm?$", "", referenceFileName), jsFileContent))
 
 
 def convert(verbatimBefore, convertFiles, verbatimAfter, outFile):

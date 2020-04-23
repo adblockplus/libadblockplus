@@ -151,7 +151,7 @@ namespace
         });
       }
       auto subscription = platform->GetFilterEngine().GetSubscription(subscriptionUrl);
-      EXPECT_EQ(0u, subscription.GetProperty("filters").AsList().size()) << subscriptionUrl;
+      EXPECT_EQ(0u, subscription.GetProperty("filterCount").AsInt()) << subscriptionUrl;
       EXPECT_TRUE(subscription.GetProperty("downloadStatus").IsNull()) << subscriptionUrl;
       subscription.UpdateFilters();
 
@@ -1573,7 +1573,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AbsentCallbackAllowsUpdati
   createParams.isSubscriptionDownloadAllowedCallback = FilterEngine::IsConnectionAllowedAsyncCallback();
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
-  EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
+  EXPECT_EQ(1u, subscription.GetProperty("filterCount").AsInt());
 }
 
 TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AllowingCallbackAllowsUpdating)
@@ -1581,7 +1581,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AllowingCallbackAllowsUpda
   // no stored allowed_connection_type preference
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
-  EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
+  EXPECT_EQ(1u, subscription.GetProperty("filterCount").AsInt());
   ASSERT_EQ(1u, capturedConnectionTypes.size());
   EXPECT_FALSE(capturedConnectionTypes[0].first);
 }
@@ -1592,7 +1592,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, NotAllowingCallbackDoesNot
   // no stored allowed_connection_type preference
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_connection_error", subscription.GetProperty("downloadStatus").AsString());
-  EXPECT_EQ(0u, subscription.GetProperty("filters").AsList().size());
+  EXPECT_EQ(0u, subscription.GetProperty("filterCount").AsInt());
   EXPECT_EQ(1u, capturedConnectionTypes.size());
 }
 
@@ -1603,7 +1603,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, PredefinedAllowedConnectio
     GetJsEngine().NewValue(predefinedAllowedConnectionType)));
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
-  EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
+  EXPECT_EQ(1u, subscription.GetProperty("filterCount").AsInt());
   ASSERT_EQ(1u, capturedConnectionTypes.size());
   EXPECT_TRUE(capturedConnectionTypes[0].first);
   EXPECT_EQ(predefinedAllowedConnectionType, capturedConnectionTypes[0].second);
@@ -1620,7 +1620,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, ConfiguredConnectionTypeIs
       "allowed_connection_type", GetJsEngine().NewValue(predefinedAllowedConnectionType)));
     auto subscription = EnsureExampleSubscriptionAndForceUpdate();
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
-    EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
+    EXPECT_EQ(1u, subscription.GetProperty("filterCount").AsInt());
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_TRUE(capturedConnectionTypes[0].first);
     EXPECT_EQ(predefinedAllowedConnectionType, capturedConnectionTypes[0].second);
@@ -1631,7 +1631,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, ConfiguredConnectionTypeIs
     GetFilterEngine().SetAllowedConnectionType(nullptr);
     auto subscription = EnsureExampleSubscriptionAndForceUpdate("subA");
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
-    EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
+    EXPECT_EQ(1u, subscription.GetProperty("filterCount").AsInt());
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_FALSE(capturedConnectionTypes[0].first);
     subscription.RemoveFromList();
@@ -1643,7 +1643,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, ConfiguredConnectionTypeIs
     GetFilterEngine().SetAllowedConnectionType(&testConnection);
     auto subscription = EnsureExampleSubscriptionAndForceUpdate("subB");
     EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
-    EXPECT_EQ(1u, subscription.GetProperty("filters").AsList().size());
+    EXPECT_EQ(1u, subscription.GetProperty("filterCount").AsInt());
     ASSERT_EQ(1u, capturedConnectionTypes.size());
     EXPECT_TRUE(capturedConnectionTypes[0].first);
     EXPECT_EQ(testConnection, capturedConnectionTypes[0].second);

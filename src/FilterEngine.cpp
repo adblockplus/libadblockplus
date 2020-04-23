@@ -42,6 +42,9 @@ namespace
       "elemHideHitRegistration.js",
       "events.js",
       "coreUtils.js",
+      "publicSuffixList.json",
+      "resources.json",
+      "domain.js",
       "filterNotifier.js",
       "init.js",
       "common.js",
@@ -65,7 +68,6 @@ namespace
       "rusha.js",
       "rsa.js",
       "api.js",
-      "publicSuffixList.js",
       "punycode.js",
       "basedomain.js"
     };

@@ -135,6 +135,9 @@
           'lib/elemHideHitRegistration.js',
           'adblockpluscore/lib/events.js',
           'adblockpluscore/lib/coreUtils.js',
+          'adblockpluscore/data/publicSuffixList.json',
+          'adblockpluscore/data/resources.json',
+          'adblockpluscore/lib/domain.js',
           'adblockpluscore/lib/filterNotifier.js',
           'lib/init.js',
           'adblockpluscore/lib/common.js',
@@ -165,7 +168,6 @@
         'load_after_files': [
           'lib/api.js',
           'lib/apiUpdater.js',
-          'lib/publicSuffixList.js',
           'lib/punycode.js',
           'lib/basedomain.js',
         ],
