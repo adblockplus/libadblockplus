@@ -204,7 +204,6 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
     request.setRequestHeader('X2', 'Y2');\
     request.send(null);");
   WaitForVariable("result", jsEngine);
-  ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("request.channel.status").AsInt());
   ASSERT_EQ(200, jsEngine.Evaluate("request.status").AsInt());
   ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("result.substr(0, 14)").AsString());
   ASSERT_EQ("text/plain", jsEngine.Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)").AsString());
@@ -235,7 +234,6 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
     request.setRequestHeader('X', 'Y');\
     request.send(null);");
   WaitForVariable("result", jsEngine);
-  ASSERT_EQ(IWebRequest::NS_ERROR_FAILURE, jsEngine.Evaluate("request.channel.status").AsInt());
   ASSERT_EQ(0, jsEngine.Evaluate("request.status").AsInt());
   ASSERT_EQ("error", jsEngine.Evaluate("result").AsString());
   ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Content-Type')").IsNull());
