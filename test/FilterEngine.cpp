@@ -493,6 +493,24 @@ TEST_F(FilterEngineTest, GenericblockWithDomain)
   EXPECT_FALSE(filterEngine.IsGenericblockWhitelisted("http://bar.example.com", documentUrls));
 }
 
+TEST_F(FilterEngineTest, Generichide)
+{
+  const char* url = "http://foo.com/bar";
+  const char* docUrl = "http://foo.com/";
+
+  auto& filterEngine = GetFilterEngine();
+
+  filterEngine.GetFilter("@@bar.com$generichide").AddToList();
+  AdblockPlus::FilterPtr match1 = filterEngine.Matches(url, AdblockPlus::FilterEngine::CONTENT_TYPE_GENERICHIDE, docUrl);
+  EXPECT_FALSE(match1);
+
+  filterEngine.GetFilter("@@foo.com$generichide").AddToList();
+  AdblockPlus::FilterPtr match2 = filterEngine.Matches(url, AdblockPlus::FilterEngine::CONTENT_TYPE_GENERICHIDE, docUrl);
+  ASSERT_TRUE(match2); // should be Filter instance
+  ASSERT_FALSE(match2->GetProperty("text").IsUndefined());
+  EXPECT_EQ("@@foo.com$generichide", match2->GetProperty("text").AsString());
+}
+
 TEST_F(FilterEngineTest, MatchesOnWhitelistedDomain)
 {
   auto& filterEngine = GetFilterEngine();
