@@ -86,11 +86,10 @@ public:
     tasks->emplace_back(task);
   }
 
-  // JS part often schedules download requests using Utils.runAsync which calls
-  // setTimeout(callback, 0). So, we need to firstly process those timers
-  // to actually schedule web requests and afterwards we may inspect pending
-  // web requests.
-  // non-immeditate timers are not touched
+  // JS part often schedules download requests asynchronously using promises.
+  // So, we need to firstly process those timers to actually schedule web
+  // requests and afterwards we may inspect pending web requests.
+  // Non-immeditate timers are not touched.
   static void ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks);
 };
 
