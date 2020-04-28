@@ -510,6 +510,8 @@ AdblockPlus::FilterPtr FilterEngine::CheckFilterMatch(const std::string& url,
     const std::string& siteKey,
     bool specificOnly) const
 {
+  if (url.empty())
+    return FilterPtr();
   JsValue func = jsEngine->Evaluate("API.checkFilterMatch");
   JsValueList params;
   params.push_back(jsEngine->NewValue(url));
