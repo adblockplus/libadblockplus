@@ -137,6 +137,7 @@
           'adblockpluscore/lib/coreUtils.js',
           'adblockpluscore/lib/caching.js',
           'adblockpluscore/data/publicSuffixList.json',
+          'adblockpluscore/data/subscriptions.json',
           'adblockpluscore/data/resources.json',
           'adblockpluscore/lib/url.js',
           'adblockpluscore/lib/filterNotifier.js',
@@ -153,6 +154,7 @@
           'adblockpluscore/lib/snippets.js',
           'adblockpluscore/lib/filterListener.js',
           'adblockpluscore/lib/downloader.js',
+          'adblockpluscore/lib/versions.js',
           'adblockpluscore/lib/notification.js',
           'adblockpluscore/lib/jsbn.js',
           'adblockpluscore/lib/rusha.js',
@@ -160,7 +162,6 @@
           'lib/notificationShowRegistration.js',
           'adblockpluscore/lib/synchronizer.js',
           'lib/filterUpdateRegistration.js',
-          'adblockpluscore/chrome/content/ui/subscriptions.xml',
           'lib/updater.js',
         ],
         'load_before_files': [
