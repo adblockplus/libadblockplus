@@ -32,6 +32,7 @@ namespace
       "coreUtils.js",
       "common.js",
       "downloader.js",
+      "versions.js",
       "updater.js",
       "apiUpdater.js"
     };
