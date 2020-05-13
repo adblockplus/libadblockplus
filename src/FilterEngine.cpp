@@ -328,7 +328,6 @@ namespace
     contentTypes[FilterEngine::CONTENT_TYPE_WEBRTC] = "WEBRTC";
     contentTypes[FilterEngine::CONTENT_TYPE_PING] = "PING";
     contentTypes[FilterEngine::CONTENT_TYPE_XMLHTTPREQUEST] = "XMLHTTPREQUEST";
-    contentTypes[FilterEngine::CONTENT_TYPE_OBJECT_SUBREQUEST] = "OBJECT_SUBREQUEST";
     contentTypes[FilterEngine::CONTENT_TYPE_FONT] = "FONT";
     contentTypes[FilterEngine::CONTENT_TYPE_MEDIA] = "MEDIA";
     contentTypes[FilterEngine::CONTENT_TYPE_ELEMHIDE] = "ELEMHIDE";
