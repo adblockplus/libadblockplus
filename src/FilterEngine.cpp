@@ -73,7 +73,7 @@ namespace
       "rsa.js",
       "api.js",
       "punycode.js",
-      "basedomain.js"
+      "uri.js"
     };
 }
 

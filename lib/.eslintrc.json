@@ -12,7 +12,6 @@
     "_preconfiguredPrefs": true,
     "onShutdown": true,
     "extractHostFromURL": true,
-    "isThirdParty": true,
     "Cu": true
   }
 }

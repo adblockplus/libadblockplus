@@ -173,7 +173,7 @@
           'lib/api.js',
           'lib/apiUpdater.js',
           'lib/punycode.js',
-          'lib/basedomain.js',
+          'lib/uri.js',
         ],
       },
       'inputs': [
