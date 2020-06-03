@@ -39,11 +39,11 @@ namespace
     {
       GetJsEngine().Evaluate("(function()"
       "{"
-        "require('notification').Notification.addNotification(" + notification + ");"
+        "require('notifications').notifications.addNotification(" + notification + ");"
       "})();");
     }
 
-    std::unique_ptr<Notification> PeekNotification(const std::string& url = std::string())
+    std::unique_ptr<Notification> PeekNotification()
     {
       std::unique_ptr<Notification> retValue;
       auto& filterEngine = platform->GetFilterEngine();
@@ -51,7 +51,7 @@ namespace
         [&retValue](Notification&& notification) {
           retValue.reset(new Notification(std::move(notification)));
         });
-      filterEngine.ShowNextNotification(url);
+      filterEngine.ShowNextNotification();
       filterEngine.RemoveShowNotificationCallback();
       return retValue;
     }
@@ -81,7 +81,7 @@ namespace
   };
 
   // To run this test one needs to set INITIAL_DELAY to about 2000 msec
-  // in notification.js.
+  // in notifications.js.
   class NotificationMockWebRequestTest : public BaseJsTest
   {
   protected:
@@ -153,32 +153,9 @@ TEST_F(NotificationTest, AddNotification)
   EXPECT_EQ("testMessage", notification->GetTexts().message);
 }
 
-TEST_F(NotificationTest, FilterByUrl)
-{
-  AddNotification("{ id: 'no-filter', type: 'critical' }");
-  AddNotification("{ id: 'www.com', type: 'information',"
-    "urlFilters:['||www.com$document']"
-  "}");
-  AddNotification("{ id: 'www.de', type: 'question',"
-    "urlFilters:['||www.de$document']"
-  "}");
-
-  auto notification = PeekNotification();
-  ASSERT_TRUE(notification);
-  EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_CRITICAL, notification->GetType());
-
-  notification = PeekNotification("http://www.de");
-  ASSERT_TRUE(notification);
-  EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_QUESTION, notification->GetType());
-
-  notification = PeekNotification("http://www.com");
-  ASSERT_TRUE(notification);
-  EXPECT_EQ(NotificationType::NOTIFICATION_TYPE_INFORMATION, notification->GetType());
-}
-
 TEST_F(NotificationTest, MarkAsShown)
 {
-  AddNotification("{ id: 'id', type: 'question' }");
+  AddNotification("{ id: 'id', type: 'information' }");
   EXPECT_TRUE(PeekNotification());
   auto notification = PeekNotification();
   ASSERT_TRUE(notification);

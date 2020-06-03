@@ -40,6 +40,7 @@ namespace
       "prefs.js",
       "utils.js",
       "elemHideHitRegistration.js",
+      "time.js",
       "events.js",
       "coreUtils.js",
       "caching.js",
@@ -52,6 +53,7 @@ namespace
       "init.js",
       "common.js",
       "elemHideExceptions.js",
+      "contentTypes.js",
       "filterClasses.js",
       "snippets.js",
       "subscriptionClasses.js",
@@ -61,10 +63,12 @@ namespace
       "elemHide.js",
       "elemHideEmulation.js",
       "matcher.js",
+      "filterEngine.js",
       "filterListener.js",
+      "analytics.js",
       "downloader.js",
       "versions.js",
-      "notification.js",
+      "notifications.js",
       "notificationShowRegistration.js",
       "synchronizer.js",
       "filterUpdateRegistration.js",
@@ -323,16 +327,16 @@ namespace
     contentTypes[FilterEngine::CONTENT_TYPE_STYLESHEET] = "STYLESHEET";
     contentTypes[FilterEngine::CONTENT_TYPE_OBJECT] = "OBJECT";
     contentTypes[FilterEngine::CONTENT_TYPE_SUBDOCUMENT] = "SUBDOCUMENT";
-    contentTypes[FilterEngine::CONTENT_TYPE_DOCUMENT] = "DOCUMENT";
     contentTypes[FilterEngine::CONTENT_TYPE_WEBSOCKET] = "WEBSOCKET";
     contentTypes[FilterEngine::CONTENT_TYPE_WEBRTC] = "WEBRTC";
     contentTypes[FilterEngine::CONTENT_TYPE_PING] = "PING";
     contentTypes[FilterEngine::CONTENT_TYPE_XMLHTTPREQUEST] = "XMLHTTPREQUEST";
     contentTypes[FilterEngine::CONTENT_TYPE_FONT] = "FONT";
     contentTypes[FilterEngine::CONTENT_TYPE_MEDIA] = "MEDIA";
-    contentTypes[FilterEngine::CONTENT_TYPE_ELEMHIDE] = "ELEMHIDE";
     contentTypes[FilterEngine::CONTENT_TYPE_POPUP] = "POPUP";
+    contentTypes[FilterEngine::CONTENT_TYPE_DOCUMENT] = "DOCUMENT";
     contentTypes[FilterEngine::CONTENT_TYPE_GENERICBLOCK] = "GENERICBLOCK";
+    contentTypes[FilterEngine::CONTENT_TYPE_ELEMHIDE] = "ELEMHIDE";
     contentTypes[FilterEngine::CONTENT_TYPE_GENERICHIDE] = "GENERICHIDE";
     return contentTypes;
   }
@@ -422,15 +426,9 @@ std::string FilterEngine::GetAAUrl() const
   return GetPref("subscriptions_exceptionsurl").AsString();
 }
 
-void FilterEngine::ShowNextNotification(const std::string& url) const
+void FilterEngine::ShowNextNotification() const
 {
-  JsValue func = jsEngine->Evaluate("API.showNextNotification");
-  JsValueList params;
-  if (!url.empty())
-  {
-    params.push_back(jsEngine->NewValue(url));
-  }
-  func.Call(params);
+  jsEngine->Evaluate("API.showNextNotification").Call();
 }
 
 void FilterEngine::SetShowNotificationCallback(const ShowNotificationCallback& callback)
