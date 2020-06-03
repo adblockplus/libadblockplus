@@ -204,17 +204,17 @@ namespace AdblockPlus
       CONTENT_TYPE_STYLESHEET = 8,
       CONTENT_TYPE_OBJECT = 16,
       CONTENT_TYPE_SUBDOCUMENT = 32,
-      CONTENT_TYPE_DOCUMENT = 64,
       CONTENT_TYPE_WEBSOCKET = 128,
       CONTENT_TYPE_WEBRTC = 256,
       CONTENT_TYPE_PING = 1024,
       CONTENT_TYPE_XMLHTTPREQUEST = 2048,
       CONTENT_TYPE_MEDIA = 16384,
       CONTENT_TYPE_FONT = 32768,
-      CONTENT_TYPE_POPUP = 0x10000000,
-      CONTENT_TYPE_GENERICBLOCK = 0x20000000,
-      CONTENT_TYPE_ELEMHIDE = 0x40000000,
-      CONTENT_TYPE_GENERICHIDE = 0x80000000
+      CONTENT_TYPE_POPUP = 1 << 24,
+      CONTENT_TYPE_DOCUMENT = 1 << 26,
+      CONTENT_TYPE_GENERICBLOCK = 1 << 27,
+      CONTENT_TYPE_ELEMHIDE = 1 << 28,
+      CONTENT_TYPE_GENERICHIDE = 1 << 29
     };
 
     /**
@@ -375,9 +375,8 @@ namespace AdblockPlus
     /**
      * Invokes the listener set via SetNotificationAvailableCallback() with the
      * next notification to be shown.
-     * @param url URL to match notifications to (optional).
      */
-    void ShowNextNotification(const std::string& url = std::string()) const;
+    void ShowNextNotification() const;
 
     /**
      * Sets the callback invoked when a notification should be shown.

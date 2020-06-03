@@ -29,10 +29,9 @@ namespace
   NotificationTypes InitNotificationTypes()
   {
     NotificationTypes retValue;
-    retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_QUESTION, "question"));
-    retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_CRITICAL, "critical"));
-    retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_RELENTLESS, "relentless"));
     retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_INFORMATION, "information"));
+    retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_RELENTLESS, "relentless"));
+    retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_CRITICAL, "critical"));
     return retValue;
   }
 
