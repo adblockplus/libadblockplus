@@ -32,6 +32,8 @@ namespace
       "events.js",
       "coreUtils.js",
       "common.js",
+      "caching.js",
+      "url.js",
       "analytics.js",
       "downloader.js",
       "versions.js",

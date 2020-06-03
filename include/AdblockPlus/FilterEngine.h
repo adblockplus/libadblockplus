@@ -192,7 +192,7 @@ namespace AdblockPlus
   {
   public:
     // Make sure to keep ContentType in sync with FilterEngine::contentTypes
-    // and with RegExpFilter.typeMap from filterClasses.js.
+    // and with URLFilter.typeMap from filterClasses.js.
     /**
      * Possible resource content types.
      */

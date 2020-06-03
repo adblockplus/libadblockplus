@@ -30,6 +30,7 @@ namespace
   {
     NotificationTypes retValue;
     retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_INFORMATION, "information"));
+    retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_NEWTAB, "newtab"));
     retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_RELENTLESS, "relentless"));
     retValue.push_back(std::make_pair(NotificationType::NOTIFICATION_TYPE_CRITICAL, "critical"));
     return retValue;
