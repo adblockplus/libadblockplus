@@ -283,6 +283,11 @@ namespace AdblockPlus
 
     JsValue GetGlobalObject();
 
+    JsEnginePtr GetSharedPtr()
+    {
+      return shared_from_this();
+    }
+
     Platform& platform;
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.
