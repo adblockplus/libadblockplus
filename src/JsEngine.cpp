@@ -82,8 +82,9 @@ namespace
     ScopedV8Isolate()
     {
       V8Initializer::Init();
+      allocator.reset(v8::ArrayBuffer::Allocator::NewDefaultAllocator());
       v8::Isolate::CreateParams isolateParams;
-      isolateParams.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+      isolateParams.array_buffer_allocator = allocator.get();
       isolate = v8::Isolate::New(isolateParams);
     }
 
@@ -101,6 +102,7 @@ namespace
     ScopedV8Isolate(const ScopedV8Isolate&);
     ScopedV8Isolate& operator=(const ScopedV8Isolate&);
 
+    std::unique_ptr<v8::ArrayBuffer::Allocator> allocator;
     v8::Isolate* isolate;
   };
 }
