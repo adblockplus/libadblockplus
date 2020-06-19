@@ -270,12 +270,10 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(
 {
   const JsContext context(*this);
   auto isolate = GetIsolate();
-  // Note: we are leaking this weak pointer, no obvious way to destroy it when
-  // it's no longer used
-  std::weak_ptr<JsEngine>* data =
-      new std::weak_ptr<JsEngine>(shared_from_this());
+  // The callback may not outlive us since it lives out of our isolate.
+  // It's safe to bind a bare pointer to self.
   v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, callback,
-      v8::External::New(isolate, data));
+      v8::External::New(isolate, this));
   return JsValue(shared_from_this(),
       CHECKED_TO_LOCAL(isolate, templ->GetFunction(isolate->GetCurrentContext())));
 }
@@ -284,12 +282,8 @@ AdblockPlus::JsEnginePtr AdblockPlus::JsEngine::FromArguments(const v8::Function
 {
   const v8::Local<const v8::External> external =
       v8::Local<const v8::External>::Cast(arguments.Data());
-  std::weak_ptr<JsEngine>* data =
-      static_cast<std::weak_ptr<JsEngine>*>(external->Value());
-  JsEnginePtr result = data->lock();
-  if (!result)
-    throw std::runtime_error("Oops, our JsEngine is gone, how did that happen?");
-  return result;
+  JsEngine* engine = static_cast<JsEngine*>(external->Value());
+  return engine->shared_from_this();
 }
 
 JsEngine::JsWeakValuesID JsEngine::StoreJsValues(const JsValueList& values)
