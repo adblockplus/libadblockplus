@@ -19,7 +19,11 @@ build_nix_and_test:
     - export MAKEFLAGS="-j $(nproc)"
     # steps taken from .travis/nix-script.sh
     - make get-prebuilt-v8
-    - make test
+    - make
+    - make test TEST_RESULTS_XML=report.xml
+  artifacts:
+    reports:
+      junit: report.xml
 
 .build_template:
   stage: build
