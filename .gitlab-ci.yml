@@ -26,10 +26,11 @@ build_nix_and_test:
   interruptible: true
   before_script:
     - mkdir -p .git/info
+  variables:
+    V8_COMMIT: 4d72a9931a125d21901d25d67896f0e40105bd16
   script:
     # set some dynamic env vars
     - export ADDITIONALMAKEFLAGS="-j $(nproc)"
-    - export V8_COMMIT=$(grep -m1 -o 'V8_COMMIT=.*' .travis.yml | cut -f2- -d= | cut -f1 -d\ )
     - export URL_PREFIX="https://v8.eyeofiles.com/v8-$V8_COMMIT/"
     - export Configuration=release
     - export TARGET_OS=android
