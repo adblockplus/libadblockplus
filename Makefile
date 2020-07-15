@@ -61,6 +61,10 @@ endif
 
 TEST_EXECUTABLE = ${BUILD_DIR}/out/Debug/tests
 
+ifdef TEST_RESULTS_XML
+TEST_EXECUTABLE += --gtest_output="xml:${TEST_RESULTS_XML}"
+endif
+
 URL_PREFIX ?= "https://v8.eyeofiles.com/v8-$(shell sed -nE 's/.*V8_COMMIT=([^\s]+) .*/\1/p' .travis.yml|head -n1)/"
 
 ifeq ($(WGET_QUIET),true)

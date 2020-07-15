@@ -1,30 +1,75 @@
-image: "registry.gitlab.com/eyeo/docker/libadblockplus_gitlab-runner:202004.1"
 stages:
+  - test
   - build
   - generate_docs
 
-build_libadblockplus:nix:
-  stage: build
+image: "registry.gitlab.com/eyeo/docker/libadblockplus_gitlab-runner:202004.1"
+variables:
+  WGET_FLAGS: "--quiet"
+  ANDROID_NDK_ROOT: "/third_party/android-ndk-r16b" #NDK is part of the docker image
+
+build_nix_and_test:
+  interruptible: true
+  stage: test
   before_script:
     # It seems gitlab does not create fully-fledged .git directory but we utilize .git/info/exclude
     # directly in ensure_dependencies.py and therefore we have to provide the directory path.
     - mkdir -p .git/info
   script:
-    - export MAKEFLAGS="-j $(grep -c ^processor /proc/cpuinfo)"
-    - bash .travis/nix-script.sh
+    - export MAKEFLAGS="-j $(nproc)"
+    # steps taken from .travis/nix-script.sh
+    - make get-prebuilt-v8
+    - make
+    - make test TEST_RESULTS_XML=report.xml
+  artifacts:
+    reports:
+      junit: report.xml
 
-build_libadblockplus:android:
+.build_template:
   stage: build
-  variables:
-    WGET_FLAGS: "--quiet"
+  interruptible: true
   before_script:
     - mkdir -p .git/info
+  variables:
+    V8_COMMIT: 4d72a9931a125d21901d25d67896f0e40105bd16
   script:
-    - export ADDITIONALMAKEFLAGS="-j $(grep -c ^processor /proc/cpuinfo)"
-    - export ANDROID_NDK_ROOT="/third_party/android-ndk-r16b" #NDK is part of the docker image
-    - export V8_COMMIT=$(grep -m1 -o 'V8_COMMIT=.*' .travis.yml | cut -f2- -d= | cut -f1 -d\ )
+    # set some dynamic env vars
+    - export ADDITIONALMAKEFLAGS="-j $(nproc)"
     - export URL_PREFIX="https://v8.eyeofiles.com/v8-$V8_COMMIT/"
-    - bash .travis/android-script.sh
+    - export Configuration=release
+    - export TARGET_OS=android
+    # ensure that one can build libadblockplus.a without having binaries of V8
+    - |
+      if [[ ! -d "third_party/prebuilt-v8/include" ]]; then
+        wget ${WGET_FLAGS} ${URL_PREFIX}include.7z -O third_party/v8-include.7z
+        7z x third_party/v8-include.7z -othird_party/prebuilt-v8
+      fi
+    - make GYP_FILE=libadblockplus.gyp APP_MODULES=adblockplus
+    # build tests
+    - make get-prebuilt-v8
+    - make
+    # build abpshell
+    - make GYP_FILE=abpshell.gyp
+
+android:arm:
+  extends: .build_template
+  variables:
+    ABP_TARGET_ARCH: arm
+
+android:arm64:
+  extends: .build_template
+  variables:
+    ABP_TARGET_ARCH: arm64
+
+android:ia32:
+  extends: .build_template
+  variables:
+    ABP_TARGET_ARCH: ia32
+
+android:x64:
+  extends: .build_template
+  variables:
+    ABP_TARGET_ARCH: x64
 
 pages:
   stage: generate_docs
