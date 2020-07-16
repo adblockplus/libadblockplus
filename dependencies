@@ -1,6 +1,6 @@
-_root = hg:https://hg.adblockplus.org/ git:https://github.com/adblockplus/
+_root = git:https://gitlab.com/eyeo/
 _self = buildtools/ensure_dependencies.py
-buildtools = buildtools hg:6ab9eb46db2a git:2f2bf1f217314022327d4bd9c39002e9248dcf7f
-adblockpluscore = adblockpluscore git:4ec2e8a1cbd180a73b0128b99a28c5ff4717b28f
-third_party/googletest = googletest-github hg:368e1f54e5f6 git:d225acc90bc3a8c420a9bcd1f033033c1ccd7fe0
-third_party/gyp = gyp hg:5382e1309be1 git:85707cef17503c05c0105fb0430fd8ada907d719
+buildtools = adblockplus/buildtools git:2f2bf1f217314022327d4bd9c39002e9248dcf7f
+adblockpluscore = adblockplus/adblockpluscore git:4ec2e8a1cbd180a73b0128b99a28c5ff4717b28f
+third_party/googletest = external-dependencies/googletest-github git:703bd9caab50b139428cea1aaff9974ebee5742e
+third_party/gyp = external-dependencies/gyp git:73b25398a3e9ed4a280894618d7b5a054db68aa5

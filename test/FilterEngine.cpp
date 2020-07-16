@@ -1554,7 +1554,7 @@ namespace AA_ApiTest
     }
   };
 
-  INSTANTIATE_TEST_CASE_P(AA_ApiTests, Test,
+  INSTANTIATE_TEST_SUITE_P(AA_ApiTests, Test,
     ::testing::Combine(::testing::ValuesIn(Test::VaryPossibleCases()), ::testing::Values<uint8_t>(0, 1)));
 
   TEST_P(Test, VaryPossibleCases) {
