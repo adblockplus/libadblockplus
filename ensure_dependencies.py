@@ -21,8 +21,9 @@ from ConfigParser import RawConfigParser
 USAGE = '''
 A dependencies file should look like this:
 
-  # VCS-specific root URLs for the repositories
-  _root = hg:https://hg.adblockplus.org/ git:https://github.com/adblockplus/
+  # VCS-specific root URLs for the repositories, recommended to use the
+  # following for hg and git:
+  _root = hg:https://hg.adblockplus.org/ git:https://gitlab.com/eyeo/
   # File to update this script from (optional)
   _self = buildtools/ensure_dependencies.py
   # Clone elemhidehelper repository into extensions/elemhidehelper directory at

@@ -191,17 +191,17 @@ namespace
 
   typedef BaseAsyncExecutorTest<ActiveObject> ActiveObjectTest;
 
-  INSTANTIATE_TEST_CASE_P(DifferentProducersNumber1,
+  INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber1,
     ActiveObjectTest,
     MultithreadedCallsGenerator1,
     humanReadbleParams);
 
-  INSTANTIATE_TEST_CASE_P(DifferentProducersNumber2,
+  INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber2,
     ActiveObjectTest,
     MultithreadedCallsGenerator2,
     humanReadbleParams);
 
-  INSTANTIATE_TEST_CASE_P(DifferentProducersNumber3,
+  INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber3,
     ActiveObjectTest,
     MultithreadedCallsGenerator3,
     humanReadbleParams);
@@ -214,17 +214,17 @@ namespace
 
   typedef BaseAsyncExecutorTest<AsyncExecutor> AsyncExecutorTest;
 
-  INSTANTIATE_TEST_CASE_P(DifferentProducersNumber1,
+  INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber1,
     AsyncExecutorTest,
     MultithreadedCallsGenerator1,
     humanReadbleParams);
 
-  INSTANTIATE_TEST_CASE_P(DifferentProducersNumber2,
+  INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber2,
     AsyncExecutorTest,
     MultithreadedCallsGenerator2,
     humanReadbleParams);
 
-  INSTANTIATE_TEST_CASE_P(DifferentProducersNumber3,
+  INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber3,
     AsyncExecutorTest,
     MultithreadedCallsGenerator3,
     humanReadbleParams);

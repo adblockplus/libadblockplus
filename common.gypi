@@ -10,11 +10,7 @@
        or OS=="netbsd" or OS=="android"', {
       'target_defaults': {
         'cflags': [ '-pthread' ],
-        # V8 headers cause a build error on recent gcc.
-        # Adding -fpermissive to solve this.
-        # See https://issues.adblockplus.org/ticket/4950
-        # We might be able to do without after upgrading V8.
-        'cflags_cc': [ '-fno-rtti', '-std=c++14', '-fexceptions', '-fpermissive', '-stdlib=libc++' ],
+        'cflags_cc': [ '-fno-rtti', '-std=c++14', '-fexceptions', '-stdlib=libc++' ],
         'ldflags': [ '-pthread'],
       },
     }],
