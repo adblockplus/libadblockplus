@@ -141,6 +141,8 @@ namespace AdblockPlus
 
     /**
      * Asynchronously constructs FilterEngine.
+     * TODO (mpawlowski) move to a factory? The interface should not know how
+     * to create an implementation.
      * @param jsEngine `JsEngine` instance used to run JavaScript code
      *        internally.
      * @param onCreated A callback which is called when FilterEngine is ready
@@ -152,17 +154,19 @@ namespace AdblockPlus
       const OnCreatedCallback& onCreated,
       const CreationParameters& parameters = CreationParameters());
 
+    virtual ~FilterEngine() = default;
+
     /**
      * Retrieves the `JsEngine` instance associated with this `FilterEngine`
      * instance.
      */
-    JsEngine& GetJsEngine() const { return *jsEngine; }
+    virtual JsEngine& GetJsEngine() const = 0;
 
     /**
      * Checks if this is the first run of the application.
      * @return `true` if the application is running for the first time.
      */
-    bool IsFirstRun() const;
+    virtual bool IsFirstRun() const = 0;
 
     /**
      * Retrieves a filter object from its text representation.
@@ -170,32 +174,32 @@ namespace AdblockPlus
      *        see https://adblockplus.org/en/filters.
      * @return New `Filter` instance.
      */
-    Filter GetFilter(const std::string& text) const;
+    virtual Filter GetFilter(const std::string& text) const = 0;
 
     /**
      * Retrieves a subscription object for the supplied URL.
      * @param url Subscription URL.
      * @return New `Subscription` instance.
      */
-    Subscription GetSubscription(const std::string& url) const;
+    virtual Subscription GetSubscription(const std::string& url) const = 0;
 
     /**
      * Retrieves the list of custom filters.
      * @return List of custom filters.
      */
-    std::vector<Filter> GetListedFilters() const;
+    virtual std::vector<Filter> GetListedFilters() const = 0;
 
     /**
      * Retrieves all subscriptions.
      * @return List of subscriptions.
      */
-    std::vector<Subscription> GetListedSubscriptions() const;
+    virtual std::vector<Subscription> GetListedSubscriptions() const = 0;
 
     /**
      * Retrieves all recommended subscriptions.
      * @return List of recommended subscriptions.
      */
-    std::vector<Subscription> FetchAvailableSubscriptions() const;
+    virtual std::vector<Subscription> FetchAvailableSubscriptions() const = 0;
 
     /**
      * Ensures that the Acceptable Ads subscription is enabled or disabled.
@@ -207,37 +211,37 @@ namespace AdblockPlus
      *     - if an AA subscription is present, disable it.
      *     - if absent, do nothing.
      */
-    void SetAAEnabled(bool enabled);
+    virtual void SetAAEnabled(bool enabled) = 0;
 
     /**
      * Checks whether the Acceptable Ads subscription is enabled.
      * @return `true` if the Acceptable Ads subscription is present and enabled.
      */
-    bool IsAAEnabled() const;
+    virtual bool IsAAEnabled() const = 0;
 
     /**
      * Retrieves the URL of the Acceptable Ads subscription, what makes the URL
      * available even if subscription is not added yet.
      * @return Returns URL of the Acceptable Ads.
      */
-    std::string GetAAUrl() const;
+    virtual std::string GetAAUrl() const = 0;
 
     /**
      * Invokes the listener set via SetNotificationAvailableCallback() with the
      * next notification to be shown.
      */
-    void ShowNextNotification() const;
+    virtual void ShowNextNotification() const = 0;
 
     /**
      * Sets the callback invoked when a notification should be shown.
      * @param callback Callback to invoke.
      */
-    void SetShowNotificationCallback(const ShowNotificationCallback& value);
+    virtual void SetShowNotificationCallback(const ShowNotificationCallback& value) = 0;
 
     /**
      * Removes the callback invoked when a notification should be shown.
      */
-    void RemoveShowNotificationCallback();
+    virtual void RemoveShowNotificationCallback() = 0;
 
     /**
      * Checks if any active filter matches the supplied URL.
@@ -253,11 +257,11 @@ namespace AdblockPlus
      * @return Matching filter, or `null` if there was no match.
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
-    FilterPtr Matches(const std::string& url,
+    virtual FilterPtr Matches(const std::string& url,
         ContentTypeMask contentTypeMask,
         const std::string& documentUrl,
         const std::string& siteKey = "",
-        bool specificOnly = false) const;
+        bool specificOnly = false) const = 0;
 
     /**
      * Checks if any active filter matches the supplied URL.
@@ -275,11 +279,11 @@ namespace AdblockPlus
      * @return Matching filter, or a `null` if there was no match.
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
-    FilterPtr Matches(const std::string& url,
+    virtual FilterPtr Matches(const std::string& url,
         ContentTypeMask contentTypeMask,
         const std::vector<std::string>& documentUrls,
         const std::string& siteKey = "",
-        bool specificOnly = false) const;
+        bool specificOnly = false) const = 0;
 
     /**
      * Checks if any active genericblock filter exception matches the supplied URL.
@@ -297,9 +301,9 @@ namespace AdblockPlus
      *        Optional: public key provided by the document.
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
-    bool IsGenericblockWhitelisted(const std::string& url,
+    virtual bool IsGenericblockWhitelisted(const std::string& url,
                                    const std::vector<std::string>& documentUrls,
-                                   const std::string& sitekey = "") const;
+                                   const std::string& sitekey = "") const = 0;
 
     /**
      * Checks whether the document at the supplied URL is whitelisted.
@@ -312,9 +316,9 @@ namespace AdblockPlus
      *        using `ReferrerMapping`.
      * @return `true` if the URL is whitelisted.
      */
-    bool IsDocumentWhitelisted(const std::string& url,
+    virtual bool IsDocumentWhitelisted(const std::string& url,
         const std::vector<std::string>& documentUrls,
-        const std::string& sitekey = "") const;
+        const std::string& sitekey = "") const = 0;
 
     /**
      * Checks whether element hiding is disabled at the supplied URL.
@@ -327,9 +331,9 @@ namespace AdblockPlus
      *        using `ReferrerMapping`.
      * @return `true` if element hiding is whitelisted for the supplied URL.
      */
-    bool IsElemhideWhitelisted(const std::string& url,
+    virtual bool IsElemhideWhitelisted(const std::string& url,
         const std::vector<std::string>& documentUrls,
-        const std::string& sitekey = "") const;
+        const std::string& sitekey = "") const = 0;
 
     /**
      * Retrieves CSS style sheet for all element hiding filters active on the
@@ -338,7 +342,7 @@ namespace AdblockPlus
      * @param specificOnly true if generic filters should not apply.
      * @return CSS style sheet.
      */
-    std::string GetElementHidingStyleSheet(const std::string& domain, bool specificOnly = false) const;
+    virtual std::string GetElementHidingStyleSheet(const std::string& domain, bool specificOnly = false) const = 0;
 
     /**
      * Retrieves CSS selectors for all element hiding emulation filters active on the
@@ -346,39 +350,39 @@ namespace AdblockPlus
      * @param domain Domain to retrieve CSS selectors for.
      * @return List of CSS selectors along with the text property.
      */
-    std::vector<EmulationSelector> GetElementHidingEmulationSelectors(const std::string& domain) const;
+    virtual std::vector<EmulationSelector> GetElementHidingEmulationSelectors(const std::string& domain) const = 0;
 
     /**
      * Retrieves a preference value.
      * @param pref Preference name.
      * @return Preference value, or `null` if it doesn't exist.
      */
-    JsValue GetPref(const std::string& pref) const;
+    virtual JsValue GetPref(const std::string& pref) const = 0;
 
     /**
      * Sets a preference value.
      * @param pref Preference name.
      * @param value New value of the preference.
      */
-    void SetPref(const std::string& pref, const JsValue& value);
+    virtual void SetPref(const std::string& pref, const JsValue& value) = 0;
 
     /**
      * Extracts the host from a URL.
      * @param url URL to extract the host from.
      * @return Extracted host.
      */
-    std::string GetHostFromURL(const std::string& url) const;
+    virtual std::string GetHostFromURL(const std::string& url) const = 0;
 
     /**
      * Sets the callback invoked when the filters change.
      * @param callback Callback to invoke.
      */
-    void SetFilterChangeCallback(const FilterChangeCallback& callback);
+    virtual void SetFilterChangeCallback(const FilterChangeCallback& callback) = 0;
 
     /**
      * Removes the callback invoked when the filters change.
      */
-    void RemoveFilterChangeCallback();
+    virtual void RemoveFilterChangeCallback() = 0;
 
     /**
      * Stores the value indicating what connection types are allowed, it is
@@ -386,13 +390,13 @@ namespace AdblockPlus
      * @param value Stored value. nullptr means removing of any previously
      *        stored value.
      */
-    void SetAllowedConnectionType(const std::string* value);
+    virtual void SetAllowedConnectionType(const std::string* value) = 0;
 
     /**
       * Retrieves previously stored allowed connection type.
       * @return Preference value, or `nullptr` if it doesn't exist.
       */
-    std::unique_ptr<std::string> GetAllowedConnectionType() const;
+    virtual std::unique_ptr<std::string> GetAllowedConnectionType() const = 0;
 
     /**
      * Compares two version strings in
@@ -404,7 +408,7 @@ namespace AdblockPlus
      *         - A negative number if `v1` is less than `v2`.
      *         - A positive number if `v1` is greater than `v2`.
      */
-    int CompareVersions(const std::string& v1, const std::string& v2) const;
+    virtual int CompareVersions(const std::string& v1, const std::string& v2) const = 0;
 
     /**
     * Checks whether the sitekey signature is valid for the given public key and data,
@@ -416,8 +420,8 @@ namespace AdblockPlus
     * @param userAgent signed in signature.
     * @return `true` if (uri + "\0" + host + "\0" + userAgent) matches signature.
     */
-    bool VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
-                         const std::string& host, const std::string& userAgent) const;
+    virtual bool VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
+                         const std::string& host, const std::string& userAgent) const = 0;
 
     /**
      * Retrieves the `ContentType` for the supplied string.
@@ -434,27 +438,6 @@ namespace AdblockPlus
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     static std::string ContentTypeToString(ContentType contentType);
-
-  private:
-    JsEnginePtr jsEngine;
-    bool firstRun;
-    static const std::map<ContentType, std::string> contentTypes;
-
-    explicit FilterEngine(const JsEnginePtr& jsEngine);
-
-    FilterPtr CheckFilterMatch(const std::string& url,
-                               ContentTypeMask contentTypeMask,
-                               const std::string& documentUrl,
-                               const std::string& siteKey,
-                               bool specificOnly) const;
-    void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
-    FilterPtr GetWhitelistingFilter(const std::string& url,
-      ContentTypeMask contentTypeMask, const std::string& documentUrl,
-      const std::string& sitekey) const;
-    FilterPtr GetWhitelistingFilter(const std::string& url,
-      ContentTypeMask contentTypeMask,
-      const std::vector<std::string>& documentUrls,
-      const std::string& sitekey) const;
   };
 }
 

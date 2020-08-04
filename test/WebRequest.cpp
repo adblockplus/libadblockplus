@@ -196,7 +196,7 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
   auto& jsEngine = GetJsEngine();
-  auto filterEngine = CreateFilterEngine(*fileSystem, *platform);
+  CreateFilterEngine(*fileSystem, *platform);
 
   ResetTestXHR(jsEngine, "https://easylist-downloads.adblockplus.org/easylist.txt");
   jsEngine.Evaluate("\
@@ -227,7 +227,7 @@ TEST_F(DefaultWebRequestTest, DummyWebRequest)
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
   auto& jsEngine = GetJsEngine();
-  auto filterEngine = CreateFilterEngine(*fileSystem, *platform);
+  CreateFilterEngine(*fileSystem, *platform);
 
   ResetTestXHR(jsEngine);
   jsEngine.Evaluate("\
@@ -283,7 +283,7 @@ namespace
 TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
 {
   auto& jsEngine = GetJsEngine();
-  auto filterEngine = CreateFilterEngine(*fileSystem, *platform);
+  CreateFilterEngine(*fileSystem, *platform);
 
   const std::string msg = "Attempt to set a forbidden header was denied: ";
 

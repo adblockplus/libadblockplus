@@ -48,6 +48,8 @@
       'src/FileSystemJsObject.cpp',
       'src/Filter.cpp',
       'src/FilterEngine.cpp',
+      'src/FilterEngineImpl.h',
+      'src/FilterEngineImpl.cpp',
       'src/Updater.cpp',
       'src/GlobalJsObject.cpp',
       'src/JsContext.cpp',
