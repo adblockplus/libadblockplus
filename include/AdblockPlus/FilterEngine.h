@@ -22,166 +22,16 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <AdblockPlus/Filter.h>
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/Notification.h>
+#include <AdblockPlus/Subscription.h>
 
 namespace AdblockPlus
 {
   class FilterEngine;
   typedef std::shared_ptr<FilterEngine> FilterEnginePtr;
-
-  /**
-   * Wrapper for an Adblock Plus filter object.
-   * There are no accessors for most
-   * [filter properties](https://adblockplus.org/jsdoc/adblockpluscore/Filter.html),
-   * use `GetProperty()` to retrieve them by name.
-   */
-  class Filter : public JsValue
-  {
-    friend class FilterEngine;
-  public:
-    Filter(const Filter& src);
-    Filter(Filter&& src);
-    Filter& operator=(const Filter& src);
-    Filter& operator=(Filter&& src);
-
-    /**
-     * Filter types, see https://adblockplus.org/en/filters.
-     */
-    enum Type {TYPE_BLOCKING, TYPE_EXCEPTION,
-               TYPE_ELEMHIDE, TYPE_ELEMHIDE_EXCEPTION,
-               TYPE_ELEMHIDE_EMULATION,
-               TYPE_COMMENT, TYPE_INVALID};
-
-    /**
-     * Retrieves the type of this filter.
-     * @return Type of this filter.
-     */
-    Type GetType() const;
-
-    /**
-     * Checks whether this filter has been added to the list of custom filters.
-     * @return `true` if this filter has been added.
-     */
-    bool IsListed() const;
-
-    /**
-     * Adds this filter to the list of custom filters.
-     */
-    void AddToList();
-
-    /**
-     * Removes this filter from the list of custom filters.
-     */
-    void RemoveFromList();
-
-    bool operator==(const Filter& filter) const;
-
-  protected:
-    /**
-     * Creates a wrapper for an existing JavaScript filter object.
-     * Normally you shouldn't call this directly, but use
-     * FilterEngine::GetFilter() instead.
-     * @param value JavaScript filter object.
-     */
-    Filter(JsValue&& value);
-  };
-
-  /**
-   * Wrapper for a subscription object.
-   * There are no accessors for most
-   * [subscription properties](https://adblockplus.org/jsdoc/adblockpluscore/Subscription.html),
-   * use `GetProperty()` to retrieve them by name.
-   */
-  class Subscription : public JsValue
-  {
-    friend class FilterEngine;
-  public:
-    /**
-     * Copy constructor
-     */
-    Subscription(const Subscription& src);
-
-    /**
-     * Move constructor
-     */
-    Subscription(Subscription&& src);
-
-    /**
-     * Assignment operator
-     */
-    Subscription& operator=(const Subscription& src);
-
-    /**
-     * Move assignment operator
-     */
-    Subscription& operator=(Subscription&& src);
-
-    /**
-     * Checks if the subscription is disabled.
-     * @return `true` if this subscription is disabled.
-     */
-    bool IsDisabled() const;
-
-    /**
-     * Allows to enable or disable current subscription.
-     * @param `value` disabling the subscription if true and enabling if false.
-     *        If the previous state was the same then it has no effect.
-     */
-    void SetDisabled(bool value);
-
-    /**
-     * Checks if this subscription has been added to the list of subscriptions.
-     * @return `true` if this subscription has been added.
-     */
-    bool IsListed() const;
-
-    /**
-     * Adds this subscription to the list of subscriptions.
-     */
-    void AddToList();
-
-    /**
-     * Removes this subscription from the list of subscriptions.
-     */
-    void RemoveFromList();
-
-    /**
-     * Updates this subscription, i.e.\ retrieves the current filters from the
-     * subscription URL.
-     */
-    void UpdateFilters();
-
-    /**
-     * Checks if the subscription is currently being updated.
-     * @return `true` if the subscription is currently being updated.
-     */
-    bool IsUpdating() const;
-
-    /**
-     * Indicates whether the subscription is the Acceptable Ads subscription.
-     * @return `true` if this subscription is the Acceptable Ads subscription.
-     */
-    bool IsAA() const;
-
-    bool operator==(const Subscription& subscription) const;
-
-  protected:
-    /**
-     * Creates a wrapper for an existing JavaScript subscription object.
-     * Normally you shouldn't call this directly, but use
-     * FilterEngine::GetSubscription() instead.
-     * @param value JavaScript subscription object.
-     */
-    Subscription(JsValue&& value);
-  };
-
-  /**
-   * A smart pointer to a `Filter` instance.
-   */
-  typedef std::unique_ptr<Filter> FilterPtr;
-
   /**
    * Main component of libadblockplus.
    * It handles:
