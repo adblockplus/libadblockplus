@@ -103,57 +103,6 @@ namespace AdblockPlus
      */
     typedef std::function<void(Notification&&)> ShowNotificationCallback;
 
-    /**
-     * Asynchronous callback function passing false when current connection
-     * type does not correspond to allowedConnectionType, e.g. because it is a
-     * metered connection.
-     */
-    typedef std::function<void(const std::string* allowedConnectionType, const std::function<void(bool)>&)> IsConnectionAllowedAsyncCallback;
-
-    /**
-     * FilterEngine creation parameters.
-     */
-    struct CreationParameters
-    {
-      /**
-       * `AdblockPlus::FilterEngine::Prefs` name - value list of preconfigured
-       * prefs.
-       */
-      Prefs preconfiguredPrefs;
-      /**
-       * A callback of `AdblockPlus::FilterEngine::IsConnectionAllowedAsyncCallback` type
-       * checking whether the request to download a subscription from Adblock Plus may be performed
-       * on the current connection.
-       */
-      IsConnectionAllowedAsyncCallback isSubscriptionDownloadAllowedCallback;
-    };
-
-    /**
-     * Callback type invoked when FilterEngine is created.
-     */
-    typedef std::function<void(const FilterEnginePtr&)> OnCreatedCallback;
-
-    /**
-     * Callback type for evaluating JS expression.
-     * The parameter is the JS file name containing the expression.
-     */
-    typedef std::function<void(const std::string&)> EvaluateCallback;
-
-    /**
-     * Asynchronously constructs FilterEngine.
-     * TODO (mpawlowski) move to a factory? The interface should not know how
-     * to create an implementation.
-     * @param jsEngine `JsEngine` instance used to run JavaScript code
-     *        internally.
-     * @param onCreated A callback which is called when FilterEngine is ready
-     *        for use.
-     * @param parameters optional creation parameters.
-     */
-    static void CreateAsync(const JsEnginePtr& jsEngine,
-      const EvaluateCallback& evaluateCallback,
-      const OnCreatedCallback& onCreated,
-      const CreationParameters& parameters = CreationParameters());
-
     virtual ~FilterEngine() = default;
 
     /**

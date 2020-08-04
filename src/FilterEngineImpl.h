@@ -104,7 +104,6 @@ namespace AdblockPlus
   private:
     JsEnginePtr jsEngine;
     bool firstRun;
-    static const std::map<ContentType, std::string> contentTypes;
 
     FilterPtr CheckFilterMatch(const std::string& url,
                                ContentTypeMask contentTypeMask,

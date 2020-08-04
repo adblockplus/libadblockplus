@@ -98,7 +98,7 @@ namespace
     FilterEngine& CreateFilterEngine(const AdblockPlus::FilterEngine::Prefs& preconfiguredPrefs =
       AdblockPlus::FilterEngine::Prefs())
     {
-      AdblockPlus::FilterEngine::CreationParameters createParams;
+      AdblockPlus::FilterEngineFactory::CreationParameters createParams;
       createParams.preconfiguredPrefs = preconfiguredPrefs;
       return ::CreateFilterEngine(*fileSystem, *platform, createParams);
     }

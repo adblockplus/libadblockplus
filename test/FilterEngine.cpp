@@ -88,7 +88,7 @@ namespace
       platform->SetUpJsEngine(appInfo);
     }
 
-    FilterEngine& CreateFilterEngine(const FilterEngine::CreationParameters& creationParams = FilterEngine::CreationParameters())
+    FilterEngine& CreateFilterEngine(const FilterEngineFactory::CreationParameters& creationParams = FilterEngineFactory::CreationParameters())
     {
       ::CreateFilterEngine(*fileSystem, *platform, creationParams);
       return platform->GetFilterEngine();
@@ -101,7 +101,7 @@ namespace
     typedef std::vector<std::pair<bool, std::string>> ConnectionTypes;
     DelayedWebRequest::SharedTasks webRequestTasks;
     DelayedTimer::SharedTasks timerTasks;
-    FilterEngine::CreationParameters createParams;
+    FilterEngineFactory::CreationParameters createParams;
     ConnectionTypes capturedConnectionTypes;
     bool isConnectionAllowed;
     std::vector<std::function<void(bool)>> isSubscriptionDownloadAllowedCallbacks;
@@ -1325,7 +1325,7 @@ TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
 TEST_F(FilterEngineWithInMemoryFS, DisableSubscriptionsAutoSelectOnFirstRun)
 {
   InitPlatformAndAppInfo();
-  FilterEngine::CreationParameters createParams;
+  FilterEngineFactory::CreationParameters createParams;
   createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(false));
   auto& filterEngine = CreateFilterEngine(createParams);
   const auto subscriptions = filterEngine.GetListedSubscriptions();
@@ -1588,7 +1588,7 @@ namespace AA_ApiTest
 
 TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AbsentCallbackAllowsUpdating)
 {
-  createParams.isSubscriptionDownloadAllowedCallback = FilterEngine::IsConnectionAllowedAsyncCallback();
+  createParams.isSubscriptionDownloadAllowedCallback = FilterEngineFactory::IsConnectionAllowedAsyncCallback();
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filterCount").AsInt());

@@ -25,6 +25,7 @@
 #include "AppInfo.h"
 #include "Scheduler.h"
 #include "FilterEngine.h"
+#include "FilterEngineFactory.h"
 #include "Updater.h"
 #include <mutex>
 #include <future>
@@ -101,7 +102,8 @@ namespace AdblockPlus
      * @param onCreated A callback which is called when FilterEngine is ready
      *        for use.
      */
-    void CreateFilterEngineAsync(const FilterEngine::CreationParameters& parameters = FilterEngine::CreationParameters(),
+    void CreateFilterEngineAsync(
+      const FilterEngineFactory::CreationParameters& parameters = FilterEngineFactory::CreationParameters(),
       const OnFilterEngineCreatedCallback& onCreated = OnFilterEngineCreatedCallback());
 
     /**

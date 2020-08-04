@@ -37,7 +37,7 @@ void DelayedTimer::ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks)
 
 FilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
   Platform& platform,
-  const FilterEngine::CreationParameters& creationParams)
+  const FilterEngineFactory::CreationParameters& creationParams)
 {
   std::list<LazyFileSystem::Task> fileSystemTasks;
   fileSystem.scheduler = [&fileSystemTasks](const LazyFileSystem::Task& task)

@@ -281,7 +281,7 @@ public:
 
 AdblockPlus::FilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
   AdblockPlus::Platform& platform,
-  const AdblockPlus::FilterEngine::CreationParameters& creationParams = AdblockPlus::FilterEngine::CreationParameters());
+  const AdblockPlus::FilterEngineFactory::CreationParameters& creationParams = AdblockPlus::FilterEngineFactory::CreationParameters());
 
 class NoopWebRequest : public AdblockPlus::IWebRequest
 {

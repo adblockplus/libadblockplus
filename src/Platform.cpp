@@ -17,6 +17,7 @@
 #include <AdblockPlus/Platform.h>
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/FilterEngine.h>
+#include <AdblockPlus/FilterEngineFactory.h>
 #include <AdblockPlus/DefaultLogSystem.h>
 #include <AdblockPlus/AsyncExecutor.h>
 #include "DefaultTimer.h"
@@ -86,7 +87,8 @@ std::function<void(const std::string&)> Platform::GetEvaluateCallback()
     };
 }
 
-void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& parameters,
+void Platform::CreateFilterEngineAsync(
+  const FilterEngineFactory::CreationParameters& parameters,
   const OnFilterEngineCreatedCallback& onCreated)
 {
   std::shared_ptr<std::promise<FilterEnginePtr>> filterEnginePromise;
@@ -99,7 +101,7 @@ void Platform::CreateFilterEngineAsync(const FilterEngine::CreationParameters& p
   }
 
   GetJsEngine(); // ensures that JsEngine is instantiated
-  FilterEngine::CreateAsync(
+  FilterEngineFactory::CreateAsync(
     jsEngine,
     GetEvaluateCallback(),
     [onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
