@@ -18,14 +18,14 @@
 #ifndef ADBLOCK_PLUS_FILTER_ENGINE_IMPL_H
 #define ADBLOCK_PLUS_FILTER_ENGINE_IMPL_H
 
-#include <AdblockPlus/FilterEngine.h>
+#include <AdblockPlus/IFilterEngine.h>
 
 namespace AdblockPlus
 {
-  class FilterEngineImpl : public FilterEngine
+  class DefaultFilterEngine : public IFilterEngine
   {
   public:
-    explicit FilterEngineImpl(const JsEnginePtr& jsEngine);
+    explicit DefaultFilterEngine(const JsEnginePtr& jsEngine);
 
     JsEngine& GetJsEngine() const final { return *jsEngine; }
 

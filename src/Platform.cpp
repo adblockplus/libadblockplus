@@ -16,7 +16,7 @@
 */
 #include <AdblockPlus/Platform.h>
 #include <AdblockPlus/JsEngine.h>
-#include <AdblockPlus/FilterEngine.h>
+#include <AdblockPlus/IFilterEngine.h>
 #include <AdblockPlus/FilterEngineFactory.h>
 #include <AdblockPlus/DefaultLogSystem.h>
 #include <AdblockPlus/AsyncExecutor.h>
@@ -114,7 +114,7 @@ void Platform::CreateFilterEngineAsync(
   );
 }
 
-FilterEngine& Platform::GetFilterEngine()
+IFilterEngine& Platform::GetFilterEngine()
 {
   CreateFilterEngineAsync();
   return *std::shared_future<FilterEnginePtr>(filterEngine).get();

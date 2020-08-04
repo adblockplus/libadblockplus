@@ -41,7 +41,7 @@ namespace
 }
 
 SubscriptionsCommand::SubscriptionsCommand(
-  AdblockPlus::FilterEngine& filterEngine)
+  AdblockPlus::IFilterEngine& filterEngine)
   : Command("subscriptions"), filterEngine(filterEngine)
 {
 }

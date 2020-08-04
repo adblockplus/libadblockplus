@@ -279,7 +279,7 @@ public:
   }
 };
 
-AdblockPlus::FilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
+AdblockPlus::IFilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
   AdblockPlus::Platform& platform,
   const AdblockPlus::FilterEngineFactory::CreationParameters& creationParams = AdblockPlus::FilterEngineFactory::CreationParameters());
 

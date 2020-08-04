@@ -39,7 +39,7 @@ namespace AdblockPlus
     /**
      * Creates a wrapper for an existing JavaScript filter object.
      * Normally you shouldn't call this directly, but use
-     * FilterEngine::GetFilter() instead.
+     * IFilterEngine::GetFilter() instead.
      * @param value JavaScript filter object.
      */
     Filter(JsValue&& value);

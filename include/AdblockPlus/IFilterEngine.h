@@ -30,18 +30,18 @@
 
 namespace AdblockPlus
 {
-  class FilterEngine;
-  typedef std::shared_ptr<FilterEngine> FilterEnginePtr;
+  class IFilterEngine;
+  typedef std::shared_ptr<IFilterEngine> FilterEnginePtr;
   /**
    * Main component of libadblockplus.
    * It handles:
    * - Filter management and matching.
    * - Subscription management and synchronization.
    */
-  class FilterEngine
+  class IFilterEngine
   {
   public:
-    // Make sure to keep ContentType in sync with FilterEngine::contentTypes
+    // Make sure to keep ContentType in sync with IFilterEngine::contentTypes
     // and with URLFilter.typeMap from filterClasses.js.
     /**
      * Possible resource content types.
@@ -103,10 +103,10 @@ namespace AdblockPlus
      */
     typedef std::function<void(Notification&&)> ShowNotificationCallback;
 
-    virtual ~FilterEngine() = default;
+    virtual ~IFilterEngine() = default;
 
     /**
-     * Retrieves the `JsEngine` instance associated with this `FilterEngine`
+     * Retrieves the `JsEngine` instance associated with this `IFilterEngine`
      * instance.
      */
     virtual JsEngine& GetJsEngine() const = 0;

@@ -26,13 +26,13 @@
 class SubscriptionsCommand : public Command
 {
 public:
-  explicit SubscriptionsCommand(AdblockPlus::FilterEngine& filterEngine);
+  explicit SubscriptionsCommand(AdblockPlus::IFilterEngine& filterEngine);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;
 
 private:
-  AdblockPlus::FilterEngine& filterEngine;
+  AdblockPlus::IFilterEngine& filterEngine;
 
   void ShowSubscriptions();
   void AddSubscription(const std::string& url, const std::string& title);

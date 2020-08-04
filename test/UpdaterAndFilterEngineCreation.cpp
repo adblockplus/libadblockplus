@@ -34,7 +34,7 @@ namespace
     static const size_t COUNT = 100;
     const std::string PROP_NAME = "patternsbackupinterval";
     std::array<Updater*, COUNT> updaterAddrArray;
-    std::array<FilterEngine*, COUNT> filterAddrArray;
+    std::array<IFilterEngine*, COUNT> filterAddrArray;
     DelayedWebRequest::SharedTasks webRequestTasks;
     DelayedTimer::SharedTasks timerTasks;
 
@@ -99,7 +99,7 @@ namespace
 TEST_F(UpdaterAndFilterEngineCreationTest, TestFilterEngineSingleInstance)
 {
     CallGetFilterEngineSimultaneously();
-    FilterEngine* filterEngineAddr = filterAddrArray[0];
+    IFilterEngine* filterEngineAddr = filterAddrArray[0];
     EXPECT_NE(nullptr, filterEngineAddr);
     for (size_t i = 1; i < COUNT; ++i)
       ASSERT_EQ(filterEngineAddr, filterAddrArray[i]);
@@ -126,7 +126,7 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationsDo
 TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrder1)
 {
     Updater& updater = platform->GetUpdater();
-    FilterEngine& filterEngine = platform->GetFilterEngine();
+    IFilterEngine& filterEngine = platform->GetFilterEngine();
 
     int propFromUpdater = updater.GetPref(PROP_NAME).AsInt();
     int propFromFilterEngine = filterEngine.GetPref(PROP_NAME).AsInt();
@@ -142,7 +142,7 @@ TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrd
 
 TEST_F(UpdaterAndFilterEngineCreationTest, TestUpdaterAndFilterEngineCreationOrder2)
 {
-    FilterEngine& filterEngine = platform->GetFilterEngine();
+    IFilterEngine& filterEngine = platform->GetFilterEngine();
     Updater& updater = platform->GetUpdater();
 
     int propFromFilterEngine = filterEngine.GetPref(PROP_NAME).AsInt();

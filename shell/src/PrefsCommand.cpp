@@ -20,7 +20,7 @@
 
 #include "PrefsCommand.h"
 
-PrefsCommand::PrefsCommand(AdblockPlus::FilterEngine& filterEngine)
+PrefsCommand::PrefsCommand(AdblockPlus::IFilterEngine& filterEngine)
   : Command("prefs"), filterEngine(filterEngine)
 {
 }

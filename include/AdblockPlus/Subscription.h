@@ -39,7 +39,7 @@ namespace AdblockPlus
     /**
      * Creates a wrapper for an existing JavaScript subscription object.
      * Normally you shouldn't call this directly, but use
-     * FilterEngine::GetSubscription() instead.
+     * IFilterEngine::GetSubscription() instead.
      * @param value JavaScript subscription object.
      */
     Subscription(JsValue&& value);

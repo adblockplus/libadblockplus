@@ -95,8 +95,8 @@ namespace
       platform.reset(new Platform(std::move(platformParams)));
     }
 
-    FilterEngine& CreateFilterEngine(const AdblockPlus::FilterEngine::Prefs& preconfiguredPrefs =
-      AdblockPlus::FilterEngine::Prefs())
+    IFilterEngine& CreateFilterEngine(const AdblockPlus::IFilterEngine::Prefs& preconfiguredPrefs =
+      AdblockPlus::IFilterEngine::Prefs())
     {
       AdblockPlus::FilterEngineFactory::CreationParameters createParams;
       createParams.preconfiguredPrefs = preconfiguredPrefs;
@@ -162,7 +162,7 @@ TEST_F(PrefsTest, SyntaxFailure)
 
 TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
 {
-  AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+  AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
   preconfiguredPrefs.emplace("disable_auto_updates", GetJsEngine().NewValue(false));
   preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
@@ -175,7 +175,7 @@ TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
 
 TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
 {
-  AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+  AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
   preconfiguredPrefs.emplace("unsupported_preconfig", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
@@ -184,7 +184,7 @@ TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
 
 TEST_F(PrefsTest, PreconfiguredPrefsOverride)
 {
-  AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+  AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
   preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
@@ -196,7 +196,7 @@ TEST_F(PrefsTest, PreconfiguredPrefsOverride)
 TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
 {
   {
-    AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+    AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
     preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
     auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
@@ -208,7 +208,7 @@ TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
 
   {
     ResetPlatform();
-    AdblockPlus::FilterEngine::Prefs preconfiguredPrefs;
+    AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
     preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
     auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 

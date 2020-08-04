@@ -60,7 +60,7 @@ namespace
   }
 }
 
-FiltersCommand::FiltersCommand(AdblockPlus::FilterEngine& filterEngine)
+FiltersCommand::FiltersCommand(AdblockPlus::IFilterEngine& filterEngine)
   : Command("filters"), filterEngine(filterEngine)
 {
 }

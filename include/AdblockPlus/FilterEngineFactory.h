@@ -21,7 +21,7 @@
 #include <functional>
 #include <string>
 
-#include <AdblockPlus/FilterEngine.h>
+#include <AdblockPlus/IFilterEngine.h>
 
 namespace AdblockPlus
 {
@@ -40,17 +40,17 @@ namespace AdblockPlus
     typedef std::function<void(const std::string* allowedConnectionType, const std::function<void(bool)>&)> IsConnectionAllowedAsyncCallback;
 
     /**
-     * FilterEngine creation parameters.
+     * IFilterEngine creation parameters.
      */
     struct CreationParameters
     {
       /**
-       * `AdblockPlus::FilterEngine::Prefs` name - value list of preconfigured
+       * `AdblockPlus::IFilterEngine::Prefs` name - value list of preconfigured
        * prefs.
        */
       Prefs preconfiguredPrefs;
       /**
-       * A callback of `AdblockPlus::FilterEngine::IsConnectionAllowedAsyncCallback` type
+       * A callback of `AdblockPlus::IFilterEngine::IsConnectionAllowedAsyncCallback` type
        * checking whether the request to download a subscription from Adblock Plus may be performed
        * on the current connection.
        */
@@ -58,7 +58,7 @@ namespace AdblockPlus
     };
 
     /**
-     * Callback type invoked when FilterEngine is created.
+     * Callback type invoked when IFilterEngine is created.
      */
     typedef std::function<void(const FilterEnginePtr&)> OnCreatedCallback;
 
@@ -69,10 +69,10 @@ namespace AdblockPlus
     typedef std::function<void(const std::string&)> EvaluateCallback;
 
     /**
-     * Asynchronously constructs FilterEngine.
+     * Asynchronously constructs IFilterEngine.
      * @param jsEngine `JsEngine` instance used to run JavaScript code
      *        internally.
-     * @param onCreated A callback which is called when FilterEngine is ready
+     * @param onCreated A callback which is called when IFilterEngine is ready
      *        for use.
      * @param parameters optional creation parameters.
      */

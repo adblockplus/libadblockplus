@@ -21,7 +21,7 @@
 #include <string>
 
 #include <AdblockPlus/FilterEngineFactory.h>
-#include "FilterEngineImpl.h"
+#include "DefaultFilterEngine.h"
 #include "JsContext.h"
 #include "Thread.h"
 
@@ -83,11 +83,11 @@ void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
   const OnCreatedCallback& onCreated,
   const CreationParameters& params)
 {
-  std::shared_ptr<FilterEngineImpl> filterEngine(new FilterEngineImpl(jsEngine));
+  std::shared_ptr<DefaultFilterEngine> filterEngine(new DefaultFilterEngine(jsEngine));
   {
     // TODO: replace weakFilterEngine by this when it's possible to control the
     // execution time of the asynchronous part below.
-    std::weak_ptr<FilterEngineImpl> weakFilterEngine = filterEngine;
+    std::weak_ptr<DefaultFilterEngine> weakFilterEngine = filterEngine;
     auto isSubscriptionDownloadAllowedCallback = params.isSubscriptionDownloadAllowedCallback;
     jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [weakFilterEngine, isSubscriptionDownloadAllowedCallback](JsValueList&& params){
       auto filterEngine = weakFilterEngine.lock();
@@ -128,7 +128,7 @@ void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
     jsEngine->RemoveEventCallback("_init");
   });
 
-  std::weak_ptr<FilterEngineImpl> weakFilterEngine = filterEngine;
+  std::weak_ptr<DefaultFilterEngine> weakFilterEngine = filterEngine;
   filterEngine->SetFilterChangeCallback([weakFilterEngine](const std::string& reason, JsValue&&)
   {
     auto filterEngine = weakFilterEngine.lock();
