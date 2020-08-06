@@ -31,7 +31,7 @@
 #define ADBLOCK_PLUS_ADBLOCK_PLUS_H
 
 #include <AdblockPlus/AppInfo.h>
-#include <AdblockPlus/FilterEngine.h>
+#include <AdblockPlus/IFilterEngine.h>
 #include <AdblockPlus/Updater.h>
 #include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/JsEngine.h>

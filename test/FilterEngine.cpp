@@ -64,7 +64,7 @@ namespace
       ::CreateFilterEngine(*fileSystem, *platform);
     }
 
-    FilterEngine& GetFilterEngine()
+    IFilterEngine& GetFilterEngine()
     {
       return platform->GetFilterEngine();
     }
@@ -88,7 +88,7 @@ namespace
       platform->SetUpJsEngine(appInfo);
     }
 
-    FilterEngine& CreateFilterEngine(const FilterEngine::CreationParameters& creationParams = FilterEngine::CreationParameters())
+    IFilterEngine& CreateFilterEngine(const FilterEngineFactory::CreationParameters& creationParams = FilterEngineFactory::CreationParameters())
     {
       ::CreateFilterEngine(*fileSystem, *platform, creationParams);
       return platform->GetFilterEngine();
@@ -101,7 +101,7 @@ namespace
     typedef std::vector<std::pair<bool, std::string>> ConnectionTypes;
     DelayedWebRequest::SharedTasks webRequestTasks;
     DelayedTimer::SharedTasks timerTasks;
-    FilterEngine::CreationParameters createParams;
+    FilterEngineFactory::CreationParameters createParams;
     ConnectionTypes capturedConnectionTypes;
     bool isConnectionAllowed;
     std::vector<std::function<void(bool)>> isSubscriptionDownloadAllowedCallbacks;
@@ -129,10 +129,10 @@ namespace
       };
     }
 
-    FilterEngine& GetFilterEngine()
+    IFilterEngine& GetFilterEngine()
     {
       if (!isFilterEngineCreated)
-        throw std::logic_error("Check that FilterEngine is properly initialized");
+        throw std::logic_error("Check that IFilterEngine is properly initialized");
       return platform->GetFilterEngine();
     }
 
@@ -358,46 +358,46 @@ TEST_F(FilterEngineTest, Matches)
   filterEngine.GetFilter("combanner.gif$domain=example.com").AddToList();
   filterEngine.GetFilter("orgbanner.gif$domain=~example.com").AddToList();
 
-  AdblockPlus::FilterPtr match1 = filterEngine.Matches("http://example.org/foobar.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "");
+  AdblockPlus::FilterPtr match1 = filterEngine.Matches("http://example.org/foobar.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "");
   ASSERT_FALSE(match1);
 
-  AdblockPlus::FilterPtr match2 = filterEngine.Matches("http://example.org/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "");
+  AdblockPlus::FilterPtr match2 = filterEngine.Matches("http://example.org/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "");
   ASSERT_TRUE(match2);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match2->GetType());
 
-  AdblockPlus::FilterPtr match3 = filterEngine.Matches("http://example.org/notbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "");
+  AdblockPlus::FilterPtr match3 = filterEngine.Matches("http://example.org/notbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "");
   ASSERT_TRUE(match3);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match3->GetType());
 
-  AdblockPlus::FilterPtr match4 = filterEngine.Matches("http://example.org/notbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "");
+  AdblockPlus::FilterPtr match4 = filterEngine.Matches("http://example.org/notbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "");
   ASSERT_TRUE(match4);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match4->GetType());
 
-  AdblockPlus::FilterPtr match5 = filterEngine.Matches("http://example.org/tpbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "http://example.org/");
+  AdblockPlus::FilterPtr match5 = filterEngine.Matches("http://example.org/tpbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "http://example.org/");
   ASSERT_FALSE(match5);
 
-  AdblockPlus::FilterPtr match6 = filterEngine.Matches("http://example.org/fpbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "http://example.org/");
+  AdblockPlus::FilterPtr match6 = filterEngine.Matches("http://example.org/fpbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "http://example.org/");
   ASSERT_TRUE(match6);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match6->GetType());
 
-  AdblockPlus::FilterPtr match7 = filterEngine.Matches("http://example.org/tpbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "http://example.com/");
+  AdblockPlus::FilterPtr match7 = filterEngine.Matches("http://example.org/tpbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "http://example.com/");
   ASSERT_TRUE(match7);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match7->GetType());
 
-  AdblockPlus::FilterPtr match8 = filterEngine.Matches("http://example.org/fpbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "http://example.com/");
+  AdblockPlus::FilterPtr match8 = filterEngine.Matches("http://example.org/fpbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "http://example.com/");
   ASSERT_FALSE(match8);
 
-  AdblockPlus::FilterPtr match9 = filterEngine.Matches("http://example.org/combanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "http://example.com/");
+  AdblockPlus::FilterPtr match9 = filterEngine.Matches("http://example.org/combanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "http://example.com/");
   ASSERT_TRUE(match9);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match9->GetType());
 
-  AdblockPlus::FilterPtr match10 = filterEngine.Matches("http://example.org/combanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "http://example.org/");
+  AdblockPlus::FilterPtr match10 = filterEngine.Matches("http://example.org/combanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "http://example.org/");
   ASSERT_FALSE(match10);
 
-  AdblockPlus::FilterPtr match11 = filterEngine.Matches("http://example.org/orgbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "http://example.com/");
+  AdblockPlus::FilterPtr match11 = filterEngine.Matches("http://example.org/orgbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "http://example.com/");
   ASSERT_FALSE(match11);
 
-  AdblockPlus::FilterPtr match12 = filterEngine.Matches("http://example.org/orgbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, "http://example.org/");
+  AdblockPlus::FilterPtr match12 = filterEngine.Matches("http://example.org/orgbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, "http://example.org/");
   ASSERT_TRUE(match12);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match12->GetType());
 }
@@ -443,7 +443,7 @@ TEST_F(FilterEngineTest, GenericblockMatch)
   const std::string urlGeneric = "http://testpages.adblockplus.org/testcasefiles/genericblock/target-generic.jpg";
   const std::string urlNotGeneric = "http://testpages.adblockplus.org/testcasefiles/genericblock/target-notgeneric.jpg";
   const std::string firstParent = "http://testpages.adblockplus.org/en/exceptions/genericblock/frame.html";
-  AdblockPlus::FilterEngine::ContentType contentType = AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE;
+  AdblockPlus::IFilterEngine::ContentType contentType = AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE;
   std::vector<std::string> documentUrls, documentUrlsForGenericBlock;
   documentUrls.push_back("http://testpages.adblockplus.org/testcasefiles/genericblock/frame.html");
   documentUrls.push_back("http://testpages.adblockplus.org/en/exceptions/genericblock/");
@@ -501,11 +501,11 @@ TEST_F(FilterEngineTest, Generichide)
   auto& filterEngine = GetFilterEngine();
 
   filterEngine.GetFilter("@@bar.com$generichide").AddToList();
-  AdblockPlus::FilterPtr match1 = filterEngine.Matches(url, AdblockPlus::FilterEngine::CONTENT_TYPE_GENERICHIDE, docUrl);
+  AdblockPlus::FilterPtr match1 = filterEngine.Matches(url, AdblockPlus::IFilterEngine::CONTENT_TYPE_GENERICHIDE, docUrl);
   EXPECT_FALSE(match1);
 
   filterEngine.GetFilter("@@foo.com$generichide").AddToList();
-  AdblockPlus::FilterPtr match2 = filterEngine.Matches(url, AdblockPlus::FilterEngine::CONTENT_TYPE_GENERICHIDE, docUrl);
+  AdblockPlus::FilterPtr match2 = filterEngine.Matches(url, AdblockPlus::IFilterEngine::CONTENT_TYPE_GENERICHIDE, docUrl);
   ASSERT_TRUE(match2); // should be Filter instance
   ASSERT_FALSE(match2->GetProperty("text").IsUndefined());
   EXPECT_EQ("@@foo.com$generichide", match2->GetProperty("text").AsString());
@@ -518,13 +518,13 @@ TEST_F(FilterEngineTest, MatchesOnWhitelistedDomain)
   filterEngine.GetFilter("@@||example.org^$document").AddToList();
 
   AdblockPlus::FilterPtr match1 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           "http://example.com/");
   ASSERT_TRUE(match1);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match1->GetType());
 
   AdblockPlus::FilterPtr match2 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           "http://example.org/");
   ASSERT_TRUE(match2);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match2->GetType());
@@ -540,10 +540,10 @@ TEST_F(FilterEngineTest, MatchesWithContentTypeMask)
   filterEngine.GetFilter("||popexample.com^$popup").AddToList();
 
   EXPECT_TRUE(filterEngine.Matches("http://popexample.com/",
-    AdblockPlus::FilterEngine::CONTENT_TYPE_POPUP, ""));
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_POPUP, ""));
 
   EXPECT_FALSE(filterEngine.Matches("http://example.org/foobar.gif",
-    AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE, ""))
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE, ""))
     << "another url should not match";
 
   EXPECT_FALSE(filterEngine.Matches("http://example.org/adbanner.gif.js",
@@ -553,35 +553,35 @@ TEST_F(FilterEngineTest, MatchesWithContentTypeMask)
     /*mask*/ 0, "")) << "zero mask should not match (filter without any option)";
 
   EXPECT_FALSE(filterEngine.Matches("http://example.org/adbanner.gif.js",
-    AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, ""))
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_OBJECT, ""))
     << "one arbitrary flag in mask should not match";
 
   EXPECT_TRUE(filterEngine.Matches("http://example.org/adbanner.gif.js",
-    AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE |
-    AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, ""))
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE |
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_OBJECT, ""))
     << "one of flags in mask should match";
 
   EXPECT_TRUE(filterEngine.Matches("http://example.org/adbanner.gif.js",
-    AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE |
-    AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT, ""))
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE |
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_SCRIPT, ""))
     << "both flags in mask should match";
 
   EXPECT_TRUE(filterEngine.Matches("http://example.org/adbanner.gif.js",
-    AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE |
-    AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT |
-    AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, ""))
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE |
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_SCRIPT |
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_OBJECT, ""))
     << "both flags with another flag in mask should match";
 
   EXPECT_TRUE(filterEngine.Matches("http://example.org/adbanner.gif.js",
-    AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT |
-    AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, ""))
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_SCRIPT |
+    AdblockPlus::IFilterEngine::CONTENT_TYPE_OBJECT, ""))
     << "one of flags in mask should match";
 
   {
     AdblockPlus::FilterPtr filter;
     ASSERT_TRUE(filter = filterEngine.Matches("http://child.any/blockme",
-      AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT |
-      AdblockPlus::FilterEngine::CONTENT_TYPE_OBJECT, "http://example.doc"))
+      AdblockPlus::IFilterEngine::CONTENT_TYPE_SCRIPT |
+      AdblockPlus::IFilterEngine::CONTENT_TYPE_OBJECT, "http://example.doc"))
       << "non-zero mask should match on whitelisted document";
 
     EXPECT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, filter->GetType());
@@ -607,7 +607,7 @@ TEST_F(FilterEngineTest, MatchesNestedFrameRequest)
   documentUrls1.push_back("http://ads.com/frame/");
   documentUrls1.push_back("http://example.com/");
   AdblockPlus::FilterPtr match1 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls1);
   ASSERT_TRUE(match1);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match1->GetType());
@@ -616,7 +616,7 @@ TEST_F(FilterEngineTest, MatchesNestedFrameRequest)
   documentUrls2.push_back("http://ads.com/frame/");
   documentUrls2.push_back("http://example.org/");
   AdblockPlus::FilterPtr match2 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls2);
   ASSERT_TRUE(match2);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match2->GetType());
@@ -625,7 +625,7 @@ TEST_F(FilterEngineTest, MatchesNestedFrameRequest)
   documentUrls3.push_back("http://example.org/");
   documentUrls3.push_back("http://ads.com/frame/");
   AdblockPlus::FilterPtr match3 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls3);
   ASSERT_TRUE(match3);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match3->GetType());
@@ -641,7 +641,7 @@ TEST_F(FilterEngineTest, MatchesNestedFrameOnWhitelistedDomain)
   documentUrls1.push_back("http://ads.com/frame/");
   documentUrls1.push_back("http://example.com/");
   AdblockPlus::FilterPtr match1 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls1);
   ASSERT_TRUE(match1);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match1->GetType());
@@ -650,7 +650,7 @@ TEST_F(FilterEngineTest, MatchesNestedFrameOnWhitelistedDomain)
   documentUrls2.push_back("http://ads.com/frame/");
   documentUrls2.push_back("http://example.org/");
   AdblockPlus::FilterPtr match2 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls2);
   ASSERT_TRUE(match2);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match2->GetType());
@@ -658,7 +658,7 @@ TEST_F(FilterEngineTest, MatchesNestedFrameOnWhitelistedDomain)
   std::vector<std::string> documentUrls3;
   documentUrls3.push_back("http://example.org/");
   AdblockPlus::FilterPtr match3 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls3);
   ASSERT_TRUE(match3);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match3->GetType());
@@ -667,7 +667,7 @@ TEST_F(FilterEngineTest, MatchesNestedFrameOnWhitelistedDomain)
   documentUrls4.push_back("http://example.org/");
   documentUrls4.push_back("http://ads.com/frame/");
   AdblockPlus::FilterPtr match4 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls4);
   ASSERT_TRUE(match4);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match4->GetType());
@@ -677,7 +677,7 @@ TEST_F(FilterEngineTest, MatchesNestedFrameOnWhitelistedDomain)
   documentUrls5.push_back("http://example.org/");
   documentUrls5.push_back("http://example.com/");
   AdblockPlus::FilterPtr match5 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls5);
   ASSERT_TRUE(match5);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match5->GetType());
@@ -705,17 +705,17 @@ TEST_F(FilterEngineTestSiteKey, MatchesBlockingSiteKey)
   filterEngine.GetFilter("/script.js$sitekey=" + siteKey).AddToList();
 
   AdblockPlus::FilterPtr match1 =
-    filterEngine.Matches("http://example.org/script.js", AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT,
+    filterEngine.Matches("http://example.org/script.js", AdblockPlus::IFilterEngine::CONTENT_TYPE_SCRIPT,
                          "http://example.org/");
   ASSERT_FALSE(match1) << "should not match without siteKey";
 
   AdblockPlus::FilterPtr match2 =
-    filterEngine.Matches("http://example.org/script.img", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://example.org/script.img", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                          "http://example.org/", siteKey);
   ASSERT_FALSE(match2) << "should not match different content type";
 
   AdblockPlus::FilterPtr match3 =
-    filterEngine.Matches("http://example.org/script.js", AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT,
+    filterEngine.Matches("http://example.org/script.js", AdblockPlus::IFilterEngine::CONTENT_TYPE_SCRIPT,
                          "http://example.org/", siteKey);
   ASSERT_TRUE(match3);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match3->GetType());
@@ -728,13 +728,13 @@ TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKey)
   filterEngine.GetFilter("@@||ads.com$image,sitekey=" + siteKey).AddToList();
 
   AdblockPlus::FilterPtr match1 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                          "http://example.org/", siteKey);
   ASSERT_TRUE(match1);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match1->GetType());
 
   AdblockPlus::FilterPtr match2 =
-    filterEngine.Matches("http://ads.com/adbanner.js", AdblockPlus::FilterEngine::CONTENT_TYPE_SCRIPT,
+    filterEngine.Matches("http://ads.com/adbanner.js", AdblockPlus::IFilterEngine::CONTENT_TYPE_SCRIPT,
                          "http://example.org/", siteKey);
   ASSERT_FALSE(match2) << "should not match different content type";
 }
@@ -749,7 +749,7 @@ TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKeyFromNestedFrameRequest)
   documentUrls1.push_back("http://ads.com/frame/");
   documentUrls1.push_back("http://example.com/");
   AdblockPlus::FilterPtr match1 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls1, siteKey);
   ASSERT_TRUE(match1);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, match1->GetType());
@@ -758,7 +758,7 @@ TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKeyFromNestedFrameRequest)
   documentUrls2.push_back("http://ads.com/frame/");
   documentUrls2.push_back("http://example.org/");
   AdblockPlus::FilterPtr match2 =
-    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+    filterEngine.Matches("http://ads.com/adbanner.gif", AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
                           documentUrls2, siteKey);
   ASSERT_TRUE(match2);
   ASSERT_EQ(AdblockPlus::Filter::TYPE_EXCEPTION, match2->GetType());
@@ -780,14 +780,14 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideWhitelsitedMatchesWhitelistedS
     documentUrls.push_back("http://ads.com/");
     { // no sitekey
       AdblockPlus::FilterPtr matchResult =
-        filterEngine.Matches("http://my-ads.com/adframe", AdblockPlus::FilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+        filterEngine.Matches("http://my-ads.com/adframe", AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
                               documentUrls);
       ASSERT_TRUE(matchResult);
       EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, matchResult->GetType());
     }
     { // random sitekey
       AdblockPlus::FilterPtr matchResult =
-        filterEngine.Matches("http://my-ads.com/adframe", AdblockPlus::FilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+        filterEngine.Matches("http://my-ads.com/adframe", AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
                               documentUrls, siteKey);
       ASSERT_TRUE(matchResult);
       EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, matchResult->GetType());
@@ -795,7 +795,7 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideWhitelsitedMatchesWhitelistedS
     if (false) // TODO: should be enabled during DP-235
     { // the sitekey, but filter does not whitelist subdocument
       AdblockPlus::FilterPtr matchResult =
-        filterEngine.Matches("http://my-ads.com/adframe", AdblockPlus::FilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+        filterEngine.Matches("http://my-ads.com/adframe", AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
                               documentUrls, docSiteKey);
       ASSERT_TRUE(matchResult);
       EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, matchResult->GetType());
@@ -951,7 +951,7 @@ TEST_F(FilterEngineTest, ElemhideWhitelisting)
       documentUrls1));
   auto filter = filterEngine.Matches(
       "http://testpages.adblockplus.org/testcasefiles/elemhide/image.jpg",
-      AdblockPlus::FilterEngine::CONTENT_TYPE_IMAGE,
+      AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
       documentUrls1);
   ASSERT_NE(nullptr, filter);
   EXPECT_EQ(AdblockPlus::Filter::TYPE_BLOCKING, filter->GetType());
@@ -1088,7 +1088,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListEmpty)
 {
   auto& filterEngine = GetFilterEngine();
 
-  std::vector<FilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<IFilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
   EXPECT_TRUE(sels.empty());
 }
 
@@ -1099,7 +1099,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsWhitelist)
   filterEngine.GetFilter("example.org#?#foo").AddToList();
 
   // before whitelisting
-  std::vector<FilterEngine::EmulationSelector> selsBeforeWhitelisting = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<IFilterEngine::EmulationSelector> selsBeforeWhitelisting = filterEngine.GetElementHidingEmulationSelectors("example.org");
   ASSERT_EQ(1u, selsBeforeWhitelisting.size());
   EXPECT_EQ("foo", selsBeforeWhitelisting[0].selector);
   EXPECT_EQ("example.org#?#foo", selsBeforeWhitelisting[0].text);
@@ -1107,13 +1107,13 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsWhitelist)
   // whitelist it
   filterEngine.GetFilter("example.org#@#foo").AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> selsAfterWhitelisting = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<IFilterEngine::EmulationSelector> selsAfterWhitelisting = filterEngine.GetElementHidingEmulationSelectors("example.org");
   EXPECT_TRUE(selsAfterWhitelisting.empty());
 
   // add another filter
   filterEngine.GetFilter("example.org#?#another").AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> selsAnother = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<IFilterEngine::EmulationSelector> selsAnother = filterEngine.GetElementHidingEmulationSelectors("example.org");
   ASSERT_EQ(1u, selsAnother.size());
   EXPECT_EQ("another", selsAnother[0].selector);
   EXPECT_EQ("example.org#?#another", selsAnother[0].text);
@@ -1121,7 +1121,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsWhitelist)
   // check another domain
   filterEngine.GetFilter("example2.org#?#foo").AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> sels2 = filterEngine.GetElementHidingEmulationSelectors("example2.org");
+  std::vector<IFilterEngine::EmulationSelector> sels2 = filterEngine.GetElementHidingEmulationSelectors("example2.org");
   ASSERT_EQ(1u, sels2.size());
   EXPECT_EQ("foo", sels2[0].selector);
   EXPECT_EQ("example2.org#?#foo", sels2[0].text);
@@ -1158,7 +1158,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
   for (const auto& filter : filters)
     filterEngine.GetFilter(filter).AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<IFilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
 
   ASSERT_EQ(4u, sels.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels[0].selector);
@@ -1172,7 +1172,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
   EXPECT_EQ("example.org#?#span:-abp-contains(ESContainsTarget)", sels[2].text);
   EXPECT_EQ("~foo.example.org,example.org#?#div:-abp-properties(width: 213px)", sels[3].text);
 
-  std::vector<FilterEngine::EmulationSelector> sels2 = filterEngine.GetElementHidingEmulationSelectors("foo.example.org");
+  std::vector<IFilterEngine::EmulationSelector> sels2 = filterEngine.GetElementHidingEmulationSelectors("foo.example.org");
   ASSERT_EQ(3u, sels2.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels2[0].selector);
   EXPECT_EQ("div:-abp-has(>div>img.testcase-es-has)", sels2[1].selector);
@@ -1182,7 +1182,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
   EXPECT_EQ("example.org#?#div:-abp-has(>div>img.testcase-es-has)", sels2[1].text);
   EXPECT_EQ("example.org#?#span:-abp-contains(ESContainsTarget)", sels2[2].text);
 
-  std::vector<FilterEngine::EmulationSelector> sels3 = filterEngine.GetElementHidingEmulationSelectors("othersiteneg.org");
+  std::vector<IFilterEngine::EmulationSelector> sels3 = filterEngine.GetElementHidingEmulationSelectors("othersiteneg.org");
   ASSERT_EQ(0u, sels3.size());
 }
 
@@ -1193,7 +1193,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListSingleDomain)
   // element hiding emulation selector
   filterEngine.GetFilter("example.org#?#div:-abp-properties(width: 213px)").AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<IFilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
 
   ASSERT_EQ(1u, sels.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels[0].selector);
@@ -1210,7 +1210,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListNoDuplicates)
   filterEngine.GetFilter("othersite.org#?#dup").AddToList();
   filterEngine.GetFilter("~foo.example.org#?#dup").AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<IFilterEngine::EmulationSelector> sels = filterEngine.GetElementHidingEmulationSelectors("example.org");
 
   // no dups
   ASSERT_EQ(1u, sels.size());
@@ -1227,7 +1227,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDuplicates)
   filterEngine.GetFilter("~foo.example.org,example.org#?#dup").AddToList();
   filterEngine.GetFilter("~bar.example.org,example.org#?#dup").AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> selsDups = filterEngine.GetElementHidingEmulationSelectors("example.org");
+  std::vector<IFilterEngine::EmulationSelector> selsDups = filterEngine.GetElementHidingEmulationSelectors("example.org");
 
   // dups
   ASSERT_EQ(3u, selsDups.size());
@@ -1239,7 +1239,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDuplicates)
   EXPECT_EQ("~foo.example.org,example.org#?#dup", selsDups[1].text);
   EXPECT_EQ("~bar.example.org,example.org#?#dup", selsDups[2].text);
 
-  std::vector<FilterEngine::EmulationSelector> selsBar = filterEngine.GetElementHidingEmulationSelectors("bar.example.org");
+  std::vector<IFilterEngine::EmulationSelector> selsBar = filterEngine.GetElementHidingEmulationSelectors("bar.example.org");
   ASSERT_EQ(2u, selsBar.size());
   EXPECT_EQ("dup", selsBar[0].selector);
   EXPECT_EQ("dup", selsBar[1].selector);
@@ -1257,12 +1257,12 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDiff)
   // whitelisted
   filterEngine.GetFilter("example2.org#@#div:-abp-properties(width: 213px)").AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> sels1 = filterEngine.GetElementHidingEmulationSelectors("example1.org");
+  std::vector<IFilterEngine::EmulationSelector> sels1 = filterEngine.GetElementHidingEmulationSelectors("example1.org");
   ASSERT_EQ(1u, sels1.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels1[0].selector);
   EXPECT_EQ("example1.org#?#div:-abp-properties(width: 213px)", sels1[0].text);
 
-  std::vector<FilterEngine::EmulationSelector> sels2 = filterEngine.GetElementHidingEmulationSelectors("example2.org");
+  std::vector<IFilterEngine::EmulationSelector> sels2 = filterEngine.GetElementHidingEmulationSelectors("example2.org");
   ASSERT_TRUE(sels2.empty());
 }
 
@@ -1280,7 +1280,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsGeneric)
 
   EXPECT_EQ(AdblockPlus::Filter::TYPE_INVALID, genFilter.GetType());
 
-  std::vector<FilterEngine::EmulationSelector> selsGen = filterEngine.GetElementHidingEmulationSelectors("");
+  std::vector<IFilterEngine::EmulationSelector> selsGen = filterEngine.GetElementHidingEmulationSelectors("");
   EXPECT_TRUE(selsGen.empty());
 }
 
@@ -1291,7 +1291,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsNonExisting)
   filterEngine.GetFilter("example1.org#?#foo").AddToList();
   filterEngine.GetFilter("example2.org#@#bar").AddToList();
 
-  std::vector<FilterEngine::EmulationSelector> selsNonExisting = filterEngine.GetElementHidingEmulationSelectors("non-existing-domain.com");
+  std::vector<IFilterEngine::EmulationSelector> selsNonExisting = filterEngine.GetElementHidingEmulationSelectors("non-existing-domain.com");
   EXPECT_TRUE(selsNonExisting.empty());
 }
 
@@ -1325,7 +1325,7 @@ TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
 TEST_F(FilterEngineWithInMemoryFS, DisableSubscriptionsAutoSelectOnFirstRun)
 {
   InitPlatformAndAppInfo();
-  FilterEngine::CreationParameters createParams;
+  FilterEngineFactory::CreationParameters createParams;
   createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(false));
   auto& filterEngine = CreateFilterEngine(createParams);
   const auto subscriptions = filterEngine.GetListedSubscriptions();
@@ -1588,7 +1588,7 @@ namespace AA_ApiTest
 
 TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AbsentCallbackAllowsUpdating)
 {
-  createParams.isSubscriptionDownloadAllowedCallback = FilterEngine::IsConnectionAllowedAsyncCallback();
+  createParams.isSubscriptionDownloadAllowedCallback = FilterEngineFactory::IsConnectionAllowedAsyncCallback();
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetProperty("downloadStatus").AsString());
   EXPECT_EQ(1u, subscription.GetProperty("filterCount").AsInt());
@@ -1629,7 +1629,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, PredefinedAllowedConnectio
 
 TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, ConfiguredConnectionTypeIsPassedToCallback)
 {
-  // FilterEngine::RemoveSubscription is not usable here because subscriptions
+  // IFilterEngine::RemoveSubscription is not usable here because subscriptions
   // are cached internally by URL. So, different URLs are used in diffirent
   // checks.
   {

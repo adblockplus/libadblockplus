@@ -29,7 +29,7 @@ namespace AdblockPlus
    * Stores a mapping between URLs and their referrers.
    * This can be used to build a chain of referrers for any URL
    * (see `BuildReferrerChain()`), which approximates the frame structure, see
-   * FilterEngine::Matches().
+   * IFilterEngine::Matches().
    */
   class ReferrerMapping
   {

@@ -25,13 +25,13 @@
 class MatchesCommand : public Command
 {
 public:
-  MatchesCommand(AdblockPlus::FilterEngine& filterEngine);
+  MatchesCommand(AdblockPlus::IFilterEngine& filterEngine);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;
 
 private:
-  AdblockPlus::FilterEngine& filterEngine;
+  AdblockPlus::IFilterEngine& filterEngine;
 };
 
 #endif

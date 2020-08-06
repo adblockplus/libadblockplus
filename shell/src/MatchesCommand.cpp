@@ -20,7 +20,7 @@
 
 #include "MatchesCommand.h"
 
-MatchesCommand::MatchesCommand(AdblockPlus::FilterEngine& filterEngine)
+MatchesCommand::MatchesCommand(AdblockPlus::IFilterEngine& filterEngine)
   : Command("matches"), filterEngine(filterEngine)
 {
 }
@@ -36,10 +36,10 @@ void MatchesCommand::operator()(const std::string& arguments)
   argumentStream >> documentUrl;
   std::string siteKey;
   argumentStream >> siteKey;
-  AdblockPlus::FilterEngine::ContentType contentType;
+  AdblockPlus::IFilterEngine::ContentType contentType;
   try
   {
-    contentType = AdblockPlus::FilterEngine::StringToContentType(contentTypeStr);
+    contentType = AdblockPlus::IFilterEngine::StringToContentType(contentTypeStr);
   }
   catch (std::invalid_argument& e)
   {

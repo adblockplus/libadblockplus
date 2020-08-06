@@ -24,7 +24,8 @@
 #include "IWebRequest.h"
 #include "AppInfo.h"
 #include "Scheduler.h"
-#include "FilterEngine.h"
+#include "IFilterEngine.h"
+#include "FilterEngineFactory.h"
 #include "Updater.h"
 #include <mutex>
 #include <future>
@@ -42,7 +43,7 @@ namespace AdblockPlus
    * AdblockPlus platform is the main component providing access to other
    * modules.
    *
-   * It manages the functionality modules, e.g. JsEngine and FilterEngine as
+   * It manages the functionality modules, e.g. JsEngine and IFilterEngine as
    * well as allows to correctly work with asynchronous functionality.
    */
   class Platform
@@ -65,9 +66,9 @@ namespace AdblockPlus
     };
 
     /**
-     * Callback type invoked when FilterEngine is created.
+     * Callback type invoked when IFilterEngine is created.
      */
-    typedef std::function<void(const FilterEngine&)> OnFilterEngineCreatedCallback;
+    typedef std::function<void(const IFilterEngine&)> OnFilterEngineCreatedCallback;
 
     /**
      * Platform constructor.
@@ -95,13 +96,14 @@ namespace AdblockPlus
     JsEngine& GetJsEngine();
 
     /**
-     * Ensures that FilterEngine is constructed. Only the first call is effective.
+     * Ensures that IFilterEngine is constructed. Only the first call is effective.
      *
      * @param parameters optional creation parameters.
-     * @param onCreated A callback which is called when FilterEngine is ready
+     * @param onCreated A callback which is called when IFilterEngine is ready
      *        for use.
      */
-    void CreateFilterEngineAsync(const FilterEngine::CreationParameters& parameters = FilterEngine::CreationParameters(),
+    void CreateFilterEngineAsync(
+      const FilterEngineFactory::CreationParameters& parameters = FilterEngineFactory::CreationParameters(),
       const OnFilterEngineCreatedCallback& onCreated = OnFilterEngineCreatedCallback());
 
     /**
@@ -110,7 +112,7 @@ namespace AdblockPlus
      * operations, please ensure that provided implementation does not lead to
      * a dead lock.
      */
-    FilterEngine& GetFilterEngine();
+    IFilterEngine& GetFilterEngine();
 
     /**
      * Retrieves the Updater component instance.

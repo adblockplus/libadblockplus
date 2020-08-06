@@ -68,7 +68,7 @@ namespace AdblockPlus
   };
 
   /**
-   * JavaScript engine used by `FilterEngine`, wraps v8.
+   * JavaScript engine used by `IFilterEngine`, wraps v8.
    */
   class JsEngine : public std::enable_shared_from_this<JsEngine>
   {

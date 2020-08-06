@@ -24,7 +24,6 @@
 
 namespace AdblockPlus
 {
-  class FilterEngine;
   /**
    * Possible notification types.
    */
@@ -51,32 +50,16 @@ namespace AdblockPlus
    */
   class Notification: public JsValue
   {
-    friend class FilterEngine;
-  protected:
+  public:
     /**
      * Constructor.
      * @param jsValue `JsValue&&` notification JavaScript object.
      */
     explicit Notification(JsValue&& jsValue);
-  public:
-    /**
-     * Copy constructor
-     */
+
     Notification(const Notification& src);
-
-    /**
-     * Move constructor
-     */
     Notification(Notification&& src);
-
-    /**
-     * Assignment operator
-     */
     Notification& operator=(const Notification& src);
-
-    /**
-     * Move assignment operator
-     */
     Notification& operator=(Notification&& src);
 
     /**
@@ -102,7 +85,6 @@ namespace AdblockPlus
      * notifications. Other notifications are marked automatically.
      */
     void MarkAsShown();
-  private:
   };
 }
 

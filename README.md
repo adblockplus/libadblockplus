@@ -189,7 +189,7 @@ namespace. For brevity's sake, we'll assume the following `using` declaration:
     using namespace AdblockPlus;
 
 Most of the functionality of libadblockplus is available via the
-[`FilterEngine`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L191)
+[`IFilterEngine`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L191)
 class. Since libadblockplus uses the Adblock Plus core code under the hood, you
 first need to create a
 [`JsEngine`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/JsEngine.h#L73)
@@ -213,14 +213,14 @@ Depending on your application and platform, you might want to supply your own
 implementations. For this, supply `Platform::CreationParameters`
 for [`Platform`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/Platform.h#L48) constructor.
 
-With the `JsEngine` instance created, you can create a `FilterEngine` instance:
+With the `JsEngine` instance created, you can create a `IFilterEngine` instance:
 
-    auto filterEngine = FilterEngine::Create(jsEngine);
+    auto filterEngine = IFilterEngine::Create(jsEngine);
 
 Please also pay attention to asynchronous version of factory method
-FilterEngine::CreateAsync and to optional creationParameters.
+FilterEngineFactory::CreateAsync and to optional creationParameters.
 
-When initialised, `FilterEngine` will automatically select a suitable ad
+When initialised, `IFilterEngine` will automatically select a suitable ad
 blocking subscription based on `AppInfo::locale` and download the filters for
 it.
 
@@ -235,7 +235,7 @@ You can add more:
     subscription->AddToList();
 
 Retrieving an existing subscription works the same way, use
-[`Subscription::IsListed`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L138)
+[`Subscription::IsListed`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L138)
 to check if the subscription has been added or not.
 
     SubscriptionPtr subscription =
@@ -282,7 +282,7 @@ Since we've added a matching filter, `match` will point to the same filter
 object as `filter`.
 
 Note that we've ignored the third parameter of
-[`FilterEngine::Matches`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L430)
+[`IFilterEngine::Matches`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L430)
 here to keep things simple. Real applications should pass the frame structure
 in here - this is necessary because many filters and exception rules are domain
 specific.
@@ -295,14 +295,14 @@ sites. You can read more about this in
 [filters documentation](https://help.eyeo.com/adblockplus/how-to-write-filters#sitekey-restrictions).
 
 To find match filter taking into account site key, please use 4th parameter
-for [`FilterEngine::Matches`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L430)
+for [`IFilterEngine::Matches`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L430)
 It should contain decoded and verified public key extracted from `X-Adblock-Key` header.
 
     FilterPtr match =
       filterEngine.Matches("http://example.com/ad.png", "DOCUMENT", "",
          "DECODED PUBLIC KEY");
 
-You can [take a look](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/test/FilterEngine.cpp#L668) for the sitekey-related tests for reference.
+You can [take a look](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/test/IFilterEngine.cpp#L668) for the sitekey-related tests for reference.
 
 ### Generating CSS from element hiding filters
 
@@ -312,15 +312,15 @@ done via a second type of filter that is completely ignored when matching URLs:
 
 You can retrieve a CSS style sheet for elements that should be hidden
 using
-[`FilterEngine::GetElementHidingStyleSheet`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L493).
+[`IFilterEngine::GetElementHidingStyleSheet`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L493).
 
 What libadblockplus clients typically do with this is to inject the CSS style
 sheet into each page.
 
 ### Disabling network requests from Adblock Plus on current connection
 
-At any moment you can call [`FilterEngine::SetAllowedConnectionType`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L541) to change the settings indicating what connection types are allowed in your application. However to have it working you should also pass a callback function into factory method of FilterEngine. This callback is being called before each request and the value of argument is earlier passed string into [`FilterEngine::SetAllowedConnectionType`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L541), what allows to query the system and check whether the current connection is in accordance with earlier stored value in settings.
-For example, you can pass "not_metered" into [`FilterEngine::SetAllowedConnectionType`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L541) and on each request you can check whether the current connection is "not_metered" and return true or false from you implementation of callback [`AdblockPlus::FilterEngine::IsConnectionAllowedAsyncCallback`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngine.h#L262).
+At any moment you can call [`IFilterEngine::SetAllowedConnectionType`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L541) to change the settings indicating what connection types are allowed in your application. However to have it working you should also pass a callback function into factory method of IFilterEngine. This callback is being called before each request and the value of argument is earlier passed string into [`IFilterEngine::SetAllowedConnectionType`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L541), what allows to query the system and check whether the current connection is in accordance with earlier stored value in settings.
+For example, you can pass "not_metered" into [`IFilterEngine::SetAllowedConnectionType`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L541) and on each request you can check whether the current connection is "not_metered" and return true or false from you implementation of callback [`AdblockPlus::IFilterEngine::IsConnectionAllowedAsyncCallback`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L262).
 
 Shell
 -----

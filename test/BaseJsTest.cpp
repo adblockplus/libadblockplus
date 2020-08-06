@@ -16,7 +16,7 @@
 */
 
 #include "BaseJsTest.h"
-#include <AdblockPlus/FilterEngine.h>
+#include <AdblockPlus/IFilterEngine.h>
 
 using namespace AdblockPlus;
 
@@ -35,9 +35,9 @@ void DelayedTimer::ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks)
   }
 }
 
-FilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
+IFilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
   Platform& platform,
-  const FilterEngine::CreationParameters& creationParams)
+  const FilterEngineFactory::CreationParameters& creationParams)
 {
   std::list<LazyFileSystem::Task> fileSystemTasks;
   fileSystem.scheduler = [&fileSystemTasks](const LazyFileSystem::Task& task)
@@ -45,7 +45,7 @@ FilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
     fileSystemTasks.emplace_back(task);
   };
   bool isFilterEngineReady = false;
-  platform.CreateFilterEngineAsync(creationParams, [&isFilterEngineReady, &fileSystem](const FilterEngine& filterEngine)
+  platform.CreateFilterEngineAsync(creationParams, [&isFilterEngineReady, &fileSystem](const IFilterEngine& filterEngine)
   {
     fileSystem.scheduler = LazyFileSystem::ExecuteImmediately;
     isFilterEngineReady = true;

@@ -26,13 +26,13 @@
 class FiltersCommand : public Command
 {
 public:
-  explicit FiltersCommand(AdblockPlus::FilterEngine& filterEngine);
+  explicit FiltersCommand(AdblockPlus::IFilterEngine& filterEngine);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;
 
 private:
-  AdblockPlus::FilterEngine& filterEngine;
+  AdblockPlus::IFilterEngine& filterEngine;
 
   void ShowFilters();
   void AddFilter(const std::string& text);
