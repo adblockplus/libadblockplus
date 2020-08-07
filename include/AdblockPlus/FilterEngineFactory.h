@@ -60,7 +60,7 @@ namespace AdblockPlus
     /**
      * Callback type invoked when IFilterEngine is created.
      */
-    typedef std::function<void(const FilterEnginePtr&)> OnCreatedCallback;
+    typedef std::function<void(std::unique_ptr<IFilterEngine>)> OnCreatedCallback;
 
     /**
      * Callback type for evaluating JS expression.
