@@ -91,12 +91,12 @@ void Platform::CreateFilterEngineAsync(
   const FilterEngineFactory::CreationParameters& parameters,
   const OnFilterEngineCreatedCallback& onCreated)
 {
-  std::shared_ptr<std::promise<FilterEnginePtr>> filterEnginePromise;
+  std::shared_ptr<std::promise<std::unique_ptr<IFilterEngine>>> filterEnginePromise;
   {
     std::lock_guard<std::mutex> lock(modulesMutex);
     if (filterEngine.valid())
       return;
-    filterEnginePromise = std::make_shared<std::promise<FilterEnginePtr>>();
+    filterEnginePromise = std::make_shared<std::promise<std::unique_ptr<IFilterEngine>>>();
     filterEngine = filterEnginePromise->get_future();
   }
 
@@ -104,11 +104,12 @@ void Platform::CreateFilterEngineAsync(
   FilterEngineFactory::CreateAsync(
     jsEngine,
     GetEvaluateCallback(),
-    [onCreated, filterEnginePromise](const FilterEnginePtr& filterEngine)
+    [onCreated, filterEnginePromise](std::unique_ptr<IFilterEngine> filterEngine)
     {
-      filterEnginePromise->set_value(filterEngine);
+      const auto& filterEngineRef = *filterEngine;
+      filterEnginePromise->set_value(std::move(filterEngine));
       if (onCreated)
-        onCreated(*filterEngine);
+        onCreated(filterEngineRef);
     },
     parameters
   );
@@ -117,7 +118,7 @@ void Platform::CreateFilterEngineAsync(
 IFilterEngine& Platform::GetFilterEngine()
 {
   CreateFilterEngineAsync();
-  return *std::shared_future<FilterEnginePtr>(filterEngine).get();
+  return *filterEngine.get().get();
 }
 
 Updater& Platform::GetUpdater()

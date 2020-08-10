@@ -30,8 +30,6 @@
 
 namespace AdblockPlus
 {
-  class IFilterEngine;
-  typedef std::shared_ptr<IFilterEngine> FilterEnginePtr;
   /**
    * Main component of libadblockplus.
    * It handles:

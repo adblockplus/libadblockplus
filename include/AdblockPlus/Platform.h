@@ -27,6 +27,7 @@
 #include "IFilterEngine.h"
 #include "FilterEngineFactory.h"
 #include "Updater.h"
+#include <memory>
 #include <mutex>
 #include <future>
 #include <set>
@@ -140,7 +141,7 @@ namespace AdblockPlus
     // used for creation and deletion of modules.
     std::mutex modulesMutex;
     std::shared_ptr<JsEngine> jsEngine;
-    std::shared_future<FilterEnginePtr> filterEngine;
+    std::shared_future<std::unique_ptr<IFilterEngine>> filterEngine;
     std::shared_ptr<Updater> updater;
     std::set<std::string> evaluatedJsSources;
     std::mutex evaluatedJsSourcesMutex;

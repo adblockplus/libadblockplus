@@ -83,17 +83,19 @@ void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
   const OnCreatedCallback& onCreated,
   const CreationParameters& params)
 {
-  std::shared_ptr<DefaultFilterEngine> filterEngine(new DefaultFilterEngine(jsEngine));
+  // Why wrap a unique_ptr in a shared_ptr? Because we cannot pass a
+  // unique_ptr to an std::function - this would make it move-only and
+  // STL doesn't like that. This is just a workaround, the function in
+  // question retrieves the unique_ptr from within and keeps using that
+  // or the reminder of the stack.
+  auto wrappedFilterEngine =
+      std::make_shared<std::unique_ptr<DefaultFilterEngine>>(
+          new DefaultFilterEngine(jsEngine));
+  auto* bareFilterEngine = wrappedFilterEngine->get();
   {
-    // TODO: replace weakFilterEngine by this when it's possible to control the
-    // execution time of the asynchronous part below.
-    std::weak_ptr<DefaultFilterEngine> weakFilterEngine = filterEngine;
     auto isSubscriptionDownloadAllowedCallback = params.isSubscriptionDownloadAllowedCallback;
-    jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [weakFilterEngine, isSubscriptionDownloadAllowedCallback](JsValueList&& params){
-      auto filterEngine = weakFilterEngine.lock();
-      if (!filterEngine)
-        return;
-      auto& jsEngine = filterEngine->GetJsEngine();
+    jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [bareFilterEngine, isSubscriptionDownloadAllowedCallback](JsValueList&& params){
+      auto& jsEngine = bareFilterEngine->GetJsEngine();
 
       // param[0] - nullable string Prefs.allowed_connection_type
       // param[1] - function(Boolean)
@@ -107,12 +109,9 @@ void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
         return;
       }
       auto valuesID = jsEngine.StoreJsValues(params);
-      auto callJsCallback = [weakFilterEngine, valuesID](bool isAllowed)
+      auto callJsCallback = [bareFilterEngine, valuesID](bool isAllowed)
       {
-        auto filterEngine = weakFilterEngine.lock();
-        if (!filterEngine)
-          return;
-        auto& jsEngine = filterEngine->GetJsEngine();
+        auto& jsEngine = bareFilterEngine->GetJsEngine();
         auto jsParams = jsEngine.TakeJsValues(valuesID);
         jsParams[1].Call(jsEngine.NewValue(isAllowed));
       };
@@ -121,21 +120,18 @@ void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
     });
   }
 
-  jsEngine->SetEventCallback("_init", [jsEngine, filterEngine, onCreated](JsValueList&& params)
-  {
-    filterEngine->SetIsFirstRun(params.size() && params[0].AsBool());
-    onCreated(filterEngine);
+  jsEngine->SetEventCallback("_init", [jsEngine, wrappedFilterEngine,
+                                       onCreated](JsValueList &&params) {
+    auto uniqueFilterEngine = std::move(*wrappedFilterEngine);
+    uniqueFilterEngine->SetIsFirstRun(params.size() && params[0].AsBool());
+    onCreated(std::move(uniqueFilterEngine));
     jsEngine->RemoveEventCallback("_init");
   });
 
-  std::weak_ptr<DefaultFilterEngine> weakFilterEngine = filterEngine;
-  filterEngine->SetFilterChangeCallback([weakFilterEngine](const std::string& reason, JsValue&&)
+  bareFilterEngine->SetFilterChangeCallback([bareFilterEngine](const std::string& reason, JsValue&&)
   {
-    auto filterEngine = weakFilterEngine.lock();
-    if (!filterEngine)
-      return;
     if (reason == "save")
-      filterEngine->GetJsEngine().NotifyLowMemory();
+      bareFilterEngine->GetJsEngine().NotifyLowMemory();
   });
 
   // Lock the JS engine while we are loading scripts, no timeouts should fire
