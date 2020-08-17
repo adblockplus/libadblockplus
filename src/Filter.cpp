@@ -34,7 +34,7 @@ Filter::Type Filter::GetType() const
   std::string className = jsObject.GetClass();
   if (className == "BlockingFilter")
     return TYPE_BLOCKING;
-  else if (className == "WhitelistFilter")
+  else if (className == "AllowingFilter")
     return TYPE_EXCEPTION;
   else if (className == "ElemHideFilter")
     return TYPE_ELEMHIDE;
