@@ -32,9 +32,9 @@
         },
       }
     }],
-    ['OS=="mac" and target_arch=="ia32"', {
+    ['OS=="mac"', {
       'xcode_settings': {
-        'ARCHS': ["i386"]
+        'ARCHS': ["x86_64"]
       }
     }],
   ],

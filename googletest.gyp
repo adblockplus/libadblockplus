@@ -44,7 +44,7 @@
         'msvs_configuration_platform': 'x64',
       }, {
         'xcode_settings': {
-          'ARCHS': [ 'i386' ],
+          'ARCHS': [ 'x86_64' ],
         },
       },
     ]]
