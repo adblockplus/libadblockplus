@@ -71,12 +71,11 @@ ifeq ($(WGET_QUIET),true)
 WGET_FLAGS=-q
 endif
 
-.PHONY: all test clean docs ensure_dependencies
+.PHONY: all test clean docs
 
 .DEFAULT_GOAL:=all
 
-ensure_dependencies:
-	python ensure_dependencies.py
+
 
 test: all
 ifdef FILTER
@@ -100,7 +99,7 @@ clean:
 
 ifeq ($(TARGET_OS),android)
 GYP_FILE ?= tests.gyp
-all: ensure_dependencies
+all:
 	GYP_DEFINES="${GYP_PARAMETERS}" \
 	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r16b ${GYP_FILE}
 	$(ANDROID_NDK_ROOT)/ndk-build -C ${BUILD_DIR} installed_modules \
@@ -120,7 +119,7 @@ SUB_ACTION ?= all
 ifdef CXX
 CXX_PARAM:=CXX=${CXX}
 endif
-all: ensure_dependencies
+all:
 	GYP_DEFINES="${GYP_PARAMETERS}" third_party/gyp/gyp --depth=. -f make -I libadblockplus.gypi --generator-output=${BUILD_DIR} abpshell.gyp tests.gyp
 	$(MAKE) -C ${BUILD_DIR} ${SUB_ACTION} ${CXX_PARAM}
 

@@ -5,16 +5,13 @@ stages:
 
 image: "registry.gitlab.com/eyeo/docker/libadblockplus_gitlab-runner:202004.1"
 variables:
+  GIT_SUBMODULE_STRATEGY: recursive
   WGET_FLAGS: "--quiet"
   ANDROID_NDK_ROOT: "/third_party/android-ndk-r16b" #NDK is part of the docker image
 
 build_nix_and_test:
   interruptible: true
   stage: test
-  before_script:
-    # It seems gitlab does not create fully-fledged .git directory but we utilize .git/info/exclude
-    # directly in ensure_dependencies.py and therefore we have to provide the directory path.
-    - mkdir -p .git/info
   script:
     - export MAKEFLAGS="-j $(nproc)"
     # steps taken from .travis/nix-script.sh
@@ -28,8 +25,6 @@ build_nix_and_test:
 .build_template:
   stage: build
   interruptible: true
-  before_script:
-    - mkdir -p .git/info
   variables:
     V8_COMMIT: 4d72a9931a125d21901d25d67896f0e40105bd16
   script:
