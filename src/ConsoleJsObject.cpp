@@ -23,9 +23,6 @@
 #include "JsContext.h"
 #include "Utils.h"
 #include <AdblockPlus/Platform.h>
-#include "v8-compat-api.h"
-
-using namespace AdblockPlus::V8CompatApi;
 
 namespace
 {
@@ -46,7 +43,8 @@ namespace
 
     std::stringstream source;
     auto isolate = arguments.GetIsolate();
-    v8::Local<v8::StackFrame> frame = StackTrace_GetFrame(isolate, v8::StackTrace::CurrentStackTrace(isolate, 1), 0);
+    v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(isolate, 1);
+    v8::Local<v8::StackFrame> frame = stackTrace->GetFrame(isolate, 0);
     source << AdblockPlus::Utils::FromV8String(isolate, frame->GetScriptName());
     source << ":" << frame->GetLineNumber();
 
@@ -90,10 +88,10 @@ namespace
 
     auto isolate = arguments.GetIsolate();
     std::stringstream traceback;
-    v8::Local<v8::StackTrace> frames = v8::StackTrace::CurrentStackTrace(isolate, 100);
-    for (int i = 0, l = frames->GetFrameCount(); i < l; i++)
+    v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(isolate, 100);
+    for (int i = 0, l = stackTrace->GetFrameCount(); i < l; i++)
     {
-      v8::Local<v8::StackFrame> frame = StackTrace_GetFrame(isolate, frames, i);
+      v8::Local<v8::StackFrame> frame = stackTrace->GetFrame(isolate, i);
       traceback << (i + 1) << ": ";
       std::string name = AdblockPlus::Utils::FromV8String(isolate, frame->GetFunctionName());
       if (name.size())
