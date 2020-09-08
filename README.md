@@ -13,13 +13,8 @@ before making any new commits to the repo.
 Getting/updating the dependencies
 ---------------------------------
 
-> You need Python 2.7 and ensure that `python` binary is in your `PATH`.
-
-libadblockplus has dependencies that aren't part of this repository. They are
-retrieved and updated during the build process, but you can also manually update
-them by running the following:
-
-    ./ensure_dependencies.py
+Project dependencies are declared as git submodules, ensure you include submodules
+in your checkout.
 
 Additionally one should provide V8 headers in order to build libadblockplus
 library and V8 prebuilt libraries in order to link a binary (executable, shared
