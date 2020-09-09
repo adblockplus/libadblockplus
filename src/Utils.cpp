@@ -129,3 +129,21 @@ std::wstring Utils::CanonizeUrl(const std::wstring& url)
 }
 #endif
 
+std::vector<std::string> Utils::SplitString(const std::string& value, const char delim)
+{
+  std::stringstream ss(value);
+  std::string item;
+  std::vector<std::string> elems;
+
+  while (std::getline(ss, item, delim))
+  {
+    elems.push_back(item);
+  }
+
+  if (!value.empty() && value.back() == delim)
+  {
+    elems.push_back("");
+  }
+
+  return elems;
+}

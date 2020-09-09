@@ -90,6 +90,7 @@ namespace AdblockPlus
       trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(), [](int ch) { return !std::isspace(ch); }).base(), trimmed.end());
       return trimmed;
     }
+    std::vector<std::string> SplitString(const std::string& value, const char delim);
 #ifdef _WIN32
     std::wstring ToUtf16String(const std::string& str);
     std::string ToUtf8String(const std::wstring& str);
