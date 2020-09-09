@@ -265,6 +265,21 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::NewObject()
   return JsValue(shared_from_this(), v8::Object::New(GetIsolate()));
 }
 
+JsValue JsEngine::NewArray(const std::vector<std::string>& values)
+{
+  const JsContext context(*this);
+  std::vector<v8::Local<v8::Value>> elements;
+  elements.reserve(values.size());
+  auto isolate = GetIsolate();
+
+  for (const auto& cur : values)
+  {
+    elements.push_back(CHECKED_TO_LOCAL(isolate, Utils::ToV8String(isolate, cur)));
+  }
+
+  return JsValue(shared_from_this(), v8::Array::New(isolate, elements.data(), elements.size()));
+}
+
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(
     const v8::FunctionCallback& callback)
 {

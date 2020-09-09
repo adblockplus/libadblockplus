@@ -1295,6 +1295,223 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsNonExisting)
   EXPECT_TRUE(selsNonExisting.empty());
 }
 
+class TestElement : public IElement
+{
+public:
+  explicit TestElement(const std::map<std::string, std::string>& attributes,
+                       const std::vector<TestElement>& children = {})
+    : data(attributes),
+      subelemets(children)
+  {}
+
+  const std::string& GetLocalName() const override
+    { return GetAttribute("_name"); }
+
+  const std::string& GetAttribute(const std::string& name) const override
+  {
+    auto it = data.find(name);
+    static std::string empty;
+    return it == data.end() ? empty : it->second;
+  }
+
+  const std::string& GetDocumentLocation() const override
+    { return GetAttribute("_url"); }
+
+  const std::vector<const IElement*> GetChildren() const override
+  {
+    std::vector<const IElement*> res;
+    std::transform(subelemets.begin(), subelemets.end(),
+                   std::back_inserter(res), [] (const auto& cur) { return &cur; });
+    return res;
+  }
+
+private:
+  std::map<std::string, std::string> data;
+  std::vector<TestElement> subelemets;
+};
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsClass)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page"},
+                        {"_name", "img"},
+                        {"class", "-img   _glyph"}
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+  ASSERT_EQ(1u, res.size());
+  EXPECT_EQ("test.com##.\\-img._glyph", res[0]);
+}
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsAttribute)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page"},
+                        {"_name", "img"},
+                        {"id", "gb_va"},
+                        {"src", "data:abcd"},
+                        {"style", "width:109px;height:40px"}
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+  ASSERT_EQ(2u, res.size());
+  EXPECT_EQ("test.com###gb_va", res[0]);
+  EXPECT_EQ("test.com##img[src=\"data:abcd\"]", res[1]);
+}
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsUrls)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page"},
+                        {"_name", "img"},
+                        {"id", "gb_va"},
+                        {"src", "https://www.static.test.com/icon1.png"},
+                        {"srcset", "https://www.static.test.com/icon1.png x1, http://test.com/ui/icon2.png x2, data:abcd"},
+                        {"style", "width:109px;height:40px"}
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+
+  ASSERT_EQ(2u, res.size());
+  EXPECT_EQ("||static.test.com/icon1.png", res[0]);
+  EXPECT_EQ("||test.com/ui/icon2.png", res[1]);
+}
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsStyle)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page"},
+                        {"_name", "div"},
+                        {"style", "width:109px;height:40px"}
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+  ASSERT_EQ(1u, res.size());
+  EXPECT_EQ("test.com##div[style=\"width:109px;height:40px\"]", res[0]);
+}
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsBaseUrl)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page/"},
+                        {"_name", "img"},
+                        {"src", "/icon1.png"}
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+  ASSERT_EQ(1u, res.size());
+  EXPECT_EQ("||test.com/page/icon1.png", res[0]);
+}
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsIgnoreWrongProtocol)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page/"},
+                        {"_name", "img"},
+                        {"srcset", "data:abcd"}
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+  EXPECT_EQ(0u, res.size());
+}
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsForObjectElement)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page/"},
+                        {"_name", "object"}
+                      },
+                      {
+                        TestElement({
+                          {"_name", "param"},
+                          {"name", "src"},
+                          {"value", "/data1"}
+                        }),
+                        TestElement({
+                          {"_name", "param"},
+                          {"name", "src1"},
+                          {"value", "/data2"}
+                        }),
+                        TestElement({
+                          {"_name", "div"},
+                          {"name", "src"},
+                          {"value", "/data3"}
+                        })
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+  ASSERT_EQ(1u, res.size());
+  EXPECT_EQ("||test.com/page/data1", res[0]);
+}
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsForObjectElementData)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page/"},
+                        {"_name", "object"},
+                        {"data", "data4"}
+                      },
+                      {
+                        TestElement({
+                          {"_name", "param"},
+                          {"name", "src"},
+                          {"value", "/data1"}
+                        }),
+                        TestElement({
+                          {"_name", "param"},
+                          {"name", "src1"},
+                          {"value", "/data2"}
+                        }),
+                        TestElement({
+                          {"_name", "div"},
+                          {"name", "src"},
+                          {"value", "/data3"}
+                        })
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+  ASSERT_EQ(1u, res.size());
+  EXPECT_EQ("||test.com/page/data4", res[0]);
+}
+
+TEST_F(FilterEngineTest, ComposeFilterSuggestionsForMediaElement)
+{
+  auto& filterEngine = GetFilterEngine();
+  TestElement element({
+                        {"_url", "https://test.com/page/"},
+                        {"_name", "video"},
+                        {"poster", "/img1.png"}
+                      },
+                      {
+                        TestElement({
+                          {"_name", "source"},
+                          {"src", "/data1"}
+                        }),
+                        TestElement({
+                          {"_name", "track"},
+                          {"src", "/data2"}
+                        }),
+                        TestElement({
+                          {"_name", "else"},
+                          {"src", "/data3"}
+                        }),
+                      });
+
+  auto res = filterEngine.ComposeFilterSuggestions(&element);
+  ASSERT_EQ(3u, res.size());
+  EXPECT_EQ("||test.com/page/img1.png", res[0]);
+  EXPECT_EQ("||test.com/page/data1", res[1]);
+  EXPECT_EQ("||test.com/page/data2", res[2]);
+}
+
 TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
 {
   AppInfo appInfo;

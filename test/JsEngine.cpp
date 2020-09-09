@@ -62,6 +62,18 @@ TEST_F(JsEngineTest, ValueCreation)
   ASSERT_EQ(0u, value.GetOwnPropertyNames().size());
 }
 
+TEST_F(JsEngineTest, ArrayCreation)
+{
+  auto value = GetJsEngine().NewArray({"foo", "bar"});
+  ASSERT_TRUE(value.IsArray());
+  auto ls = value.AsList();
+  ASSERT_EQ(2u, ls.size());
+  ASSERT_TRUE(ls[0].IsString());
+  ASSERT_EQ("foo", ls[0].AsString());
+  ASSERT_TRUE(ls[1].IsString());
+  ASSERT_EQ("bar", ls[1].AsString());
+}
+
 namespace {
 
   bool IsSame(AdblockPlus::JsEngine& jsEngine,

@@ -68,6 +68,7 @@ namespace
       "notificationShowRegistration.js",
       "synchronizer.js",
       "filterUpdateRegistration.js",
+      "compose.js",
       "jsbn.js",
       "rusha.js",
       "rsa.js",

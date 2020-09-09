@@ -7,6 +7,9 @@
       'googletest.gyp:googletest_main',
       'libadblockplus.gyp:libadblockplus'
     ],
+    'include_dirs': [
+      '<(libv8_include_dir)'
+    ],
     'sources': [
       'test/AsyncExecutor.cpp',
       'test/BaseJsTest.h',
@@ -23,6 +26,7 @@
       'test/Prefs.cpp',
       'test/ReferrerMapping.cpp',
       'test/UpdateCheck.cpp',
+      'test/Utils.cpp',
       'test/WebRequest.cpp'
     ],
     'msvs_settings': {

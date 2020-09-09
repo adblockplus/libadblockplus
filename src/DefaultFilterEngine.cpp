@@ -20,6 +20,7 @@
 #include <string>
 
 #include "DefaultFilterEngine.h"
+#include "ElementUtils.h"
 #include "JsContext.h"
 
 using namespace AdblockPlus;
@@ -285,6 +286,29 @@ bool DefaultFilterEngine::VerifySignature(const std::string& key, const std::str
   params.push_back(jsEngine->NewValue(userAgent));
   JsValue func = jsEngine->Evaluate("API.verifySignature");
   return func.Call(params).AsBool();
+}
+
+std::vector<std::string> DefaultFilterEngine::ComposeFilterSuggestions(const IElement* element) const
+{
+  JsValueList params;
+
+  params.push_back(jsEngine->NewValue(element->GetDocumentLocation()));
+  params.push_back(jsEngine->NewValue(element->GetLocalName()));
+  params.push_back(jsEngine->NewValue(element->GetAttribute("id")));
+  params.push_back(jsEngine->NewValue(element->GetAttribute("src")));
+  params.push_back(jsEngine->NewValue(element->GetAttribute("style")));
+  params.push_back(jsEngine->NewValue(element->GetAttribute("class")));
+  params.push_back(jsEngine->NewArray(Utils::GetAssociatedUrls(element)));
+
+  JsValue func = jsEngine->Evaluate("API.composeFilterSuggestions");
+  JsValueList suggestions = func.Call(params).AsList();
+  std::vector<std::string> res;
+  res.reserve(suggestions.size());
+
+  for (const auto& cur : suggestions)
+    res.push_back(cur.AsString());
+
+  return res;
 }
 
 FilterPtr DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,

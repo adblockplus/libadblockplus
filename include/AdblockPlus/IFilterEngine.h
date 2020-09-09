@@ -27,6 +27,7 @@
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/Notification.h>
 #include <AdblockPlus/Subscription.h>
+#include <AdblockPlus/IElement.h>
 
 namespace AdblockPlus
 {
@@ -369,6 +370,16 @@ namespace AdblockPlus
     */
     virtual bool VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
                          const std::string& host, const std::string& userAgent) const = 0;
+
+    /**
+     * Given the details of an element, return suggested filters to block or hide that element.
+     * Function will query various element's attributes to make best filters match.
+     * For case when element requests several resources, img srcset for example,
+     * multiple filters will be generated.
+     * @param element target DOM element interface.
+     * @return Suggested filters list.
+     */
+    virtual std::vector<std::string> ComposeFilterSuggestions(const IElement* element) const = 0;
 
     /**
      * Retrieves the `ContentType` for the supplied string.

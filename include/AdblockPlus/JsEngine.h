@@ -180,6 +180,12 @@ namespace AdblockPlus
     JsValue NewObject();
 
     /**
+     * Creates a new JavaScript array of strings.
+     * @return New `JsValue` instance.
+     */
+    JsValue NewArray(const std::vector<std::string>& values);
+
+    /**
      * Creates a JavaScript function that invokes a C++ callback.
      * @param callback C++ callback to invoke. The callback receives a
      *        `v8::FunctionCallbackInfo` object and can use `FromArguments()` to retrieve
