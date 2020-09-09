@@ -1,9 +1,9 @@
 [submodule "adblockpluscore"]
 	path = adblockpluscore
-	url = ../adblockpluscore
+	url = ../adblockpluscore.git
 [submodule "third_party/googletest"]
 	path = third_party/googletest
-	url = ../../external-dependencies/googletest-github
+	url = ../../external-dependencies/googletest-github.git
 [submodule "third_party/gyp"]
 	path = third_party/gyp
-	url = ../../external-dependencies/gyp
+	url = ../../external-dependencies/gyp.git
