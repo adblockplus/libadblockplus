@@ -25,7 +25,6 @@
 #include <AdblockPlus/Filter.h>
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
-#include <AdblockPlus/Notification.h>
 #include <AdblockPlus/Subscription.h>
 #include <AdblockPlus/IElement.h>
 
@@ -95,12 +94,6 @@ namespace AdblockPlus
      * Container of name-value pairs representing a set of preferences.
      */
     typedef std::map<std::string, AdblockPlus::JsValue> Prefs;
-
-    /**
-     * Callback type invoked when a new notification should be shown.
-     * The parameter is the Notification object to be shown.
-     */
-    typedef std::function<void(Notification&&)> ShowNotificationCallback;
 
     virtual ~IFilterEngine() = default;
 
@@ -173,23 +166,6 @@ namespace AdblockPlus
      * @return Returns URL of the Acceptable Ads.
      */
     virtual std::string GetAAUrl() const = 0;
-
-    /**
-     * Invokes the listener set via SetNotificationAvailableCallback() with the
-     * next notification to be shown.
-     */
-    virtual void ShowNextNotification() const = 0;
-
-    /**
-     * Sets the callback invoked when a notification should be shown.
-     * @param callback Callback to invoke.
-     */
-    virtual void SetShowNotificationCallback(const ShowNotificationCallback& value) = 0;
-
-    /**
-     * Removes the callback invoked when a notification should be shown.
-     */
-    virtual void RemoveShowNotificationCallback() = 0;
 
     /**
      * Checks if any active filter matches the supplied URL.

@@ -26,7 +26,6 @@
 #include "Scheduler.h"
 #include "IFilterEngine.h"
 #include "FilterEngineFactory.h"
-#include "Updater.h"
 #include <memory>
 #include <mutex>
 #include <future>
@@ -115,11 +114,6 @@ namespace AdblockPlus
      */
     IFilterEngine& GetFilterEngine();
 
-    /**
-     * Retrieves the Updater component instance.
-     */
-    Updater& GetUpdater();
-
     typedef std::function<void(ITimer&)> WithTimerCallback;
     virtual void WithTimer(const WithTimerCallback&);
 
@@ -142,7 +136,6 @@ namespace AdblockPlus
     std::mutex modulesMutex;
     std::shared_ptr<JsEngine> jsEngine;
     std::shared_future<std::unique_ptr<IFilterEngine>> filterEngine;
-    std::shared_ptr<Updater> updater;
     std::set<std::string> evaluatedJsSources;
     std::mutex evaluatedJsSourcesMutex;
     std::function<void(const std::string&)> GetEvaluateCallback();

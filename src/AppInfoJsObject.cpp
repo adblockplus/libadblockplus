@@ -30,6 +30,5 @@ JsValue& AppInfoJsObject::Setup(const AppInfo& appInfo, JsValue& obj)
   obj.SetProperty("application", appInfo.application);
   obj.SetProperty("applicationVersion", appInfo.applicationVersion);
   obj.SetProperty("locale", appInfo.locale);
-  obj.SetProperty("developmentBuild", appInfo.developmentBuild);
   return obj;
 }

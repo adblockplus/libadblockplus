@@ -64,8 +64,6 @@ namespace
       "filterListener.js",
       "filterEngine.js",
       "versions.js",
-      "notifications.js",
-      "notificationShowRegistration.js",
       "synchronizer.js",
       "filterUpdateRegistration.js",
       "compose.js",

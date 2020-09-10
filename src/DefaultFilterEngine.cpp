@@ -92,30 +92,6 @@ std::string DefaultFilterEngine::GetAAUrl() const
   return GetPref("subscriptions_exceptionsurl").AsString();
 }
 
-void DefaultFilterEngine::ShowNextNotification() const
-{
-  jsEngine->Evaluate("API.showNextNotification").Call();
-}
-
-void DefaultFilterEngine::SetShowNotificationCallback(const ShowNotificationCallback& callback)
-{
-  if (!callback)
-    return;
-
-  jsEngine->SetEventCallback("_showNotification", [callback](JsValueList&& params)
-  {
-    if (params.size() < 1 || !params[0].IsObject())
-      return;
-
-    callback(Notification(std::move(params[0])));
-  });
-}
-
-void DefaultFilterEngine::RemoveShowNotificationCallback()
-{
-  jsEngine->RemoveEventCallback("_showNotification");
-}
-
 AdblockPlus::FilterPtr DefaultFilterEngine::Matches(const std::string& url,
     ContentTypeMask contentTypeMask,
     const std::string& documentUrl,

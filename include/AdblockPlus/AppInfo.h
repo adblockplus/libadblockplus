@@ -53,13 +53,6 @@ namespace AdblockPlus
      * [Mozilla locale code](https://wiki.mozilla.org/L10n:Locale_Codes).
      */
     std::string locale;
-
-    /**
-     * Whether the app is a development build, the default is `false`.
-     */
-    bool developmentBuild;
-
-    AppInfo() : developmentBuild(false) {}
   };
 }
 

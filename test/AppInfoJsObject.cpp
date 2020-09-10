@@ -27,7 +27,6 @@ TEST(AppInfoJsObjectTest, AllProperties)
   appInfo.application = "4";
   appInfo.applicationVersion = "5";
   appInfo.locale = "2";
-  appInfo.developmentBuild = true;
   AdblockPlus::Platform platform{ThrowingPlatformCreationParameters()};
   platform.SetUpJsEngine(appInfo);
   ASSERT_EQ("1", platform.GetJsEngine().Evaluate("_appInfo.version").AsString());
@@ -35,7 +34,6 @@ TEST(AppInfoJsObjectTest, AllProperties)
   ASSERT_EQ("4", platform.GetJsEngine().Evaluate("_appInfo.application").AsString());
   ASSERT_EQ("5", platform.GetJsEngine().Evaluate("_appInfo.applicationVersion").AsString());
   ASSERT_EQ("2", platform.GetJsEngine().Evaluate("_appInfo.locale").AsString());
-  ASSERT_TRUE(platform.GetJsEngine().Evaluate("_appInfo.developmentBuild").AsBool());
 }
 
 TEST(AppInfoJsObjectTest, DefaultPropertyValues)
@@ -46,5 +44,4 @@ TEST(AppInfoJsObjectTest, DefaultPropertyValues)
   ASSERT_EQ("", platform.GetJsEngine().Evaluate("_appInfo.application").AsString());
   ASSERT_EQ("", platform.GetJsEngine().Evaluate("_appInfo.applicationVersion").AsString());
   ASSERT_EQ("", platform.GetJsEngine().Evaluate("_appInfo.locale").AsString());
-  ASSERT_FALSE(platform.GetJsEngine().Evaluate("_appInfo.developmentBuild").AsBool());
 }
