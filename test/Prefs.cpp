@@ -163,12 +163,9 @@ TEST_F(PrefsTest, SyntaxFailure)
 TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
 {
   AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
-  preconfiguredPrefs.emplace("disable_auto_updates", GetJsEngine().NewValue(false));
   preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
-  ASSERT_TRUE(filterEngine.GetPref("disable_auto_updates").IsBool());
-  ASSERT_FALSE(filterEngine.GetPref("disable_auto_updates").AsBool());
   ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").IsBool());
   ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").AsBool());
 }

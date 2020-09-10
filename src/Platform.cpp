@@ -121,20 +121,6 @@ IFilterEngine& Platform::GetFilterEngine()
   return *filterEngine.get().get();
 }
 
-Updater& Platform::GetUpdater()
-{
-  {
-    std::lock_guard<std::mutex> lock(modulesMutex);
-    if (updater)
-      return *updater;
-  }
-  GetJsEngine(); // ensures that JsEngine is instantiated
-  std::lock_guard<std::mutex> lock(modulesMutex);
-  if (!updater)
-    updater = std::make_shared<Updater>(jsEngine, GetEvaluateCallback());
-  return *updater;
-}
-
 void Platform::WithTimer(const WithTimerCallback& callback)
 {
   if (timer && callback)

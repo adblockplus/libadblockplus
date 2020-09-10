@@ -47,12 +47,6 @@ namespace AdblockPlus
 
     std::string GetAAUrl() const final;
 
-    void ShowNextNotification() const final;
-
-    void SetShowNotificationCallback(const ShowNotificationCallback& value) final;
-
-    void RemoveShowNotificationCallback() final;
-
     FilterPtr Matches(const std::string& url,
         ContentTypeMask contentTypeMask,
         const std::string& documentUrl,

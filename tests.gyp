@@ -22,10 +22,8 @@
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
       'test/JsValue.cpp',
-      'test/Notification.cpp',
       'test/Prefs.cpp',
       'test/ReferrerMapping.cpp',
-      'test/UpdateCheck.cpp',
       'test/Utils.cpp',
       'test/WebRequest.cpp'
     ],
