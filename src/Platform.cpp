@@ -102,7 +102,7 @@ void Platform::CreateFilterEngineAsync(
 
   GetJsEngine(); // ensures that JsEngine is instantiated
   FilterEngineFactory::CreateAsync(
-    jsEngine,
+    *jsEngine,
     GetEvaluateCallback(),
     [onCreated, filterEnginePromise](std::unique_ptr<IFilterEngine> filterEngine)
     {

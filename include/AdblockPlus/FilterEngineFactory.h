@@ -76,7 +76,7 @@ namespace AdblockPlus
      *        for use.
      * @param parameters optional creation parameters.
      */
-    static void CreateAsync(const JsEnginePtr& jsEngine,
+    static void CreateAsync(JsEngine& jsEngine,
       const EvaluateCallback& evaluateCallback,
       const OnCreatedCallback& onCreated,
       const CreationParameters& parameters = CreationParameters());

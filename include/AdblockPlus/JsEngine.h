@@ -48,11 +48,6 @@ namespace AdblockPlus
   class Platform;
 
   /**
-   * Shared smart pointer to a `JsEngine` instance.
-   */
-  typedef std::shared_ptr<JsEngine> JsEnginePtr;
-
-  /**
    * Provides with isolate. The main aim of this iterface is to delegate a
    * proper initialization and deinitialization of v8::Isolate to an embedder.
    */
@@ -70,7 +65,7 @@ namespace AdblockPlus
   /**
    * JavaScript engine used by `IFilterEngine`, wraps v8.
    */
-  class JsEngine : public std::enable_shared_from_this<JsEngine>
+  class JsEngine
   {
     friend class JsValue;
     friend class JsContext;
@@ -82,6 +77,8 @@ namespace AdblockPlus
     };
     typedef std::list<JsWeakValuesList> JsWeakValuesLists;
   public:
+    ~JsEngine();
+
     /**
      * Event callback function.
      */
@@ -111,7 +108,11 @@ namespace AdblockPlus
      *        a default implementation is used.
      * @return New `JsEngine` instance.
      */
-    static JsEnginePtr New(const AppInfo& appInfo, Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
+    static std::unique_ptr<JsEngine> New(
+        const AppInfo& appInfo,
+        Platform& platform,
+        std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
+
     /**
      * Registers the callback function for an event.
      * @param eventName Event name. Note that this can be any string - it's a
@@ -202,7 +203,7 @@ namespace AdblockPlus
      *        instance.
      * @return `JsEngine` instance from `v8::FunctionCallbackInfo`.
      */
-    static JsEnginePtr FromArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments);
+    static JsEngine* FromArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
     /**
      * Stores `JsValue`s in a way they don't keep a strong reference to

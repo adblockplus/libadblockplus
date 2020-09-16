@@ -182,16 +182,6 @@ TEST(NewJsEngineTest, GlobalPropertyTest)
   ASSERT_EQ(foo.AsString(), "bar");
 }
 
-TEST(NewJsEngineTest, MemoryLeak_NoCircularReferences)
-{
-  Platform platform{ThrowingPlatformCreationParameters()};
-  std::weak_ptr<AdblockPlus::JsEngine> weakJsEngine;
-  {
-    weakJsEngine = JsEngine::New(AppInfo(), platform);
-  }
-  EXPECT_FALSE(weakJsEngine.lock());
-}
-
 #if UINTPTR_MAX == UINT32_MAX // detection of 32-bit platform
 static_assert(sizeof(intptr_t) == 4, "It should be 32bit platform");
 TEST(NewJsEngineTest, 32bitsOnly_MemoryLeak_NoLeak)

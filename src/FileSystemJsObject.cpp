@@ -37,30 +37,27 @@ namespace
     struct WeakData
     {
     public:
-      WeakData(const JsEnginePtr& jsEngine,
+      WeakData(JsEngine& jsEngine,
         JsEngine::JsWeakValuesID weakResolveCallback,
         JsEngine::JsWeakValuesID weakRejectCallback)
-        : weakJsEngine(jsEngine)
+        : jsEngine(jsEngine)
         , weakResolveCallback(weakResolveCallback)
         , weakRejectCallback(weakRejectCallback)
       {
       }
       virtual ~WeakData()
       {
-        auto jsEngine = weakJsEngine.lock();
-        if (!jsEngine)
-          return;
-        jsEngine->TakeJsValues(weakResolveCallback);
-        jsEngine->TakeJsValues(weakRejectCallback);
+        jsEngine.TakeJsValues(weakResolveCallback);
+        jsEngine.TakeJsValues(weakRejectCallback);
       }
-      std::weak_ptr<JsEngine> weakJsEngine;
+      JsEngine& jsEngine;
       JsEngine::JsWeakValuesID weakResolveCallback;
       JsEngine::JsWeakValuesID weakRejectCallback;
     };
 
     static void V8Callback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
     {
-      AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+      AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
       AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
       v8::Isolate* isolate = arguments.GetIsolate();
@@ -73,27 +70,22 @@ namespace
 
       auto weakResolveCallback = jsEngine->StoreJsValues({converted[1]});
       auto weakRejectCallback = jsEngine->StoreJsValues({converted[2]});
-      auto weakData = std::make_shared<WeakData>(jsEngine, weakResolveCallback, weakRejectCallback);
+      auto weakData = std::make_shared<WeakData>(*jsEngine, weakResolveCallback,
+          weakRejectCallback);
       auto fileName = converted[0].AsString();
       jsEngine->GetPlatform().WithFileSystem(
-        [weakData, fileName](IFileSystem& fileSystem)
+        [jsEngine, weakData, fileName](IFileSystem& fileSystem)
         {
-          fileSystem.Read(fileName, [weakData](IFileSystem::IOBuffer&& content)
+          fileSystem.Read(fileName, [jsEngine, weakData](IFileSystem::IOBuffer&& content)
             {
-              auto jsEngine = weakData->weakJsEngine.lock();
-              if (!jsEngine)
-                return;
               const JsContext context(*jsEngine);
               auto result = jsEngine->NewObject();
               result.SetStringBufferProperty("content", content);
               jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call(result);
             },
-            [weakData](const std::string& error)
+            [jsEngine, weakData](const std::string& error)
             {
               if (error.empty())
-                return;
-              auto jsEngine = weakData->weakJsEngine.lock();
-              if (!jsEngine)
                 return;
               const JsContext context(*jsEngine);
               jsEngine->GetJsValues(weakData->weakRejectCallback)[0].Call(jsEngine->NewValue(error));
@@ -126,7 +118,7 @@ namespace
     struct WeakData : ReadCallback::WeakData
     {
     public:
-      WeakData(const JsEnginePtr& jsEngine,
+      WeakData(JsEngine& jsEngine,
         JsEngine::JsWeakValuesID weakResolveCallback,
         JsEngine::JsWeakValuesID weakRejectCallback,
         JsEngine::JsWeakValuesID weakProcessFunc)
@@ -136,17 +128,14 @@ namespace
       }
       ~WeakData()
       {
-        auto jsEngine = weakJsEngine.lock();
-        if (!jsEngine)
-          return;
-        jsEngine->TakeJsValues(weakProcessFunc);
+        jsEngine.TakeJsValues(weakProcessFunc);
       }
       JsEngine::JsWeakValuesID weakProcessFunc;
     };
 
     void V8Callback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
     {
-      AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+      AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
       AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
       v8::Isolate* isolate = arguments.GetIsolate();
@@ -162,16 +151,13 @@ namespace
       auto weakProcessFunc = jsEngine->StoreJsValues({converted[1]});
       auto weakResolveCallback = jsEngine->StoreJsValues({converted[2]});
       auto weakRejectCallback = jsEngine->StoreJsValues({converted[3]});
-      auto weakData = std::make_shared<WeakData>(jsEngine, weakResolveCallback, weakRejectCallback, weakProcessFunc);
+      auto weakData = std::make_shared<WeakData>(
+          *jsEngine, weakResolveCallback, weakRejectCallback, weakProcessFunc);
       auto fileName = converted[0].AsString();
-      jsEngine->GetPlatform().WithFileSystem([weakData, fileName](IFileSystem& fileSystem)
+      jsEngine->GetPlatform().WithFileSystem([jsEngine, weakData, fileName](IFileSystem& fileSystem)
         {
-          fileSystem.Read(fileName, [weakData](IFileSystem::IOBuffer&& content)
+          fileSystem.Read(fileName, [jsEngine, weakData](IFileSystem::IOBuffer&& content)
             {
-              auto jsEngine = weakData->weakJsEngine.lock();
-              if (!jsEngine)
-                return;
-
               const JsContext context(*jsEngine);
               auto jsValues = jsEngine->GetJsValues(weakData->weakProcessFunc);
               auto processFunc = jsValues[0].UnwrapValue().As<v8::Function>();
@@ -200,12 +186,9 @@ namespace
                 stringBegin = SkipEndOfLine(stringEnd, contentEnd);
               } while (stringBegin != contentEnd);
               jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call();
-            }, [weakData](const std::string& error)
+            }, [jsEngine, weakData](const std::string& error)
             {
               if (error.empty())
-                return;
-              auto jsEngine = weakData->weakJsEngine.lock();
-              if (!jsEngine)
                 return;
               jsEngine->GetJsValues(weakData->weakRejectCallback)[0].Call(jsEngine->NewValue(error));
             });
@@ -215,7 +198,7 @@ namespace
 
   void WriteCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
@@ -227,19 +210,14 @@ namespace
     JsValueList values;
     values.push_back(converted[2]);
     auto weakCallback = jsEngine->StoreJsValues(values);
-    std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
     auto content = converted[1].AsStringBuffer();
     auto fileName = converted[0].AsString();
     jsEngine->GetPlatform().WithFileSystem(
-      [weakJsEngine, weakCallback, fileName, content](IFileSystem& fileSystem)
+      [jsEngine, weakCallback, fileName, content](IFileSystem& fileSystem)
       {
         fileSystem.Write(fileName, content,
-          [weakJsEngine, weakCallback](const std::string& error)
+          [jsEngine, weakCallback](const std::string& error)
           {
-            auto jsEngine = weakJsEngine.lock();
-            if (!jsEngine)
-              return;
-
             const JsContext context(*jsEngine);
             JsValueList params;
             if (!error.empty())
@@ -251,7 +229,7 @@ namespace
 
   void MoveCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
@@ -263,19 +241,14 @@ namespace
     JsValueList values;
     values.push_back(converted[2]);
     auto weakCallback = jsEngine->StoreJsValues(values);
-    std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
     auto from = converted[0].AsString();
     auto to = converted[1].AsString();
     jsEngine->GetPlatform().WithFileSystem(
-      [weakJsEngine, weakCallback, from, to](IFileSystem& fileSystem)
+      [jsEngine, weakCallback, from, to](IFileSystem& fileSystem)
       {
         fileSystem.Move(from, to,
-          [weakJsEngine, weakCallback](const std::string& error)
+          [jsEngine, weakCallback](const std::string& error)
           {
-            auto jsEngine = weakJsEngine.lock();
-            if (!jsEngine)
-              return;
-
             const JsContext context(*jsEngine);
             JsValueList params;
             if (!error.empty())
@@ -287,7 +260,7 @@ namespace
 
   void RemoveCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
@@ -299,18 +272,13 @@ namespace
     JsValueList values;
     values.push_back(converted[1]);
     auto weakCallback = jsEngine->StoreJsValues(values);
-    std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
     auto fileName = converted[0].AsString();
     jsEngine->GetPlatform().WithFileSystem(
-      [weakJsEngine, weakCallback, fileName](IFileSystem& fileSystem)
+      [jsEngine, weakCallback, fileName](IFileSystem& fileSystem)
       {
         fileSystem.Remove(fileName,
-          [weakJsEngine, weakCallback](const std::string& error)
+          [jsEngine, weakCallback](const std::string& error)
           {
-            auto jsEngine = weakJsEngine.lock();
-            if (!jsEngine)
-              return;
-
             const JsContext context(*jsEngine);
             JsValueList params;
             if (!error.empty())
@@ -322,7 +290,7 @@ namespace
 
   void StatCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     v8::Isolate* isolate = arguments.GetIsolate();
@@ -334,19 +302,14 @@ namespace
     JsValueList values;
     values.push_back(converted[1]);
     auto weakCallback = jsEngine->StoreJsValues(values);
-    std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
     auto fileName = converted[0].AsString();
     jsEngine->GetPlatform().WithFileSystem(
-      [weakJsEngine, weakCallback, fileName](IFileSystem& fileSystem)
+      [jsEngine, weakCallback, fileName](IFileSystem& fileSystem)
       {
         fileSystem.Stat(fileName,
-           [weakJsEngine, weakCallback]
+           [jsEngine, weakCallback]
            (const IFileSystem::StatResult& statResult, const std::string& error)
            {
-             auto jsEngine = weakJsEngine.lock();
-             if (!jsEngine)
-               return;
-
              const JsContext context(*jsEngine);
              auto result = jsEngine->NewObject();
 

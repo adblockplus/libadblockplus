@@ -29,7 +29,7 @@ namespace
   void DoLog(AdblockPlus::LogSystem::LogLevel logLevel,
     const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     const AdblockPlus::JsContext context(*jsEngine);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
@@ -82,7 +82,7 @@ namespace
 
   void TraceCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     const AdblockPlus::JsContext context(*jsEngine);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 

@@ -27,7 +27,7 @@ using namespace AdblockPlus;
 
 void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arguments)
 {
-  AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+  AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
   AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
   if (converted.size() != 3u)
     throw std::runtime_error("GET requires exactly 3 arguments");
@@ -55,12 +55,8 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
     throw std::runtime_error("Third argument to GET must be a function");
 
   auto paramsID = jsEngine->StoreJsValues(converted);
-  std::weak_ptr<JsEngine> weakJsEngine = jsEngine;
-  auto getCallback = [weakJsEngine, paramsID](const ServerResponse& response)
+  auto getCallback = [jsEngine, paramsID](const ServerResponse& response)
   {
-    auto jsEngine = weakJsEngine.lock();
-    if (!jsEngine)
-      return;
     auto webRequestParams = jsEngine->TakeJsValues(paramsID);
 
     AdblockPlus::JsContext context(*jsEngine);

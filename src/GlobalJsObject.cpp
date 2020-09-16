@@ -52,7 +52,7 @@ namespace
 
   void TriggerEventCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
-    AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
+    AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
     if (converted.size() < 1)
     {

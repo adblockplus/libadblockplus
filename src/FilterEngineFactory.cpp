@@ -77,7 +77,7 @@ namespace
     };
 }
 
-void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
+void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
   const EvaluateCallback& evaluateCallback,
   const OnCreatedCallback& onCreated,
   const CreationParameters& params)
@@ -93,7 +93,7 @@ void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
   auto* bareFilterEngine = wrappedFilterEngine->get();
   {
     auto isSubscriptionDownloadAllowedCallback = params.isSubscriptionDownloadAllowedCallback;
-    jsEngine->SetEventCallback("_isSubscriptionDownloadAllowed", [bareFilterEngine, isSubscriptionDownloadAllowedCallback](JsValueList&& params){
+    jsEngine.SetEventCallback("_isSubscriptionDownloadAllowed", [bareFilterEngine, isSubscriptionDownloadAllowedCallback](JsValueList&& params){
       auto& jsEngine = bareFilterEngine->GetJsEngine();
 
       // param[0] - nullable string Prefs.allowed_connection_type
@@ -119,12 +119,12 @@ void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
     });
   }
 
-  jsEngine->SetEventCallback("_init", [jsEngine, wrappedFilterEngine,
+  jsEngine.SetEventCallback("_init", [&jsEngine, wrappedFilterEngine,
                                        onCreated](JsValueList &&params) {
     auto uniqueFilterEngine = std::move(*wrappedFilterEngine);
     uniqueFilterEngine->SetIsFirstRun(params.size() && params[0].AsBool());
     onCreated(std::move(uniqueFilterEngine));
-    jsEngine->RemoveEventCallback("_init");
+    jsEngine.RemoveEventCallback("_init");
   });
 
   bareFilterEngine->SetFilterChangeCallback([bareFilterEngine](const std::string& reason, JsValue&&)
@@ -135,14 +135,14 @@ void FilterEngineFactory::CreateAsync(const JsEnginePtr& jsEngine,
 
   // Lock the JS engine while we are loading scripts, no timeouts should fire
   // until we are done.
-  const JsContext context(*jsEngine);
+  const JsContext context(jsEngine);
   // Set the preconfigured prefs
-  auto preconfiguredPrefsObject = jsEngine->NewObject();
+  auto preconfiguredPrefsObject = jsEngine.NewObject();
   for (const auto& pref : params.preconfiguredPrefs)
   {
     preconfiguredPrefsObject.SetProperty(pref.first, pref.second);
   }
-  jsEngine->SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
+  jsEngine.SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
 
   // Load adblockplus scripts
   for (const auto& filterEngineJsFile: filterEngineJsFiles)
