@@ -108,7 +108,7 @@ namespace
     LazyFileSystem* fileSystem;
     bool isFilterEngineCreated;
 
-    void SetUp()
+    void SetUp() override
     {
       isConnectionAllowed = true;
       isFilterEngineCreated = false;

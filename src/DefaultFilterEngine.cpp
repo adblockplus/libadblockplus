@@ -25,7 +25,7 @@
 
 using namespace AdblockPlus;
 
-DefaultFilterEngine::DefaultFilterEngine(const JsEnginePtr& jsEngine)
+DefaultFilterEngine::DefaultFilterEngine(JsEngine& jsEngine)
   : jsEngine(jsEngine), firstRun(false)
 {
 }
@@ -37,19 +37,19 @@ bool DefaultFilterEngine::IsFirstRun() const
 
 Filter DefaultFilterEngine::GetFilter(const std::string& text) const
 {
-  JsValue func = jsEngine->Evaluate("API.getFilterFromText");
-  return Filter(func.Call(jsEngine->NewValue(text)));
+  JsValue func = jsEngine.Evaluate("API.getFilterFromText");
+  return Filter(func.Call(jsEngine.NewValue(text)));
 }
 
 Subscription DefaultFilterEngine::GetSubscription(const std::string& url) const
 {
-  JsValue func = jsEngine->Evaluate("API.getSubscriptionFromUrl");
-  return Subscription(func.Call(jsEngine->NewValue(url)));
+  JsValue func = jsEngine.Evaluate("API.getSubscriptionFromUrl");
+  return Subscription(func.Call(jsEngine.NewValue(url)));
 }
 
 std::vector<Filter> DefaultFilterEngine::GetListedFilters() const
 {
-  JsValue func = jsEngine->Evaluate("API.getListedFilters");
+  JsValue func = jsEngine.Evaluate("API.getListedFilters");
   JsValueList values = func.Call().AsList();
   std::vector<Filter> result;
   for (auto& value : values)
@@ -59,7 +59,7 @@ std::vector<Filter> DefaultFilterEngine::GetListedFilters() const
 
 std::vector<Subscription> DefaultFilterEngine::GetListedSubscriptions() const
 {
-  JsValue func = jsEngine->Evaluate("API.getListedSubscriptions");
+  JsValue func = jsEngine.Evaluate("API.getListedSubscriptions");
   JsValueList values = func.Call().AsList();
   std::vector<Subscription> result;
   for (auto& value : values)
@@ -69,7 +69,7 @@ std::vector<Subscription> DefaultFilterEngine::GetListedSubscriptions() const
 
 std::vector<Subscription> DefaultFilterEngine::FetchAvailableSubscriptions() const
 {
-  JsValue func = jsEngine->Evaluate("API.getRecommendedSubscriptions");
+  JsValue func = jsEngine.Evaluate("API.getRecommendedSubscriptions");
   JsValueList values = func.Call().AsList();
   std::vector<Subscription> result;
   for (auto& value : values)
@@ -79,12 +79,12 @@ std::vector<Subscription> DefaultFilterEngine::FetchAvailableSubscriptions() con
 
 void DefaultFilterEngine::SetAAEnabled(bool enabled)
 {
-  jsEngine->Evaluate("API.setAASubscriptionEnabled").Call(jsEngine->NewValue(enabled));
+  jsEngine.Evaluate("API.setAASubscriptionEnabled").Call(jsEngine.NewValue(enabled));
 }
 
 bool DefaultFilterEngine::IsAAEnabled() const
 {
-  return jsEngine->Evaluate("API.isAASubscriptionEnabled()").AsBool();
+  return jsEngine.Evaluate("API.isAASubscriptionEnabled()").AsBool();
 }
 
 std::string DefaultFilterEngine::GetAAUrl() const
@@ -154,13 +154,13 @@ AdblockPlus::FilterPtr DefaultFilterEngine::CheckFilterMatch(const std::string& 
 {
   if (url.empty())
     return FilterPtr();
-  JsValue func = jsEngine->Evaluate("API.checkFilterMatch");
+  JsValue func = jsEngine.Evaluate("API.checkFilterMatch");
   JsValueList params;
-  params.push_back(jsEngine->NewValue(url));
-  params.push_back(jsEngine->NewValue(contentTypeMask));
-  params.push_back(jsEngine->NewValue(documentUrl));
-  params.push_back(jsEngine->NewValue(siteKey));
-  params.push_back(jsEngine->NewValue(specificOnly));
+  params.push_back(jsEngine.NewValue(url));
+  params.push_back(jsEngine.NewValue(contentTypeMask));
+  params.push_back(jsEngine.NewValue(documentUrl));
+  params.push_back(jsEngine.NewValue(siteKey));
+  params.push_back(jsEngine.NewValue(specificOnly));
   JsValue result = func.Call(params);
   if (!result.IsNull())
     return FilterPtr(new Filter(std::move(result)));
@@ -171,16 +171,16 @@ AdblockPlus::FilterPtr DefaultFilterEngine::CheckFilterMatch(const std::string& 
 std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& domain, bool specificOnly) const
 {
   JsValueList params;
-  params.push_back(jsEngine->NewValue(domain));
-  params.push_back(jsEngine->NewValue(specificOnly));
-  JsValue func = jsEngine->Evaluate("API.getElementHidingStyleSheet");
+  params.push_back(jsEngine.NewValue(domain));
+  params.push_back(jsEngine.NewValue(specificOnly));
+  JsValue func = jsEngine.Evaluate("API.getElementHidingStyleSheet");
   return func.Call(params).AsString();
 }
 
 std::vector<IFilterEngine::EmulationSelector> DefaultFilterEngine::GetElementHidingEmulationSelectors(const std::string& domain) const
 {
-  JsValue func = jsEngine->Evaluate("API.getElementHidingEmulationSelectors");
-  JsValueList result = func.Call(jsEngine->NewValue(domain)).AsList();
+  JsValue func = jsEngine.Evaluate("API.getElementHidingEmulationSelectors");
+  JsValueList result = func.Call(jsEngine.NewValue(domain)).AsList();
   std::vector<IFilterEngine::EmulationSelector> selectors;
   selectors.reserve(result.size());
   for (const auto& r : result)
@@ -190,28 +190,28 @@ std::vector<IFilterEngine::EmulationSelector> DefaultFilterEngine::GetElementHid
 
 JsValue DefaultFilterEngine::GetPref(const std::string& pref) const
 {
-  JsValue func = jsEngine->Evaluate("API.getPref");
-  return func.Call(jsEngine->NewValue(pref));
+  JsValue func = jsEngine.Evaluate("API.getPref");
+  return func.Call(jsEngine.NewValue(pref));
 }
 
 void DefaultFilterEngine::SetPref(const std::string& pref, const JsValue& value)
 {
-  JsValue func = jsEngine->Evaluate("API.setPref");
+  JsValue func = jsEngine.Evaluate("API.setPref");
   JsValueList params;
-  params.push_back(jsEngine->NewValue(pref));
+  params.push_back(jsEngine.NewValue(pref));
   params.push_back(value);
   func.Call(params);
 }
 
 std::string DefaultFilterEngine::GetHostFromURL(const std::string& url) const
 {
-  JsValue func = jsEngine->Evaluate("API.getHostFromUrl");
-  return func.Call(jsEngine->NewValue(url)).AsString();
+  JsValue func = jsEngine.Evaluate("API.getHostFromUrl");
+  return func.Call(jsEngine.NewValue(url)).AsString();
 }
 
 void DefaultFilterEngine::SetFilterChangeCallback(const FilterChangeCallback& callback)
 {
-  jsEngine->SetEventCallback("filterChange", [this, callback](JsValueList&& params)
+  jsEngine.SetEventCallback("filterChange", [this, callback](JsValueList&& params)
   {
     this->FilterChanged(callback, move(params));
   });
@@ -219,12 +219,12 @@ void DefaultFilterEngine::SetFilterChangeCallback(const FilterChangeCallback& ca
 
 void DefaultFilterEngine::RemoveFilterChangeCallback()
 {
-  jsEngine->RemoveEventCallback("filterChange");
+  jsEngine.RemoveEventCallback("filterChange");
 }
 
 void DefaultFilterEngine::SetAllowedConnectionType(const std::string* value)
 {
-  SetPref("allowed_connection_type", value ? jsEngine->NewValue(*value) : jsEngine->NewValue(""));
+  SetPref("allowed_connection_type", value ? jsEngine.NewValue(*value) : jsEngine.NewValue(""));
 }
 
 std::unique_ptr<std::string> DefaultFilterEngine::GetAllowedConnectionType() const
@@ -238,16 +238,16 @@ std::unique_ptr<std::string> DefaultFilterEngine::GetAllowedConnectionType() con
 void DefaultFilterEngine::FilterChanged(const IFilterEngine::FilterChangeCallback& callback, JsValueList&& params) const
 {
   std::string action(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
-  JsValue item(params.size() >= 2 ? params[1] : jsEngine->NewValue(false));
+  JsValue item(params.size() >= 2 ? params[1] : jsEngine.NewValue(false));
   callback(action, std::move(item));
 }
 
 int DefaultFilterEngine::CompareVersions(const std::string& v1, const std::string& v2) const
 {
   JsValueList params;
-  params.push_back(jsEngine->NewValue(v1));
-  params.push_back(jsEngine->NewValue(v2));
-  JsValue func = jsEngine->Evaluate("API.compareVersions");
+  params.push_back(jsEngine.NewValue(v1));
+  params.push_back(jsEngine.NewValue(v2));
+  JsValue func = jsEngine.Evaluate("API.compareVersions");
   return func.Call(params).AsInt();
 }
 
@@ -255,12 +255,12 @@ bool DefaultFilterEngine::VerifySignature(const std::string& key, const std::str
                                    const std::string& host, const std::string& userAgent) const
 {
   JsValueList params;
-  params.push_back(jsEngine->NewValue(key));
-  params.push_back(jsEngine->NewValue(signature));
-  params.push_back(jsEngine->NewValue(uri));
-  params.push_back(jsEngine->NewValue(host));
-  params.push_back(jsEngine->NewValue(userAgent));
-  JsValue func = jsEngine->Evaluate("API.verifySignature");
+  params.push_back(jsEngine.NewValue(key));
+  params.push_back(jsEngine.NewValue(signature));
+  params.push_back(jsEngine.NewValue(uri));
+  params.push_back(jsEngine.NewValue(host));
+  params.push_back(jsEngine.NewValue(userAgent));
+  JsValue func = jsEngine.Evaluate("API.verifySignature");
   return func.Call(params).AsBool();
 }
 
@@ -268,15 +268,15 @@ std::vector<std::string> DefaultFilterEngine::ComposeFilterSuggestions(const IEl
 {
   JsValueList params;
 
-  params.push_back(jsEngine->NewValue(element->GetDocumentLocation()));
-  params.push_back(jsEngine->NewValue(element->GetLocalName()));
-  params.push_back(jsEngine->NewValue(element->GetAttribute("id")));
-  params.push_back(jsEngine->NewValue(element->GetAttribute("src")));
-  params.push_back(jsEngine->NewValue(element->GetAttribute("style")));
-  params.push_back(jsEngine->NewValue(element->GetAttribute("class")));
-  params.push_back(jsEngine->NewArray(Utils::GetAssociatedUrls(element)));
+  params.push_back(jsEngine.NewValue(element->GetDocumentLocation()));
+  params.push_back(jsEngine.NewValue(element->GetLocalName()));
+  params.push_back(jsEngine.NewValue(element->GetAttribute("id")));
+  params.push_back(jsEngine.NewValue(element->GetAttribute("src")));
+  params.push_back(jsEngine.NewValue(element->GetAttribute("style")));
+  params.push_back(jsEngine.NewValue(element->GetAttribute("class")));
+  params.push_back(jsEngine.NewArray(Utils::GetAssociatedUrls(element)));
 
-  JsValue func = jsEngine->Evaluate("API.composeFilterSuggestions");
+  JsValue func = jsEngine.Evaluate("API.composeFilterSuggestions");
   JsValueList suggestions = func.Call(params).AsList();
   std::vector<std::string> res;
   res.reserve(suggestions.size());

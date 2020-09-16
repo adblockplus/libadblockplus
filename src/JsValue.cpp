@@ -24,7 +24,7 @@
 
 using namespace AdblockPlus;
 
-AdblockPlus::JsValue::JsValue(AdblockPlus::JsEnginePtr jsEngine,
+AdblockPlus::JsValue::JsValue(AdblockPlus::JsEngine* jsEngine,
       v8::Local<v8::Value> value)
     : jsEngine(jsEngine),
       value(new v8::Global<v8::Value>(jsEngine->GetIsolate(), value))

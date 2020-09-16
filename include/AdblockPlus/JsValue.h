@@ -38,8 +38,6 @@ namespace AdblockPlus
   class JsValue;
   class JsEngine;
 
-  typedef std::shared_ptr<JsEngine> JsEnginePtr;
-
   typedef IFileSystem::IOBuffer StringBuffer;
 
   /**
@@ -152,9 +150,9 @@ namespace AdblockPlus
     v8::Local<v8::Value> UnwrapValue() const;
 
   protected:
-    JsEnginePtr jsEngine;
+    JsEngine* jsEngine;
   private:
-    JsValue(JsEnginePtr jsEngine, v8::Local<v8::Value> value);
+    JsValue(JsEngine* jsEngine, v8::Local<v8::Value> value);
     void SetProperty(const std::string& name, v8::Local<v8::Value> val);
 
     // Parameter args is not const because a pointer to its internal arrays is

@@ -126,6 +126,8 @@ namespace AdblockPlus
     typedef std::function<void(LogSystem&)> WithLogSystemCallback;
     virtual void WithLogSystem(const WithLogSystemCallback&);
 
+  private:
+    std::unique_ptr<JsEngine> jsEngine;
   protected:
     LogSystemPtr logSystem;
     TimerPtr timer;
@@ -134,7 +136,6 @@ namespace AdblockPlus
   private:
     // used for creation and deletion of modules.
     std::mutex modulesMutex;
-    std::shared_ptr<JsEngine> jsEngine;
     std::shared_future<std::unique_ptr<IFilterEngine>> filterEngine;
     std::set<std::string> evaluatedJsSources;
     std::mutex evaluatedJsSourcesMutex;

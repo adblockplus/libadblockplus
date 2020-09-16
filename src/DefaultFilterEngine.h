@@ -25,9 +25,9 @@ namespace AdblockPlus
   class DefaultFilterEngine : public IFilterEngine
   {
   public:
-    explicit DefaultFilterEngine(const JsEnginePtr& jsEngine);
+    explicit DefaultFilterEngine(JsEngine& jsEngine);
 
-    JsEngine& GetJsEngine() const final { return *jsEngine; }
+    JsEngine& GetJsEngine() const final { return jsEngine; }
 
     bool IsFirstRun() const final;
 
@@ -99,7 +99,7 @@ namespace AdblockPlus
     void SetIsFirstRun(bool isFirstRun) { firstRun = isFirstRun; }
 
   private:
-    JsEnginePtr jsEngine;
+    JsEngine& jsEngine;
     bool firstRun;
 
     FilterPtr CheckFilterMatch(const std::string& url,
