@@ -24,25 +24,20 @@
 namespace AdblockPlus
 {
   /**
-   * Wrapper for an Adblock Plus filter object.
-   * There are no accessors for most
-   * [filter properties](https://adblockplus.org/jsdoc/adblockpluscore/Filter.html),
-   * use `GetProperty()` to retrieve them by name.
+   * Adblock Plus Filter object wrapper.
+   * @see [original documentation](https://adblockplus.org/jsdoc/adblockpluscore/Filter.html),
    */
-  class Filter : public JsValue
+  class Filter
   {
   public:
-    Filter(const Filter& src);
-    Filter(Filter&& src);
-    Filter& operator=(const Filter& src);
-    Filter& operator=(Filter&& src);
     /**
      * Creates a wrapper for an existing JavaScript filter object.
      * Normally you shouldn't call this directly, but use
      * IFilterEngine::GetFilter() instead.
-     * @param value JavaScript filter object.
+     * @param object JavaScript filter object.
+     * @param engine JavaScript engine to make calls on object.
      */
-    Filter(JsValue&& value);
+    Filter(JsValue&& object, JsEngine* jsEngine);
 
     /**
      * Filter types, see https://adblockplus.org/en/filters.
@@ -74,7 +69,19 @@ namespace AdblockPlus
      */
     void RemoveFromList();
 
+    /**
+     * Unparsed string representation of the filter.
+     * @return unparser filter.
+     */
+    std::string GetRaw() const;
+
     bool operator==(const Filter& filter) const;
+
+  private:
+    std::string GetStringProperty(const std::string& name) const;
+
+    JsValue jsObject;
+    JsEngine* jsEngine;
   };
 
   /**

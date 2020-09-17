@@ -38,13 +38,13 @@ bool DefaultFilterEngine::IsFirstRun() const
 Filter DefaultFilterEngine::GetFilter(const std::string& text) const
 {
   JsValue func = jsEngine.Evaluate("API.getFilterFromText");
-  return Filter(func.Call(jsEngine.NewValue(text)));
+  return Filter(func.Call(jsEngine.NewValue(text)), &jsEngine);
 }
 
 Subscription DefaultFilterEngine::GetSubscription(const std::string& url) const
 {
   JsValue func = jsEngine.Evaluate("API.getSubscriptionFromUrl");
-  return Subscription(func.Call(jsEngine.NewValue(url)));
+  return Subscription(func.Call(jsEngine.NewValue(url)), &jsEngine);
 }
 
 std::vector<Filter> DefaultFilterEngine::GetListedFilters() const
@@ -53,7 +53,7 @@ std::vector<Filter> DefaultFilterEngine::GetListedFilters() const
   JsValueList values = func.Call().AsList();
   std::vector<Filter> result;
   for (auto& value : values)
-    result.push_back(Filter(std::move(value)));
+    result.push_back(Filter(std::move(value), &jsEngine));
   return result;
 }
 
@@ -63,7 +63,7 @@ std::vector<Subscription> DefaultFilterEngine::GetListedSubscriptions() const
   JsValueList values = func.Call().AsList();
   std::vector<Subscription> result;
   for (auto& value : values)
-    result.push_back(Subscription(std::move(value)));
+    result.push_back(Subscription(std::move(value), &jsEngine));
   return result;
 }
 
@@ -73,7 +73,7 @@ std::vector<Subscription> DefaultFilterEngine::FetchAvailableSubscriptions() con
   JsValueList values = func.Call().AsList();
   std::vector<Subscription> result;
   for (auto& value : values)
-    result.push_back(Subscription(std::move(value)));
+    result.push_back(Subscription(std::move(value), &jsEngine));
   return result;
 }
 
@@ -163,7 +163,7 @@ AdblockPlus::FilterPtr DefaultFilterEngine::CheckFilterMatch(const std::string& 
   params.push_back(jsEngine.NewValue(specificOnly));
   JsValue result = func.Call(params);
   if (!result.IsNull())
-    return FilterPtr(new Filter(std::move(result)));
+    return FilterPtr(new Filter(std::move(result), &jsEngine));
   else
     return FilterPtr();
 }

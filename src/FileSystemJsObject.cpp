@@ -78,7 +78,7 @@ namespace
         {
           fileSystem.Read(fileName, [jsEngine, weakData](IFileSystem::IOBuffer&& content)
             {
-              const JsContext context(*jsEngine);
+              const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
               auto result = jsEngine->NewObject();
               result.SetStringBufferProperty("content", content);
               jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call(result);
@@ -87,7 +87,7 @@ namespace
             {
               if (error.empty())
                 return;
-              const JsContext context(*jsEngine);
+              const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
               jsEngine->GetJsValues(weakData->weakRejectCallback)[0].Call(jsEngine->NewValue(error));
             });
         });
@@ -158,7 +158,7 @@ namespace
         {
           fileSystem.Read(fileName, [jsEngine, weakData](IFileSystem::IOBuffer&& content)
             {
-              const JsContext context(*jsEngine);
+              const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
               auto jsValues = jsEngine->GetJsValues(weakData->weakProcessFunc);
               auto processFunc = jsValues[0].UnwrapValue().As<v8::Function>();
               auto globalContext = context.GetV8Context()->Global();
@@ -218,7 +218,7 @@ namespace
         fileSystem.Write(fileName, content,
           [jsEngine, weakCallback](const std::string& error)
           {
-            const JsContext context(*jsEngine);
+            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
             JsValueList params;
             if (!error.empty())
               params.push_back(jsEngine->NewValue(error));
@@ -249,7 +249,7 @@ namespace
         fileSystem.Move(from, to,
           [jsEngine, weakCallback](const std::string& error)
           {
-            const JsContext context(*jsEngine);
+            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
             JsValueList params;
             if (!error.empty())
               params.push_back(jsEngine->NewValue(error));
@@ -279,7 +279,7 @@ namespace
         fileSystem.Remove(fileName,
           [jsEngine, weakCallback](const std::string& error)
           {
-            const JsContext context(*jsEngine);
+            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
             JsValueList params;
             if (!error.empty())
               params.push_back(jsEngine->NewValue(error));
@@ -310,7 +310,7 @@ namespace
            [jsEngine, weakCallback]
            (const IFileSystem::StatResult& statResult, const std::string& error)
            {
-             const JsContext context(*jsEngine);
+             const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
              auto result = jsEngine->NewObject();
 
              result.SetProperty("exists", statResult.exists);

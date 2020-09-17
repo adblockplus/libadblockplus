@@ -27,7 +27,9 @@
 
 namespace v8
 {
+  class Isolate;
   class Value;
+  class Context;
   class Object;
   template<class T> class Local;
   template<class T> class Global;
@@ -149,16 +151,16 @@ namespace AdblockPlus
 
     v8::Local<v8::Value> UnwrapValue() const;
 
-  protected:
-    JsEngine* jsEngine;
   private:
-    JsValue(JsEngine* jsEngine, v8::Local<v8::Value> value);
+    JsValue(v8::Isolate* isolate, const v8::Global<v8::Context>& jsContext, v8::Local<v8::Value> value);
     void SetProperty(const std::string& name, v8::Local<v8::Value> val);
 
     // Parameter args is not const because a pointer to its internal arrays is
     // passed to v8::Function::Call but the latter does not expect a const pointer.
     JsValue Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Object> thisObj) const;
 
+    v8::Isolate* isolate;
+    std::unique_ptr<v8::Global<v8::Context>> jsContext;
     std::unique_ptr<v8::Global<v8::Value>> value;
   };
 }

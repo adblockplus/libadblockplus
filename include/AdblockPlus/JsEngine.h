@@ -262,13 +262,12 @@ namespace AdblockPlus
      */
     void SetGlobalProperty(const std::string& name, const AdblockPlus::JsValue& value);
 
-    /**
-     * Returns a pointer to associated v8::Isolate.
-     */
-    v8::Isolate* GetIsolate()
+    v8::Isolate* GetIsolate() const
     {
       return isolate->Get();
     }
+
+    v8::Global<v8::Context>& GetContext() const;
 
     /**
      * Notifies JS engine about critically low memory what should cause a
@@ -283,6 +282,7 @@ namespace AdblockPlus
     {
       return platform;
     }
+
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
