@@ -17,10 +17,11 @@
 
 #include "JsContext.h"
 
-AdblockPlus::JsContext::JsContext(JsEngine& jsEngine)
-    : locker(jsEngine.GetIsolate()), isolateScope(jsEngine.GetIsolate()),
-      handleScope(jsEngine.GetIsolate()),
-      context(v8::Local<v8::Context>::New(jsEngine.GetIsolate(), *jsEngine.context)),
-      contextScope(context)
+AdblockPlus::JsContext::JsContext(v8::Isolate* isolate, const v8::Global<v8::Context>& context)
+    : locker(isolate),
+      isolateScope(isolate),
+      handleScope(isolate),
+      context(v8::Local<v8::Context>::New(isolate, context)),
+      contextScope(this->context)
 {
 }

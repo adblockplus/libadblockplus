@@ -29,12 +29,11 @@ namespace
     for (SubscriptionList::const_iterator it = subscriptions.begin();
          it != subscriptions.end(); it++)
     {
-      std::cout << it->GetProperty("title").AsString();
-      std::cout << " - " << it->GetProperty("url").AsString();
-      if (!it->GetProperty("author").IsUndefined())
-        std::cout << " - " << it->GetProperty("author").AsString();
-      if (!it->GetProperty("specialization").IsUndefined())
-        std::cout << " - " << it->GetProperty("specialization").AsString();
+      std::cout << it->GetTitle();
+      std::cout << " - " << it->GetUrl();
+      std::string author = it->GetAuthor();
+      if (!author.empty())
+        std::cout << " - " << author;
       std::cout << std::endl;
     }
   }
@@ -61,10 +60,8 @@ void SubscriptionsCommand::operator()(const std::string& arguments)
   {
     std::string url;
     argumentStream >> url;
-    std::string title;
-    std::getline(argumentStream, title);
     if (url.size())
-      AddSubscription(url, title);
+      AddSubscription(url);
     else
       ShowUsage();
   }
@@ -100,12 +97,9 @@ void SubscriptionsCommand::ShowSubscriptions()
   ShowSubscriptionList(filterEngine.GetListedSubscriptions());
 }
 
-void SubscriptionsCommand::AddSubscription(const std::string& url,
-                                           const std::string& title)
+void SubscriptionsCommand::AddSubscription(const std::string& url)
 {
   AdblockPlus::Subscription subscription = filterEngine.GetSubscription(url);
-  if (title.size())
-    subscription.SetProperty("title", title);
   subscription.AddToList();
 }
 

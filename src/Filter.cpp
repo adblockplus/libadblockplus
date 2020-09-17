@@ -24,38 +24,17 @@
 using namespace AdblockPlus;
 
 
-Filter::Filter(JsValue&& value)
-    : JsValue(std::move(value))
+Filter::Filter(JsValue&& value, JsEngine* engine)
+    : jsObject(std::move(value)),
+      jsEngine(engine)
 {
-  if (!IsObject())
+  if (!jsObject.IsObject())
     throw std::runtime_error("JavaScript value is not an object");
-}
-
-Filter::Filter(const Filter& src)
-  : JsValue(src)
-{
-}
-
-Filter::Filter(Filter&& src)
-  : JsValue(std::move(src))
-{
-}
-
-Filter& Filter::operator=(const Filter& src)
-{
-  static_cast<JsValue&>(*this) = src;
-  return *this;
-}
-
-Filter& Filter::operator=(Filter&& src)
-{
-  static_cast<JsValue&>(*this) = std::move(src);
-  return *this;
 }
 
 Filter::Type Filter::GetType() const
 {
-  std::string className = GetClass();
+  std::string className = jsObject.GetClass();
   if (className == "BlockingFilter")
     return TYPE_BLOCKING;
   else if (className == "WhitelistFilter")
@@ -75,22 +54,33 @@ Filter::Type Filter::GetType() const
 bool Filter::IsListed() const
 {
   JsValue func = jsEngine->Evaluate("API.isListedFilter");
-  return func.Call(*this).AsBool();
+  return func.Call(jsObject).AsBool();
 }
 
 void Filter::AddToList()
 {
   JsValue func = jsEngine->Evaluate("API.addFilterToList");
-  func.Call(*this);
+  func.Call(jsObject);
 }
 
 void Filter::RemoveFromList()
 {
   JsValue func = jsEngine->Evaluate("API.removeFilterFromList");
-  func.Call(*this);
+  func.Call(jsObject);
+}
+
+std::string Filter::GetRaw() const
+{
+  return GetStringProperty("text");
 }
 
 bool Filter::operator==(const Filter& filter) const
 {
-  return GetProperty("text").AsString() == filter.GetProperty("text").AsString();
+  return GetRaw() == filter.GetRaw();
+}
+
+std::string Filter::GetStringProperty(const std::string& name) const
+{
+  JsValue value = jsObject.GetProperty(name);
+  return (value.IsUndefined() || value.IsNull()) ? "" : value.AsString();
 }

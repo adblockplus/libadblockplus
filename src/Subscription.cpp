@@ -21,83 +21,105 @@
 #include <AdblockPlus/Subscription.h>
 #include <AdblockPlus/JsEngine.h>
 
+#include "Utils.h"
+
 using namespace AdblockPlus;
 
-Subscription::Subscription(const Subscription& src)
-  : JsValue(src)
+Subscription::Subscription(JsValue&& object, JsEngine* engine)
+    : jsObject(std::move(object)),
+      jsEngine(engine)
 {
-}
-
-Subscription::Subscription(Subscription&& src)
-  : JsValue(std::move(src))
-{
-}
-
-Subscription::Subscription(JsValue&& value)
-    : JsValue(std::move(value))
-{
-  if (!IsObject())
+  if (!jsObject.IsObject())
     throw std::runtime_error("JavaScript value is not an object");
-}
-
-Subscription& Subscription::operator=(const Subscription& src)
-{
-  static_cast<JsValue&>(*this) = src;
-  return *this;
-}
-
-Subscription& Subscription::operator=(Subscription&& src)
-{
-  static_cast<JsValue&>(*this) = std::move(src);
-  return *this;
 }
 
 bool Subscription::IsListed() const
 {
   JsValue func = jsEngine->Evaluate("API.isListedSubscription");
-  return func.Call(*this).AsBool();
+  return func.Call(jsObject).AsBool();
 }
 
 bool Subscription::IsDisabled() const
 {
-  return GetProperty("disabled").AsBool();
+  return jsObject.GetProperty("disabled").AsBool();
 }
 
 void Subscription::SetDisabled(bool value)
 {
-  return SetProperty("disabled", value);
+  return jsObject.SetProperty("disabled", value);
 }
 
 void Subscription::AddToList()
 {
   JsValue func = jsEngine->Evaluate("API.addSubscriptionToList");
-  func.Call(*this);
+  func.Call(jsObject);
 }
 
 void Subscription::RemoveFromList()
 {
   JsValue func = jsEngine->Evaluate("API.removeSubscriptionFromList");
-  func.Call(*this);
+  func.Call(jsObject);
 }
 
 void Subscription::UpdateFilters()
 {
   JsValue func = jsEngine->Evaluate("API.updateSubscription");
-  func.Call(*this);
+  func.Call(jsObject);
 }
 
 bool Subscription::IsUpdating() const
 {
   JsValue func = jsEngine->Evaluate("API.isSubscriptionUpdating");
-  return func.Call(*this).AsBool();
+  return func.Call(jsObject).AsBool();
 }
 
 bool Subscription::IsAA() const
 {
-  return jsEngine->Evaluate("API.isAASubscription").Call(*this).AsBool();
+  return jsEngine->Evaluate("API.isAASubscription").Call(jsObject).AsBool();
 }
 
-bool Subscription::operator==(const Subscription& subscription) const
+std::string Subscription::GetTitle() const
 {
-  return GetProperty("url").AsString() == subscription.GetProperty("url").AsString();
+  return GetStringProperty("title");
+}
+
+std::string Subscription::GetUrl() const
+{
+  return GetStringProperty("url");
+}
+
+std::string Subscription::GetHomepage() const
+{
+  return GetStringProperty("homepage");
+}
+
+std::string Subscription::GetAuthor() const
+{
+  return GetStringProperty("author");
+}
+
+std::vector<std::string> Subscription::GetLanguages() const
+{
+  return Utils::SplitString(GetStringProperty("prefixes"), ',');
+}
+
+int Subscription::GetFilterCount() const
+{
+  return jsObject.GetProperty("filterCount").AsInt();
+}
+
+std::string Subscription::GetSynchronizationStatus() const
+{
+  return GetStringProperty("downloadStatus");
+}
+
+bool Subscription::operator==(const Subscription& value) const
+{
+  return GetUrl() == value.GetUrl();
+}
+
+std::string Subscription::GetStringProperty(const std::string& name) const
+{
+  JsValue value = jsObject.GetProperty(name);
+  return (value.IsUndefined() || value.IsNull()) ? "" : value.AsString();
 }

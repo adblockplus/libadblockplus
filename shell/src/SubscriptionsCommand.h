@@ -35,7 +35,7 @@ private:
   AdblockPlus::IFilterEngine& filterEngine;
 
   void ShowSubscriptions();
-  void AddSubscription(const std::string& url, const std::string& title);
+  void AddSubscription(const std::string& url);
   void RemoveSubscription(const std::string& url);
   void UpdateSubscriptions();
   void FetchSubscriptions();

@@ -24,25 +24,20 @@
 namespace AdblockPlus
 {
   /**
-   * Wrapper for a subscription object.
-   * There are no accessors for most
-   * [subscription properties](https://adblockplus.org/jsdoc/adblockpluscore/Subscription.html),
-   * use `GetProperty()` to retrieve them by name.
+   * Adblock Plus Subscription object wrapper.
+   * @see [original documentation](https://adblockplus.org/jsdoc/adblockpluscore/Subscription.html).
    */
-  class Subscription : public JsValue
+  class Subscription
   {
   public:
-    Subscription(const Subscription& src);
-    Subscription(Subscription&& src);
-    Subscription& operator=(const Subscription& src);
-    Subscription& operator=(Subscription&& src);
     /**
      * Creates a wrapper for an existing JavaScript subscription object.
      * Normally you shouldn't call this directly, but use
      * IFilterEngine::GetSubscription() instead.
-     * @param value JavaScript subscription object.
+     * @param object JavaScript subscription object.
+     * @param engine JavaScript engine to make calls on object.
      */
-    Subscription(JsValue&& value);
+    Subscription(JsValue&& object, JsEngine* jsEngine);
 
     /**
      * Checks if the subscription is disabled.
@@ -91,7 +86,47 @@ namespace AdblockPlus
      */
     bool IsAA() const;
 
-    bool operator==(const Subscription& subscription) const;
+    std::string GetTitle() const;
+
+    /**
+      * Url subscription fetched from.
+      * @return url
+      */
+    std::string GetUrl() const;
+
+    std::string GetHomepage() const;
+
+    std::string GetAuthor() const;
+
+    /**
+     * Supported languages list for some recommended subscription.
+     * @return languages list, two letter ISO 639-1 code each. Can be empty.
+     */
+    std::vector<std::string> GetLanguages() const;
+
+    /**
+      * Number of filters in this subscription.
+      * @returns number of filters
+      */
+    int GetFilterCount() const;
+
+    /**
+     * Status for last attempt to synchronize subscription
+     * @return status, can be empty string or one of following values:
+     * - synchronize_ok
+     * - synchronize_invalid_data
+     * - synchronize_invalid_url
+     * - synchronize_connection_error
+     */
+    std::string GetSynchronizationStatus() const;
+
+    bool operator==(const Subscription& value) const;
+
+  private:
+    std::string GetStringProperty(const std::string& name) const;
+
+    JsValue jsObject;
+    JsEngine* jsEngine;
   };
 }
 
