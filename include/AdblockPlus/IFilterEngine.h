@@ -355,7 +355,7 @@ namespace AdblockPlus
      * @param element target DOM element interface.
      * @return Suggested filters list.
      */
-    virtual std::vector<std::string> ComposeFilterSuggestions(IElement* element) const = 0;
+    virtual std::vector<std::string> ComposeFilterSuggestions(const IElement* element) const = 0;
 
     /**
      * Retrieves the `ContentType` for the supplied string.

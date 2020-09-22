@@ -50,7 +50,7 @@ namespace AdblockPlus
     /**
       * Returns collection of child elements.
       */
-    virtual std::vector<IElement*> GetChildren() = 0;
+    virtual std::vector<const IElement*> GetChildren() const = 0;
   };
 }
 
