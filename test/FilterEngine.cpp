@@ -1306,20 +1306,20 @@ public:
       subelemets(children)
   {}
 
-  const std::string& GetLocalName() const override
+  std::string GetLocalName() const override
     { return GetAttribute("_name"); }
 
-  const std::string& GetAttribute(const std::string& name) const override
+  std::string GetAttribute(const std::string& name) const override
   {
     auto it = data.find(name);
     static std::string empty;
     return it == data.end() ? empty : it->second;
   }
 
-  const std::string& GetDocumentLocation() const override
+  std::string GetDocumentLocation() const override
     { return GetAttribute("_url"); }
 
-  const std::vector<const IElement*> GetChildren() const override
+  std::vector<const IElement*> GetChildren() const override
   {
     std::vector<const IElement*> res;
     std::transform(subelemets.begin(), subelemets.end(),

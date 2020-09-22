@@ -35,22 +35,22 @@ namespace AdblockPlus
     /**
      * Returns local part of the qualified name of the element.
      */
-    virtual const std::string& GetLocalName() const = 0;
+    virtual std::string GetLocalName() const = 0;
 
     /**
       * Retrieves the value of the named attribute from the current node.
       */
-    virtual const std::string& GetAttribute(const std::string& name) const = 0;
+    virtual std::string GetAttribute(const std::string& name) const = 0;
 
     /**
       * Returns containing document url.
       */
-    virtual const std::string& GetDocumentLocation() const = 0;
+    virtual std::string GetDocumentLocation() const = 0;
 
     /**
       * Returns collection of child elements.
       */
-    virtual const std::vector<const IElement*> GetChildren() const = 0;
+    virtual std::vector<const IElement*> GetChildren() const = 0;
   };
 }
 
