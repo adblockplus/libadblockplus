@@ -264,7 +264,7 @@ bool DefaultFilterEngine::VerifySignature(const std::string& key, const std::str
   return func.Call(params).AsBool();
 }
 
-std::vector<std::string> DefaultFilterEngine::ComposeFilterSuggestions(const IElement* element) const
+std::vector<std::string> DefaultFilterEngine::ComposeFilterSuggestions(IElement* element) const
 {
   JsValueList params;
 

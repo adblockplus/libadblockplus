@@ -27,7 +27,7 @@ namespace AdblockPlus
     /**
      * Get urls associated with this element.
      */
-    std::vector<std::string> GetAssociatedUrls(const IElement* element);
+    std::vector<std::string> GetAssociatedUrls(IElement* element);
   }
 }
 

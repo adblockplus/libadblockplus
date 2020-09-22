@@ -94,7 +94,7 @@ namespace AdblockPlus
     bool VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
                          const std::string& host, const std::string& userAgent) const final;
 
-    std::vector<std::string> ComposeFilterSuggestions(const IElement* element) const final;
+    std::vector<std::string> ComposeFilterSuggestions(IElement* element) const final;
 
     void SetIsFirstRun(bool isFirstRun) { firstRun = isFirstRun; }
 

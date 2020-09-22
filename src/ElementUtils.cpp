@@ -31,7 +31,7 @@ namespace detail
       urls.push_back(std::move(trimmed));
   }
 
-  void GetURLsFromGenericElement(const IElement* element, std::vector<std::string>& urls)
+  void GetURLsFromGenericElement(IElement* element, std::vector<std::string>& urls)
   {
     AppendNonEmpty(urls, element->GetAttribute("src"));
 
@@ -39,7 +39,7 @@ namespace detail
       AppendNonEmpty(urls, cur);
   }
 
-  void GetURLsFromObjectElement(const IElement* element, std::vector<std::string>& urls)
+  void GetURLsFromObjectElement(IElement* element, std::vector<std::string>& urls)
   {
     std::string data = Utils::TrimString(element->GetAttribute("data"));
 
@@ -61,7 +61,7 @@ namespace detail
     }
   }
 
-  void GetURLsFromMediaElement(const IElement* element, std::vector<std::string>& urls)
+  void GetURLsFromMediaElement(IElement* element, std::vector<std::string>& urls)
   {
     GetURLsFromGenericElement(element, urls);
     AppendNonEmpty(urls, element->GetAttribute("poster"));
@@ -77,7 +77,7 @@ namespace detail
 
 } // namespace detail
 
-std::vector<std::string> Utils::GetAssociatedUrls(const IElement* element)
+std::vector<std::string> Utils::GetAssociatedUrls(IElement* element)
 {
   std::string id = element->GetLocalName();
   std::vector<std::string> urls;

@@ -1319,11 +1319,11 @@ public:
   std::string GetDocumentLocation() const override
     { return GetAttribute("_url"); }
 
-  std::vector<const IElement*> GetChildren() const override
+  std::vector<IElement*> GetChildren() override
   {
-    std::vector<const IElement*> res;
+    std::vector<IElement*> res;
     std::transform(subelemets.begin(), subelemets.end(),
-                   std::back_inserter(res), [] (const auto& cur) { return &cur; });
+                   std::back_inserter(res), [] (auto& cur) { return &cur; });
     return res;
   }
 
