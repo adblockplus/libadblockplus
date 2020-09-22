@@ -1312,8 +1312,7 @@ public:
   std::string GetAttribute(const std::string& name) const override
   {
     auto it = data.find(name);
-    static std::string empty;
-    return it == data.end() ? empty : it->second;
+    return it == data.end() ? "" : it->second;
   }
 
   std::string GetDocumentLocation() const override
