@@ -93,18 +93,18 @@ TEST_F(ConsoleJsObjectTest, ConsoleErrorCall)
 
 TEST_F(ConsoleJsObjectTest, ConsoleTraceCall)
 {
-  GetJsEngine().Evaluate("\n\
-    function foo()\n\
-    {\n\
-      (function() {\n\
-        console.trace();\n\
-      })();\n\
-    }\n\
-    foo();", "eval");
+  GetJsEngine().Evaluate(R"(
+    function foo()
+    {
+      (function() {
+        console.trace();
+      })();
+    }
+    foo();)", "eval");
   ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, mockLogSystem->lastLogLevel);
-  ASSERT_EQ("\
-1: /* anonymous */() at eval:5\n\
-2: foo() at eval:6\n\
-3: /* anonymous */() at eval:8\n", mockLogSystem->lastMessage);
+  ASSERT_EQ(R"(1: /* anonymous */() at eval:5
+2: foo() at eval:6
+3: /* anonymous */() at eval:8
+)", mockLogSystem->lastMessage);
   ASSERT_EQ("", mockLogSystem->lastSource);
 }
