@@ -16,6 +16,7 @@
  */
 
 #include <stdexcept>
+
 #include "BaseJsTest.h"
 
 using namespace AdblockPlus;
@@ -74,10 +75,12 @@ TEST_F(JsEngineTest, ArrayCreation)
   ASSERT_EQ("bar", ls[1].AsString());
 }
 
-namespace {
+namespace
+{
 
   bool IsSame(AdblockPlus::JsEngine& jsEngine,
-              const AdblockPlus::JsValue& v1, const AdblockPlus::JsValue& v2)
+              const AdblockPlus::JsValue& v1,
+              const AdblockPlus::JsValue& v2)
   {
     AdblockPlus::JsValueList params;
     params.push_back(v1);
@@ -139,8 +142,7 @@ TEST_F(JsEngineTest, EventCallbacks)
 {
   bool callbackCalled = false;
   AdblockPlus::JsValueList callbackParams;
-  auto Callback = [&callbackCalled, &callbackParams](JsValueList&& params)
-  {
+  auto Callback = [&callbackCalled, &callbackParams](JsValueList&& params) {
     callbackCalled = true;
     callbackParams = move(params);
   };

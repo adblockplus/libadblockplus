@@ -29,7 +29,8 @@ namespace AdblockPlus
   {
     /**
      * Current version of the app, in
-     * [Mozilla toolkit version format](https://developer.mozilla.org/en/docs/Toolkit_version_format).
+     * [Mozilla toolkit version
+     * format](https://developer.mozilla.org/en/docs/Toolkit_version_format).
      */
     std::string version;
 

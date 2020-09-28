@@ -15,9 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
-
 #include "../src/Utils.h"
+
+#include <gtest/gtest.h>
 
 using namespace AdblockPlus;
 
@@ -30,11 +30,11 @@ TEST(UtilsTest, SplitString)
 {
   auto res = Utils::SplitString(",a,,b,c,d,", ',');
   ASSERT_EQ(7u, res.size());
-  ASSERT_EQ("",  res[0]);
+  ASSERT_EQ("", res[0]);
   ASSERT_EQ("a", res[1]);
-  ASSERT_EQ("",  res[2]);
+  ASSERT_EQ("", res[2]);
   ASSERT_EQ("b", res[3]);
   ASSERT_EQ("c", res[4]);
   ASSERT_EQ("d", res[5]);
-  ASSERT_EQ("",  res[6]);
+  ASSERT_EQ("", res[6]);
 }

@@ -28,8 +28,7 @@ namespace AdblockPlus
   class DefaultLogSystem : public LogSystem
   {
   public:
-    void operator()(LogLevel logLevel, const std::string& message,
-          const std::string& source);
+    void operator()(LogLevel logLevel, const std::string& message, const std::string& source);
   };
 }
 

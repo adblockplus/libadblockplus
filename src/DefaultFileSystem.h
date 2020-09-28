@@ -45,6 +45,7 @@ namespace AdblockPlus
     void Remove(const std::string& path);
     IFileSystem::StatResult Stat(const std::string& path) const;
     std::string Resolve(const std::string& fileName) const;
+
   protected:
     std::string basePath;
   };
@@ -52,19 +53,18 @@ namespace AdblockPlus
   class DefaultFileSystem : public IFileSystem
   {
   public:
-    explicit DefaultFileSystem(const Scheduler& scheduler, std::unique_ptr<DefaultFileSystemSync> syncImpl);
+    explicit DefaultFileSystem(const Scheduler& scheduler,
+                               std::unique_ptr<DefaultFileSystemSync> syncImpl);
     void Read(const std::string& fileName,
               const ReadCallback& doneCallback,
               const Callback& errorCallback) const override;
-    void Write(const std::string& fileName,
-               const IOBuffer& data,
-               const Callback& callback) override;
+    void
+    Write(const std::string& fileName, const IOBuffer& data, const Callback& callback) override;
     void Move(const std::string& fromFileName,
               const std::string& toFileName,
               const Callback& callback) override;
     void Remove(const std::string& fileName, const Callback& callback) override;
-    void Stat(const std::string& fileName,
-              const StatCallback& callback) const override;
+    void Stat(const std::string& fileName, const StatCallback& callback) const override;
 
   private:
     // Returns the absolute path to a file.

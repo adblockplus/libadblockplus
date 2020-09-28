@@ -16,8 +16,9 @@
  */
 
 #include <sstream>
-#include "BaseJsTest.h"
+
 #include "../src/Thread.h"
+#include "BaseJsTest.h"
 
 using namespace AdblockPlus;
 
@@ -43,7 +44,9 @@ namespace
     {
     }
 
-    void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
+    void Read(const std::string& fileName,
+              const ReadCallback& callback,
+              const Callback& errorCallback) const override
     {
       if (success)
         try
@@ -58,8 +61,7 @@ namespace
         errorCallback("Unable to read " + fileName);
     }
 
-    void Write(const std::string& fileName, const IOBuffer& data,
-               const Callback& callback) override
+    void Write(const std::string& fileName, const IOBuffer& data, const Callback& callback) override
     {
       if (!success)
       {
@@ -72,7 +74,8 @@ namespace
       callback("");
     }
 
-    void Move(const std::string& fromFileName, const std::string& toFileName,
+    void Move(const std::string& fromFileName,
+              const std::string& toFileName,
               const Callback& callback) override
     {
       if (!success)
@@ -112,10 +115,10 @@ namespace
     }
   };
 
-  void ReadFile(AdblockPlus::JsEngine& jsEngine, std::string& content,
-                std::string& error)
+  void ReadFile(AdblockPlus::JsEngine& jsEngine, std::string& content, std::string& error)
   {
-    jsEngine.Evaluate("let result = {}; _fileSystem.read('', function(r) {result.content = r.content;}, function(error) {result.error = error;})");
+    jsEngine.Evaluate("let result = {}; _fileSystem.read('', function(r) {result.content = "
+                      "r.content;}, function(error) {result.error = error;})");
     content = jsEngine.Evaluate("result.content").AsString();
     error = jsEngine.Evaluate("result.error").AsString();
   }
@@ -136,8 +139,7 @@ namespace
 
 TEST_F(FileSystemJsObjectTest, Read)
 {
-  mockFileSystem->contentToRead =
-    AdblockPlus::IFileSystem::IOBuffer{'f', 'o', 'o'};
+  mockFileSystem->contentToRead = AdblockPlus::IFileSystem::IOBuffer{'f', 'o', 'o'};
   std::string content;
   std::string error;
   ReadFile(GetJsEngine(), content, error);
@@ -164,7 +166,8 @@ TEST_F(FileSystemJsObjectTest, ReadError)
 
 TEST_F(FileSystemJsObjectTest, Write)
 {
-  GetJsEngine().Evaluate("let error = true; _fileSystem.write('foo', 'bar', function(e) {error = e})");
+  GetJsEngine().Evaluate(
+      "let error = true; _fileSystem.write('foo', 'bar', function(e) {error = e})");
   ASSERT_EQ("foo", mockFileSystem->lastWrittenFile);
   ASSERT_EQ((AdblockPlus::IFileSystem::IOBuffer{'b', 'a', 'r'}),
             mockFileSystem->lastWrittenContent);
@@ -180,13 +183,15 @@ TEST_F(FileSystemJsObjectTest, WriteIllegalArguments)
 TEST_F(FileSystemJsObjectTest, WriteError)
 {
   mockFileSystem->success = false;
-  GetJsEngine().Evaluate("let error = true; _fileSystem.write('foo', 'bar', function(e) {error = e})");
+  GetJsEngine().Evaluate(
+      "let error = true; _fileSystem.write('foo', 'bar', function(e) {error = e})");
   ASSERT_NE("", GetJsEngine().Evaluate("error").AsString());
 }
 
 TEST_F(FileSystemJsObjectTest, Move)
 {
-  GetJsEngine().Evaluate("let error = true; _fileSystem.move('foo', 'bar', function(e) {error = e})");
+  GetJsEngine().Evaluate(
+      "let error = true; _fileSystem.move('foo', 'bar', function(e) {error = e})");
   ASSERT_EQ("foo", mockFileSystem->movedFrom);
   ASSERT_EQ("bar", mockFileSystem->movedTo);
   ASSERT_TRUE(GetJsEngine().Evaluate("error").IsUndefined());
@@ -262,14 +267,12 @@ namespace
       ASSERT_TRUE(onLine);
       auto& jsEngine = GetJsEngine();
       bool isOnDoneCalled = false;
-      jsEngine.SetEventCallback("onLine", [onLine](JsValueList&& /*line*/jsArgs)
-      {
+      jsEngine.SetEventCallback("onLine", [onLine](JsValueList&& /*line*/ jsArgs) {
         ASSERT_EQ(1u, jsArgs.size());
         EXPECT_TRUE(jsArgs[0].IsString());
         onLine(jsArgs[0].AsString());
       });
-      jsEngine.SetEventCallback("onDone", [this, &isOnDoneCalled](JsValueList&& /*error*/jsArgs)
-      {
+      jsEngine.SetEventCallback("onDone", [this, &isOnDoneCalled](JsValueList&& /*error*/ jsArgs) {
         isOnDoneCalled = true;
         if (this->mockFileSystem->success)
         {
@@ -294,10 +297,9 @@ namespace
     {
       mockFileSystem->contentToRead.assign(content.begin(), content.end());
       std::vector<std::string> readLines;
-      readFromFile([&readLines](const std::string& line)
-        {
-          readLines.emplace_back(line);
-        });
+      readFromFile([&readLines](const std::string& line) {
+        readLines.emplace_back(line);
+      });
 
       ASSERT_EQ(expected.size(), readLines.size());
       for (Lines::size_type i = 0; i < expected.size(); ++i)
@@ -312,10 +314,9 @@ TEST_F(FileSystemJsObject_ReadFromFileTest, NoFile)
 {
   bool isOnLineCalled = false;
   mockFileSystem->success = false;
-  readFromFile([&isOnLineCalled](const std::string& line)
-    {
-      isOnLineCalled = true;
-    });
+  readFromFile([&isOnLineCalled](const std::string& line) {
+    isOnLineCalled = true;
+  });
   EXPECT_FALSE(isOnLineCalled);
 }
 
@@ -328,41 +329,36 @@ TEST_F(FileSystemJsObject_ReadFromFileTest, Lines)
 
   readFromFile_Lines({"line"}, {"line"});
 
-  readFromFile_Lines(
-    "first\n"
-    "second\r\n"
-    "third\r\n"
-    "\r\n"
-    "\n"
-    "last",
-    {"first", "second", "third", "last"});
+  readFromFile_Lines("first\n"
+                     "second\r\n"
+                     "third\r\n"
+                     "\r\n"
+                     "\n"
+                     "last",
+                     {"first", "second", "third", "last"});
 
-  readFromFile_Lines(
-    "first\n"
-    "second\r\n"
-    "third\n",
-    {"first", "second", "third"});
+  readFromFile_Lines("first\n"
+                     "second\r\n"
+                     "third\n",
+                     {"first", "second", "third"});
 
-  readFromFile_Lines(
-    "first\n"
-    "second\r\n"
-    "third\r\n",
-    {"first", "second", "third"});
+  readFromFile_Lines("first\n"
+                     "second\r\n"
+                     "third\r\n",
+                     {"first", "second", "third"});
 
-  readFromFile_Lines(
-    "first\n"
-    "second\r\n"
-    "third\r\n"
-    "\r\n"
-    "\n",
-    {"first", "second", "third"});
+  readFromFile_Lines("first\n"
+                     "second\r\n"
+                     "third\r\n"
+                     "\r\n"
+                     "\n",
+                     {"first", "second", "third"});
 
-  readFromFile_Lines(
-    "\n"
-    "first\n"
-    "second\r\n"
-    "third\r\n",
-    {"first", "second", "third"});
+  readFromFile_Lines("\n"
+                     "first\n"
+                     "second\r\n"
+                     "third\r\n",
+                     {"first", "second", "third"});
 }
 
 TEST_F(FileSystemJsObject_ReadFromFileTest, ProcessLineThrowsException)
@@ -373,14 +369,12 @@ TEST_F(FileSystemJsObject_ReadFromFileTest, ProcessLineThrowsException)
   std::vector<std::string> readLines;
   auto& jsEngine = GetJsEngine();
   std::string error;
-  jsEngine.SetEventCallback("onLine", [&readLines](JsValueList&& /*line*/jsArgs)
-  {
+  jsEngine.SetEventCallback("onLine", [&readLines](JsValueList&& /*line*/ jsArgs) {
     ASSERT_EQ(1u, jsArgs.size());
     EXPECT_TRUE(jsArgs[0].IsString());
     readLines.emplace_back(jsArgs[0].AsString());
   });
-  jsEngine.SetEventCallback("onDone", [&error](JsValueList&& /*error*/jsArgs)
-  {
+  jsEngine.SetEventCallback("onDone", [&error](JsValueList&& /*error*/ jsArgs) {
     ASSERT_EQ(1u, jsArgs.size());
     EXPECT_TRUE(jsArgs[0].IsString());
     error = jsArgs[0].AsString();

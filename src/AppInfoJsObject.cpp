@@ -15,10 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AppInfoJsObject.h"
+
 #include <AdblockPlus/AppInfo.h>
 #include <AdblockPlus/JsValue.h>
 
-#include "AppInfoJsObject.h"
 #include "Utils.h"
 
 using namespace AdblockPlus;

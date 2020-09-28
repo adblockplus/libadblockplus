@@ -18,11 +18,12 @@
 #ifndef MOCKS_H
 #define MOCKS_H
 
+#include <AdblockPlus.h>
+#include <gtest/gtest.h>
 #include <thread>
 
-#include <AdblockPlus.h>
 #include <AdblockPlus/Platform.h>
-#include <gtest/gtest.h>
+
 #include "../src/Thread.h"
 
 // Strictly speaking in each test there should be a special implementation of
@@ -35,8 +36,7 @@
 // Task is passed as an additional template parameter instead of using traits
 // (CRTP does not work with types in derived class) merely to simplify the code
 // by minimization.
-template<typename T, typename TTask, typename Interface>
-class DelayedMixin : public Interface
+template<typename T, typename TTask, typename Interface> class DelayedMixin : public Interface
 {
 public:
   typedef TTask Task;
@@ -47,9 +47,9 @@ public:
     tasks = result->tasks;
     return std::move(result);
   }
+
 protected:
-  DelayedMixin()
-    : tasks(std::make_shared<std::list<Task>>())
+  DelayedMixin() : tasks(std::make_shared<std::list<Task>>())
   {
   }
 
@@ -58,7 +58,8 @@ protected:
 
 class ThrowingTimer : public AdblockPlus::ITimer
 {
-  void SetTimer(const std::chrono::milliseconds& timeout, const TimerCallback& timerCallback) override
+  void SetTimer(const std::chrono::milliseconds& timeout,
+                const TimerCallback& timerCallback) override
   {
     throw std::runtime_error("Unexpected timer: " + std::to_string(timeout.count()));
   }
@@ -66,7 +67,8 @@ class ThrowingTimer : public AdblockPlus::ITimer
 
 class NoopTimer : public AdblockPlus::ITimer
 {
-  void SetTimer(const std::chrono::milliseconds& timeout, const TimerCallback& timerCallback) override
+  void SetTimer(const std::chrono::milliseconds& timeout,
+                const TimerCallback& timerCallback) override
   {
   }
 };
@@ -80,9 +82,10 @@ struct DelayedTimerTask
 class DelayedTimer : public DelayedMixin<DelayedTimer, DelayedTimerTask, AdblockPlus::ITimer>
 {
 public:
-  void SetTimer(const std::chrono::milliseconds& timeout, const TimerCallback& timerCallback) override
+  void SetTimer(const std::chrono::milliseconds& timeout,
+                const TimerCallback& timerCallback) override
   {
-    Task task = { timeout, timerCallback };
+    Task task = {timeout, timerCallback};
     tasks->emplace_back(task);
   }
 
@@ -93,12 +96,10 @@ public:
   static void ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks);
 };
 
-
 class ThrowingLogSystem : public AdblockPlus::LogSystem
 {
 public:
-  void operator()(LogLevel logLevel, const std::string& message,
-        const std::string& source)
+  void operator()(LogLevel logLevel, const std::string& message, const std::string& source)
   {
     throw std::runtime_error("Unexpected error: " + message);
   }
@@ -107,18 +108,20 @@ public:
 class ThrowingFileSystem : public AdblockPlus::IFileSystem
 {
 public:
-  void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
+  void Read(const std::string& fileName,
+            const ReadCallback& callback,
+            const Callback& errorCallback) const override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Write(const std::string& fileName, const IOBuffer& data,
-    const Callback& callback) override
+  void Write(const std::string& fileName, const IOBuffer& data, const Callback& callback) override
   {
     throw std::runtime_error("Not implemented");
   }
 
-  void Move(const std::string& fromFileName, const std::string& toFileName,
+  void Move(const std::string& fromFileName,
+            const std::string& toFileName,
             const Callback& callback) override
   {
     throw std::runtime_error("Not implemented");
@@ -138,7 +141,9 @@ public:
 class ThrowingWebRequest : public AdblockPlus::IWebRequest
 {
 public:
-  void GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders, const GetCallback&) override
+  void GET(const std::string& url,
+           const AdblockPlus::HeaderList& requestHeaders,
+           const GetCallback&) override
   {
     throw std::runtime_error("Unexpected GET: " + url);
   }
@@ -155,14 +160,15 @@ public:
       task();
   }
   explicit LazyFileSystem(const Scheduler& scheduler = LazyFileSystem::ExecuteImmediately)
-    : scheduler(scheduler)
+      : scheduler(scheduler)
   {
   }
 
-  void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
+  void Read(const std::string& fileName,
+            const ReadCallback& callback,
+            const Callback& errorCallback) const override
   {
-    scheduler([fileName, callback, errorCallback]
-    {
+    scheduler([fileName, callback, errorCallback] {
       if (fileName == "patterns.ini")
       {
         std::string dummyData = "# Adblock Plus preferences\n[Subscription]\nurl=~user~0000";
@@ -178,13 +184,12 @@ public:
     });
   }
 
-  void Write(const std::string& fileName, const IOBuffer& data,
-             const Callback& callback) override
+  void Write(const std::string& fileName, const IOBuffer& data, const Callback& callback) override
   {
   }
 
-
-  void Move(const std::string& fromFileName, const std::string& toFileName,
+  void Move(const std::string& fromFileName,
+            const std::string& toFileName,
             const Callback& callback) override
   {
   }
@@ -195,8 +200,7 @@ public:
 
   void Stat(const std::string& fileName, const StatCallback& callback) const override
   {
-    scheduler([fileName, callback]
-    {
+    scheduler([fileName, callback] {
       StatResult result;
       if (fileName == "patterns.ini")
       {
@@ -205,6 +209,7 @@ public:
       callback(result, "");
     });
   }
+
 public:
   Scheduler scheduler;
 };
@@ -212,12 +217,14 @@ public:
 class InMemoryFileSystem : public LazyFileSystem
 {
   std::map<std::string, IOBuffer> files;
+
 public:
   using LazyFileSystem::LazyFileSystem;
-  void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
+  void Read(const std::string& fileName,
+            const ReadCallback& callback,
+            const Callback& errorCallback) const override
   {
-    scheduler([this, fileName, callback, errorCallback]()
-    {
+    scheduler([this, fileName, callback, errorCallback]() {
       auto ii_file = files.find(fileName);
       if (ii_file != files.end())
         callback(IOBuffer(ii_file->second));
@@ -226,43 +233,41 @@ public:
     });
   }
 
-  void Write(const std::string& fileName, const IOBuffer& data,
-    const Callback& callback) override
+  void Write(const std::string& fileName, const IOBuffer& data, const Callback& callback) override
   {
-    scheduler([this, fileName, data, callback]()
-    {
+    scheduler([this, fileName, data, callback]() {
       files[fileName] = data;
       callback("");
     });
   }
 
-  void Move(const std::string& fromFileName, const std::string& toFileName,
-    const Callback& callback) override
+  void Move(const std::string& fromFileName,
+            const std::string& toFileName,
+            const Callback& callback) override
   {
-    scheduler([this, fromFileName, toFileName, callback]()
-    {
+    scheduler([this, fromFileName, toFileName, callback]() {
       auto ii_fromFile = files.find(fromFileName);
       if (ii_fromFile == files.end())
       {
         callback("File (from) not found, " + fromFileName);
         return;
       }
-      Write(toFileName, ii_fromFile->second, [this, fromFileName, callback](const std::string& error)
-      {
-        if (!error.empty())
-        {
-          callback(error);
-          return;
-        }
-        Remove(fromFileName, callback);
-      });
+      Write(toFileName,
+            ii_fromFile->second,
+            [this, fromFileName, callback](const std::string& error) {
+              if (!error.empty())
+              {
+                callback(error);
+                return;
+              }
+              Remove(fromFileName, callback);
+            });
     });
   }
 
   void Remove(const std::string& fileName, const Callback& callback) override
   {
-    scheduler([this, fileName, callback]()
-    {
+    scheduler([this, fileName, callback]() {
       files.erase(fileName);
       callback("");
     });
@@ -270,8 +275,7 @@ public:
 
   void Stat(const std::string& fileName, const StatCallback& callback) const override
   {
-    scheduler([this, fileName, callback]()
-    {
+    scheduler([this, fileName, callback]() {
       StatResult result;
       result.exists = files.find(fileName) != files.end();
       callback(result, "");
@@ -279,14 +283,18 @@ public:
   }
 };
 
-AdblockPlus::IFilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
-  AdblockPlus::Platform& platform,
-  const AdblockPlus::FilterEngineFactory::CreationParameters& creationParams = AdblockPlus::FilterEngineFactory::CreationParameters());
+AdblockPlus::IFilterEngine&
+CreateFilterEngine(LazyFileSystem& fileSystem,
+                   AdblockPlus::Platform& platform,
+                   const AdblockPlus::FilterEngineFactory::CreationParameters& creationParams =
+                       AdblockPlus::FilterEngineFactory::CreationParameters());
 
 class NoopWebRequest : public AdblockPlus::IWebRequest
 {
 public:
-  void GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders, const GetCallback& callback) override
+  void GET(const std::string& url,
+           const AdblockPlus::HeaderList& requestHeaders,
+           const GetCallback& callback) override
   {
   }
 };
@@ -298,12 +306,15 @@ struct DelayedWebRequestTask
   AdblockPlus::IWebRequest::GetCallback getCallback;
 };
 
-class DelayedWebRequest : public DelayedMixin<DelayedWebRequest, DelayedWebRequestTask, AdblockPlus::IWebRequest>
+class DelayedWebRequest
+    : public DelayedMixin<DelayedWebRequest, DelayedWebRequestTask, AdblockPlus::IWebRequest>
 {
 public:
-  void GET(const std::string& url, const AdblockPlus::HeaderList& requestHeaders, const GetCallback& callback) override
+  void GET(const std::string& url,
+           const AdblockPlus::HeaderList& requestHeaders,
+           const GetCallback& callback) override
   {
-    Task task = { url, requestHeaders, callback };
+    Task task = {url, requestHeaders, callback};
     tasks->emplace_back(task);
   }
 };
@@ -311,13 +322,12 @@ public:
 class LazyLogSystem : public AdblockPlus::LogSystem
 {
 public:
-  void operator()(LogLevel logLevel, const std::string& message,
-          const std::string& source)
+  void operator()(LogLevel logLevel, const std::string& message, const std::string& source)
   {
   }
 };
 
-struct ThrowingPlatformCreationParameters: AdblockPlus::Platform::CreationParameters
+struct ThrowingPlatformCreationParameters : AdblockPlus::Platform::CreationParameters
 {
   ThrowingPlatformCreationParameters();
 };

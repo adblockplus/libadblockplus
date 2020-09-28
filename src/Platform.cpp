@@ -1,32 +1,33 @@
 /*
-* This file is part of Adblock Plus <https://adblockplus.org/>,
-* Copyright (C) 2006-present eyeo GmbH
-*
-* Adblock Plus is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License version 3 as
-* published by the Free Software Foundation.
-*
-* Adblock Plus is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
-*/
-#include <AdblockPlus/Platform.h>
-#include <AdblockPlus/JsEngine.h>
-#include <AdblockPlus/IFilterEngine.h>
-#include <AdblockPlus/FilterEngineFactory.h>
-#include <AdblockPlus/DefaultLogSystem.h>
-#include <AdblockPlus/AsyncExecutor.h>
-#include "DefaultTimer.h"
-#include "DefaultWebRequest.h"
-#include "DefaultFileSystem.h"
+ * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * Copyright (C) 2006-present eyeo GmbH
+ *
+ * Adblock Plus is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * Adblock Plus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include <stdexcept>
 
-using namespace AdblockPlus;
+#include <AdblockPlus/AsyncExecutor.h>
+#include <AdblockPlus/DefaultLogSystem.h>
+#include <AdblockPlus/FilterEngineFactory.h>
+#include <AdblockPlus/IFilterEngine.h>
+#include <AdblockPlus/JsEngine.h>
+#include <AdblockPlus/Platform.h>
 
+#include "DefaultFileSystem.h"
+#include "DefaultTimer.h"
+#include "DefaultWebRequest.h"
+
+using namespace AdblockPlus;
 
 extern std::string jsSources[];
 
@@ -40,7 +41,8 @@ namespace
   }
 }
 
-#define ASSIGN_PLATFORM_PARAM(param) ValidatePlatformCreationParameter(param = std::move(creationParameters.param), #param)
+#define ASSIGN_PLATFORM_PARAM(param)                                                               \
+  ValidatePlatformCreationParameter(param = std::move(creationParameters.param), #param)
 
 Platform::Platform(CreationParameters&& creationParameters)
 {
@@ -70,26 +72,24 @@ JsEngine& Platform::GetJsEngine()
 
 std::function<void(const std::string&)> Platform::GetEvaluateCallback()
 {
-    // GetEvaluateCallback() method assumes that jsEngine is already created
-    return [this](const std::string& filename)
-    {
-      std::lock_guard<std::mutex> lock(evaluatedJsSourcesMutex);
-      if (evaluatedJsSources.find(filename) != evaluatedJsSources.end())
-        return; //NO-OP, file was already evaluated
+  // GetEvaluateCallback() method assumes that jsEngine is already created
+  return [this](const std::string& filename) {
+    std::lock_guard<std::mutex> lock(evaluatedJsSourcesMutex);
+    if (evaluatedJsSources.find(filename) != evaluatedJsSources.end())
+      return; // NO-OP, file was already evaluated
 
-      for (int i = 0; !jsSources[i].empty(); i += 2)
-        if (jsSources[i] == filename)
-        {
-          jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
-          evaluatedJsSources.insert(filename);
-          break;
-        }
-    };
+    for (int i = 0; !jsSources[i].empty(); i += 2)
+      if (jsSources[i] == filename)
+      {
+        jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
+        evaluatedJsSources.insert(filename);
+        break;
+      }
+  };
 }
 
-void Platform::CreateFilterEngineAsync(
-  const FilterEngineFactory::CreationParameters& parameters,
-  const OnFilterEngineCreatedCallback& onCreated)
+void Platform::CreateFilterEngineAsync(const FilterEngineFactory::CreationParameters& parameters,
+                                       const OnFilterEngineCreatedCallback& onCreated)
 {
   std::shared_ptr<std::promise<std::unique_ptr<IFilterEngine>>> filterEnginePromise;
   {
@@ -102,17 +102,15 @@ void Platform::CreateFilterEngineAsync(
 
   GetJsEngine(); // ensures that JsEngine is instantiated
   FilterEngineFactory::CreateAsync(
-    *jsEngine,
-    GetEvaluateCallback(),
-    [onCreated, filterEnginePromise](std::unique_ptr<IFilterEngine> filterEngine)
-    {
-      const auto& filterEngineRef = *filterEngine;
-      filterEnginePromise->set_value(std::move(filterEngine));
-      if (onCreated)
-        onCreated(filterEngineRef);
-    },
-    parameters
-  );
+      *jsEngine,
+      GetEvaluateCallback(),
+      [onCreated, filterEnginePromise](std::unique_ptr<IFilterEngine> filterEngine) {
+        const auto& filterEngineRef = *filterEngine;
+        filterEnginePromise->set_value(std::move(filterEngine));
+        if (onCreated)
+          onCreated(filterEngineRef);
+      },
+      parameters);
 }
 
 IFilterEngine& Platform::GetFilterEngine()
@@ -150,8 +148,9 @@ namespace
   class DefaultPlatform : public Platform
   {
   public:
-    explicit DefaultPlatform(DefaultPlatformBuilder::AsyncExecutorPtr asyncExecutor, CreationParameters&& creationParams)
-      : Platform(std::move(creationParams)), asyncExecutor(asyncExecutor)
+    explicit DefaultPlatform(DefaultPlatformBuilder::AsyncExecutorPtr asyncExecutor,
+                             CreationParameters&& creationParams)
+        : Platform(std::move(creationParams)), asyncExecutor(asyncExecutor)
     {
     }
     ~DefaultPlatform();
@@ -210,8 +209,7 @@ namespace
 DefaultPlatformBuilder::DefaultPlatformBuilder()
 {
   auto sharedAsyncExecutor = this->sharedAsyncExecutor = std::make_shared<OptionalAsyncExecutor>();
-  defaultScheduler = [sharedAsyncExecutor](const SchedulerTask& task)
-  {
+  defaultScheduler = [sharedAsyncExecutor](const SchedulerTask& task) {
     sharedAsyncExecutor->Dispatch(task);
   };
 }
@@ -228,7 +226,9 @@ void DefaultPlatformBuilder::CreateDefaultTimer()
 
 void DefaultPlatformBuilder::CreateDefaultFileSystem(const std::string& basePath)
 {
-  fileSystem.reset(new DefaultFileSystem(GetDefaultAsyncExecutor(), std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(basePath))));
+  fileSystem.reset(new DefaultFileSystem(
+      GetDefaultAsyncExecutor(),
+      std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(basePath))));
 }
 
 void DefaultPlatformBuilder::CreateDefaultWebRequest(std::unique_ptr<IWebRequestSync> webRequest)
@@ -255,6 +255,7 @@ std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
   if (!webRequest)
     CreateDefaultWebRequest();
 
-  std::unique_ptr<Platform> platform(new DefaultPlatform(std::move(sharedAsyncExecutor), std::move(*this)));
+  std::unique_ptr<Platform> platform(
+      new DefaultPlatform(std::move(sharedAsyncExecutor), std::move(*this)));
   return platform;
 }

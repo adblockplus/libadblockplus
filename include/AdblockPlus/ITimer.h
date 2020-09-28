@@ -18,8 +18,8 @@
 #ifndef ADBLOCK_PLUS_TIMER_H
 #define ADBLOCK_PLUS_TIMER_H
 
-#include <functional>
 #include <chrono>
+#include <functional>
 #include <memory>
 
 namespace AdblockPlus
@@ -30,17 +30,20 @@ namespace AdblockPlus
   struct ITimer
   {
     /**
-    * Callback type invoked after elapsing of timer timeout.
-    */
+     * Callback type invoked after elapsing of timer timeout.
+     */
     typedef std::function<void()> TimerCallback;
-    virtual ~ITimer() {}
+    virtual ~ITimer()
+    {
+    }
 
     /**
      * Sets a timer.
      * @param timeout A timer callback will be called after that interval.
      * @param timeCallback The callback which is called after timeout.
      */
-    virtual void SetTimer(const std::chrono::milliseconds& timeout, const TimerCallback& timerCallback) = 0;
+    virtual void SetTimer(const std::chrono::milliseconds& timeout,
+                          const TimerCallback& timerCallback) = 0;
   };
 
   /**

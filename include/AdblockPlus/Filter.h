@@ -19,6 +19,7 @@
 #define ADBLOCK_PLUS_FILTER_H
 
 #include <memory>
+
 #include <AdblockPlus/JsValue.h>
 
 namespace AdblockPlus
@@ -42,10 +43,16 @@ namespace AdblockPlus
     /**
      * Filter types, see https://adblockplus.org/en/filters.
      */
-    enum Type {TYPE_BLOCKING, TYPE_EXCEPTION,
-               TYPE_ELEMHIDE, TYPE_ELEMHIDE_EXCEPTION,
-               TYPE_ELEMHIDE_EMULATION,
-               TYPE_COMMENT, TYPE_INVALID};
+    enum Type
+    {
+      TYPE_BLOCKING,
+      TYPE_EXCEPTION,
+      TYPE_ELEMHIDE,
+      TYPE_ELEMHIDE_EXCEPTION,
+      TYPE_ELEMHIDE_EMULATION,
+      TYPE_COMMENT,
+      TYPE_INVALID
+    };
 
     /**
      * Retrieves the type of this filter.

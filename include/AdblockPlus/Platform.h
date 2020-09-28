@@ -18,20 +18,21 @@
 #ifndef ADBLOCK_PLUS_PLATFORM_H
 #define ADBLOCK_PLUS_PLATFORM_H
 
-#include "LogSystem.h"
-#include "ITimer.h"
-#include "IFileSystem.h"
-#include "IWebRequest.h"
-#include "AppInfo.h"
-#include "Scheduler.h"
-#include "IFilterEngine.h"
-#include "FilterEngineFactory.h"
+#include <functional>
+#include <future>
 #include <memory>
 #include <mutex>
-#include <future>
 #include <set>
 #include <string>
-#include <functional>
+
+#include "AppInfo.h"
+#include "FilterEngineFactory.h"
+#include "IFileSystem.h"
+#include "IFilterEngine.h"
+#include "ITimer.h"
+#include "IWebRequest.h"
+#include "LogSystem.h"
+#include "Scheduler.h"
 
 namespace AdblockPlus
 {
@@ -87,7 +88,8 @@ namespace AdblockPlus
      * @param isolate A provider of v8::Isolate, if the value is nullptr then
      *        a default implementation is used.
      */
-    void SetUpJsEngine(const AppInfo& appInfo = AppInfo(), std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
+    void SetUpJsEngine(const AppInfo& appInfo = AppInfo(),
+                       std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
 
     /**
      * Retrieves the `JsEngine` instance. It calls SetUpJsEngine if JsEngine is
@@ -103,8 +105,9 @@ namespace AdblockPlus
      *        for use.
      */
     void CreateFilterEngineAsync(
-      const FilterEngineFactory::CreationParameters& parameters = FilterEngineFactory::CreationParameters(),
-      const OnFilterEngineCreatedCallback& onCreated = OnFilterEngineCreatedCallback());
+        const FilterEngineFactory::CreationParameters& parameters =
+            FilterEngineFactory::CreationParameters(),
+        const OnFilterEngineCreatedCallback& onCreated = OnFilterEngineCreatedCallback());
 
     /**
      * Synchronous equivalent of `CreateFilterEngineAsync`.
@@ -128,11 +131,13 @@ namespace AdblockPlus
 
   private:
     std::unique_ptr<JsEngine> jsEngine;
+
   protected:
     LogSystemPtr logSystem;
     TimerPtr timer;
     FileSystemPtr fileSystem;
     WebRequestPtr webRequest;
+
   private:
     // used for creation and deletion of modules.
     std::mutex modulesMutex;
@@ -190,6 +195,7 @@ namespace AdblockPlus
      * when a corresponding field is nullptr and with a default Scheduler.
      */
     std::unique_ptr<Platform> CreatePlatform();
+
   private:
     AsyncExecutorPtr sharedAsyncExecutor;
     Scheduler defaultScheduler;

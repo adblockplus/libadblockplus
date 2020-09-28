@@ -17,6 +17,7 @@
 
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
+
 #include "BaseJsTest.h"
 
 TEST(AppInfoJsObjectTest, AllProperties)

@@ -15,12 +15,13 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
-#include "BaseJsTest.h"
-#include "../src/Thread.h"
-#include "../src/DefaultWebRequest.h"
 #include <atomic>
 #include <mutex>
+#include <sstream>
+
+#include "../src/DefaultWebRequest.h"
+#include "../src/Thread.h"
+#include "BaseJsTest.h"
 
 using namespace AdblockPlus;
 
@@ -28,7 +29,8 @@ namespace
 {
   WebRequestPtr CreateDefaultWebRequest(const Scheduler& scheduler)
   {
-    return WebRequestPtr(new DefaultWebRequest(scheduler, WebRequestSyncPtr(new DefaultWebRequestSync())));
+    return WebRequestPtr(
+        new DefaultWebRequest(scheduler, WebRequestSyncPtr(new DefaultWebRequestSync())));
   }
   class BaseWebRequestTest : public BaseJsTest
   {
@@ -57,12 +59,12 @@ namespace
   {
     WebRequestPtr CreateWebRequest() override
     {
-      return CreateDefaultWebRequest([this](const SchedulerTask& task)
-      {
+      return CreateDefaultWebRequest([this](const SchedulerTask& task) {
         webRequestTasks.emplace_back(task);
       });
     }
     std::list<SchedulerTask> webRequestTasks;
+
   protected:
     void WaitForVariable(const std::string& variable, AdblockPlus::JsEngine& jsEngine)
     {
@@ -85,7 +87,7 @@ namespace
     void ProcessPendingWebRequests()
     {
       for (auto iiWebTask = webRequestTasks->cbegin(); iiWebTask != webRequestTasks->cend();
-      webRequestTasks->erase(iiWebTask++))
+           webRequestTasks->erase(iiWebTask++))
       {
         const auto& webRequestTask = *iiWebTask;
         std::set<std::string> headerNames;
@@ -103,7 +105,8 @@ namespace
         result.responseText = webRequestTask.url + "\n";
         if (!webRequestTask.headers.empty())
         {
-          result.responseText += webRequestTask.headers[0].first + "\n" + webRequestTask.headers[0].second;
+          result.responseText +=
+              webRequestTask.headers[0].first + "\n" + webRequestTask.headers[0].second;
         }
         webRequestTask.getCallback(result);
       }
@@ -142,7 +145,8 @@ namespace
     jsEngine.Evaluate(std::string("\
       var result;\
       var request = new XMLHttpRequest();\
-      request.open('GET', '") + url + "'); \
+      request.open('GET', '") +
+                      url + "'); \
       request.overrideMimeType('text/plain');\
       request.addEventListener('load', function() {result = request.responseText;}, false);\
       request.addEventListener('error', function() {result = 'error';}, false);\
@@ -159,19 +163,22 @@ TEST_F(MockWebRequestTest, BadCall)
   ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET({toString: false}, {}, function(){})"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET('http://example.com/', null, function(){})"));
   ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET('http://example.com/', {}, null)"));
-  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET('http://example.com/', {}, function(){}, 0)"));
+  ASSERT_ANY_THROW(
+      jsEngine.Evaluate("_webRequest.GET('http://example.com/', {}, function(){}, 0)"));
 }
 
 TEST_F(MockWebRequestTest, SuccessfulRequest)
 {
   auto& jsEngine = GetJsEngine();
-  jsEngine.Evaluate("let foo; _webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+  jsEngine.Evaluate("let foo; _webRequest.GET('http://example.com/', {X: 'Y'}, function(result) "
+                    "{foo = result;} )");
   ASSERT_TRUE(jsEngine.Evaluate("foo").IsUndefined());
   ProcessPendingWebRequests();
   ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("foo.status").AsInt());
   ASSERT_EQ(123, jsEngine.Evaluate("foo.responseStatus").AsInt());
   ASSERT_EQ("http://example.com/\nX\nY", jsEngine.Evaluate("foo.responseText").AsString());
-  ASSERT_EQ("{\"Foo\":\"Bar\"}", jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
+  ASSERT_EQ("{\"Foo\":\"Bar\"}",
+            jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
 }
 
 #if defined(HAVE_CURL) || defined(_WIN32)
@@ -180,15 +187,20 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
   auto& jsEngine = GetJsEngine();
   // This URL should redirect to easylist-downloads.adblockplus.org and we
   // should get the actual filter list back.
-  jsEngine.Evaluate("let foo; _webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  jsEngine.Evaluate(
+      "let foo; _webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, "
+      "function(result) {foo = result;} )");
   WaitForVariable("foo", jsEngine);
-  ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
+  ASSERT_EQ("text/plain",
+            jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
   ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("foo.status").AsInt());
   ASSERT_EQ(200, jsEngine.Evaluate("foo.responseStatus").AsInt());
   ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("foo.responseText.substr(0, 14)").AsString());
-  ASSERT_EQ("text/plain", jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
+  ASSERT_EQ("text/plain",
+            jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
 #if defined(HAVE_CURL)
-  ASSERT_EQ("gzip", jsEngine.Evaluate("foo.responseHeaders['content-encoding'].substr(0, 4)").AsString());
+  ASSERT_EQ("gzip",
+            jsEngine.Evaluate("foo.responseHeaders['content-encoding'].substr(0, 4)").AsString());
 #endif
   ASSERT_TRUE(jsEngine.Evaluate("foo.responseHeaders['location']").IsUndefined());
 }
@@ -206,9 +218,13 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
   WaitForVariable("result", jsEngine);
   ASSERT_EQ(200, jsEngine.Evaluate("request.status").AsInt());
   ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("result.substr(0, 14)").AsString());
-  ASSERT_EQ("text/plain", jsEngine.Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)").AsString());
+  ASSERT_EQ(
+      "text/plain",
+      jsEngine.Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)").AsString());
 #if defined(HAVE_CURL)
-  ASSERT_EQ("gzip", jsEngine.Evaluate("request.getResponseHeader('Content-Encoding').substr(0, 4)").AsString());
+  ASSERT_EQ(
+      "gzip",
+      jsEngine.Evaluate("request.getResponseHeader('Content-Encoding').substr(0, 4)").AsString());
 #endif
   ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Location')").IsNull());
 }
@@ -216,7 +232,9 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 TEST_F(DefaultWebRequestTest, DummyWebRequest)
 {
   auto& jsEngine = GetJsEngine();
-  jsEngine.Evaluate("let foo; _webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, function(result) {foo = result;} )");
+  jsEngine.Evaluate(
+      "let foo; _webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, "
+      "function(result) {foo = result;} )");
   WaitForVariable("foo", jsEngine);
   ASSERT_EQ(IWebRequest::NS_ERROR_FAILURE, jsEngine.Evaluate("foo.status").AsInt());
   ASSERT_EQ(0, jsEngine.Evaluate("foo.responseStatus").AsInt());
@@ -250,13 +268,13 @@ namespace
     std::string lastMessage;
 
     CatchLogSystem()
-      : AdblockPlus::LogSystem(),
-        lastLogLevel(AdblockPlus::LogSystem::LOG_LEVEL_TRACE)
+        : AdblockPlus::LogSystem(), lastLogLevel(AdblockPlus::LogSystem::LOG_LEVEL_TRACE)
     {
     }
 
     void operator()(AdblockPlus::LogSystem::LogLevel logLevel,
-        const std::string& message, const std::string&)
+                    const std::string& message,
+                    const std::string&)
     {
       lastLogLevel = logLevel;
       lastMessage = message;
@@ -275,6 +293,7 @@ namespace
     {
       return LogSystemPtr(catchLogSystem = new CatchLogSystem());
     }
+
   protected:
     CatchLogSystem* catchLogSystem;
   };

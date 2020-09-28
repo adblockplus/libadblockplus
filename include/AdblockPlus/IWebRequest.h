@@ -21,8 +21,8 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace AdblockPlus
 {
@@ -72,7 +72,8 @@ namespace AdblockPlus
   struct IWebRequest
   {
     /**
-     * Possible [Mozilla status codes](https://developer.mozilla.org/en/docs/Table_Of_Errors#Network_Errors).
+     * Possible [Mozilla status
+     * codes](https://developer.mozilla.org/en/docs/Table_Of_Errors#Network_Errors).
      */
     enum MozillaStatusCode
     {
@@ -99,7 +100,9 @@ namespace AdblockPlus
      * The parameter is the server response.
      */
     typedef std::function<void(const ServerResponse&)> GetCallback;
-    virtual ~IWebRequest() {}
+    virtual ~IWebRequest()
+    {
+    }
 
     /**
      * Performs a GET request.
@@ -107,7 +110,9 @@ namespace AdblockPlus
      * @param requestHeaders Request headers.
      * @param getCallback to invoke when the server response is ready.
      */
-    virtual void GET(const std::string& url, const HeaderList& requestHeaders, const GetCallback& getCallback) = 0;
+    virtual void GET(const std::string& url,
+                     const HeaderList& requestHeaders,
+                     const GetCallback& getCallback) = 0;
   };
 
   /**
@@ -115,13 +120,14 @@ namespace AdblockPlus
    */
   typedef std::unique_ptr<IWebRequest> WebRequestPtr;
 
-
   /**
    * Private functionality.
    */
   struct IWebRequestSync
   {
-    virtual ~IWebRequestSync() {}
+    virtual ~IWebRequestSync()
+    {
+    }
     virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
   };
   typedef std::unique_ptr<IWebRequestSync> WebRequestSyncPtr;

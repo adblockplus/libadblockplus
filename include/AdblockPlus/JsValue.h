@@ -18,10 +18,10 @@
 #ifndef ADBLOCK_PLUS_JS_VALUE_H
 #define ADBLOCK_PLUS_JS_VALUE_H
 
+#include <memory>
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <AdblockPlus/IFileSystem.h>
 
@@ -54,6 +54,7 @@ namespace AdblockPlus
   class JsValue
   {
     friend class JsEngine;
+
   public:
     JsValue(JsValue&& src);
     JsValue(const JsValue& src);
@@ -152,7 +153,9 @@ namespace AdblockPlus
     v8::Local<v8::Value> UnwrapValue() const;
 
   private:
-    JsValue(v8::Isolate* isolate, const v8::Global<v8::Context>& jsContext, v8::Local<v8::Value> value);
+    JsValue(v8::Isolate* isolate,
+            const v8::Global<v8::Context>& jsContext,
+            v8::Local<v8::Value> value);
     void SetProperty(const std::string& name, v8::Local<v8::Value> val);
 
     // Parameter args is not const because a pointer to its internal arrays is

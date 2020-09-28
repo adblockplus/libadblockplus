@@ -15,10 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "FiltersCommand.h"
+
 #include <iostream>
 #include <sstream>
-
-#include "FiltersCommand.h"
 
 namespace
 {
@@ -26,33 +26,32 @@ namespace
 
   void ShowFilterList(const FilterList& filters)
   {
-    for (FilterList::const_iterator it = filters.begin();
-         it != filters.end(); it++)
+    for (FilterList::const_iterator it = filters.begin(); it != filters.end(); it++)
     {
       std::string type;
       switch (it->GetType())
       {
-        case AdblockPlus::Filter::TYPE_BLOCKING:
-          type = "blocking";
-          break;
-        case AdblockPlus::Filter::TYPE_EXCEPTION:
-          type = "exception";
-          break;
-        case AdblockPlus::Filter::TYPE_ELEMHIDE:
-          type = "elemhide";
-          break;
-        case AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION:
-          type = "elemhideexception";
-          break;
-        case AdblockPlus::Filter::TYPE_COMMENT:
-          type = "comment";
-          break;
-        case AdblockPlus::Filter::TYPE_INVALID:
-          type = "invalid";
-          break;
-        default:
-          type = "(unknown type)";
-          break;
+      case AdblockPlus::Filter::TYPE_BLOCKING:
+        type = "blocking";
+        break;
+      case AdblockPlus::Filter::TYPE_EXCEPTION:
+        type = "exception";
+        break;
+      case AdblockPlus::Filter::TYPE_ELEMHIDE:
+        type = "elemhide";
+        break;
+      case AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION:
+        type = "elemhideexception";
+        break;
+      case AdblockPlus::Filter::TYPE_COMMENT:
+        type = "comment";
+        break;
+      case AdblockPlus::Filter::TYPE_INVALID:
+        type = "invalid";
+        break;
+      default:
+        type = "(unknown type)";
+        break;
       }
       std::cout << it->GetRaw() << " - " << type << std::endl;
     }
@@ -60,7 +59,7 @@ namespace
 }
 
 FiltersCommand::FiltersCommand(AdblockPlus::IFilterEngine& filterEngine)
-  : Command("filters"), filterEngine(filterEngine)
+    : Command("filters"), filterEngine(filterEngine)
 {
 }
 

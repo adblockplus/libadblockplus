@@ -34,8 +34,7 @@ namespace AdblockPlus
   class Sync
   {
   public:
-    Sync()
-      : isSet(false)
+    Sync() : isSet(false)
     {
     }
     void Wait()
@@ -45,8 +44,7 @@ namespace AdblockPlus
         cv.wait(lock);
     }
 
-    template<class R = typename std::chrono::seconds::rep,
-             class P = std::ratio<1>>
+    template<class R = typename std::chrono::seconds::rep, class P = std::ratio<1>>
     bool WaitFor(const std::chrono::duration<R, P>& duration = std::chrono::seconds(20))
     {
       std::unique_lock<std::mutex> lock(mutex);
@@ -68,6 +66,7 @@ namespace AdblockPlus
       std::unique_lock<std::mutex> lock(mutex);
       return error;
     }
+
   private:
     std::mutex mutex;
     std::condition_variable cv;

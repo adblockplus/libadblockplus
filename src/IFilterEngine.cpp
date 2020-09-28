@@ -23,7 +23,8 @@
 
 using namespace AdblockPlus;
 
-namespace {
+namespace
+{
 
   typedef std::map<IFilterEngine::ContentType, std::string> ContentTypeMap;
 

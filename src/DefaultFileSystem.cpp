@@ -16,22 +16,22 @@
  */
 
 #include "DefaultFileSystem.h"
+
 #include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <sys/types.h>
 #include <thread>
 
-#include <sys/types.h>
-
 #ifdef _WIN32
-#include <windows.h>
 #include <Shlobj.h>
 #include <Shlwapi.h>
+#include <windows.h>
 #else
-#include <sys/stat.h>
 #include <cerrno>
+#include <sys/stat.h>
 #endif
 
 #include "../src/Utils.h"
@@ -44,7 +44,7 @@ namespace
   {
   public:
     explicit RuntimeErrorWithErrno(const std::string& message)
-      : std::runtime_error(message + " (" + strerror(errno) + ")")
+        : std::runtime_error(message + " (" + strerror(errno) + ")")
     {
     }
   };
@@ -56,8 +56,8 @@ namespace
     return Utils::ToUtf16String(path);
   }
 
-  #define rename _wrename
-  #define remove _wremove
+#define rename _wrename
+#define remove _wremove
 #else
   // POSIX systems: assume that file system encoding is UTF-8 and just use the
   // file paths as they are.
@@ -68,8 +68,7 @@ namespace
 #endif
 }
 
-DefaultFileSystemSync::DefaultFileSystemSync(const std::string& path)
-  : basePath(path)
+DefaultFileSystemSync::DefaultFileSystemSync(const std::string& path) : basePath(path)
 {
   if (basePath.size() > 1 && *basePath.rbegin() == PATH_SEPARATOR)
   {
@@ -77,8 +76,7 @@ DefaultFileSystemSync::DefaultFileSystemSync(const std::string& path)
   }
 }
 
-IFileSystem::IOBuffer
-DefaultFileSystemSync::Read(const std::string& path) const
+IFileSystem::IOBuffer DefaultFileSystemSync::Read(const std::string& path) const
 {
   std::ifstream file(NormalizePath(path).c_str(), std::ios_base::binary);
   if (file.fail())
@@ -89,21 +87,17 @@ DefaultFileSystemSync::Read(const std::string& path) const
   file.seekg(0, std::ios_base::beg);
 
   IFileSystem::IOBuffer data(dataSize);
-  file.read(reinterpret_cast<std::ifstream::char_type*>(data.data()),
-            data.size());
+  file.read(reinterpret_cast<std::ifstream::char_type*>(data.data()), data.size());
   return data;
 }
 
-void DefaultFileSystemSync::Write(const std::string& path,
-                              const IFileSystem::IOBuffer& data)
+void DefaultFileSystemSync::Write(const std::string& path, const IFileSystem::IOBuffer& data)
 {
   std::ofstream file(NormalizePath(path).c_str(), std::ios_base::out | std::ios_base::binary);
-  file.write(reinterpret_cast<const std::ofstream::char_type*>(data.data()),
-             data.size());
+  file.write(reinterpret_cast<const std::ofstream::char_type*>(data.data()), data.size());
 }
 
-void DefaultFileSystemSync::Move(const std::string& fromPath,
-                                 const std::string& toPath)
+void DefaultFileSystemSync::Move(const std::string& fromPath, const std::string& toPath)
 {
   if (rename(NormalizePath(fromPath).c_str(), NormalizePath(toPath).c_str()))
     throw RuntimeErrorWithErrno("Failed to move " + fromPath + " to " + toPath);
@@ -123,9 +117,7 @@ IFileSystem::StatResult DefaultFileSystemSync::Stat(const std::string& path) con
   if (!GetFileAttributesExW(NormalizePath(path).c_str(), GetFileExInfoStandard, &data))
   {
     DWORD err = GetLastError();
-    if (err == ERROR_FILE_NOT_FOUND ||
-        err == ERROR_PATH_NOT_FOUND ||
-        err == ERROR_INVALID_DRIVE)
+    if (err == ERROR_FILE_NOT_FOUND || err == ERROR_PATH_NOT_FOUND || err == ERROR_INVALID_DRIVE)
     {
       return result;
     }
@@ -134,14 +126,14 @@ IFileSystem::StatResult DefaultFileSystemSync::Stat(const std::string& path) con
 
   result.exists = true;
 
-  // See http://support.microsoft.com/kb/167296 on this conversion
-  #define FILE_TIME_TO_UNIX_EPOCH_OFFSET 116444736000000000LL
-  #define FILE_TIME_TO_MILLISECONDS_FACTOR 10000
+// See http://support.microsoft.com/kb/167296 on this conversion
+#define FILE_TIME_TO_UNIX_EPOCH_OFFSET 116444736000000000LL
+#define FILE_TIME_TO_MILLISECONDS_FACTOR 10000
   ULARGE_INTEGER time;
   time.LowPart = data.ftLastWriteTime.dwLowDateTime;
   time.HighPart = data.ftLastWriteTime.dwHighDateTime;
-  result.lastModified = (time.QuadPart - FILE_TIME_TO_UNIX_EPOCH_OFFSET) /
-      FILE_TIME_TO_MILLISECONDS_FACTOR;
+  result.lastModified =
+      (time.QuadPart - FILE_TIME_TO_UNIX_EPOCH_OFFSET) / FILE_TIME_TO_MILLISECONDS_FACTOR;
   return result;
 #else
   struct stat nativeStat;
@@ -154,14 +146,14 @@ IFileSystem::StatResult DefaultFileSystemSync::Stat(const std::string& path) con
   }
   result.exists = true;
 
-  #define MSEC_IN_SEC 1000
-  #define NSEC_IN_MSEC 1000000
+#define MSEC_IN_SEC 1000
+#define NSEC_IN_MSEC 1000000
   // Note: _POSIX_C_SOURCE macro is defined automatically on Linux due to g++
   // defining _GNU_SOURCE macro. On OS X we still fall back to the "no
   // milliseconds" branch, it has st_mtimespec instead of st_mtim.
 #if _POSIX_C_SOURCE >= 200809L
-  result.lastModified = static_cast<int64_t>(nativeStat.st_mtim.tv_sec) * MSEC_IN_SEC
-                      +  static_cast<int64_t>(nativeStat.st_mtim.tv_nsec) / NSEC_IN_MSEC;
+  result.lastModified = static_cast<int64_t>(nativeStat.st_mtim.tv_sec) * MSEC_IN_SEC +
+                        static_cast<int64_t>(nativeStat.st_mtim.tv_nsec) / NSEC_IN_MSEC;
 #else
   result.lastModified = static_cast<int64_t>(nativeStat.st_mtime) * MSEC_IN_SEC;
 #endif
@@ -178,9 +170,9 @@ std::string DefaultFileSystemSync::Resolve(const std::string& path) const
   else
   {
 #ifdef _WIN32
-  if (PathIsRelative(NormalizePath(path).c_str()))
+    if (PathIsRelative(NormalizePath(path).c_str()))
 #else
-  if (path.length() && *path.begin() != PATH_SEPARATOR)
+    if (path.length() && *path.begin() != PATH_SEPARATOR)
 #endif
     {
       if (*basePath.rbegin() != PATH_SEPARATOR)
@@ -195,8 +187,9 @@ std::string DefaultFileSystemSync::Resolve(const std::string& path) const
   }
 }
 
-DefaultFileSystem::DefaultFileSystem(const Scheduler& scheduler, std::unique_ptr<DefaultFileSystemSync> syncImpl)
-  : scheduler(scheduler), syncImpl(std::move(syncImpl))
+DefaultFileSystem::DefaultFileSystem(const Scheduler& scheduler,
+                                     std::unique_ptr<DefaultFileSystemSync> syncImpl)
+    : scheduler(scheduler), syncImpl(std::move(syncImpl))
 {
 }
 
@@ -204,8 +197,7 @@ void DefaultFileSystem::Read(const std::string& fileName,
                              const ReadCallback& doneCallback,
                              const Callback& errorCallback) const
 {
-  scheduler([this, fileName, doneCallback, errorCallback]
-  {
+  scheduler([this, fileName, doneCallback, errorCallback] {
     std::string error;
     try
     {
@@ -218,7 +210,7 @@ void DefaultFileSystem::Read(const std::string& fileName,
     }
     catch (...)
     {
-      error =  "Unknown error while reading from " + fileName + " as " + Resolve(fileName);
+      error = "Unknown error while reading from " + fileName + " as " + Resolve(fileName);
     }
 
     try
@@ -236,8 +228,7 @@ void DefaultFileSystem::Write(const std::string& fileName,
                               const IOBuffer& data,
                               const Callback& callback)
 {
-  scheduler([this, fileName, data, callback]
-  {
+  scheduler([this, fileName, data, callback] {
     std::string error;
     try
     {
@@ -259,8 +250,7 @@ void DefaultFileSystem::Move(const std::string& fromFileName,
                              const std::string& toFileName,
                              const Callback& callback)
 {
-  scheduler([this, fromFileName, toFileName, callback]
-  {
+  scheduler([this, fromFileName, toFileName, callback] {
     std::string error;
     try
     {
@@ -278,11 +268,9 @@ void DefaultFileSystem::Move(const std::string& fromFileName,
   });
 }
 
-void DefaultFileSystem::Remove(const std::string& fileName,
-                               const Callback& callback)
+void DefaultFileSystem::Remove(const std::string& fileName, const Callback& callback)
 {
-  scheduler([this, fileName, callback]
-  {
+  scheduler([this, fileName, callback] {
     std::string error;
     try
     {
@@ -300,11 +288,9 @@ void DefaultFileSystem::Remove(const std::string& fileName,
   });
 }
 
-void DefaultFileSystem::Stat(const std::string& fileName,
-                             const StatCallback& callback) const
+void DefaultFileSystem::Stat(const std::string& fileName, const StatCallback& callback) const
 {
-  scheduler([this, fileName, callback]
-  {
+  scheduler([this, fileName, callback] {
     std::string error;
     try
     {

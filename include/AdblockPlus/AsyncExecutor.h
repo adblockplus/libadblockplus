@@ -35,16 +35,19 @@ namespace AdblockPlus
     class SyncThreads
     {
       typedef std::list<std::thread> Threads;
+
     public:
       typedef Threads::iterator iterator;
       void SpawnThread(std::function<void(iterator)>&& task);
       std::thread TakeOut(iterator pos);
       void WaitUtilEmpty();
+
     protected:
       Threads collection;
       std::mutex mutex;
       std::condition_variable conditionVar;
     };
+
   public:
     /**
      * Destructor, it waits for finishing of all already dispatched tasks.
@@ -58,6 +61,7 @@ namespace AdblockPlus
      *        empty.
      */
     void Dispatch(const std::function<void()>& call);
+
   private:
     SyncThreads threads;
     ActiveObject threadCollector;
@@ -77,8 +81,7 @@ namespace AdblockPlus
      *
      * Initially constructed the class behaves as `AsyncExecutor`.
      */
-    OptionalAsyncExecutor()
-      : executor(new AsyncExecutor())
+    OptionalAsyncExecutor() : executor(new AsyncExecutor())
     {
     }
 
@@ -108,6 +111,7 @@ namespace AdblockPlus
         tmp = move(executor);
       }
     }
+
   private:
     std::mutex asyncExecutorMutex;
     std::unique_ptr<AsyncExecutor> executor;

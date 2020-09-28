@@ -15,8 +15,8 @@
  * along with Adblock Plus. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
 
 namespace AdblockPlus
 {
@@ -25,11 +25,11 @@ namespace AdblockPlus
    * that the underlying container is accessed only by one thread at the same
    * time.
    */
-  template<typename TContainer>
-  class SynchronizedCollection
+  template<typename TContainer> class SynchronizedCollection
   {
   protected:
     typedef TContainer Container;
+
   public:
     /**
      * The `value_type` represents the type of stored values.
@@ -65,14 +65,14 @@ namespace AdblockPlus
     value_type pop_front()
     {
       std::unique_lock<std::mutex> lock(mutex);
-      conditionVar.wait(lock, [this]()->bool
-      {
+      conditionVar.wait(lock, [this]() -> bool {
         return !collection.empty();
       });
       value_type retValue = collection.front();
       collection.pop_front();
       return retValue;
     }
+
   protected:
     Container collection;
     std::mutex mutex;

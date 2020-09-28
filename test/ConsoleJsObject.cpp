@@ -29,7 +29,8 @@ namespace
     std::string lastSource;
 
     void operator()(AdblockPlus::LogSystem::LogLevel logLevel,
-        const std::string& message, const std::string& source)
+                    const std::string& message,
+                    const std::string& source)
     {
       lastLogLevel = logLevel;
       lastMessage = message;
@@ -100,11 +101,13 @@ TEST_F(ConsoleJsObjectTest, ConsoleTraceCall)
         console.trace();
       })();
     }
-    foo();)", "eval");
+    foo();)",
+                         "eval");
   ASSERT_EQ(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, mockLogSystem->lastLogLevel);
   ASSERT_EQ(R"(1: /* anonymous */() at eval:5
 2: foo() at eval:6
 3: /* anonymous */() at eval:8
-)", mockLogSystem->lastMessage);
+)",
+            mockLogSystem->lastMessage);
   ASSERT_EQ("", mockLogSystem->lastSource);
 }

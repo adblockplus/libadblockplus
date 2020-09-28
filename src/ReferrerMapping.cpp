@@ -19,8 +19,7 @@
 
 using namespace AdblockPlus;
 
-ReferrerMapping::ReferrerMapping(const int maxCachedUrls)
-  : maxCachedUrls(maxCachedUrls)
+ReferrerMapping::ReferrerMapping(const int maxCachedUrls) : maxCachedUrls(maxCachedUrls)
 {
 }
 
@@ -40,15 +39,13 @@ void ReferrerMapping::Add(const std::string& url, const std::string& referrer)
   }
 }
 
-std::vector<std::string> ReferrerMapping::BuildReferrerChain(
-  const std::string& url) const
+std::vector<std::string> ReferrerMapping::BuildReferrerChain(const std::string& url) const
 {
   std::vector<std::string> referrerChain;
   // We need to limit the chain length to ensure we don't block indefinitely
   // if there's a referrer loop.
   const int maxChainLength = 10;
-  std::map<std::string, std::string>::const_iterator currentEntry =
-    mapping.find(url);
+  std::map<std::string, std::string>::const_iterator currentEntry = mapping.find(url);
   for (int i = 0; i < maxChainLength && currentEntry != mapping.end(); i++)
   {
     const std::string& currentUrl = currentEntry->second;

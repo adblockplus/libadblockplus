@@ -15,9 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-
 #include "Command.h"
+
+#include <iostream>
 
 Command::Command(const std::string& name) : name(name)
 {
@@ -33,6 +33,6 @@ void Command::ShowUsage() const
 }
 
 NoSuchCommandError::NoSuchCommandError(const std::string& commandName)
-  : std::runtime_error("No such command: " + commandName)
+    : std::runtime_error("No such command: " + commandName)
 {
 }

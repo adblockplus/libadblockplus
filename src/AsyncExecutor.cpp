@@ -42,8 +42,7 @@ std::thread AsyncExecutor::SyncThreads::TakeOut(iterator pos)
 void AsyncExecutor::SyncThreads::WaitUtilEmpty()
 {
   std::unique_lock<std::mutex> lock(mutex);
-  conditionVar.wait(lock, [this]()->bool
-  {
+  conditionVar.wait(lock, [this]() -> bool {
     return collection.empty();
   });
 }
@@ -57,11 +56,9 @@ void AsyncExecutor::Dispatch(const std::function<void()>& call)
 {
   if (!call)
     return;
-  threads.SpawnThread([this, call](SyncThreads::iterator threadIterator)
-  {
+  threads.SpawnThread([this, call](SyncThreads::iterator threadIterator) {
     call();
-    threadCollector.Post([this, threadIterator]
-    {
+    threadCollector.Post([this, threadIterator] {
       threads.TakeOut(threadIterator).join();
     });
   });

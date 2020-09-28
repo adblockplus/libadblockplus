@@ -16,27 +16,29 @@
  */
 
 #include <iostream>
+
 #include <AdblockPlus/DefaultLogSystem.h>
 
 void AdblockPlus::DefaultLogSystem::operator()(AdblockPlus::LogSystem::LogLevel logLevel,
-    const std::string& message, const std::string& source)
+                                               const std::string& message,
+                                               const std::string& source)
 {
   switch (logLevel)
   {
-    case LOG_LEVEL_TRACE:
-      std::cerr << "Traceback:" << std::endl;
-      break;
-    case LOG_LEVEL_LOG:
-      break;
-    case LOG_LEVEL_INFO:
-      std::cerr << "Info: ";
-      break;
-    case LOG_LEVEL_WARN:
-      std::cerr << "Warning: ";
-      break;
-    case LOG_LEVEL_ERROR:
-      std::cerr << "Error: ";
-      break;
+  case LOG_LEVEL_TRACE:
+    std::cerr << "Traceback:" << std::endl;
+    break;
+  case LOG_LEVEL_LOG:
+    break;
+  case LOG_LEVEL_INFO:
+    std::cerr << "Info: ";
+    break;
+  case LOG_LEVEL_WARN:
+    std::cerr << "Warning: ";
+    break;
+  case LOG_LEVEL_ERROR:
+    std::cerr << "Error: ";
+    break;
   }
   std::cerr << message;
   if (source.size())

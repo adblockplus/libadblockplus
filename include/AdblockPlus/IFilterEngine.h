@@ -22,11 +22,12 @@
 #include <map>
 #include <string>
 #include <vector>
+
 #include <AdblockPlus/Filter.h>
+#include <AdblockPlus/IElement.h>
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/Subscription.h>
-#include <AdblockPlus/IElement.h>
 
 namespace AdblockPlus
 {
@@ -174,7 +175,8 @@ namespace AdblockPlus
      * @param documentUrl URL of the document requesting the resource.
      *        Note that there will be more than one document if frames are
      *        involved, see
-     *        Matches(const std::string&, const std::string&, const std::vector<std::string>&) const.
+     *        Matches(const std::string&, const std::string&, const std::vector<std::string>&)
+     * const.
      * @param siteKey
      *        Optional: public key provided by the document.
      * @param specificOnly Optional: if set to `true` then skips generic filters.
@@ -182,10 +184,10 @@ namespace AdblockPlus
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     virtual FilterPtr Matches(const std::string& url,
-        ContentTypeMask contentTypeMask,
-        const std::string& documentUrl,
-        const std::string& siteKey = "",
-        bool specificOnly = false) const = 0;
+                              ContentTypeMask contentTypeMask,
+                              const std::string& documentUrl,
+                              const std::string& siteKey = "",
+                              bool specificOnly = false) const = 0;
 
     /**
      * Checks if any active filter matches the supplied URL.
@@ -204,10 +206,10 @@ namespace AdblockPlus
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     virtual FilterPtr Matches(const std::string& url,
-        ContentTypeMask contentTypeMask,
-        const std::vector<std::string>& documentUrls,
-        const std::string& siteKey = "",
-        bool specificOnly = false) const = 0;
+                              ContentTypeMask contentTypeMask,
+                              const std::vector<std::string>& documentUrls,
+                              const std::string& siteKey = "",
+                              bool specificOnly = false) const = 0;
 
     /**
      * Checks if any active genericblock filter exception matches the supplied URL.
@@ -226,8 +228,8 @@ namespace AdblockPlus
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     virtual bool IsGenericblockWhitelisted(const std::string& url,
-                                   const std::vector<std::string>& documentUrls,
-                                   const std::string& sitekey = "") const = 0;
+                                           const std::vector<std::string>& documentUrls,
+                                           const std::string& sitekey = "") const = 0;
 
     /**
      * Checks whether the document at the supplied URL is whitelisted.
@@ -241,8 +243,8 @@ namespace AdblockPlus
      * @return `true` if the URL is whitelisted.
      */
     virtual bool IsDocumentWhitelisted(const std::string& url,
-        const std::vector<std::string>& documentUrls,
-        const std::string& sitekey = "") const = 0;
+                                       const std::vector<std::string>& documentUrls,
+                                       const std::string& sitekey = "") const = 0;
 
     /**
      * Checks whether element hiding is disabled at the supplied URL.
@@ -256,8 +258,8 @@ namespace AdblockPlus
      * @return `true` if element hiding is whitelisted for the supplied URL.
      */
     virtual bool IsElemhideWhitelisted(const std::string& url,
-        const std::vector<std::string>& documentUrls,
-        const std::string& sitekey = "") const = 0;
+                                       const std::vector<std::string>& documentUrls,
+                                       const std::string& sitekey = "") const = 0;
 
     /**
      * Retrieves CSS style sheet for all element hiding filters active on the
@@ -266,7 +268,8 @@ namespace AdblockPlus
      * @param specificOnly true if generic filters should not apply.
      * @return CSS style sheet.
      */
-    virtual std::string GetElementHidingStyleSheet(const std::string& domain, bool specificOnly = false) const = 0;
+    virtual std::string GetElementHidingStyleSheet(const std::string& domain,
+                                                   bool specificOnly = false) const = 0;
 
     /**
      * Retrieves CSS selectors for all element hiding emulation filters active on the
@@ -274,7 +277,8 @@ namespace AdblockPlus
      * @param domain Domain to retrieve CSS selectors for.
      * @return List of CSS selectors along with the text property.
      */
-    virtual std::vector<EmulationSelector> GetElementHidingEmulationSelectors(const std::string& domain) const = 0;
+    virtual std::vector<EmulationSelector>
+    GetElementHidingEmulationSelectors(const std::string& domain) const = 0;
 
     /**
      * Retrieves a preference value.
@@ -317,14 +321,15 @@ namespace AdblockPlus
     virtual void SetAllowedConnectionType(const std::string* value) = 0;
 
     /**
-      * Retrieves previously stored allowed connection type.
-      * @return Preference value, or `nullptr` if it doesn't exist.
-      */
+     * Retrieves previously stored allowed connection type.
+     * @return Preference value, or `nullptr` if it doesn't exist.
+     */
     virtual std::unique_ptr<std::string> GetAllowedConnectionType() const = 0;
 
     /**
      * Compares two version strings in
-     * [Mozilla toolkit version format](https://developer.mozilla.org/en/docs/Toolkit_version_format).
+     * [Mozilla toolkit version
+     * format](https://developer.mozilla.org/en/docs/Toolkit_version_format).
      * @param v1 First version string.
      * @param v2 Second version string.
      * @return
@@ -335,17 +340,20 @@ namespace AdblockPlus
     virtual int CompareVersions(const std::string& v1, const std::string& v2) const = 0;
 
     /**
-    * Checks whether the sitekey signature is valid for the given public key and data,
-    * where data consists of (uri + "\0" + host + "\0" + userAgent).
-    * @param base64 encoded public key.
-    * @param base64 encoded signature.
-    * @param uri signed in signature.
-    * @param host signed in signature.
-    * @param userAgent signed in signature.
-    * @return `true` if (uri + "\0" + host + "\0" + userAgent) matches signature.
-    */
-    virtual bool VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
-                         const std::string& host, const std::string& userAgent) const = 0;
+     * Checks whether the sitekey signature is valid for the given public key and data,
+     * where data consists of (uri + "\0" + host + "\0" + userAgent).
+     * @param base64 encoded public key.
+     * @param base64 encoded signature.
+     * @param uri signed in signature.
+     * @param host signed in signature.
+     * @param userAgent signed in signature.
+     * @return `true` if (uri + "\0" + host + "\0" + userAgent) matches signature.
+     */
+    virtual bool VerifySignature(const std::string& key,
+                                 const std::string& signature,
+                                 const std::string& uri,
+                                 const std::string& host,
+                                 const std::string& userAgent) const = 0;
 
     /**
      * Given the details of an element, return suggested filters to block or hide that element.

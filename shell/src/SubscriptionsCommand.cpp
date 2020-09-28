@@ -15,10 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "SubscriptionsCommand.h"
+
 #include <iostream>
 #include <sstream>
-
-#include "SubscriptionsCommand.h"
 
 namespace
 {
@@ -26,8 +26,8 @@ namespace
 
   void ShowSubscriptionList(const SubscriptionList& subscriptions)
   {
-    for (SubscriptionList::const_iterator it = subscriptions.begin();
-         it != subscriptions.end(); it++)
+    for (SubscriptionList::const_iterator it = subscriptions.begin(); it != subscriptions.end();
+         it++)
     {
       std::cout << it->GetTitle();
       std::cout << " - " << it->GetUrl();
@@ -39,9 +39,8 @@ namespace
   }
 }
 
-SubscriptionsCommand::SubscriptionsCommand(
-  AdblockPlus::IFilterEngine& filterEngine)
-  : Command("subscriptions"), filterEngine(filterEngine)
+SubscriptionsCommand::SubscriptionsCommand(AdblockPlus::IFilterEngine& filterEngine)
+    : Command("subscriptions"), filterEngine(filterEngine)
 {
 }
 
@@ -117,8 +116,7 @@ void SubscriptionsCommand::RemoveSubscription(const std::string& url)
 void SubscriptionsCommand::UpdateSubscriptions()
 {
   SubscriptionList subscriptions = filterEngine.GetListedSubscriptions();
-  for (SubscriptionList::iterator it = subscriptions.begin();
-       it != subscriptions.end(); it++)
+  for (SubscriptionList::iterator it = subscriptions.begin(); it != subscriptions.end(); it++)
     it->UpdateFilters();
 }
 

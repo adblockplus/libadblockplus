@@ -18,8 +18,8 @@
 #include <stdexcept>
 
 #ifdef _WIN32
-#include <Windows.h>
 #include <Shlwapi.h>
+#include <Windows.h>
 #endif
 
 #include "Utils.h"
@@ -41,7 +41,8 @@ std::string Utils::FromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>
     return std::string();
 }
 
-StringBuffer Utils::StringBufferFromV8String(v8::Isolate* isolate, const v8::Local<v8::Value>& value)
+StringBuffer Utils::StringBufferFromV8String(v8::Isolate* isolate,
+                                             const v8::Local<v8::Value>& value)
 {
   v8::String::Utf8Value stringValue(isolate, value);
   if (stringValue.length())
@@ -52,15 +53,14 @@ StringBuffer Utils::StringBufferFromV8String(v8::Isolate* isolate, const v8::Loc
 
 v8::MaybeLocal<v8::String> Utils::ToV8String(v8::Isolate* isolate, const std::string& str)
 {
-  return v8::String::NewFromUtf8(isolate, str.c_str(),
-    v8::NewStringType::kNormal, str.length());
+  return v8::String::NewFromUtf8(isolate, str.c_str(), v8::NewStringType::kNormal, str.length());
 }
 
-v8::MaybeLocal<v8::String> Utils::StringBufferToV8String(v8::Isolate* isolate, const StringBuffer& str)
+v8::MaybeLocal<v8::String> Utils::StringBufferToV8String(v8::Isolate* isolate,
+                                                         const StringBuffer& str)
 {
-  return v8::String::NewFromUtf8(isolate,
-    reinterpret_cast<const char*>(str.data()),
-    v8::NewStringType::kNormal, str.size());
+  return v8::String::NewFromUtf8(
+      isolate, reinterpret_cast<const char*>(str.data()), v8::NewStringType::kNormal, str.size());
 }
 
 void Utils::ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str)
@@ -68,8 +68,7 @@ void Utils::ThrowExceptionInJS(v8::Isolate* isolate, const std::string& str)
   auto maybe = Utils::ToV8String(isolate, str);
   if (maybe.IsEmpty())
   {
-    isolate->ThrowException(
-      Utils::ToV8String(isolate, "Unknown Exception").ToLocalChecked());
+    isolate->ThrowException(Utils::ToV8String(isolate, "Unknown Exception").ToLocalChecked());
   }
   else
     isolate->ThrowException(maybe.ToLocalChecked());
@@ -84,7 +83,8 @@ std::wstring Utils::ToUtf16String(const std::string& str)
 
   DWORD utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, NULL, 0);
   if (utf16StringLength == 0)
-    throw std::runtime_error("ToUTF16String failed. Can't determine the length of the buffer needed.");
+    throw std::runtime_error(
+        "ToUTF16String failed. Can't determine the length of the buffer needed.");
 
   std::wstring utf16String(utf16StringLength, L'\0');
   MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
@@ -99,7 +99,8 @@ std::string Utils::ToUtf8String(const std::wstring& str)
 
   DWORD utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, NULL, 0, 0, 0);
   if (utf8StringLength == 0)
-    throw std::runtime_error("ToUTF8String failed. Can't determine the length of the buffer needed.");
+    throw std::runtime_error(
+        "ToUTF8String failed. Can't determine the length of the buffer needed.");
 
   std::string utf8String(utf8StringLength, '\0');
   WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
@@ -125,7 +126,6 @@ std::wstring Utils::CanonizeUrl(const std::wstring& url)
     }
   }
   return canonizedUrl;
-
 }
 #endif
 

@@ -18,16 +18,15 @@
 #include <exception>
 #include <string>
 
-#include <AdblockPlus/Subscription.h>
 #include <AdblockPlus/JsEngine.h>
+#include <AdblockPlus/Subscription.h>
 
 #include "Utils.h"
 
 using namespace AdblockPlus;
 
 Subscription::Subscription(JsValue&& object, JsEngine* engine)
-    : jsObject(std::move(object)),
-      jsEngine(engine)
+    : jsObject(std::move(object)), jsEngine(engine)
 {
   if (!jsObject.IsObject())
     throw std::runtime_error("JavaScript value is not an object");
