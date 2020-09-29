@@ -15,13 +15,13 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrefsCommand.h"
+
 #include <iostream>
 #include <sstream>
 
-#include "PrefsCommand.h"
-
 PrefsCommand::PrefsCommand(AdblockPlus::IFilterEngine& filterEngine)
-  : Command("prefs"), filterEngine(filterEngine)
+    : Command("prefs"), filterEngine(filterEngine)
 {
 }
 

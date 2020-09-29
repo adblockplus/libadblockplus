@@ -19,6 +19,7 @@
 #define ADBLOCK_PLUS_SUBSCRIPTION_H
 
 #include <memory>
+
 #include <AdblockPlus/JsValue.h>
 
 namespace AdblockPlus
@@ -89,9 +90,9 @@ namespace AdblockPlus
     std::string GetTitle() const;
 
     /**
-      * Url subscription fetched from.
-      * @return url
-      */
+     * Url subscription fetched from.
+     * @return url
+     */
     std::string GetUrl() const;
 
     std::string GetHomepage() const;
@@ -105,9 +106,9 @@ namespace AdblockPlus
     std::vector<std::string> GetLanguages() const;
 
     /**
-      * Number of filters in this subscription.
-      * @returns number of filters
-      */
+     * Number of filters in this subscription.
+     * @returns number of filters
+     */
     int GetFilterCount() const;
 
     /**

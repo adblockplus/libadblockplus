@@ -27,7 +27,10 @@ namespace AdblockPlus
   public:
     explicit DefaultFilterEngine(JsEngine& jsEngine);
 
-    JsEngine& GetJsEngine() const final { return jsEngine; }
+    JsEngine& GetJsEngine() const final
+    {
+      return jsEngine;
+    }
 
     bool IsFirstRun() const final;
 
@@ -48,32 +51,34 @@ namespace AdblockPlus
     std::string GetAAUrl() const final;
 
     FilterPtr Matches(const std::string& url,
-        ContentTypeMask contentTypeMask,
-        const std::string& documentUrl,
-        const std::string& siteKey = "",
-        bool specificOnly = false) const final;
+                      ContentTypeMask contentTypeMask,
+                      const std::string& documentUrl,
+                      const std::string& siteKey = "",
+                      bool specificOnly = false) const final;
 
     FilterPtr Matches(const std::string& url,
-        ContentTypeMask contentTypeMask,
-        const std::vector<std::string>& documentUrls,
-        const std::string& siteKey = "",
-        bool specificOnly = false) const final;
+                      ContentTypeMask contentTypeMask,
+                      const std::vector<std::string>& documentUrls,
+                      const std::string& siteKey = "",
+                      bool specificOnly = false) const final;
 
     bool IsGenericblockWhitelisted(const std::string& url,
                                    const std::vector<std::string>& documentUrls,
                                    const std::string& sitekey = "") const final;
 
     bool IsDocumentWhitelisted(const std::string& url,
-        const std::vector<std::string>& documentUrls,
-        const std::string& sitekey = "") const final;
+                               const std::vector<std::string>& documentUrls,
+                               const std::string& sitekey = "") const final;
 
     bool IsElemhideWhitelisted(const std::string& url,
-        const std::vector<std::string>& documentUrls,
-        const std::string& sitekey = "") const final;
+                               const std::vector<std::string>& documentUrls,
+                               const std::string& sitekey = "") const final;
 
-    std::string GetElementHidingStyleSheet(const std::string& domain, bool specificOnly = false) const final;
+    std::string GetElementHidingStyleSheet(const std::string& domain,
+                                           bool specificOnly = false) const final;
 
-    std::vector<EmulationSelector> GetElementHidingEmulationSelectors(const std::string& domain) const final;
+    std::vector<EmulationSelector>
+    GetElementHidingEmulationSelectors(const std::string& domain) const final;
 
     JsValue GetPref(const std::string& pref) const final;
 
@@ -91,12 +96,18 @@ namespace AdblockPlus
 
     int CompareVersions(const std::string& v1, const std::string& v2) const final;
 
-    bool VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
-                         const std::string& host, const std::string& userAgent) const final;
+    bool VerifySignature(const std::string& key,
+                         const std::string& signature,
+                         const std::string& uri,
+                         const std::string& host,
+                         const std::string& userAgent) const final;
 
     std::vector<std::string> ComposeFilterSuggestions(const IElement* element) const final;
 
-    void SetIsFirstRun(bool isFirstRun) { firstRun = isFirstRun; }
+    void SetIsFirstRun(bool isFirstRun)
+    {
+      firstRun = isFirstRun;
+    }
 
   private:
     JsEngine& jsEngine;
@@ -109,12 +120,13 @@ namespace AdblockPlus
                                bool specificOnly) const;
     void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
-      ContentTypeMask contentTypeMask, const std::string& documentUrl,
-      const std::string& sitekey) const;
+                                    ContentTypeMask contentTypeMask,
+                                    const std::string& documentUrl,
+                                    const std::string& sitekey) const;
     FilterPtr GetWhitelistingFilter(const std::string& url,
-      ContentTypeMask contentTypeMask,
-      const std::vector<std::string>& documentUrls,
-      const std::string& sitekey) const;
+                                    ContentTypeMask contentTypeMask,
+                                    const std::vector<std::string>& documentUrls,
+                                    const std::string& sitekey) const;
   };
 }
 

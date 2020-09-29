@@ -15,13 +15,15 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "WebRequestJsObject.h"
+
 #include <map>
+
 #include <AdblockPlus/IWebRequest.h>
+#include <AdblockPlus/Platform.h>
 
 #include "JsContext.h"
 #include "Utils.h"
-#include "WebRequestJsObject.h"
-#include <AdblockPlus/Platform.h>
 
 using namespace AdblockPlus;
 
@@ -55,8 +57,7 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
     throw std::runtime_error("Third argument to GET must be a function");
 
   auto paramsID = jsEngine->StoreJsValues(converted);
-  auto getCallback = [jsEngine, paramsID](const ServerResponse& response)
-  {
+  auto getCallback = [jsEngine, paramsID](const ServerResponse& response) {
     auto webRequestParams = jsEngine->TakeJsValues(paramsID);
 
     AdblockPlus::JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
@@ -75,11 +76,9 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
 
     webRequestParams[2].Call(resultObject);
   };
-  jsEngine->GetPlatform().WithWebRequest(
-    [url, headers, getCallback](IWebRequest& webRequest)
-    {
-      webRequest.GET(url, headers, getCallback);
-    });
+  jsEngine->GetPlatform().WithWebRequest([url, headers, getCallback](IWebRequest& webRequest) {
+    webRequest.GET(url, headers, getCallback);
+  });
 }
 
 namespace
@@ -89,15 +88,16 @@ namespace
     try
     {
       AdblockPlus::JsEngine::ScheduleWebRequest(arguments);
-    } catch (const std::exception& e)
+    }
+    catch (const std::exception& e)
     {
       return AdblockPlus::Utils::ThrowExceptionInJS(arguments.GetIsolate(), e.what());
     }
   }
 }
 
-AdblockPlus::JsValue& AdblockPlus::WebRequestJsObject::Setup(
-    AdblockPlus::JsEngine& jsEngine, AdblockPlus::JsValue& obj)
+AdblockPlus::JsValue& AdblockPlus::WebRequestJsObject::Setup(AdblockPlus::JsEngine& jsEngine,
+                                                             AdblockPlus::JsValue& obj)
 {
   obj.SetProperty("GET", jsEngine.NewCallback(::GETCallback));
   return obj;

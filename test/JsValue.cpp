@@ -186,7 +186,8 @@ TEST_F(JsValueTest, ArrayValue)
 
 TEST_F(JsValueTest, FunctionValue)
 {
-  auto value = GetJsEngine().Evaluate("(function(foo, bar) {return this.x + '/' + foo + '/' + bar;})");
+  auto value =
+      GetJsEngine().Evaluate("(function(foo, bar) {return this.x + '/' + foo + '/' + bar;})");
   ASSERT_FALSE(value.IsUndefined());
   ASSERT_FALSE(value.IsNull());
   ASSERT_FALSE(value.IsString());

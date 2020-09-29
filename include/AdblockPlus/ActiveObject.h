@@ -15,9 +15,10 @@
  * along with Adblock Plus. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
+#include <functional>
 #include <list>
 #include <thread>
-#include <functional>
+
 #include "SynchronizedCollection.h"
 
 namespace AdblockPlus
@@ -27,7 +28,8 @@ namespace AdblockPlus
    * executes posted callable objects in a single background thread.
    * In the destructor it waits for the finishing of all already posted calls.
    */
-  class ActiveObject {
+  class ActiveObject
+  {
   public:
     /**
      * A callable object type, in fact wrapping std::function.
@@ -50,8 +52,10 @@ namespace AdblockPlus
      */
     void Post(const Call& call);
     void Post(Call&& call);
+
   private:
     void ThreadFunc();
+
   private:
     bool isRunning;
     SynchronizedCollection<std::list<Call>> calls;

@@ -28,7 +28,7 @@ namespace AdblockPlus
   class FilterEngineFactory
   {
   public:
-     /**
+    /**
      * Container of name-value pairs representing a set of preferences.
      */
     typedef std::map<std::string, AdblockPlus::JsValue> Prefs;
@@ -37,7 +37,9 @@ namespace AdblockPlus
      * type does not correspond to allowedConnectionType, e.g. because it is a
      * metered connection.
      */
-    typedef std::function<void(const std::string* allowedConnectionType, const std::function<void(bool)>&)> IsConnectionAllowedAsyncCallback;
+    typedef std::function<void(const std::string* allowedConnectionType,
+                               const std::function<void(bool)>&)>
+        IsConnectionAllowedAsyncCallback;
 
     /**
      * IFilterEngine creation parameters.
@@ -77,9 +79,9 @@ namespace AdblockPlus
      * @param parameters optional creation parameters.
      */
     static void CreateAsync(JsEngine& jsEngine,
-      const EvaluateCallback& evaluateCallback,
-      const OnCreatedCallback& onCreated,
-      const CreationParameters& parameters = CreationParameters());
+                            const EvaluateCallback& evaluateCallback,
+                            const OnCreatedCallback& onCreated,
+                            const CreationParameters& parameters = CreationParameters());
   };
 }
 

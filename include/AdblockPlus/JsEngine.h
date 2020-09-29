@@ -19,18 +19,19 @@
 #define ADBLOCK_PLUS_JS_ENGINE_H
 
 #include <functional>
-#include <map>
 #include <list>
+#include <map>
+#include <mutex>
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
-#include <mutex>
+
 #include <AdblockPlus/AppInfo.h>
-#include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/IFileSystem.h>
-#include <AdblockPlus/JsValue.h>
-#include <AdblockPlus/IWebRequest.h>
 #include <AdblockPlus/ITimer.h>
+#include <AdblockPlus/IWebRequest.h>
+#include <AdblockPlus/JsValue.h>
+#include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/Scheduler.h>
 
 namespace v8
@@ -39,7 +40,7 @@ namespace v8
   class Value;
   class Context;
   template<typename T> class FunctionCallbackInfo;
-  typedef void(*FunctionCallback)(const FunctionCallbackInfo<Value>& info);
+  typedef void (*FunctionCallback)(const FunctionCallbackInfo<Value>& info);
 }
 
 namespace AdblockPlus
@@ -53,7 +54,9 @@ namespace AdblockPlus
    */
   struct IV8IsolateProvider
   {
-    virtual ~IV8IsolateProvider() {}
+    virtual ~IV8IsolateProvider()
+    {
+    }
 
     /**
      * Returns v8::Isolate. All subsequent calls of this method should return
@@ -76,6 +79,7 @@ namespace AdblockPlus
       std::vector<v8::Global<v8::Value>> values;
     };
     typedef std::list<JsWeakValuesList> JsWeakValuesLists;
+
   public:
     ~JsEngine();
 
@@ -108,10 +112,9 @@ namespace AdblockPlus
      *        a default implementation is used.
      * @return New `JsEngine` instance.
      */
-    static std::unique_ptr<JsEngine> New(
-        const AppInfo& appInfo,
-        Platform& platform,
-        std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
+    static std::unique_ptr<JsEngine> New(const AppInfo& appInfo,
+                                         Platform& platform,
+                                         std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
 
     /**
      * Registers the callback function for an event.
@@ -141,8 +144,7 @@ namespace AdblockPlus
      *        messages.
      * @return Result of the evaluated expression.
      */
-    JsValue Evaluate(const std::string& source,
-        const std::string& filename = "");
+    JsValue Evaluate(const std::string& source, const std::string& filename = "");
 
     /**
      * Initiates a garbage collection.

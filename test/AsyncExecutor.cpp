@@ -17,22 +17,22 @@
 
 #include <future>
 #include <gtest/gtest.h>
+
 #include <AdblockPlus/AsyncExecutor.h>
 
 using namespace AdblockPlus;
-
 
 // For present gtest does not provide public API to have value- and type-
 // parameterized tests, so the approach is to accumalte the common code in
 // BaseAsyncExecutorTest, then define it with different types and then for each
 // type instantiate value-parameterized tests and call the common test body.
 
-template<typename Executor>
-struct BaseAsyncExecutorTestTraits;
+template<typename Executor> struct BaseAsyncExecutorTestTraits;
 
 typedef ::testing::tuple<uint16_t, // number of procucers
                          uint16_t  // number of tasks issued by each producer
-                        > BaseAsyncExecutorTestParams;
+                         >
+    BaseAsyncExecutorTestParams;
 
 template<typename TExecutor>
 class BaseAsyncExecutorTest : public ::testing::TestWithParam<BaseAsyncExecutorTestParams>
@@ -55,20 +55,19 @@ protected:
   std::thread::id testThreadID;
 };
 
-template<>
-struct BaseAsyncExecutorTestTraits<ActiveObject>
+template<> struct BaseAsyncExecutorTestTraits<ActiveObject>
 {
   typedef ActiveObject Executor;
   typedef std::vector<uint32_t> PayloadResults;
 
-  static void Dispatch(typename BaseAsyncExecutorTest<Executor>::Executor& executor, std::function<void()> call)
+  static void Dispatch(typename BaseAsyncExecutorTest<Executor>::Executor& executor,
+                       std::function<void()> call)
   {
     executor.Post(std::move(call));
   }
 };
 
-template<>
-struct BaseAsyncExecutorTestTraits<AsyncExecutor>
+template<> struct BaseAsyncExecutorTestTraits<AsyncExecutor>
 {
   typedef AsyncExecutor Executor;
 
@@ -95,14 +94,14 @@ struct BaseAsyncExecutorTestTraits<AsyncExecutor>
     }
   };
 
-  static void Dispatch(typename BaseAsyncExecutorTest<Executor>::Executor& executor, std::function<void()> call)
+  static void Dispatch(typename BaseAsyncExecutorTest<Executor>::Executor& executor,
+                       std::function<void()> call)
   {
     executor.Dispatch(std::move(call));
   }
 };
 
-template<typename Executor>
-void BaseAsyncExecutorTest<Executor>::MultithreadedCallsTest()
+template<typename Executor> void BaseAsyncExecutorTest<Executor>::MultithreadedCallsTest()
 {
   typename Traits::PayloadResults results;
 
@@ -123,21 +122,19 @@ void BaseAsyncExecutorTest<Executor>::MultithreadedCallsTest()
       AsyncExecutor async;
       for (ProducersNumber producer = 0; producer < producersNumber; ++producer)
       {
-        auto producerTask = [producerTasksNumber, this, &executor, producer, &results](std::thread::id producerThreadID)
-        {
+        auto producerTask = [producerTasksNumber, this, &executor, producer, &results](
+                                std::thread::id producerThreadID) {
           for (ProducerTasksNumber task = 0; task < producerTasksNumber; ++task)
           {
             auto id = producer * producerTasksNumber + task;
-            Traits::Dispatch(executor, /*payload task*/[this, id, &results, producerThreadID]
-            {
+            Traits::Dispatch(executor, /*payload task*/ [this, id, &results, producerThreadID] {
               results.push_back(id);
               EXPECT_NE(producerThreadID, std::this_thread::get_id());
               EXPECT_NE(testThreadID, std::this_thread::get_id());
             });
           }
         };
-        async.Dispatch([this, producerTask, asyncPrepared]
-        {
+        async.Dispatch([this, producerTask, asyncPrepared] {
           const auto producerThreadID = std::this_thread::get_id();
           EXPECT_NE(testThreadID, producerThreadID);
           asyncPrepared.wait();
@@ -155,7 +152,8 @@ void BaseAsyncExecutorTest<Executor>::MultithreadedCallsTest()
   std::sort(results.begin(), results.end());
   // ensure that all tasks are executed by finding their IDs
   ASSERT_EQ(totalTasksNumber, results.size());
-  for (uint16_t id = 0; id < totalTasksNumber; ++id) {
+  for (uint16_t id = 0; id < totalTasksNumber; ++id)
+  {
     EXPECT_EQ(id, results[id]);
   }
 }
@@ -163,10 +161,12 @@ void BaseAsyncExecutorTest<Executor>::MultithreadedCallsTest()
 namespace
 {
 
-  std::string humanReadbleParams(const ::testing::TestParamInfo<BaseAsyncExecutorTestParams> paramInfo)
+  std::string
+  humanReadbleParams(const ::testing::TestParamInfo<BaseAsyncExecutorTestParams> paramInfo)
   {
     std::stringstream ss;
-    ss << "producers_" << ::testing::get<0>(paramInfo.param) << "_tasks_" << ::testing::get<1>(paramInfo.param);
+    ss << "producers_" << ::testing::get<0>(paramInfo.param) << "_tasks_"
+       << ::testing::get<1>(paramInfo.param);
     return ss.str();
   }
 
@@ -175,59 +175,58 @@ namespace
   // travis-ci.
   // E.g. 100 x 1000 is already too much, so the generators are split.
   // 0 - 10      1 - 100, 1000
-  const auto MultithreadedCallsGenerator1 = ::testing::Combine(::testing::Values(0, 1, 2, 3, 5, 10),
-                                                               ::testing::Values(1, 2, 3, 5, 10, 100, 1000));
+  const auto MultithreadedCallsGenerator1 = ::testing::Combine(
+      ::testing::Values(0, 1, 2, 3, 5, 10), ::testing::Values(1, 2, 3, 5, 10, 100, 1000));
   //        100, 1 - 100
-  const auto MultithreadedCallsGenerator2 = ::testing::Combine(::testing::Values(100),
-                                                               ::testing::Values(1, 2, 3, 5, 10, 100));
+  const auto MultithreadedCallsGenerator2 =
+      ::testing::Combine(::testing::Values(100), ::testing::Values(1, 2, 3, 5, 10, 100));
   // 0 - 10                    2000|4000
   const auto MultithreadedCallsGenerator3 = ::testing::Combine(::testing::Values(0, 1, 2, 3, 5, 10),
 #ifdef WIN32
-    ::testing::Values(4000)
+                                                               ::testing::Values(4000)
 #else
-    ::testing::Values(2000)
+                                                               ::testing::Values(2000)
 #endif
   );
 
   typedef BaseAsyncExecutorTest<ActiveObject> ActiveObjectTest;
 
   INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber1,
-    ActiveObjectTest,
-    MultithreadedCallsGenerator1,
-    humanReadbleParams);
+                           ActiveObjectTest,
+                           MultithreadedCallsGenerator1,
+                           humanReadbleParams);
 
   INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber2,
-    ActiveObjectTest,
-    MultithreadedCallsGenerator2,
-    humanReadbleParams);
+                           ActiveObjectTest,
+                           MultithreadedCallsGenerator2,
+                           humanReadbleParams);
 
   INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber3,
-    ActiveObjectTest,
-    MultithreadedCallsGenerator3,
-    humanReadbleParams);
+                           ActiveObjectTest,
+                           MultithreadedCallsGenerator3,
+                           humanReadbleParams);
 
   TEST_P(ActiveObjectTest, MultithreadedCalls)
   {
     MultithreadedCallsTest();
   }
 
-
   typedef BaseAsyncExecutorTest<AsyncExecutor> AsyncExecutorTest;
 
   INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber1,
-    AsyncExecutorTest,
-    MultithreadedCallsGenerator1,
-    humanReadbleParams);
+                           AsyncExecutorTest,
+                           MultithreadedCallsGenerator1,
+                           humanReadbleParams);
 
   INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber2,
-    AsyncExecutorTest,
-    MultithreadedCallsGenerator2,
-    humanReadbleParams);
+                           AsyncExecutorTest,
+                           MultithreadedCallsGenerator2,
+                           humanReadbleParams);
 
   INSTANTIATE_TEST_SUITE_P(DifferentProducersNumber3,
-    AsyncExecutorTest,
-    MultithreadedCallsGenerator3,
-    humanReadbleParams);
+                           AsyncExecutorTest,
+                           MultithreadedCallsGenerator3,
+                           humanReadbleParams);
 
   TEST_P(AsyncExecutorTest, MultithreadedCalls)
   {

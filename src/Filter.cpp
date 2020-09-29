@@ -23,10 +23,7 @@
 
 using namespace AdblockPlus;
 
-
-Filter::Filter(JsValue&& value, JsEngine* engine)
-    : jsObject(std::move(value)),
-      jsEngine(engine)
+Filter::Filter(JsValue&& value, JsEngine* engine) : jsObject(std::move(value)), jsEngine(engine)
 {
   if (!jsObject.IsObject())
     throw std::runtime_error("JavaScript value is not an object");

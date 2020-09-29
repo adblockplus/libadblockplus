@@ -15,19 +15,21 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <AdblockPlus/JsValue.h>
-#include <AdblockPlus/LogSystem.h>
+#include "ConsoleJsObject.h"
+
 #include <sstream>
 
-#include "ConsoleJsObject.h"
+#include <AdblockPlus/JsValue.h>
+#include <AdblockPlus/LogSystem.h>
+#include <AdblockPlus/Platform.h>
+
 #include "JsContext.h"
 #include "Utils.h"
-#include <AdblockPlus/Platform.h>
 
 namespace
 {
   void DoLog(AdblockPlus::LogSystem::LogLevel logLevel,
-    const v8::FunctionCallbackInfo<v8::Value>& arguments)
+             const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
     AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
     const AdblockPlus::JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
@@ -49,10 +51,9 @@ namespace
     source << ":" << frame->GetLineNumber();
 
     jsEngine->GetPlatform().WithLogSystem(
-      [logLevel, &message, &source](AdblockPlus::LogSystem& callback)
-      {
-        callback(logLevel, message.str(), source.str());
-      });
+        [logLevel, &message, &source](AdblockPlus::LogSystem& callback) {
+          callback(logLevel, message.str(), source.str());
+        });
   }
 
   void LogCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
@@ -104,16 +105,14 @@ namespace
       traceback << std::endl;
     }
 
-    jsEngine->GetPlatform().WithLogSystem(
-      [&traceback](AdblockPlus::LogSystem& callback)
-      {
-        callback(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, traceback.str(), "");
-      });
+    jsEngine->GetPlatform().WithLogSystem([&traceback](AdblockPlus::LogSystem& callback) {
+      callback(AdblockPlus::LogSystem::LOG_LEVEL_TRACE, traceback.str(), "");
+    });
   }
 }
 
-AdblockPlus::JsValue& AdblockPlus::ConsoleJsObject::Setup(
-    AdblockPlus::JsEngine& jsEngine, AdblockPlus::JsValue& obj)
+AdblockPlus::JsValue& AdblockPlus::ConsoleJsObject::Setup(AdblockPlus::JsEngine& jsEngine,
+                                                          AdblockPlus::JsValue& obj)
 {
   obj.SetProperty("log", jsEngine.NewCallback(::LogCallback));
   obj.SetProperty("debug", jsEngine.NewCallback(::DebugCallback));

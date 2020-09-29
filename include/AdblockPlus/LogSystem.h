@@ -18,8 +18,8 @@
 #ifndef ADBLOCK_PLUS_LOG_SYSTEM_H
 #define ADBLOCK_PLUS_LOG_SYSTEM_H
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace AdblockPlus
 {
@@ -32,9 +32,18 @@ namespace AdblockPlus
     /**
      * Log level.
      */
-    enum LogLevel {LOG_LEVEL_TRACE, LOG_LEVEL_LOG, LOG_LEVEL_INFO, LOG_LEVEL_WARN, LOG_LEVEL_ERROR};
+    enum LogLevel
+    {
+      LOG_LEVEL_TRACE,
+      LOG_LEVEL_LOG,
+      LOG_LEVEL_INFO,
+      LOG_LEVEL_WARN,
+      LOG_LEVEL_ERROR
+    };
 
-    virtual ~LogSystem() {}
+    virtual ~LogSystem()
+    {
+    }
 
     /**
      * Writes a log message.
@@ -43,8 +52,8 @@ namespace AdblockPlus
      * @param source Source of the message, e.g. file name and line.
      *        Ignored when empty.
      */
-    virtual void operator()(LogLevel logLevel, const std::string& message,
-          const std::string& source) = 0;
+    virtual void
+    operator()(LogLevel logLevel, const std::string& message, const std::string& source) = 0;
   };
 
   /**

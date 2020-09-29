@@ -15,18 +15,18 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "DefaultFilterEngine.h"
+
 #include <algorithm>
 #include <functional>
 #include <string>
 
-#include "DefaultFilterEngine.h"
 #include "ElementUtils.h"
 #include "JsContext.h"
 
 using namespace AdblockPlus;
 
-DefaultFilterEngine::DefaultFilterEngine(JsEngine& jsEngine)
-  : jsEngine(jsEngine), firstRun(false)
+DefaultFilterEngine::DefaultFilterEngine(JsEngine& jsEngine) : jsEngine(jsEngine), firstRun(false)
 {
 }
 
@@ -93,10 +93,10 @@ std::string DefaultFilterEngine::GetAAUrl() const
 }
 
 AdblockPlus::FilterPtr DefaultFilterEngine::Matches(const std::string& url,
-    ContentTypeMask contentTypeMask,
-    const std::string& documentUrl,
-    const std::string& siteKey,
-    bool specificOnly) const
+                                                    ContentTypeMask contentTypeMask,
+                                                    const std::string& documentUrl,
+                                                    const std::string& siteKey,
+                                                    bool specificOnly) const
 {
   std::vector<std::string> documentUrls;
   documentUrls.push_back(documentUrl);
@@ -104,21 +104,19 @@ AdblockPlus::FilterPtr DefaultFilterEngine::Matches(const std::string& url,
 }
 
 AdblockPlus::FilterPtr DefaultFilterEngine::Matches(const std::string& url,
-    ContentTypeMask contentTypeMask,
-    const std::vector<std::string>& documentUrls,
-    const std::string& siteKey,
-    bool specificOnly) const
+                                                    ContentTypeMask contentTypeMask,
+                                                    const std::vector<std::string>& documentUrls,
+                                                    const std::string& siteKey,
+                                                    bool specificOnly) const
 {
   if (documentUrls.empty())
     return CheckFilterMatch(url, contentTypeMask, "", siteKey, specificOnly);
 
   std::string lastDocumentUrl = documentUrls.front();
-  for (const auto& documentUrl : documentUrls) {
-    AdblockPlus::FilterPtr match = CheckFilterMatch(documentUrl,
-                                                    CONTENT_TYPE_DOCUMENT,
-                                                    lastDocumentUrl,
-                                                    siteKey,
-                                                    specificOnly);
+  for (const auto& documentUrl : documentUrls)
+  {
+    AdblockPlus::FilterPtr match = CheckFilterMatch(
+        documentUrl, CONTENT_TYPE_DOCUMENT, lastDocumentUrl, siteKey, specificOnly);
     if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
       return match;
     lastDocumentUrl = documentUrl;
@@ -128,29 +126,31 @@ AdblockPlus::FilterPtr DefaultFilterEngine::Matches(const std::string& url,
 }
 
 bool DefaultFilterEngine::IsGenericblockWhitelisted(const std::string& url,
-    const std::vector<std::string>& documentUrls, const std::string& sitekey) const
+                                                    const std::vector<std::string>& documentUrls,
+                                                    const std::string& sitekey) const
 {
   return !!GetWhitelistingFilter(url, CONTENT_TYPE_GENERICBLOCK, documentUrls, sitekey);
 }
 
 bool DefaultFilterEngine::IsDocumentWhitelisted(const std::string& url,
-    const std::vector<std::string>& documentUrls,
-    const std::string& sitekey) const
+                                                const std::vector<std::string>& documentUrls,
+                                                const std::string& sitekey) const
 {
-    return !!GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey);
+  return !!GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey);
 }
 
 bool DefaultFilterEngine::IsElemhideWhitelisted(const std::string& url,
-    const std::vector<std::string>& documentUrls, const std::string& sitekey) const
+                                                const std::vector<std::string>& documentUrls,
+                                                const std::string& sitekey) const
 {
-    return !!GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey);
+  return !!GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey);
 }
 
 AdblockPlus::FilterPtr DefaultFilterEngine::CheckFilterMatch(const std::string& url,
-    ContentTypeMask contentTypeMask,
-    const std::string& documentUrl,
-    const std::string& siteKey,
-    bool specificOnly) const
+                                                             ContentTypeMask contentTypeMask,
+                                                             const std::string& documentUrl,
+                                                             const std::string& siteKey,
+                                                             bool specificOnly) const
 {
   if (url.empty())
     return FilterPtr();
@@ -168,7 +168,8 @@ AdblockPlus::FilterPtr DefaultFilterEngine::CheckFilterMatch(const std::string& 
     return FilterPtr();
 }
 
-std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& domain, bool specificOnly) const
+std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& domain,
+                                                            bool specificOnly) const
 {
   JsValueList params;
   params.push_back(jsEngine.NewValue(domain));
@@ -177,7 +178,8 @@ std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& d
   return func.Call(params).AsString();
 }
 
-std::vector<IFilterEngine::EmulationSelector> DefaultFilterEngine::GetElementHidingEmulationSelectors(const std::string& domain) const
+std::vector<IFilterEngine::EmulationSelector>
+DefaultFilterEngine::GetElementHidingEmulationSelectors(const std::string& domain) const
 {
   JsValue func = jsEngine.Evaluate("API.getElementHidingEmulationSelectors");
   JsValueList result = func.Call(jsEngine.NewValue(domain)).AsList();
@@ -211,8 +213,7 @@ std::string DefaultFilterEngine::GetHostFromURL(const std::string& url) const
 
 void DefaultFilterEngine::SetFilterChangeCallback(const FilterChangeCallback& callback)
 {
-  jsEngine.SetEventCallback("filterChange", [this, callback](JsValueList&& params)
-  {
+  jsEngine.SetEventCallback("filterChange", [this, callback](JsValueList&& params) {
     this->FilterChanged(callback, move(params));
   });
 }
@@ -229,13 +230,14 @@ void DefaultFilterEngine::SetAllowedConnectionType(const std::string* value)
 
 std::unique_ptr<std::string> DefaultFilterEngine::GetAllowedConnectionType() const
 {
-   auto prefValue = GetPref("allowed_connection_type");
-   if (prefValue.AsString().empty())
-     return nullptr;
-   return std::unique_ptr<std::string>(new std::string(prefValue.AsString()));
+  auto prefValue = GetPref("allowed_connection_type");
+  if (prefValue.AsString().empty())
+    return nullptr;
+  return std::unique_ptr<std::string>(new std::string(prefValue.AsString()));
 }
 
-void DefaultFilterEngine::FilterChanged(const IFilterEngine::FilterChangeCallback& callback, JsValueList&& params) const
+void DefaultFilterEngine::FilterChanged(const IFilterEngine::FilterChangeCallback& callback,
+                                        JsValueList&& params) const
 {
   std::string action(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
   JsValue item(params.size() >= 2 ? params[1] : jsEngine.NewValue(false));
@@ -251,8 +253,11 @@ int DefaultFilterEngine::CompareVersions(const std::string& v1, const std::strin
   return func.Call(params).AsInt();
 }
 
-bool DefaultFilterEngine::VerifySignature(const std::string& key, const std::string& signature, const std::string& uri,
-                                   const std::string& host, const std::string& userAgent) const
+bool DefaultFilterEngine::VerifySignature(const std::string& key,
+                                          const std::string& signature,
+                                          const std::string& uri,
+                                          const std::string& host,
+                                          const std::string& userAgent) const
 {
   JsValueList params;
   params.push_back(jsEngine.NewValue(key));
@@ -264,7 +269,8 @@ bool DefaultFilterEngine::VerifySignature(const std::string& key, const std::str
   return func.Call(params).AsBool();
 }
 
-std::vector<std::string> DefaultFilterEngine::ComposeFilterSuggestions(const IElement* element) const
+std::vector<std::string>
+DefaultFilterEngine::ComposeFilterSuggestions(const IElement* element) const
 {
   JsValueList params;
 
@@ -288,8 +294,9 @@ std::vector<std::string> DefaultFilterEngine::ComposeFilterSuggestions(const IEl
 }
 
 FilterPtr DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
-  ContentTypeMask contentTypeMask, const std::string& documentUrl,
-  const std::string& sitekey) const
+                                                     ContentTypeMask contentTypeMask,
+                                                     const std::string& documentUrl,
+                                                     const std::string& sitekey) const
 {
   FilterPtr match = Matches(url, contentTypeMask, documentUrl, sitekey);
   if (match && match->GetType() == Filter::TYPE_EXCEPTION)
@@ -300,9 +307,9 @@ FilterPtr DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
 }
 
 FilterPtr DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
-  ContentTypeMask contentTypeMask,
-  const std::vector<std::string>& documentUrls,
-  const std::string& sitekey) const
+                                                     ContentTypeMask contentTypeMask,
+                                                     const std::vector<std::string>& documentUrls,
+                                                     const std::string& sitekey) const
 {
   if (documentUrls.empty())
   {
@@ -320,7 +327,6 @@ FilterPtr DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
       return filter;
     }
     currentUrl = parentUrl;
-  }
-  while (urlIterator != documentUrls.end());
+  } while (urlIterator != documentUrls.end());
   return GetWhitelistingFilter(currentUrl, contentTypeMask, "", sitekey);
 }

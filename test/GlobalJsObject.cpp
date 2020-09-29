@@ -15,9 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "BaseJsTest.h"
-#include "../src/Thread.h"
 #include "../src/DefaultTimer.h"
+#include "../src/Thread.h"
+#include "BaseJsTest.h"
 
 namespace
 {

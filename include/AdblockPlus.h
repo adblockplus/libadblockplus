@@ -32,9 +32,9 @@
 
 #include <AdblockPlus/AppInfo.h>
 #include <AdblockPlus/IFilterEngine.h>
-#include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
+#include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/ReferrerMapping.h>
 
 #endif

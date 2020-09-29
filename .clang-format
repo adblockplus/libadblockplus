@@ -1,0 +1,52 @@
+BasedOnStyle: LLVM
+Language: Cpp
+
+PointerAlignment: Left
+
+ColumnLimit: 100
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel:  true
+  AfterClass:      true
+  AfterControlStatement: true
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true
+  AfterObjCDeclaration: true
+  AfterStruct:     true
+  AfterUnion:      true
+  AfterExternBlock: true
+  BeforeCatch:     true
+  BeforeElse:      true
+  IndentBraces:    false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+NamespaceIndentation: All
+
+BinPackArguments: false
+BinPackParameters: false
+
+FixNamespaceComments: false
+
+SpaceAfterTemplateKeyword: false
+
+AllowShortFunctionsOnASingleLine: false
+AllowShortLambdasOnASingleLine: false
+
+SortIncludes:    true
+IncludeBlocks:   Regroup
+# The order of includes is:
+#  This source file's header file (if can be inferred)
+#  System headers wrapped in <>
+#  AdblockPlus public headers wrapped in <>
+#  Local "ordinary" headers wrapped in ""
+IncludeCategories:
+  - Regex:           '^<AdblockPlus/.*\.h>'
+    Priority:        2
+  - Regex:           '^<.*'
+    Priority:        1
+  - Regex:           '.*'
+    Priority:        3

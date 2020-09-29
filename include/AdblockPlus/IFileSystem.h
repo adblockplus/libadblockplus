@@ -18,12 +18,12 @@
 #ifndef ADBLOCK_PLUS_IFILE_SYSTEM_H
 #define ADBLOCK_PLUS_IFILE_SYSTEM_H
 
-#include <istream>
 #include <cstdint>
-#include <string>
-#include <memory>
-#include <vector>
 #include <functional>
+#include <istream>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace AdblockPlus
 {
@@ -55,7 +55,9 @@ namespace AdblockPlus
       int64_t lastModified;
     };
 
-    virtual ~IFileSystem() {}
+    virtual ~IFileSystem()
+    {
+    }
 
     /** Type for the buffer used for IO */
     typedef std::vector<uint8_t> IOBuffer;
@@ -90,9 +92,8 @@ namespace AdblockPlus
      * @param data The data to write.
      * @param callback The function called on completion.
      */
-    virtual void Write(const std::string& fileName,
-                       const IOBuffer& data,
-                       const Callback& callback) = 0;
+    virtual void
+    Write(const std::string& fileName, const IOBuffer& data, const Callback& callback) = 0;
 
     /**
      * Moves a file (i.e.\ renames it).
@@ -100,7 +101,8 @@ namespace AdblockPlus
      * @param toFileName New file name.
      * @param callback The function called on completion.
      */
-    virtual void Move(const std::string& fromFileName, const std::string& toFileName,
+    virtual void Move(const std::string& fromFileName,
+                      const std::string& toFileName,
                       const Callback& callback) = 0;
 
     /**
@@ -122,8 +124,7 @@ namespace AdblockPlus
      * @param fileName File name.
      * @param callback The function called on completion.
      */
-    virtual void Stat(const std::string& fileName,
-                      const StatCallback& callback) const = 0;
+    virtual void Stat(const std::string& fileName, const StatCallback& callback) const = 0;
   };
 
   /**

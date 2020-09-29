@@ -17,8 +17,9 @@
 
 #include "DefaultWebRequest.h"
 
-AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequestSync::GET(
-    const std::string& url, const HeaderList& requestHeaders) const
+AdblockPlus::ServerResponse
+AdblockPlus::DefaultWebRequestSync::GET(const std::string& url,
+                                        const HeaderList& requestHeaders) const
 {
   AdblockPlus::ServerResponse result;
   result.status = IWebRequest::NS_ERROR_FAILURE;

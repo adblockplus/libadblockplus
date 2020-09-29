@@ -15,10 +15,11 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
-#include <cctype>
 #include <algorithm>
+#include <cctype>
 #include <curl/curl.h>
+#include <sstream>
+
 #include "DefaultWebRequest.h"
 
 namespace
@@ -40,34 +41,34 @@ namespace
   {
     switch (code)
     {
-      case CURLE_OK:
-        return AdblockPlus::IWebRequest::NS_OK;
-      case CURLE_FAILED_INIT:
-        return AdblockPlus::IWebRequest::NS_ERROR_NOT_INITIALIZED;
-      case CURLE_UNSUPPORTED_PROTOCOL:
-        return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
-      case CURLE_URL_MALFORMAT:
-        return AdblockPlus::IWebRequest::NS_ERROR_MALFORMED_URI;
-      case CURLE_COULDNT_RESOLVE_PROXY:
-        return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_PROXY_HOST;
-      case CURLE_COULDNT_RESOLVE_HOST:
-        return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_HOST;
-      case CURLE_COULDNT_CONNECT:
-        return AdblockPlus::IWebRequest::NS_ERROR_CONNECTION_REFUSED;
-      case CURLE_OUT_OF_MEMORY:
-        return AdblockPlus::IWebRequest::NS_ERROR_OUT_OF_MEMORY;
-      case CURLE_OPERATION_TIMEDOUT:
-        return AdblockPlus::IWebRequest::NS_ERROR_NET_TIMEOUT;
-      case CURLE_TOO_MANY_REDIRECTS:
-        return AdblockPlus::IWebRequest::NS_ERROR_REDIRECT_LOOP;
-      case CURLE_GOT_NOTHING:
-        return AdblockPlus::IWebRequest::NS_ERROR_NO_CONTENT;
-      case CURLE_SEND_ERROR:
-        return AdblockPlus::IWebRequest::NS_ERROR_NET_RESET;
-      case CURLE_RECV_ERROR:
-        return AdblockPlus::IWebRequest::NS_ERROR_NET_RESET;
-      default:
-        return AdblockPlus::IWebRequest::NS_CUSTOM_ERROR_BASE + code;
+    case CURLE_OK:
+      return AdblockPlus::IWebRequest::NS_OK;
+    case CURLE_FAILED_INIT:
+      return AdblockPlus::IWebRequest::NS_ERROR_NOT_INITIALIZED;
+    case CURLE_UNSUPPORTED_PROTOCOL:
+      return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_PROTOCOL;
+    case CURLE_URL_MALFORMAT:
+      return AdblockPlus::IWebRequest::NS_ERROR_MALFORMED_URI;
+    case CURLE_COULDNT_RESOLVE_PROXY:
+      return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_PROXY_HOST;
+    case CURLE_COULDNT_RESOLVE_HOST:
+      return AdblockPlus::IWebRequest::NS_ERROR_UNKNOWN_HOST;
+    case CURLE_COULDNT_CONNECT:
+      return AdblockPlus::IWebRequest::NS_ERROR_CONNECTION_REFUSED;
+    case CURLE_OUT_OF_MEMORY:
+      return AdblockPlus::IWebRequest::NS_ERROR_OUT_OF_MEMORY;
+    case CURLE_OPERATION_TIMEDOUT:
+      return AdblockPlus::IWebRequest::NS_ERROR_NET_TIMEOUT;
+    case CURLE_TOO_MANY_REDIRECTS:
+      return AdblockPlus::IWebRequest::NS_ERROR_REDIRECT_LOOP;
+    case CURLE_GOT_NOTHING:
+      return AdblockPlus::IWebRequest::NS_ERROR_NO_CONTENT;
+    case CURLE_SEND_ERROR:
+      return AdblockPlus::IWebRequest::NS_ERROR_NET_RESET;
+    case CURLE_RECV_ERROR:
+      return AdblockPlus::IWebRequest::NS_ERROR_NET_RESET;
+    default:
+      return AdblockPlus::IWebRequest::NS_CUSTOM_ERROR_BASE + code;
     }
   }
 
@@ -98,8 +99,7 @@ namespace
         while (statusEnd < header.length() && isdigit(header[statusEnd]))
           statusEnd++;
 
-        if (statusEnd > statusStart && statusEnd < header.length() &&
-            isspace(header[statusEnd]))
+        if (statusEnd > statusStart && statusEnd < header.length() && isspace(header[statusEnd]))
         {
           std::istringstream(header.substr(statusStart, statusEnd - statusStart)) >> data->status;
           data->headers.clear();
@@ -122,14 +122,15 @@ namespace
   }
 }
 
-AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequestSync::GET(
-    const std::string& url, const HeaderList& requestHeaders) const
+AdblockPlus::ServerResponse
+AdblockPlus::DefaultWebRequestSync::GET(const std::string& url,
+                                        const HeaderList& requestHeaders) const
 {
   AdblockPlus::ServerResponse result;
   result.status = IWebRequest::NS_ERROR_NOT_INITIALIZED;
   result.responseStatus = 0;
 
-  CURL *curl = curl_easy_init();
+  CURL* curl = curl_easy_init();
   if (curl)
   {
     std::stringstream responseText;
@@ -175,8 +176,7 @@ AdblockPlus::ServerResponse AdblockPlus::DefaultWebRequestSync::GET(
           std::string name = header.substr(nameStart, nameEnd - nameStart);
           std::transform(name.begin(), name.end(), name.begin(), ::tolower);
           std::string value = header.substr(valueStart, valueEnd - valueStart);
-          result.responseHeaders.push_back(std::pair<std::string, std::string>(
-              name, value));
+          result.responseHeaders.push_back(std::pair<std::string, std::string>(name, value));
         }
       }
     }

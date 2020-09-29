@@ -16,13 +16,14 @@
  */
 
 #include <AdblockPlus.h>
-#include <AdblockPlus/Platform.h>
 #include <iostream>
 #include <sstream>
 
+#include <AdblockPlus/Platform.h>
+
+#include "FiltersCommand.h"
 #include "GcCommand.h"
 #include "HelpCommand.h"
-#include "FiltersCommand.h"
 #include "MatchesCommand.h"
 #include "PrefsCommand.h"
 #include "SubscriptionsCommand.h"
@@ -43,8 +44,7 @@ namespace
     return success;
   }
 
-  void ParseCommandLine(const std::string& commandLine, std::string& name,
-                        std::string& arguments)
+  void ParseCommandLine(const std::string& commandLine, std::string& name, std::string& arguments)
   {
     std::istringstream lineStream(commandLine);
     lineStream >> name;

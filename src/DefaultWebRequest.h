@@ -40,7 +40,10 @@ namespace AdblockPlus
     explicit DefaultWebRequest(const Scheduler& scheduler, WebRequestSyncPtr syncImpl);
     ~DefaultWebRequest();
 
-    void GET(const std::string& url, const HeaderList& requestHeaders, const GetCallback& getCallback) override;
+    void GET(const std::string& url,
+             const HeaderList& requestHeaders,
+             const GetCallback& getCallback) override;
+
   private:
     Scheduler scheduler;
     WebRequestSyncPtr syncImpl;

@@ -15,19 +15,19 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <vector>
+#include "GlobalJsObject.h"
+
 #include <stdexcept>
+#include <vector>
 
 #include <AdblockPlus/JsValue.h>
 
 #include "AppInfoJsObject.h"
 #include "ConsoleJsObject.h"
 #include "FileSystemJsObject.h"
-#include "GlobalJsObject.h"
-#include "ConsoleJsObject.h"
-#include "WebRequestJsObject.h"
 #include "Thread.h"
 #include "Utils.h"
+#include "WebRequestJsObject.h"
 
 using namespace AdblockPlus;
 
@@ -65,8 +65,7 @@ namespace
   }
 }
 
-JsValue& GlobalJsObject::Setup(JsEngine& jsEngine, const AppInfo& appInfo,
-    JsValue& obj)
+JsValue& GlobalJsObject::Setup(JsEngine& jsEngine, const AppInfo& appInfo, JsValue& obj)
 {
   obj.SetProperty("setTimeout", jsEngine.NewCallback(::SetTimeoutCallback));
   obj.SetProperty("_triggerEvent", jsEngine.NewCallback(::TriggerEventCallback));

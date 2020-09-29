@@ -16,6 +16,7 @@
  */
 
 #include "ElementUtils.h"
+
 #include "Utils.h"
 
 using namespace AdblockPlus;

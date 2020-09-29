@@ -15,13 +15,12 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "HelpCommand.h"
+
 #include <iostream>
 #include <sstream>
 
-#include "HelpCommand.h"
-
-HelpCommand::HelpCommand(const CommandMap& commands)
-  : Command("help"), commands(commands)
+HelpCommand::HelpCommand(const CommandMap& commands) : Command("help"), commands(commands)
 {
 }
 
@@ -59,8 +58,7 @@ void HelpCommand::ShowCommandHelp(const std::string& commandName) const
 
 void HelpCommand::ShowCommandList() const
 {
-  for (CommandMap::const_iterator it = commands.begin();
-       it != commands.end(); it++)
+  for (CommandMap::const_iterator it = commands.begin(); it != commands.end(); it++)
   {
     const Command& command = *it->second;
     std::cout << command.name << " - " << command.GetDescription() << std::endl;

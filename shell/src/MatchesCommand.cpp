@@ -15,13 +15,13 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "MatchesCommand.h"
+
 #include <iostream>
 #include <sstream>
 
-#include "MatchesCommand.h"
-
 MatchesCommand::MatchesCommand(AdblockPlus::IFilterEngine& filterEngine)
-  : Command("matches"), filterEngine(filterEngine)
+    : Command("matches"), filterEngine(filterEngine)
 {
 }
 

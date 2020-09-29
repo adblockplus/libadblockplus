@@ -19,6 +19,7 @@
 #define ADBLOCK_PLUS_JS_CONTEXT_H
 
 #include <v8.h>
+
 #include <AdblockPlus/JsEngine.h>
 
 namespace AdblockPlus

@@ -27,15 +27,16 @@ namespace
   class TestFileSystem : public LazyFileSystem
   {
     IOBuffer& prefsContents;
+
   public:
-    explicit TestFileSystem(IOBuffer& prefsContent)
-      : prefsContents(prefsContent)
+    explicit TestFileSystem(IOBuffer& prefsContent) : prefsContents(prefsContent)
     {
     }
-    void Read(const std::string& fileName, const ReadCallback& callback, const Callback& errorCallback) const override
+    void Read(const std::string& fileName,
+              const ReadCallback& callback,
+              const Callback& errorCallback) const override
     {
-      scheduler([this, fileName, callback, errorCallback]
-      {
+      scheduler([this, fileName, callback, errorCallback] {
         if (fileName == "prefs.json" && !prefsContents.empty())
         {
           callback(IOBuffer(prefsContents.cbegin(), prefsContents.cend()));
@@ -45,10 +46,10 @@ namespace
       });
     }
 
-    void Write(const std::string& fileName, const IOBuffer& content, const Callback& callback) override
+    void
+    Write(const std::string& fileName, const IOBuffer& content, const Callback& callback) override
     {
-      scheduler([this, fileName, content, callback]
-      {
+      scheduler([this, fileName, content, callback] {
         if (fileName == "prefs.json")
         {
           prefsContents = content;
@@ -59,8 +60,7 @@ namespace
 
     void Stat(const std::string& fileName, const StatCallback& callback) const override
     {
-      scheduler([this, fileName, callback]
-      {
+      scheduler([this, fileName, callback] {
         if (fileName == "prefs.json")
         {
           StatResult result;
@@ -77,6 +77,7 @@ namespace
   class PrefsTest : public BaseJsTest
   {
     LazyFileSystem* fileSystem;
+
   protected:
     IFileSystem::IOBuffer prefsContent;
 
@@ -96,7 +97,7 @@ namespace
     }
 
     IFilterEngine& CreateFilterEngine(const AdblockPlus::IFilterEngine::Prefs& preconfiguredPrefs =
-      AdblockPlus::IFilterEngine::Prefs())
+                                          AdblockPlus::IFilterEngine::Prefs())
     {
       AdblockPlus::FilterEngineFactory::CreationParameters createParams;
       createParams.preconfiguredPrefs = preconfiguredPrefs;

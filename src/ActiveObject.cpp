@@ -18,19 +18,16 @@
 
 using namespace AdblockPlus;
 
-ActiveObject::ActiveObject()
-  : isRunning(true)
+ActiveObject::ActiveObject() : isRunning(true)
 {
-  thread = std::thread([this]
-  {
+  thread = std::thread([this] {
     ThreadFunc();
   });
 }
 
 ActiveObject::~ActiveObject()
 {
-  Post([this]
-  {
+  Post([this] {
     isRunning = false;
   });
   thread.join();
