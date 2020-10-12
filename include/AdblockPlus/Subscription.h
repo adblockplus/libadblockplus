@@ -112,7 +112,7 @@ namespace AdblockPlus
     int GetFilterCount() const;
 
     /**
-     * Status for last attempt to synchronize subscription
+     * Status for last attempt to synchronize subscription.
      * @return status, can be empty string or one of following values:
      * - synchronize_ok
      * - synchronize_invalid_data
@@ -121,10 +121,23 @@ namespace AdblockPlus
      */
     std::string GetSynchronizationStatus() const;
 
+    /**
+     * Last time the subscription was successfully downloaded or network error recieved.
+     * @return unix time or 0 if there were no attempts.
+     */
+    int GetLastDownloadAttemptTime() const;
+
+    /**
+     * Last time the subscription was successfully downloaded.
+     * @return unix time or 0 if there were no sucessfull attempts.
+     */
+    int GetLastDownloadSuccessTime() const;
+
     bool operator==(const Subscription& value) const;
 
   private:
     std::string GetStringProperty(const std::string& name) const;
+    int GetIntProperty(const std::string& name) const;
 
     JsValue jsObject;
     JsEngine* jsEngine;

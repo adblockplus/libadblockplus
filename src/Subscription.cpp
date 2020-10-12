@@ -112,6 +112,16 @@ std::string Subscription::GetSynchronizationStatus() const
   return GetStringProperty("downloadStatus");
 }
 
+int Subscription::GetLastDownloadAttemptTime() const
+{
+  return GetIntProperty("lastDownload");
+}
+
+int Subscription::GetLastDownloadSuccessTime() const
+{
+  return GetIntProperty("lastSuccess");
+}
+
 bool Subscription::operator==(const Subscription& value) const
 {
   return GetUrl() == value.GetUrl();
@@ -121,4 +131,10 @@ std::string Subscription::GetStringProperty(const std::string& name) const
 {
   JsValue value = jsObject.GetProperty(name);
   return (value.IsUndefined() || value.IsNull()) ? "" : value.AsString();
+}
+
+int Subscription::GetIntProperty(const std::string& name) const
+{
+  JsValue value = jsObject.GetProperty(name);
+  return (value.IsUndefined() || value.IsNull()) ? 0 : value.AsInt();
 }
