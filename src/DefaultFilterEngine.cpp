@@ -21,6 +21,8 @@
 #include <functional>
 #include <string>
 
+#include "DefaultFilterImplementation.h"
+#include "DefaultSubscriptionImplementation.h"
 #include "ElementUtils.h"
 #include "JsContext.h"
 
@@ -38,13 +40,15 @@ bool DefaultFilterEngine::IsFirstRun() const
 Filter DefaultFilterEngine::GetFilter(const std::string& text) const
 {
   JsValue func = jsEngine.Evaluate("API.getFilterFromText");
-  return Filter(func.Call(jsEngine.NewValue(text)), &jsEngine);
+  return Filter(
+      std::make_unique<DefaultFilterImplementation>(func.Call(jsEngine.NewValue(text)), &jsEngine));
 }
 
 Subscription DefaultFilterEngine::GetSubscription(const std::string& url) const
 {
   JsValue func = jsEngine.Evaluate("API.getSubscriptionFromUrl");
-  return Subscription(func.Call(jsEngine.NewValue(url)), &jsEngine);
+  return Subscription(std::make_unique<DefaultSubscriptionImplementation>(
+      func.Call(jsEngine.NewValue(url)), &jsEngine));
 }
 
 std::vector<Filter> DefaultFilterEngine::GetListedFilters() const
@@ -53,7 +57,8 @@ std::vector<Filter> DefaultFilterEngine::GetListedFilters() const
   JsValueList values = func.Call().AsList();
   std::vector<Filter> result;
   for (auto& value : values)
-    result.push_back(Filter(std::move(value), &jsEngine));
+    result.emplace_back(
+        Filter(std::make_unique<DefaultFilterImplementation>(std::move(value), &jsEngine)));
   return result;
 }
 
@@ -63,7 +68,8 @@ std::vector<Subscription> DefaultFilterEngine::GetListedSubscriptions() const
   JsValueList values = func.Call().AsList();
   std::vector<Subscription> result;
   for (auto& value : values)
-    result.push_back(Subscription(std::move(value), &jsEngine));
+    result.emplace_back(Subscription(
+        std::make_unique<DefaultSubscriptionImplementation>(std::move(value), &jsEngine)));
   return result;
 }
 
@@ -73,7 +79,8 @@ std::vector<Subscription> DefaultFilterEngine::FetchAvailableSubscriptions() con
   JsValueList values = func.Call().AsList();
   std::vector<Subscription> result;
   for (auto& value : values)
-    result.push_back(Subscription(std::move(value), &jsEngine));
+    result.emplace_back(Subscription(
+        std::make_unique<DefaultSubscriptionImplementation>(std::move(value), &jsEngine)));
   return result;
 }
 
@@ -92,22 +99,22 @@ std::string DefaultFilterEngine::GetAAUrl() const
   return GetPref("subscriptions_exceptionsurl").AsString();
 }
 
-AdblockPlus::FilterPtr DefaultFilterEngine::Matches(const std::string& url,
-                                                    ContentTypeMask contentTypeMask,
-                                                    const std::string& documentUrl,
-                                                    const std::string& siteKey,
-                                                    bool specificOnly) const
+AdblockPlus::Filter DefaultFilterEngine::Matches(const std::string& url,
+                                                 ContentTypeMask contentTypeMask,
+                                                 const std::string& documentUrl,
+                                                 const std::string& siteKey,
+                                                 bool specificOnly) const
 {
   std::vector<std::string> documentUrls;
   documentUrls.push_back(documentUrl);
   return Matches(url, contentTypeMask, documentUrls, siteKey, specificOnly);
 }
 
-AdblockPlus::FilterPtr DefaultFilterEngine::Matches(const std::string& url,
-                                                    ContentTypeMask contentTypeMask,
-                                                    const std::vector<std::string>& documentUrls,
-                                                    const std::string& siteKey,
-                                                    bool specificOnly) const
+AdblockPlus::Filter DefaultFilterEngine::Matches(const std::string& url,
+                                                 ContentTypeMask contentTypeMask,
+                                                 const std::vector<std::string>& documentUrls,
+                                                 const std::string& siteKey,
+                                                 bool specificOnly) const
 {
   if (documentUrls.empty())
     return CheckFilterMatch(url, contentTypeMask, "", siteKey, specificOnly);
@@ -115,9 +122,9 @@ AdblockPlus::FilterPtr DefaultFilterEngine::Matches(const std::string& url,
   std::string lastDocumentUrl = documentUrls.front();
   for (const auto& documentUrl : documentUrls)
   {
-    AdblockPlus::FilterPtr match = CheckFilterMatch(
+    auto match = CheckFilterMatch(
         documentUrl, CONTENT_TYPE_DOCUMENT, lastDocumentUrl, siteKey, specificOnly);
-    if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
+    if (match.IsValid() && match.GetType() == AdblockPlus::IFilterImplementation::TYPE_EXCEPTION)
       return match;
     lastDocumentUrl = documentUrl;
   }
@@ -129,31 +136,31 @@ bool DefaultFilterEngine::IsGenericblockWhitelisted(const std::string& url,
                                                     const std::vector<std::string>& documentUrls,
                                                     const std::string& sitekey) const
 {
-  return !!GetWhitelistingFilter(url, CONTENT_TYPE_GENERICBLOCK, documentUrls, sitekey);
+  return GetWhitelistingFilter(url, CONTENT_TYPE_GENERICBLOCK, documentUrls, sitekey).IsValid();
 }
 
 bool DefaultFilterEngine::IsDocumentWhitelisted(const std::string& url,
                                                 const std::vector<std::string>& documentUrls,
                                                 const std::string& sitekey) const
 {
-  return !!GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey);
+  return GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey).IsValid();
 }
 
 bool DefaultFilterEngine::IsElemhideWhitelisted(const std::string& url,
                                                 const std::vector<std::string>& documentUrls,
                                                 const std::string& sitekey) const
 {
-  return !!GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey);
+  return GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey).IsValid();
 }
 
-AdblockPlus::FilterPtr DefaultFilterEngine::CheckFilterMatch(const std::string& url,
-                                                             ContentTypeMask contentTypeMask,
-                                                             const std::string& documentUrl,
-                                                             const std::string& siteKey,
-                                                             bool specificOnly) const
+AdblockPlus::Filter DefaultFilterEngine::CheckFilterMatch(const std::string& url,
+                                                          ContentTypeMask contentTypeMask,
+                                                          const std::string& documentUrl,
+                                                          const std::string& siteKey,
+                                                          bool specificOnly) const
 {
   if (url.empty())
-    return FilterPtr();
+    return Filter();
   JsValue func = jsEngine.Evaluate("API.checkFilterMatch");
   JsValueList params;
   params.push_back(jsEngine.NewValue(url));
@@ -163,9 +170,9 @@ AdblockPlus::FilterPtr DefaultFilterEngine::CheckFilterMatch(const std::string& 
   params.push_back(jsEngine.NewValue(specificOnly));
   JsValue result = func.Call(params);
   if (!result.IsNull())
-    return FilterPtr(new Filter(std::move(result), &jsEngine));
+    return Filter(std::make_unique<DefaultFilterImplementation>(std::move(result), &jsEngine));
   else
-    return FilterPtr();
+    return Filter();
 }
 
 std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& domain,
@@ -293,23 +300,23 @@ DefaultFilterEngine::ComposeFilterSuggestions(const IElement* element) const
   return res;
 }
 
-FilterPtr DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
-                                                     ContentTypeMask contentTypeMask,
-                                                     const std::string& documentUrl,
-                                                     const std::string& sitekey) const
+Filter DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
+                                                  ContentTypeMask contentTypeMask,
+                                                  const std::string& documentUrl,
+                                                  const std::string& sitekey) const
 {
-  FilterPtr match = Matches(url, contentTypeMask, documentUrl, sitekey);
-  if (match && match->GetType() == Filter::TYPE_EXCEPTION)
+  auto match = Matches(url, contentTypeMask, documentUrl, sitekey);
+  if (match.IsValid() && match.GetType() == IFilterImplementation::TYPE_EXCEPTION)
   {
     return match;
   }
-  return FilterPtr();
+  return Filter();
 }
 
-FilterPtr DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
-                                                     ContentTypeMask contentTypeMask,
-                                                     const std::vector<std::string>& documentUrls,
-                                                     const std::string& sitekey) const
+Filter DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
+                                                  ContentTypeMask contentTypeMask,
+                                                  const std::vector<std::string>& documentUrls,
+                                                  const std::string& sitekey) const
 {
   if (documentUrls.empty())
   {
@@ -321,12 +328,46 @@ FilterPtr DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
   do
   {
     std::string parentUrl = *urlIterator++;
-    FilterPtr filter = GetWhitelistingFilter(currentUrl, contentTypeMask, parentUrl, sitekey);
-    if (filter)
+    Filter filter = GetWhitelistingFilter(currentUrl, contentTypeMask, parentUrl, sitekey);
+    if (filter.IsValid())
     {
       return filter;
     }
     currentUrl = parentUrl;
   } while (urlIterator != documentUrls.end());
   return GetWhitelistingFilter(currentUrl, contentTypeMask, "", sitekey);
+}
+
+void DefaultFilterEngine::AddSubscription(const Subscription& subscription)
+{
+  const auto* impl =
+      static_cast<const DefaultSubscriptionImplementation*>(subscription.Implementation());
+  JsValue func = jsEngine.Evaluate("API.addSubscriptionToList");
+  func.Call(impl->jsObject);
+}
+
+void DefaultFilterEngine::RemoveSubscription(const Subscription& subscription)
+{
+  const auto* impl =
+      static_cast<const DefaultSubscriptionImplementation*>(subscription.Implementation());
+  JsValue func = jsEngine.Evaluate("API.removeSubscriptionFromList");
+  func.Call(impl->jsObject);
+}
+
+void DefaultFilterEngine::AddFilter(const Filter& filter)
+{
+  if (!filter.IsValid())
+    return;
+  const auto* impl = static_cast<const DefaultFilterImplementation*>(filter.Implementation());
+  JsValue func = jsEngine.Evaluate("API.addFilterToList");
+  func.Call(impl->jsObject);
+}
+
+void DefaultFilterEngine::RemoveFilter(const Filter& filter)
+{
+  if (!filter.IsValid())
+    return;
+  const auto* impl = static_cast<const DefaultFilterImplementation*>(filter.Implementation());
+  JsValue func = jsEngine.Evaluate("API.removeFilterFromList");
+  func.Call(impl->jsObject);
 }

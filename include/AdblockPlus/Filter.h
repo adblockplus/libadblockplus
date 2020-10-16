@@ -15,86 +15,50 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_FILTER_H
-#define ADBLOCK_PLUS_FILTER_H
+#pragma once
 
 #include <memory>
+#include <string>
 
-#include <AdblockPlus/JsValue.h>
+#include <AdblockPlus/IFilterImplementation.h>
 
 namespace AdblockPlus
 {
-  /**
-   * Adblock Plus Filter object wrapper.
-   * @see [original documentation](https://adblockplus.org/jsdoc/adblockpluscore/Filter.html),
-   */
   class Filter
   {
   public:
-    /**
-     * Creates a wrapper for an existing JavaScript filter object.
-     * Normally you shouldn't call this directly, but use
-     * IFilterEngine::GetFilter() instead.
-     * @param object JavaScript filter object.
-     * @param engine JavaScript engine to make calls on object.
-     */
-    Filter(JsValue&& object, JsEngine* jsEngine);
-
-    /**
-     * Filter types, see https://adblockplus.org/en/filters.
-     */
-    enum Type
-    {
-      TYPE_BLOCKING,
-      TYPE_EXCEPTION,
-      TYPE_ELEMHIDE,
-      TYPE_ELEMHIDE_EXCEPTION,
-      TYPE_ELEMHIDE_EMULATION,
-      TYPE_COMMENT,
-      TYPE_INVALID
-    };
-
-    /**
-     * Retrieves the type of this filter.
-     * @return Type of this filter.
-     */
+    using Type = IFilterImplementation::Type;
+    Filter();
+    ~Filter();
+    explicit Filter(std::unique_ptr<IFilterImplementation> impl);
     Type GetType() const;
-
+    std::string GetRaw() const;
+    const IFilterImplementation* Implementation() const;
+    bool operator==(const Filter& filter) const;
+    Filter& operator=(const Filter& filter);
+    Filter& operator=(Filter&& filter);
+    Filter(const Filter& other);
+    Filter(Filter&& other);
+    bool IsValid() const;
     /**
-     * Checks whether this filter has been added to the list of custom filters.
-     * @return `true` if this filter has been added.
+     * DEPRECATED. Use IFilterEngine::GetListedFilters() combined with find
+     * instead.
      */
+    [[deprecated("Use IFilterEngine::GetListedFilters() combined with find"
+                 " instead")]]
     bool IsListed() const;
-
     /**
-     * Adds this filter to the list of custom filters.
+     * DEPRECATED. Use IFilterEngine::AddFilter() instead.
      */
+    [[deprecated("Use IFilterEngine::AddFilter() instead")]]
     void AddToList();
-
     /**
-     * Removes this filter from the list of custom filters.
+     * DEPRECATED. Use IFilterEngine::RemoveFilter() instead.
      */
+    [[deprecated("Use IFilterEngine::RemoveFilter() instead")]]
     void RemoveFromList();
 
-    /**
-     * Unparsed string representation of the filter.
-     * @return unparser filter.
-     */
-    std::string GetRaw() const;
-
-    bool operator==(const Filter& filter) const;
-
   private:
-    std::string GetStringProperty(const std::string& name) const;
-
-    JsValue jsObject;
-    JsEngine* jsEngine;
+    std::unique_ptr<IFilterImplementation> implementation;
   };
-
-  /**
-   * A smart pointer to a `Filter` instance.
-   */
-  typedef std::unique_ptr<Filter> FilterPtr;
 }
-
-#endif

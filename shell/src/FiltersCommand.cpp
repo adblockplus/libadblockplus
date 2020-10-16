@@ -31,22 +31,22 @@ namespace
       std::string type;
       switch (it->GetType())
       {
-      case AdblockPlus::Filter::TYPE_BLOCKING:
+      case AdblockPlus::IFilterImplementation::TYPE_BLOCKING:
         type = "blocking";
         break;
-      case AdblockPlus::Filter::TYPE_EXCEPTION:
+      case AdblockPlus::IFilterImplementation::TYPE_EXCEPTION:
         type = "exception";
         break;
-      case AdblockPlus::Filter::TYPE_ELEMHIDE:
+      case AdblockPlus::IFilterImplementation::TYPE_ELEMHIDE:
         type = "elemhide";
         break;
-      case AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION:
+      case AdblockPlus::IFilterImplementation::TYPE_ELEMHIDE_EXCEPTION:
         type = "elemhideexception";
         break;
-      case AdblockPlus::Filter::TYPE_COMMENT:
+      case AdblockPlus::IFilterImplementation::TYPE_COMMENT:
         type = "comment";
         break;
-      case AdblockPlus::Filter::TYPE_INVALID:
+      case AdblockPlus::IFilterImplementation::TYPE_INVALID:
         type = "invalid";
         break;
       default:
@@ -113,17 +113,19 @@ void FiltersCommand::ShowFilters()
 
 void FiltersCommand::AddFilter(const std::string& text)
 {
-  AdblockPlus::Filter filter = filterEngine.GetFilter(text);
-  filter.AddToList();
+  auto filter = filterEngine.GetFilter(text);
+  filterEngine.AddFilter(filter);
 }
 
 void FiltersCommand::RemoveFilter(const std::string& text)
 {
-  AdblockPlus::Filter filter = filterEngine.GetFilter(text);
-  if (!filter.IsListed())
+  auto filter = filterEngine.GetFilter(text);
+  auto listed = filterEngine.GetListedFilters();
+  auto iter = std::find(listed.begin(), listed.end(), filter);
+  if (iter == listed.end())
   {
     std::cout << "No such filter '" << text << "'" << std::endl;
     return;
   }
-  filter.RemoveFromList();
+  filterEngine.RemoveFilter(filter);
 }

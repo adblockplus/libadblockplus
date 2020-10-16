@@ -34,7 +34,7 @@ namespace AdblockPlus
   {
   public:
     /**
-     * Result of a stat operation, i.e.\ information about a file.
+     * Result of a stat operation, i.e. information about a file.
      */
     struct StatResult
     {
@@ -96,7 +96,7 @@ namespace AdblockPlus
     Write(const std::string& fileName, const IOBuffer& data, const Callback& callback) = 0;
 
     /**
-     * Moves a file (i.e.\ renames it).
+     * Moves a file (i.e. renames it).
      * @param fromFileName Current file name.
      * @param toFileName New file name.
      * @param callback The function called on completion.

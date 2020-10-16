@@ -51,13 +51,13 @@ void MatchesCommand::operator()(const std::string& arguments)
     return;
   }
 
-  AdblockPlus::FilterPtr match = filterEngine.Matches(url, contentType, documentUrl, siteKey);
-  if (!match)
-    std::cout << "No match" << std::endl;
-  else if (match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
-    std::cout << "Whitelisted by " << match->GetRaw() << std::endl;
+  AdblockPlus::Filter match = filterEngine.Matches(url, contentType, documentUrl, siteKey);
+  if (!match.IsValid())
+    return;
+  if (match.GetType() == AdblockPlus::IFilterImplementation::TYPE_EXCEPTION)
+    std::cout << "Whitelisted by " << match.GetRaw() << std::endl;
   else
-    std::cout << "Blocked by " << match->GetRaw() << std::endl;
+    std::cout << "Blocked by " << match.GetRaw() << std::endl;
 }
 
 std::string MatchesCommand::GetDescription() const
