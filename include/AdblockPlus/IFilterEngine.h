@@ -180,14 +180,15 @@ namespace AdblockPlus
      * @param siteKey
      *        Optional: public key provided by the document.
      * @param specificOnly Optional: if set to `true` then skips generic filters.
-     * @return Matching filter, or `null` if there was no match.
+     * @return Matching filter, or an invalid filter if there was no match.
+     * @see Filter::IsValid()
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
-    virtual FilterPtr Matches(const std::string& url,
-                              ContentTypeMask contentTypeMask,
-                              const std::string& documentUrl,
-                              const std::string& siteKey = "",
-                              bool specificOnly = false) const = 0;
+    virtual Filter Matches(const std::string& url,
+                           ContentTypeMask contentTypeMask,
+                           const std::string& documentUrl,
+                           const std::string& siteKey = "",
+                           bool specificOnly = false) const = 0;
 
     /**
      * Checks if any active filter matches the supplied URL.
@@ -202,14 +203,15 @@ namespace AdblockPlus
      * @param siteKey
      *        Optional: public key provided by the document.
      * @param specificOnly Optional: if set to `true` then skips generic filters.
-     * @return Matching filter, or a `null` if there was no match.
+     * @return Matching filter, or am invalid filter if there was no match.
+     * @see Filter::IsValid()
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
-    virtual FilterPtr Matches(const std::string& url,
-                              ContentTypeMask contentTypeMask,
-                              const std::vector<std::string>& documentUrls,
-                              const std::string& siteKey = "",
-                              bool specificOnly = false) const = 0;
+    virtual Filter Matches(const std::string& url,
+                           ContentTypeMask contentTypeMask,
+                           const std::vector<std::string>& documentUrls,
+                           const std::string& siteKey = "",
+                           bool specificOnly = false) const = 0;
 
     /**
      * Checks if any active genericblock filter exception matches the supplied URL.
@@ -364,6 +366,26 @@ namespace AdblockPlus
      * @return Suggested filters list.
      */
     virtual std::vector<std::string> ComposeFilterSuggestions(const IElement* element) const = 0;
+
+    /**
+     * Adds this subscription to the list of subscriptions.
+     */
+    virtual void AddSubscription(const Subscription& subscripton) = 0;
+
+    /**
+     * Removes this subscription from the list of subscriptions.
+     */
+    virtual void RemoveSubscription(const Subscription& subscription) = 0;
+
+    /**
+     * Adds this filter to the list of custom filters.
+     */
+    virtual void AddFilter(const Filter& filter) = 0;
+
+    /**
+     * Removes this filter from the list of custom filters.
+     */
+    virtual void RemoveFilter(const Filter& filter) = 0;
 
     /**
      * Retrieves the `ContentType` for the supplied string.

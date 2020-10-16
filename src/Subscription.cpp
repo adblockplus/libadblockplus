@@ -15,126 +15,134 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <exception>
-#include <string>
+#include <assert.h>
 
-#include <AdblockPlus/JsEngine.h>
+#include <AdblockPlus/ISubscriptionImplementation.h>
 #include <AdblockPlus/Subscription.h>
-
-#include "Utils.h"
 
 using namespace AdblockPlus;
 
-Subscription::Subscription(JsValue&& object, JsEngine* engine)
-    : jsObject(std::move(object)), jsEngine(engine)
+Subscription::Subscription(std::unique_ptr<ISubscriptionImplementation> impl)
+    : implementation(std::move(impl))
 {
-  if (!jsObject.IsObject())
-    throw std::runtime_error("JavaScript value is not an object");
+  assert(implementation != nullptr);
 }
 
-bool Subscription::IsListed() const
-{
-  JsValue func = jsEngine->Evaluate("API.isListedSubscription");
-  return func.Call(jsObject).AsBool();
-}
+Subscription::~Subscription() = default;
 
 bool Subscription::IsDisabled() const
 {
-  return jsObject.GetProperty("disabled").AsBool();
+  return implementation->IsDisabled();
 }
 
 void Subscription::SetDisabled(bool value)
 {
-  return jsObject.SetProperty("disabled", value);
-}
-
-void Subscription::AddToList()
-{
-  JsValue func = jsEngine->Evaluate("API.addSubscriptionToList");
-  func.Call(jsObject);
-}
-
-void Subscription::RemoveFromList()
-{
-  JsValue func = jsEngine->Evaluate("API.removeSubscriptionFromList");
-  func.Call(jsObject);
+  implementation->SetDisabled(value);
 }
 
 void Subscription::UpdateFilters()
 {
-  JsValue func = jsEngine->Evaluate("API.updateSubscription");
-  func.Call(jsObject);
+  implementation->UpdateFilters();
 }
 
 bool Subscription::IsUpdating() const
 {
-  JsValue func = jsEngine->Evaluate("API.isSubscriptionUpdating");
-  return func.Call(jsObject).AsBool();
+  return implementation->IsUpdating();
 }
 
 bool Subscription::IsAA() const
 {
-  return jsEngine->Evaluate("API.isAASubscription").Call(jsObject).AsBool();
+  return implementation->IsAA();
 }
 
 std::string Subscription::GetTitle() const
 {
-  return GetStringProperty("title");
+  return implementation->GetTitle();
 }
 
 std::string Subscription::GetUrl() const
 {
-  return GetStringProperty("url");
+  return implementation->GetUrl();
 }
 
 std::string Subscription::GetHomepage() const
 {
-  return GetStringProperty("homepage");
+  return implementation->GetHomepage();
 }
 
 std::string Subscription::GetAuthor() const
 {
-  return GetStringProperty("author");
+  return implementation->GetAuthor();
 }
 
 std::vector<std::string> Subscription::GetLanguages() const
 {
-  return Utils::SplitString(GetStringProperty("prefixes"), ',');
+  return implementation->GetLanguages();
 }
 
 int Subscription::GetFilterCount() const
 {
-  return jsObject.GetProperty("filterCount").AsInt();
+  return implementation->GetFilterCount();
 }
 
 std::string Subscription::GetSynchronizationStatus() const
 {
-  return GetStringProperty("downloadStatus");
+  return implementation->GetSynchronizationStatus();
 }
 
 int Subscription::GetLastDownloadAttemptTime() const
 {
-  return GetIntProperty("lastDownload");
+  return implementation->GetLastDownloadAttemptTime();
 }
 
 int Subscription::GetLastDownloadSuccessTime() const
 {
-  return GetIntProperty("lastSuccess");
+  return implementation->GetLastDownloadSuccessTime();
 }
 
-bool Subscription::operator==(const Subscription& value) const
+bool Subscription::operator==(const Subscription& other) const
 {
-  return GetUrl() == value.GetUrl();
+  return *implementation == *(other.implementation);
 }
 
-std::string Subscription::GetStringProperty(const std::string& name) const
+const ISubscriptionImplementation* Subscription::Implementation() const
 {
-  JsValue value = jsObject.GetProperty(name);
-  return (value.IsUndefined() || value.IsNull()) ? "" : value.AsString();
+  return implementation.get();
 }
 
-int Subscription::GetIntProperty(const std::string& name) const
+Subscription& Subscription::operator=(const Subscription& other)
 {
-  JsValue value = jsObject.GetProperty(name);
-  return (value.IsUndefined() || value.IsNull()) ? 0 : value.AsInt();
+  implementation = other.implementation->Clone();
+  return *this;
+}
+
+Subscription& Subscription::operator=(Subscription&& other)
+{
+  implementation = std::move(other.implementation);
+  return *this;
+}
+
+Subscription::Subscription(const Subscription& other)
+{
+  operator=(other);
+}
+
+Subscription::Subscription(Subscription&& other)
+{
+  operator=(std::move(other));
+}
+
+bool Subscription::IsListed() const
+{
+  return implementation->IsListed();
+}
+
+void Subscription::AddToList()
+{
+  implementation->AddToList();
+}
+
+void Subscription::RemoveFromList()
+{
+  implementation->RemoveFromList();
 }

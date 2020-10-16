@@ -225,35 +225,34 @@ libadblockplus takes care of storing and updating subscriptions.
 
 You can add more:
 
-    SubscriptionPtr subscription =
+    Subscription subscription =
       filterEngine.GetSubscription("https://example.org/filters.txt");
-    subscription->AddToList();
+    filterEngine.AddSubscription(subscription);
 
-Retrieving an existing subscription works the same way, use
-[`Subscription::IsListed`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L138)
-to check if the subscription has been added or not.
+To retrieve a list of all subscriptions use
+[`FilterEngine::GetListedSubscriptions`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L138).
+To check if a subscription has been added or not, do the following:
 
-    SubscriptionPtr subscription =
-      filterEngine.GetSubscription("https://example.org/filters.txt");
-    if (subscription->IsListed())
+    auto subscriptions = GetFilterEngine().GetListedSubscriptions();
+    auto subscription = std::find_if(subscriptions.begin(), subscriptions.end(), [](const auto& cur) {
+      return cur.GetUrl() == "https://example.org/filters.txt";
+    });
+    if (subscription != subscriptions.end())
         ....
 
 Removing a subscription is not rocket science either:
 
-    subscription->RemoveFromList();
-
-You can also get a list of all subscriptions that were added:
-
-    std::vector<SubscriptionPtr> subscriptions =
-      filterEngine.GetListedSubscriptions();
+    Subscription subscription =
+      filterEngine.GetSubscription("https://example.org/filters.txt");
+    filterEngine.RemoveSubscription(subscription);
 
 ### Managing custom filters
 
 Working with custom filters is very similar to working with subscriptions:
 
-    FilterPtr filter = filterEngine.GetFilter("||example.com/ad.png");
-    filter->AddToList();
-    filter->RemoveFromList();
+    Filterr filter = filterEngine.GetFilter("||example.com/ad.png");
+    filterEngine.AddFilter(filter);
+    filterEngine.RemoveFilter(filter);
 
 Note that applications should only do this to manage a user's custom filters. In
 general, filter lists should be hosted somewhere and added as a subscription.
@@ -265,12 +264,12 @@ a URL matches any of the active blocking filters.
 
 To demonstrate this, we'll add a custom filter:
 
-    FilterPtr filter = filterEngine.GetFilter("||example.com/ad.png");
-    filter->AddToList();
+    Filter filter = filterEngine.GetFilter("||example.com/ad.png");
+    filterEngine.AddFilter(filter);
 
 Now we'll call matches on an URL that should be blocked:
 
-    FilterPtr match =
+    Filter match =
       filterEngine.Matches("http://example.com/ad.png", "DOCUMENT", "");
 
 Since we've added a matching filter, `match` will point to the same filter
@@ -293,7 +292,7 @@ To find match filter taking into account site key, please use 4th parameter
 for [`IFilterEngine::Matches`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L430)
 It should contain decoded and verified public key extracted from `X-Adblock-Key` header.
 
-    FilterPtr match =
+    Filter match =
       filterEngine.Matches("http://example.com/ad.png", "DOCUMENT", "",
          "DECODED PUBLIC KEY");
 

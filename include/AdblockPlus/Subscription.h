@@ -15,133 +15,59 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_SUBSCRIPTION_H
-#define ADBLOCK_PLUS_SUBSCRIPTION_H
+#pragma once
 
 #include <memory>
-
-#include <AdblockPlus/JsValue.h>
+#include <string>
+#include <vector>
 
 namespace AdblockPlus
 {
-  /**
-   * Adblock Plus Subscription object wrapper.
-   * @see [original documentation](https://adblockplus.org/jsdoc/adblockpluscore/Subscription.html).
-   */
+  class ISubscriptionImplementation;
   class Subscription
   {
   public:
-    /**
-     * Creates a wrapper for an existing JavaScript subscription object.
-     * Normally you shouldn't call this directly, but use
-     * IFilterEngine::GetSubscription() instead.
-     * @param object JavaScript subscription object.
-     * @param engine JavaScript engine to make calls on object.
-     */
-    Subscription(JsValue&& object, JsEngine* jsEngine);
-
-    /**
-     * Checks if the subscription is disabled.
-     * @return `true` if this subscription is disabled.
-     */
+    explicit Subscription(std::unique_ptr<ISubscriptionImplementation> impl);
+    ~Subscription();
     bool IsDisabled() const;
-
-    /**
-     * Allows to enable or disable current subscription.
-     * @param `value` disabling the subscription if true and enabling if false.
-     *        If the previous state was the same then it has no effect.
-     */
     void SetDisabled(bool value);
-
+    void UpdateFilters();
+    bool IsUpdating() const;
+    bool IsAA() const;
+    std::string GetTitle() const;
+    std::string GetUrl() const;
+    std::string GetHomepage() const;
+    std::string GetAuthor() const;
+    std::vector<std::string> GetLanguages() const;
+    int GetFilterCount() const;
+    std::string GetSynchronizationStatus() const;
+    int GetLastDownloadAttemptTime() const;
+    int GetLastDownloadSuccessTime() const;
+    bool operator==(const Subscription& other) const;
+    const ISubscriptionImplementation* Implementation() const;
+    Subscription& operator=(const Subscription& filter);
+    Subscription& operator=(Subscription&& filter);
+    Subscription(const Subscription& other);
+    Subscription(Subscription&& other);
     /**
-     * Checks if this subscription has been added to the list of subscriptions.
-     * @return `true` if this subscription has been added.
+     * DEPRECATED. Use IFilterEngine::GetListedSubscriptions() combined with
+     * find instead.
      */
+    [[deprecated("Use IFilterEngine::GetListedSubscriptions() combined with"
+                 " find instead")]]
     bool IsListed() const;
-
     /**
-     * Adds this subscription to the list of subscriptions.
+     * DEPRECATED. Use IFilterEngine::AddSubscription() instead.
      */
+    [[deprecated("Use IFilterEngine::AddSubscription() instead")]]
     void AddToList();
-
     /**
-     * Removes this subscription from the list of subscriptions.
+     * DEPRECATED. Use IFilterEngine::RemoveSubscription() instead.
      */
+    [[deprecated("Use IFilterEngine::RemoveSubscription() instead")]]
     void RemoveFromList();
 
-    /**
-     * Updates this subscription, i.e.\ retrieves the current filters from the
-     * subscription URL.
-     */
-    void UpdateFilters();
-
-    /**
-     * Checks if the subscription is currently being updated.
-     * @return `true` if the subscription is currently being updated.
-     */
-    bool IsUpdating() const;
-
-    /**
-     * Indicates whether the subscription is the Acceptable Ads subscription.
-     * @return `true` if this subscription is the Acceptable Ads subscription.
-     */
-    bool IsAA() const;
-
-    std::string GetTitle() const;
-
-    /**
-     * Url subscription fetched from.
-     * @return url
-     */
-    std::string GetUrl() const;
-
-    std::string GetHomepage() const;
-
-    std::string GetAuthor() const;
-
-    /**
-     * Supported languages list for some recommended subscription.
-     * @return languages list, two letter ISO 639-1 code each. Can be empty.
-     */
-    std::vector<std::string> GetLanguages() const;
-
-    /**
-     * Number of filters in this subscription.
-     * @returns number of filters
-     */
-    int GetFilterCount() const;
-
-    /**
-     * Status for last attempt to synchronize subscription.
-     * @return status, can be empty string or one of following values:
-     * - synchronize_ok
-     * - synchronize_invalid_data
-     * - synchronize_invalid_url
-     * - synchronize_connection_error
-     */
-    std::string GetSynchronizationStatus() const;
-
-    /**
-     * Last time the subscription was successfully downloaded or network error recieved.
-     * @return unix time or 0 if there were no attempts.
-     */
-    int GetLastDownloadAttemptTime() const;
-
-    /**
-     * Last time the subscription was successfully downloaded.
-     * @return unix time or 0 if there were no sucessfull attempts.
-     */
-    int GetLastDownloadSuccessTime() const;
-
-    bool operator==(const Subscription& value) const;
-
   private:
-    std::string GetStringProperty(const std::string& name) const;
-    int GetIntProperty(const std::string& name) const;
-
-    JsValue jsObject;
-    JsEngine* jsEngine;
+    std::unique_ptr<ISubscriptionImplementation> implementation;
   };
 }
-
-#endif
