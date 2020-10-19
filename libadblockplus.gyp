@@ -148,6 +148,7 @@
           'lib/utils.js',
           'lib/elemHideHitRegistration.js',
           'lib/compose.js',
+          'lib/punycode.js',
           'adblockpluscore/lib/events.js',
           'adblockpluscore/lib/caching.js',
           'adblockpluscore/data/publicSuffixList.json',
@@ -188,7 +189,6 @@
         ],
         'load_after_files': [
           'lib/api.js',
-          'lib/punycode.js',
           'lib/uri.js',
         ],
       },
