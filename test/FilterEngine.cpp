@@ -466,20 +466,13 @@ TEST_F(FilterEngineTest, GenericblockHierarchy)
   filterEngine.AddFilter(
       filterEngine.GetFilter("@@||example.com^$genericblock,domain=example.com"));
 
-  std::string currentUrl = "http://example.com/add.png";
-  std::string parentUrl = "http://example.com/frame.html";
-  std::vector<std::string> documentUrlsForCurrentUrl, documentUrlsForParentUrl;
-  documentUrlsForCurrentUrl.push_back("http://example.com/frame.html");
-  documentUrlsForCurrentUrl.push_back("http://example.net/index.html");
-  documentUrlsForParentUrl.push_back("http://example.net/index.html");
+  EXPECT_TRUE(filterEngine.IsGenericblockWhitelisted(
+      "http://example.com/add.png",
+      {"http://example.com/frame.html", "http://example.com/index.html"}));
 
-  EXPECT_TRUE(filterEngine.IsGenericblockWhitelisted(currentUrl, documentUrlsForCurrentUrl));
-  EXPECT_FALSE(filterEngine.IsGenericblockWhitelisted(parentUrl, documentUrlsForParentUrl));
-
-  filterEngine.RemoveFilter(
-      filterEngine.GetFilter("@@||example.com^$genericblock,domain=example.com"));
-  filterEngine.AddFilter(filterEngine.GetFilter("@@||example.net^$genericblock"));
-  EXPECT_TRUE(filterEngine.IsGenericblockWhitelisted(parentUrl, documentUrlsForParentUrl));
+  EXPECT_FALSE(filterEngine.IsGenericblockWhitelisted(
+      "http://example.com/add.png",
+      {"http://example.com/frame.html", "http://baddomain.com/index.html"}));
 }
 
 /*
@@ -560,11 +553,10 @@ TEST_F(FilterEngineTest, GenericblockWithDomain)
   filterEngine.AddFilter(
       filterEngine.GetFilter("@@||bar.example.com^$genericblock,domain=~example.net"));
 
-  std::vector<std::string> documentUrls;
-  documentUrls.push_back("http://example.net");
-
-  EXPECT_TRUE(filterEngine.IsGenericblockWhitelisted("http://foo.example.com", documentUrls));
-  EXPECT_FALSE(filterEngine.IsGenericblockWhitelisted("http://bar.example.com", documentUrls));
+  EXPECT_TRUE(filterEngine.IsGenericblockWhitelisted(
+      "http://foo.example.com/ad.html", {"http://foo.example.com/", "http://example.net"}));
+  EXPECT_FALSE(filterEngine.IsGenericblockWhitelisted(
+      "http://bar.example.com/ad.html", {"http://bar.example.com", "http://example.net"}));
 }
 
 TEST_F(FilterEngineTest, Generichide)
@@ -978,20 +970,20 @@ TEST_F(FilterEngineTest, DocumentWhitelisting)
   filterEngine.AddFilter(filterEngine.GetFilter("@@||example.org^$document"));
   filterEngine.AddFilter(filterEngine.GetFilter("@@||example.com^$document,domain=example.de"));
 
-  ASSERT_TRUE(filterEngine.IsDocumentWhitelisted("http://example.org", std::vector<std::string>()));
+  ASSERT_TRUE(
+      filterEngine.IsDocumentWhitelisted("http://example.org/ad.html", std::vector<std::string>()));
+
+  ASSERT_FALSE(filterEngine.IsDocumentWhitelisted("http://example.co.uk/ad.html",
+                                                  std::vector<std::string>()));
 
   ASSERT_FALSE(
-      filterEngine.IsDocumentWhitelisted("http://example.co.uk", std::vector<std::string>()));
+      filterEngine.IsDocumentWhitelisted("http://example.com/ad.html", std::vector<std::string>()));
 
-  ASSERT_FALSE(
-      filterEngine.IsDocumentWhitelisted("http://example.com", std::vector<std::string>()));
+  ASSERT_TRUE(filterEngine.IsDocumentWhitelisted("http://example.com/ad.html",
+                                                 {"http://example.com", "http://example.de"}));
 
-  std::vector<std::string> documentUrls1;
-  documentUrls1.push_back("http://example.de");
-
-  ASSERT_TRUE(filterEngine.IsDocumentWhitelisted("http://example.com", documentUrls1));
-
-  ASSERT_FALSE(filterEngine.IsDocumentWhitelisted("http://example.co.uk", documentUrls1));
+  ASSERT_FALSE(filterEngine.IsDocumentWhitelisted("http://example.co.uk/ad.html",
+                                                  {"http://example.co.uk", "http://example.de"}));
 
   filterEngine.AddFilter(
       filterEngine.GetFilter("||testpages.adblockplus.org/testcasefiles/document/*"));
@@ -1003,12 +995,11 @@ TEST_F(FilterEngineTest, DocumentWhitelisting)
   //  - http://testpages.adblockplus.org/testcasefiles/document/frame.html
   //   - http://testpages.adblockplus.org/testcasefiles/document/image.jpg
 
-  documentUrls1.clear();
-  documentUrls1.push_back("http://testpages.adblockplus.org/en/exceptions/document");
-
   // Check for http://testpages.adblockplus.org/testcasefiles/document/image.jpg
   EXPECT_TRUE(filterEngine.IsDocumentWhitelisted(
-      "http://testpages.adblockplus.org/testcasefiles/document/frame.html", documentUrls1));
+      "http://testpages.adblockplus.org/testcasefiles/document/image.jpg",
+      {"http://testpages.adblockplus.org/testcasefiles/document/frame.html",
+       "http://testpages.adblockplus.org/en/exceptions/document"}));
 }
 
 TEST_F(FilterEngineTest, ElemhideWhitelisting)
@@ -1025,12 +1016,11 @@ TEST_F(FilterEngineTest, ElemhideWhitelisting)
   ASSERT_FALSE(
       filterEngine.IsElemhideWhitelisted("http://example.com", std::vector<std::string>()));
 
-  std::vector<std::string> documentUrls1;
-  documentUrls1.push_back("http://example.de");
+  ASSERT_TRUE(filterEngine.IsElemhideWhitelisted("http://example.com/ad.html",
+                                                 {"http://example.com", "http://example.de"}));
 
-  ASSERT_TRUE(filterEngine.IsElemhideWhitelisted("http://example.com", documentUrls1));
-
-  ASSERT_FALSE(filterEngine.IsElemhideWhitelisted("http://example.co.uk", documentUrls1));
+  ASSERT_FALSE(filterEngine.IsElemhideWhitelisted("http://example.co.uk/ad.html",
+                                                  {"http://example.co.uk", "http://example.de"}));
 
   filterEngine.AddFilter(
       filterEngine.GetFilter("testpages.adblockplus.org##.testcase-ex-elemhide"));
@@ -1044,15 +1034,16 @@ TEST_F(FilterEngineTest, ElemhideWhitelisting)
   //  - http://testpages.adblockplus.org/testcasefiles/elemhide/frame.html
   //   - http://testpages.adblockplus.org/testcasefiles/elemhide/image.jpg
 
-  documentUrls1.clear();
-  documentUrls1.push_back("http://testpages.adblockplus.org/en/exceptions/elemhide");
+  std::vector<std::string> documentUrls = {
+      "http://testpages.adblockplus.org/testcasefiles/elemhide/frame.html",
+      "http://testpages.adblockplus.org/en/exceptions/elemhide"};
 
   EXPECT_TRUE(filterEngine.IsElemhideWhitelisted(
-      "http://testpages.adblockplus.org/testcasefiles/elemhide/frame.html", documentUrls1));
+      "http://testpages.adblockplus.org/testcasefiles/elemhide/image.jpg", documentUrls));
   auto filter =
       filterEngine.Matches("http://testpages.adblockplus.org/testcasefiles/elemhide/image.jpg",
                            AdblockPlus::IFilterEngine::CONTENT_TYPE_IMAGE,
-                           documentUrls1);
+                           documentUrls);
   ASSERT_TRUE(filter.IsValid());
   EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, filter.GetType());
 }

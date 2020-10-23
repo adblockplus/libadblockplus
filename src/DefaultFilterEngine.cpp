@@ -323,19 +323,18 @@ Filter DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
     return GetWhitelistingFilter(url, contentTypeMask, "", sitekey);
   }
 
-  std::vector<std::string>::const_iterator urlIterator = documentUrls.begin();
-  std::string currentUrl = url;
-  do
+  for (auto it = documentUrls.begin(); it != documentUrls.end(); ++it)
   {
-    std::string parentUrl = *urlIterator++;
+    const std::string& currentUrl = *it;
+    const auto parentIterator = std::next(it);
+    const std::string& parentUrl = parentIterator != documentUrls.end() ? *parentIterator : "";
     Filter filter = GetWhitelistingFilter(currentUrl, contentTypeMask, parentUrl, sitekey);
     if (filter.IsValid())
     {
       return filter;
     }
-    currentUrl = parentUrl;
-  } while (urlIterator != documentUrls.end());
-  return GetWhitelistingFilter(currentUrl, contentTypeMask, "", sitekey);
+  }
+  return Filter();
 }
 
 void DefaultFilterEngine::AddSubscription(const Subscription& subscription)
