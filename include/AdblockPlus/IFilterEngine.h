@@ -215,13 +215,12 @@ namespace AdblockPlus
 
     /**
      * Checks if any active genericblock filter exception matches the supplied URL.
-     * @param url URL to match which is actually first parent of URL for which we
-     *            want to check a $genericblock filter.
-     *            Value obtained by `IsGenericblockWhitelisted()` is used later
-     *            on as a `specificOnly` parameter value for `Matches()` call.
-     * @param documentUrl Chain of documents requesting the resource, starting
-     *        with the current URL's parent frame, ending with the
-     *        top-level frame.
+     * Result of `IsGenericblockWhitelisted()` is used later on as a `specificOnly`
+     * parameter value for `Matches()` call.
+     * @param url URL of the document.
+     * @param documentUrl Chain of document URLs requesting the document,
+     *        starting with the current document's parent frame, ending with
+     *        the top-level frame.
      *        If the application is not capable of identifying the frame
      *        structure, e.g. because it is a proxy, it can be approximated
      *        using `ReferrerMapping`.
