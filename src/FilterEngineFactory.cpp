@@ -25,57 +25,9 @@
 #include "DefaultFilterEngine.h"
 #include "JsContext.h"
 #include "Thread.h"
+#include "Utils.h"
 
 using namespace AdblockPlus;
-
-namespace
-{
-  const std::string filterEngineJsFiles[] = {"compat.js",
-                                             "info.js",
-                                             "io.js",
-                                             "prefs.js",
-                                             "utils.js",
-                                             "elemHideHitRegistration.js",
-                                             "time.js",
-                                             "events.js",
-                                             "coreUtils.js",
-                                             "caching.js",
-                                             "publicSuffixList.json",
-                                             "subscriptions.json",
-                                             "resources.json",
-                                             "url.js",
-                                             "filterNotifier.js",
-                                             "recommendations.js",
-                                             "common.js",
-                                             "elemHideExceptions.js",
-                                             "contentTypes.js",
-                                             "filterState.js",
-                                             "filterClasses.js",
-                                             "snippets.js",
-                                             "analytics.js",
-                                             "downloader.js",
-                                             "subscriptionClasses.js",
-                                             "iniParser.js",
-                                             "filterStorage.js",
-                                             "filtersByDomain.js",
-                                             "elemHide.js",
-                                             "elemHideEmulation.js",
-                                             "patterns.js",
-                                             "matcher.js",
-                                             "filterListener.js",
-                                             "filterEngine.js",
-                                             "versions.js",
-                                             "synchronizer.js",
-                                             "filterUpdateRegistration.js",
-                                             "compose.js",
-                                             "jsbn.js",
-                                             "rusha.js",
-                                             "rsa.js",
-                                             "init.js",
-                                             "api.js",
-                                             "punycode.js",
-                                             "uri.js"};
-}
 
 void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
                                       const EvaluateCallback& evaluateCallback,
@@ -150,7 +102,11 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
   }
   jsEngine.SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
 
+  const auto& jsFiles = Utils::SplitString(ABP_SCRIPT_FILES, ' ');
   // Load adblockplus scripts
-  for (const auto& filterEngineJsFile : filterEngineJsFiles)
-    evaluateCallback(filterEngineJsFile);
+  for (const auto& filterEngineJsFile : jsFiles)
+  {
+    auto filepathComponents = Utils::SplitString(filterEngineJsFile, '/');
+    evaluateCallback(filepathComponents.back());
+  }
 }
