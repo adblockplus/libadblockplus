@@ -32,7 +32,9 @@ namespace AdblockPlus
       return jsEngine;
     }
 
-    bool IsFirstRun() const final;
+    void SetEnabled(bool enabled) final;
+
+    bool IsEnabled() const final;
 
     Filter GetFilter(const std::string& text) const final;
 
@@ -109,14 +111,8 @@ namespace AdblockPlus
     void AddFilter(const Filter& filter) final;
     void RemoveFilter(const Filter& filter) final;
 
-    void SetIsFirstRun(bool isFirstRun)
-    {
-      firstRun = isFirstRun;
-    }
-
   private:
     JsEngine& jsEngine;
-    bool firstRun;
 
     Filter CheckFilterMatch(const std::string& url,
                             ContentTypeMask contentTypeMask,

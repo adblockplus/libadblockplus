@@ -156,8 +156,7 @@ public:
   typedef std::function<void(const Task& task)> Scheduler;
   static void ExecuteImmediately(const Task& task)
   {
-    if (task)
-      task();
+    task();
   }
   explicit LazyFileSystem(const Scheduler& scheduler = LazyFileSystem::ExecuteImmediately)
       : scheduler(scheduler)
@@ -210,7 +209,7 @@ public:
     });
   }
 
-public:
+protected:
   Scheduler scheduler;
 };
 
@@ -284,19 +283,39 @@ public:
 };
 
 AdblockPlus::IFilterEngine&
-CreateFilterEngine(LazyFileSystem& fileSystem,
-                   AdblockPlus::Platform& platform,
+CreateFilterEngine(AdblockPlus::Platform& platform,
                    const AdblockPlus::FilterEngineFactory::CreationParameters& creationParams =
                        AdblockPlus::FilterEngineFactory::CreationParameters());
 
 class NoopWebRequest : public AdblockPlus::IWebRequest
 {
 public:
+  void GET(const std::string& /*url*/,
+           const AdblockPlus::HeaderList& /*requestHeaders*/,
+           const GetCallback& /*callback*/) override
+  {
+  }
+};
+
+class WrappingWebRequest : public AdblockPlus::IWebRequest
+{
+public:
+  typedef std::function<void(
+      const std::string&, const AdblockPlus::HeaderList&, const GetCallback&)>
+      Implementation;
+
+  WrappingWebRequest(Implementation callback) : impl(callback)
+  {
+  }
+
   void GET(const std::string& url,
            const AdblockPlus::HeaderList& requestHeaders,
            const GetCallback& callback) override
   {
+    impl(url, requestHeaders, callback);
   }
+
+  Implementation impl;
 };
 
 struct DelayedWebRequestTask

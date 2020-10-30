@@ -18,6 +18,7 @@
 #include "DefaultFilterEngine.h"
 
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <string>
 
@@ -28,13 +29,19 @@
 
 using namespace AdblockPlus;
 
-DefaultFilterEngine::DefaultFilterEngine(JsEngine& jsEngine) : jsEngine(jsEngine), firstRun(false)
+DefaultFilterEngine::DefaultFilterEngine(JsEngine& jsEngine) : jsEngine(jsEngine)
 {
 }
 
-bool DefaultFilterEngine::IsFirstRun() const
+void DefaultFilterEngine::SetEnabled(bool enabled)
 {
-  return firstRun;
+  JsValue func = jsEngine.Evaluate("API.setFilterEngineEnabled");
+  func.Call(jsEngine.NewValue(enabled));
+}
+
+bool DefaultFilterEngine::IsEnabled() const
+{
+  return jsEngine.Evaluate("API.isFilterEngineEnabled()").AsBool();
 }
 
 Filter DefaultFilterEngine::GetFilter(const std::string& text) const
@@ -116,6 +123,7 @@ AdblockPlus::Filter DefaultFilterEngine::Matches(const std::string& url,
                                                  const std::string& siteKey,
                                                  bool specificOnly) const
 {
+  assert(IsEnabled());
   if (documentUrls.empty())
     return CheckFilterMatch(url, contentTypeMask, "", siteKey, specificOnly);
 
@@ -136,6 +144,7 @@ bool DefaultFilterEngine::IsGenericblockWhitelisted(const std::string& url,
                                                     const std::vector<std::string>& documentUrls,
                                                     const std::string& sitekey) const
 {
+  assert(IsEnabled());
   return GetWhitelistingFilter(url, CONTENT_TYPE_GENERICBLOCK, documentUrls, sitekey).IsValid();
 }
 
@@ -143,6 +152,7 @@ bool DefaultFilterEngine::IsDocumentWhitelisted(const std::string& url,
                                                 const std::vector<std::string>& documentUrls,
                                                 const std::string& sitekey) const
 {
+  assert(IsEnabled());
   return GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey).IsValid();
 }
 
@@ -150,6 +160,7 @@ bool DefaultFilterEngine::IsElemhideWhitelisted(const std::string& url,
                                                 const std::vector<std::string>& documentUrls,
                                                 const std::string& sitekey) const
 {
+  assert(IsEnabled());
   return GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey).IsValid();
 }
 
@@ -178,6 +189,7 @@ AdblockPlus::Filter DefaultFilterEngine::CheckFilterMatch(const std::string& url
 std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& domain,
                                                             bool specificOnly) const
 {
+  assert(IsEnabled());
   JsValueList params;
   params.push_back(jsEngine.NewValue(domain));
   params.push_back(jsEngine.NewValue(specificOnly));
@@ -188,6 +200,7 @@ std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& d
 std::vector<IFilterEngine::EmulationSelector>
 DefaultFilterEngine::GetElementHidingEmulationSelectors(const std::string& domain) const
 {
+  assert(IsEnabled());
   JsValue func = jsEngine.Evaluate("API.getElementHidingEmulationSelectors");
   JsValueList result = func.Call(jsEngine.NewValue(domain)).AsList();
   std::vector<IFilterEngine::EmulationSelector> selectors;

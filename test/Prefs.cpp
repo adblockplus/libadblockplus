@@ -101,7 +101,7 @@ namespace
     {
       AdblockPlus::FilterEngineFactory::CreationParameters createParams;
       createParams.preconfiguredPrefs = preconfiguredPrefs;
-      return ::CreateFilterEngine(*fileSystem, *platform, createParams);
+      return ::CreateFilterEngine(*platform, createParams);
     }
   };
 }
