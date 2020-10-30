@@ -99,22 +99,26 @@ namespace AdblockPlus
     virtual ~IFilterEngine() = default;
 
     /**
+     * Subscriptions will only be updated when the engine is enabled. Updates will be started after
+     * enabling. Filter match will always return invalid filter and allowlisting checks will return
+     * false for disabled state.
+     */
+    virtual void SetEnabled(bool enabled) = 0;
+
+    virtual bool IsEnabled() const = 0;
+
+    /**
      * Retrieves the `JsEngine` instance associated with this `IFilterEngine`
      * instance.
      */
     virtual JsEngine& GetJsEngine() const = 0;
 
     /**
-     * Checks if this is the first run of the application.
-     * @return `true` if the application is running for the first time.
-     */
-    virtual bool IsFirstRun() const = 0;
-
-    /**
      * Retrieves a filter object from its text representation.
      * @param text Text representation of the filter,
      *        see https://adblockplus.org/en/filters.
      * @return New `Filter` instance.
+     * @throws JsException if text is blank
      */
     virtual Filter GetFilter(const std::string& text) const = 0;
 
@@ -170,6 +174,7 @@ namespace AdblockPlus
 
     /**
      * Checks if any active filter matches the supplied URL.
+     * Asserts that the engine is enabled.
      * @param url URL to match.
      * @param contentTypeMask Content type mask of the requested resource.
      * @param documentUrl URL of the document requesting the resource.
@@ -192,6 +197,7 @@ namespace AdblockPlus
 
     /**
      * Checks if any active filter matches the supplied URL.
+     * Asserts that the engine is enabled.
      * @param url URL to match.
      * @param contentTypeMask Content type mask of the requested resource.
      * @param documentUrls Chain of documents requesting the resource, starting
@@ -203,7 +209,7 @@ namespace AdblockPlus
      * @param siteKey
      *        Optional: public key provided by the document.
      * @param specificOnly Optional: if set to `true` then skips generic filters.
-     * @return Matching filter, or am invalid filter if there was no match.
+     * @return Matching filter, or an invalid filter if there was no match.
      * @see Filter::IsValid()
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
@@ -217,6 +223,7 @@ namespace AdblockPlus
      * Checks if any active genericblock filter exception matches the supplied URL.
      * Result of `IsGenericblockWhitelisted()` is used later on as a `specificOnly`
      * parameter value for `Matches()` call.
+     * Asserts that the engine is enabled.
      * @param url URL of the document.
      * @param documentUrl Chain of document URLs requesting the document,
      *        starting with the current document's parent frame, ending with
@@ -226,6 +233,7 @@ namespace AdblockPlus
      *        using `ReferrerMapping`.
      * @param siteKey
      *        Optional: public key provided by the document.
+     * @return `true` if the URL is whitelisted.
      * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     virtual bool IsGenericblockWhitelisted(const std::string& url,
@@ -234,6 +242,7 @@ namespace AdblockPlus
 
     /**
      * Checks whether the document at the supplied URL is whitelisted.
+     * Asserts that the engine is enabled.
      * @param url URL of the document.
      * @param documentUrls Chain of document URLs requesting the document,
      *        starting with the current document's parent frame, ending with
@@ -249,6 +258,7 @@ namespace AdblockPlus
 
     /**
      * Checks whether element hiding is disabled at the supplied URL.
+     * Asserts that the engine is enabled.
      * @param url URL of the document.
      * @param documentUrls Chain of document URLs requesting the document,
      *        starting with the current document's parent frame, ending with
@@ -265,9 +275,10 @@ namespace AdblockPlus
     /**
      * Retrieves CSS style sheet for all element hiding filters active on the
      * supplied domain.
+     * Asserts that the engine is enabled.
      * @param domain Domain to retrieve CSS style sheet for.
      * @param specificOnly true if generic filters should not apply.
-     * @return CSS style sheet.
+     * @return CSS style sheet or empty string if domian does not match available filters.
      */
     virtual std::string GetElementHidingStyleSheet(const std::string& domain,
                                                    bool specificOnly = false) const = 0;
@@ -275,8 +286,10 @@ namespace AdblockPlus
     /**
      * Retrieves CSS selectors for all element hiding emulation filters active on the
      * supplied domain.
+     * Asserts that the engine is enabled.
      * @param domain Domain to retrieve CSS selectors for.
-     * @return List of CSS selectors along with the text property.
+     * @return List of CSS selectors along with the text property, can be empty if domian does not
+     * match available filters.
      */
     virtual std::vector<EmulationSelector>
     GetElementHidingEmulationSelectors(const std::string& domain) const = 0;

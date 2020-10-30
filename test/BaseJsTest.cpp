@@ -36,25 +36,18 @@ void DelayedTimer::ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks)
   }
 }
 
-IFilterEngine& CreateFilterEngine(LazyFileSystem& fileSystem,
-                                  Platform& platform,
+IFilterEngine& CreateFilterEngine(Platform& platform,
                                   const FilterEngineFactory::CreationParameters& creationParams)
 {
-  std::list<LazyFileSystem::Task> fileSystemTasks;
-  fileSystem.scheduler = [&fileSystemTasks](const LazyFileSystem::Task& task) {
-    fileSystemTasks.emplace_back(task);
-  };
-  bool isFilterEngineReady = false;
-  platform.CreateFilterEngineAsync(
-      creationParams, [&isFilterEngineReady, &fileSystem](const IFilterEngine& filterEngine) {
-        fileSystem.scheduler = LazyFileSystem::ExecuteImmediately;
-        isFilterEngineReady = true;
-      });
-  while (!isFilterEngineReady && !fileSystemTasks.empty())
-  {
-    (*fileSystemTasks.begin())();
-    fileSystemTasks.pop_front();
-  }
+  std::promise<void> promise;
+  std::future<void> future = promise.get_future();
+
+  platform.CreateFilterEngineAsync(creationParams,
+                                   [&promise](const IFilterEngine& /*filterEngine*/) {
+                                     promise.set_value();
+                                   });
+
+  future.wait();
   return platform.GetFilterEngine();
 }
 

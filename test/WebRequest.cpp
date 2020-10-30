@@ -49,7 +49,7 @@ namespace
 
     virtual LogSystemPtr CreateLogSystem()
     {
-      return LogSystemPtr(new ThrowingLogSystem());
+      return LogSystemPtr(new LazyLogSystem());
     }
 
     LazyFileSystem* fileSystem;
@@ -208,7 +208,7 @@ TEST_F(DefaultWebRequestTest, RealWebRequest)
 TEST_F(DefaultWebRequestTest, XMLHttpRequest)
 {
   auto& jsEngine = GetJsEngine();
-  CreateFilterEngine(*fileSystem, *platform);
+  CreateFilterEngine(*platform);
 
   ResetTestXHR(jsEngine, "https://easylist-downloads.adblockplus.org/easylist.txt");
   jsEngine.Evaluate("\
@@ -242,10 +242,10 @@ TEST_F(DefaultWebRequestTest, DummyWebRequest)
   ASSERT_EQ("{}", jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
 }
 
-TEST_F(DefaultWebRequestTest, XMLHttpRequest)
+TEST_F(DefaultWebRequestTest, DummyXMLHttpRequest)
 {
   auto& jsEngine = GetJsEngine();
-  CreateFilterEngine(*fileSystem, *platform);
+  CreateFilterEngine(*platform);
 
   ResetTestXHR(jsEngine);
   jsEngine.Evaluate("\
@@ -302,7 +302,7 @@ namespace
 TEST_F(MockWebRequestAndLogSystemTest, RequestHeaderValidation)
 {
   auto& jsEngine = GetJsEngine();
-  CreateFilterEngine(*fileSystem, *platform);
+  CreateFilterEngine(*platform);
 
   const std::string msg = "Attempt to set a forbidden header was denied: ";
 

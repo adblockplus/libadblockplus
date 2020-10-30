@@ -30,6 +30,14 @@ namespace AdblockPlus
   public:
     /**
      * Container of name-value pairs representing a set of preferences.
+     * This is default configuration, values can be overridden with actual state from local
+     * preferences storage. Following keys are available:
+     * - filter_engine_enabled - default: true, @see IFilterEngine::SetEnabled
+     * - first_run_subscription_auto_select - default: true. Will automatically subscribe to filter
+     * lists matching AppInfo::locale and Acceptable Ads on first run with enabled FilterEngine if
+     * true.
+     * - allowed_connection_type - default: "", @see IFilterEngine::SetAllowedConnectionType,
+     * IsConnectionAllowedAsyncCallback
      */
     typedef std::map<std::string, AdblockPlus::JsValue> Prefs;
     /**

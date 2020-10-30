@@ -77,13 +77,12 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
         });
   }
 
-  jsEngine.SetEventCallback(
-      "_init", [&jsEngine, wrappedFilterEngine, onCreated](JsValueList&& params) {
-        auto uniqueFilterEngine = std::move(*wrappedFilterEngine);
-        uniqueFilterEngine->SetIsFirstRun(params.size() && params[0].AsBool());
-        onCreated(std::move(uniqueFilterEngine));
-        jsEngine.RemoveEventCallback("_init");
-      });
+  jsEngine.SetEventCallback("_init",
+                            [&jsEngine, wrappedFilterEngine, onCreated](JsValueList&& /*params*/) {
+                              auto uniqueFilterEngine = std::move(*wrappedFilterEngine);
+                              onCreated(std::move(uniqueFilterEngine));
+                              jsEngine.RemoveEventCallback("_init");
+                            });
 
   bareFilterEngine->SetFilterChangeCallback(
       [bareFilterEngine](const std::string& reason, JsValue&&) {
