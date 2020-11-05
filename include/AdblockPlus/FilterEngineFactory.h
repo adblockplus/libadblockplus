@@ -39,7 +39,17 @@ namespace AdblockPlus
      * - allowed_connection_type - default: "", @see IFilterEngine::SetAllowedConnectionType,
      * IsConnectionAllowedAsyncCallback
      */
-    typedef std::map<std::string, AdblockPlus::JsValue> Prefs;
+    enum class PrefName
+    {
+      FilterEngineEnabled,
+      FirstRunSubscriptionAutoselect,
+      AllowedConnectionType
+    };
+
+    static std::string PrefNameToString(PrefName prefName);
+    static bool StringToPrefName(const std::string& prefNameStr, PrefName& prefName);
+
+    typedef std::map<PrefName, AdblockPlus::JsValue> Prefs;
     /**
      * Asynchronous callback function passing false when current connection
      * type does not correspond to allowedConnectionType, e.g. because it is a

@@ -145,9 +145,10 @@ namespace
 
       FilterEngineFactory::CreationParameters createParams;
       createParams.preconfiguredPrefs.emplace(
-          "filter_engine_enabled", GetJsEngine().NewValue(engine_satate == EngineState::Enabled));
+          FilterEngineFactory::PrefName::FilterEngineEnabled,
+          GetJsEngine().NewValue(engine_satate == EngineState::Enabled));
       createParams.preconfiguredPrefs.emplace(
-          "first_run_subscription_auto_select",
+          FilterEngineFactory::PrefName::FirstRunSubscriptionAutoselect,
           GetJsEngine().NewValue(autoselect_state == AutoselectState::Enabled));
       return CreateFilterEngine(createParams);
     }
@@ -179,8 +180,9 @@ namespace
       platform.reset(new Platform(std::move(platformParams)));
 
       createParams.preconfiguredPrefs.clear();
-      createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select",
-                                              GetJsEngine().NewValue(false));
+      createParams.preconfiguredPrefs.emplace(
+          FilterEngineFactory::PrefName::FirstRunSubscriptionAutoselect,
+          GetJsEngine().NewValue(false));
 
       createParams.isSubscriptionDownloadAllowedCallback =
           [this](const std::string* allowedConnectionType,
@@ -1640,7 +1642,7 @@ TEST_F(FilterEngineWithInMemoryFS, DisableSubscriptionsAutoSelectOnFirstRun)
 {
   InitPlatformAndAppInfo();
   FilterEngineFactory::CreationParameters createParams;
-  createParams.preconfiguredPrefs.emplace("first_run_subscription_auto_select",
+  createParams.preconfiguredPrefs.emplace(FilterEngineFactory::PrefName::FirstRunSubscriptionAutoselect,
                                           GetJsEngine().NewValue(false));
   auto& filterEngine = CreateFilterEngine(createParams);
   const auto subscriptions = filterEngine.GetListedSubscriptions();
@@ -2014,8 +2016,9 @@ namespace AA_ApiTest
       platform.reset(new Platform(std::move(platformParams)));
 
       FilterEngineFactory::CreationParameters params;
-      params.preconfiguredPrefs.emplace("first_run_subscription_auto_select",
-                                        GetJsEngine().NewValue(false));
+      params.preconfiguredPrefs.emplace(
+          FilterEngineFactory::PrefName::FirstRunSubscriptionAutoselect,
+          GetJsEngine().NewValue(false));
 
       ::CreateFilterEngine(*platform, params);
     }
@@ -2205,7 +2208,8 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest,
 {
   std::string predefinedAllowedConnectionType = "non-metered";
   createParams.preconfiguredPrefs.insert(std::make_pair(
-      "allowed_connection_type", GetJsEngine().NewValue(predefinedAllowedConnectionType)));
+      FilterEngineFactory::PrefName::AllowedConnectionType,
+      GetJsEngine().NewValue(predefinedAllowedConnectionType)));
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetSynchronizationStatus());
   EXPECT_LT(0, subscription.GetLastDownloadAttemptTime());
@@ -2221,7 +2225,8 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest,
 {
   std::string predefinedAllowedConnectionType = "non-metered";
   createParams.preconfiguredPrefs.insert(std::make_pair(
-      "allowed_connection_type", GetJsEngine().NewValue(predefinedAllowedConnectionType)));
+      FilterEngineFactory::PrefName::AllowedConnectionType,
+      GetJsEngine().NewValue(predefinedAllowedConnectionType)));
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetSynchronizationStatus());
   EXPECT_EQ(1, subscription.GetFilterCount());
@@ -2235,7 +2240,10 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest,
 {
   std::string testConnection = "";
   createParams.preconfiguredPrefs.insert(
-      std::make_pair("allowed_connection_type", GetJsEngine().NewValue(testConnection)));
+      {
+        FilterEngineFactory::PrefName::AllowedConnectionType,
+        GetJsEngine().NewValue(testConnection)
+      });
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetSynchronizationStatus());
   EXPECT_EQ(1, subscription.GetFilterCount());
@@ -2248,7 +2256,10 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest,
 {
   std::string testConnection = "test connection";
   createParams.preconfiguredPrefs.insert(
-      std::make_pair("allowed_connection_type", GetJsEngine().NewValue(testConnection)));
+      {
+        FilterEngineFactory::PrefName::AllowedConnectionType,
+        GetJsEngine().NewValue(testConnection)
+      });
   auto subscription = EnsureExampleSubscriptionAndForceUpdate();
   EXPECT_EQ("synchronize_ok", subscription.GetSynchronizationStatus());
   EXPECT_EQ(1, subscription.GetFilterCount());
