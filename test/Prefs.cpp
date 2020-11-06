@@ -100,7 +100,16 @@ namespace
                                           AdblockPlus::IFilterEngine::Prefs())
     {
       AdblockPlus::FilterEngineFactory::CreationParameters createParams;
-      createParams.preconfiguredPrefs = preconfiguredPrefs;
+
+      for (auto& pref : preconfiguredPrefs)
+      {
+        FilterEngineFactory::PrefName prefName;
+        if (FilterEngineFactory::StringToPrefName(pref.first, prefName))
+        {
+          createParams.preconfiguredPrefs.insert({prefName, pref.second});
+        }
+      }
+
       return ::CreateFilterEngine(*platform, createParams);
     }
   };
@@ -164,11 +173,11 @@ TEST_F(PrefsTest, SyntaxFailure)
 TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
 {
   AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
-  preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
+  preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
-  ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").IsBool());
-  ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").AsBool());
+  ASSERT_TRUE(filterEngine.GetPref("first_run_subscription_auto_select").IsBool());
+  ASSERT_TRUE(filterEngine.GetPref("first_run_subscription_auto_select").AsBool());
 }
 
 TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
@@ -183,34 +192,34 @@ TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
 TEST_F(PrefsTest, PreconfiguredPrefsOverride)
 {
   AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
-  preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
+  preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
-  filterEngine.SetPref("suppress_first_run_page", GetJsEngine().NewValue(false));
-  ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").IsBool());
-  ASSERT_FALSE(filterEngine.GetPref("suppress_first_run_page").AsBool());
+  filterEngine.SetPref("first_run_subscription_auto_select", GetJsEngine().NewValue(false));
+  ASSERT_TRUE(filterEngine.GetPref("first_run_subscription_auto_select").IsBool());
+  ASSERT_FALSE(filterEngine.GetPref("first_run_subscription_auto_select").AsBool());
 }
 
 TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
 {
   {
     AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
-    preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
+    preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(true));
     auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
-    ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").IsBool());
-    ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").AsBool());
-    filterEngine.SetPref("suppress_first_run_page", GetJsEngine().NewValue(false));
+    ASSERT_TRUE(filterEngine.GetPref("first_run_subscription_auto_select").IsBool());
+    ASSERT_TRUE(filterEngine.GetPref("first_run_subscription_auto_select").AsBool());
+    filterEngine.SetPref("first_run_subscription_auto_select", GetJsEngine().NewValue(false));
   }
   ASSERT_FALSE(prefsContent.empty());
 
   {
     ResetPlatform();
     AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
-    preconfiguredPrefs.emplace("suppress_first_run_page", GetJsEngine().NewValue(true));
+    preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(true));
     auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
-    ASSERT_TRUE(filterEngine.GetPref("suppress_first_run_page").IsBool());
-    ASSERT_FALSE(filterEngine.GetPref("suppress_first_run_page").AsBool());
+    ASSERT_TRUE(filterEngine.GetPref("first_run_subscription_auto_select").IsBool());
+    ASSERT_FALSE(filterEngine.GetPref("first_run_subscription_auto_select").AsBool());
   }
 }

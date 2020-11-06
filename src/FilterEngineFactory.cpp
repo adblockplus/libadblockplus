@@ -29,6 +29,46 @@
 
 using namespace AdblockPlus;
 
+// static
+std::string FilterEngineFactory::PrefNameToString(PrefName prefName)
+{
+  switch (prefName)
+  {
+  case PrefName::FilterEngineEnabled:
+    return "filter_engine_enabled";
+
+  case PrefName::FirstRunSubscriptionAutoselect:
+    return "first_run_subscription_auto_select";
+
+  case PrefName::AllowedConnectionType:
+    return "allowed_connection_type";
+  }
+}
+
+// static
+bool FilterEngineFactory::StringToPrefName(const std::string& prefNameStr, PrefName& prefName)
+{
+  if (prefNameStr == "filter_engine_enabled")
+  {
+    prefName = PrefName::FilterEngineEnabled;
+    return true;
+  }
+
+  if (prefNameStr == "first_run_subscription_auto_select")
+  {
+    prefName = PrefName::FirstRunSubscriptionAutoselect;
+    return true;
+  }
+
+  if (prefNameStr == "allowed_connection_type")
+  {
+    prefName = PrefName::AllowedConnectionType;
+    return true;
+  }
+
+  return false;
+}
+
 void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
                                       const EvaluateCallback& evaluateCallback,
                                       const OnCreatedCallback& onCreated,
@@ -97,7 +137,7 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
   auto preconfiguredPrefsObject = jsEngine.NewObject();
   for (const auto& pref : params.preconfiguredPrefs)
   {
-    preconfiguredPrefsObject.SetProperty(pref.first, pref.second);
+    preconfiguredPrefsObject.SetProperty(PrefNameToString(pref.first), pref.second);
   }
   jsEngine.SetGlobalProperty("_preconfiguredPrefs", preconfiguredPrefsObject);
 
