@@ -177,17 +177,13 @@ namespace AdblockPlus
      * Asserts that the engine is enabled.
      * @param url URL to match.
      * @param contentTypeMask Content type mask of the requested resource.
-     * @param documentUrl URL of the document requesting the resource.
-     *        Note that there will be more than one document if frames are
-     *        involved, see
-     *        Matches(const std::string&, const std::string&, const std::vector<std::string>&)
-     * const.
+     * @param documentUrl address of the parent frame of |url|. If |url| is at
+     *        the top of the stack and has no parent frame, use empty string.
      * @param siteKey
      *        Optional: public key provided by the document.
      * @param specificOnly Optional: if set to `true` then skips generic filters.
      * @return Matching filter, or an invalid filter if there was no match.
      * @see Filter::IsValid()
-     * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
      */
     virtual Filter Matches(const std::string& url,
                            ContentTypeMask contentTypeMask,
@@ -196,81 +192,62 @@ namespace AdblockPlus
                            bool specificOnly = false) const = 0;
 
     /**
-     * Checks if any active filter matches the supplied URL.
-     * Asserts that the engine is enabled.
-     * @param url URL to match.
-     * @param contentTypeMask Content type mask of the requested resource.
-     * @param documentUrls Chain of documents requesting the resource, starting
-     *        with the current resource's parent frame, ending with the
-     *        top-level frame.
-     *        If the application is not capable of identifying the frame
-     *        structure, e.g. because it is a proxy, it can be approximated
-     *        using `ReferrerMapping`.
-     * @param siteKey
-     *        Optional: public key provided by the document.
-     * @param specificOnly Optional: if set to `true` then skips generic filters.
-     * @return Matching filter, or an invalid filter if there was no match.
-     * @see Filter::IsValid()
-     * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
+     * DEPRECATED. Use Matches() overload with a single documentUrl. Only the
+     * first URL in |documentUrls| is used and passed to that overload, rest are
+     * ignored.
      */
-    virtual Filter Matches(const std::string& url,
-                           ContentTypeMask contentTypeMask,
-                           const std::vector<std::string>& documentUrls,
-                           const std::string& siteKey = "",
-                           bool specificOnly = false) const = 0;
+    [[deprecated("Use Matches() overload with a single documentUrl.")]] virtual Filter
+    Matches(const std::string& url,
+            ContentTypeMask contentTypeMask,
+            const std::vector<std::string>& documentUrls,
+            const std::string& siteKey = "",
+            bool specificOnly = false) const = 0;
 
     /**
-     * Checks if any active genericblock filter exception matches the supplied URL.
-     * Result of `IsGenericblockWhitelisted()` is used later on as a `specificOnly`
-     * parameter value for `Matches()` call.
+     * @see IsContentAllowlisted.
      * Asserts that the engine is enabled.
-     * @param url URL of the document.
-     * @param documentUrl Chain of document URLs requesting the document,
-     *        starting with the current document's parent frame, ending with
-     *        the top-level frame.
-     *        If the application is not capable of identifying the frame
-     *        structure, e.g. because it is a proxy, it can be approximated
-     *        using `ReferrerMapping`.
-     * @param siteKey
-     *        Optional: public key provided by the document.
-     * @return `true` if the URL is whitelisted.
-     * @throw `std::invalid_argument`, if an invalid `contentType` was supplied.
-     */
-    virtual bool IsGenericblockWhitelisted(const std::string& url,
-                                           const std::vector<std::string>& documentUrls,
-                                           const std::string& sitekey = "") const = 0;
-
-    /**
-     * Checks whether the document at the supplied URL is whitelisted.
-     * Asserts that the engine is enabled.
-     * @param url URL of the document.
-     * @param documentUrls Chain of document URLs requesting the document,
-     *        starting with the current document's parent frame, ending with
-     *        the top-level frame.
-     *        If the application is not capable of identifying the frame
-     *        structure, e.g. because it is a proxy, it can be approximated
-     *        using `ReferrerMapping`.
      * @return `true` if the URL is whitelisted.
      */
-    virtual bool IsDocumentWhitelisted(const std::string& url,
-                                       const std::vector<std::string>& documentUrls,
-                                       const std::string& sitekey = "") const = 0;
+    [[deprecated(
+        "Use IsContentAllowlisted() with contentTypeMask=CONTENT_TYPE_GENERICBLOCK.")]] virtual bool
+    IsGenericblockWhitelisted(const std::string& url,
+                              const std::vector<std::string>& documentUrls,
+                              const std::string& sitekey = "") const = 0;
 
     /**
-     * Checks whether element hiding is disabled at the supplied URL.
+     * @see IsContentAllowlisted.
      * Asserts that the engine is enabled.
-     * @param url URL of the document.
-     * @param documentUrls Chain of document URLs requesting the document,
-     *        starting with the current document's parent frame, ending with
-     *        the top-level frame.
-     *        If the application is not capable of identifying the frame
-     *        structure, e.g. because it is a proxy, it can be approximated
-     *        using `ReferrerMapping`.
-     * @return `true` if element hiding is whitelisted for the supplied URL.
      */
-    virtual bool IsElemhideWhitelisted(const std::string& url,
-                                       const std::vector<std::string>& documentUrls,
-                                       const std::string& sitekey = "") const = 0;
+    [[deprecated(
+        "Use IsContentAllowlisted() with contentTypeMask=CONTENT_TYPE_DOCUMENT.")]] virtual bool
+    IsDocumentWhitelisted(const std::string& url,
+                          const std::vector<std::string>& documentUrls,
+                          const std::string& sitekey = "") const = 0;
+
+    /**
+     * @see IsContentAllowlisted.
+     */
+    [[deprecated(
+        "Use IsContentAllowlisted() with contentTypeMask=CONTENT_TYPE_ELEMHIDE.")]] virtual bool
+    IsElemhideWhitelisted(const std::string& url,
+                          const std::vector<std::string>& documentUrls,
+                          const std::string& sitekey = "") const = 0;
+
+    /**
+     * Checks whether the resource at the supplied URL is allowlisted.
+     * Asserts that the engine is enabled.
+     * @param url URL of the resource.
+     * @param documentUrls Chain of URLs requesting the resource,
+     *        starting with the resource's parent frame, ending with
+     *        the top-level frame.
+     * @param siteKey
+     *        Optional: public key provided by the document.
+     * @return `true` iff the URL is allowlisted.
+     */
+    virtual bool IsContentAllowlisted(const std::string& url,
+                                      ContentTypeMask contentTypeMask,
+                                      const std::vector<std::string>& documentUrls,
+                                      const std::string& sitekey = "") const = 0;
 
     /**
      * Retrieves CSS style sheet for all element hiding filters active on the

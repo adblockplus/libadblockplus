@@ -76,6 +76,11 @@ namespace AdblockPlus
                                const std::vector<std::string>& documentUrls,
                                const std::string& sitekey = "") const final;
 
+    bool IsContentAllowlisted(const std::string& url,
+                              ContentTypeMask contentTypeMask,
+                              const std::vector<std::string>& documentUrls,
+                              const std::string& sitekey = "") const final;
+
     std::string GetElementHidingStyleSheet(const std::string& domain,
                                            bool specificOnly = false) const final;
 
@@ -120,10 +125,6 @@ namespace AdblockPlus
                             const std::string& siteKey,
                             bool specificOnly) const;
     void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
-    Filter GetWhitelistingFilter(const std::string& url,
-                                 ContentTypeMask contentTypeMask,
-                                 const std::string& documentUrl,
-                                 const std::string& sitekey) const;
     Filter GetWhitelistingFilter(const std::string& url,
                                  ContentTypeMask contentTypeMask,
                                  const std::vector<std::string>& documentUrls,
