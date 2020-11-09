@@ -106,38 +106,37 @@ std::string DefaultFilterEngine::GetAAUrl() const
   return GetPref("subscriptions_exceptionsurl").AsString();
 }
 
-AdblockPlus::Filter DefaultFilterEngine::Matches(const std::string& url,
-                                                 ContentTypeMask contentTypeMask,
-                                                 const std::string& documentUrl,
-                                                 const std::string& siteKey,
-                                                 bool specificOnly) const
+Filter DefaultFilterEngine::Matches(const std::string& url,
+                                    ContentTypeMask contentTypeMask,
+                                    const std::string& documentUrl,
+                                    const std::string& siteKey,
+                                    bool specificOnly) const
 {
-  std::vector<std::string> documentUrls;
-  documentUrls.push_back(documentUrl);
-  return Matches(url, contentTypeMask, documentUrls, siteKey, specificOnly);
+  assert(IsEnabled());
+  if (documentUrl.empty())
+  {
+    // We must be at the top of the frame hierarchy.
+    return CheckFilterMatch(url, contentTypeMask, "", siteKey, specificOnly);
+  }
+  return CheckFilterMatch(url, contentTypeMask, documentUrl, siteKey, specificOnly);
 }
 
-AdblockPlus::Filter DefaultFilterEngine::Matches(const std::string& url,
-                                                 ContentTypeMask contentTypeMask,
-                                                 const std::vector<std::string>& documentUrls,
-                                                 const std::string& siteKey,
-                                                 bool specificOnly) const
+Filter DefaultFilterEngine::Matches(const std::string& url,
+                                    ContentTypeMask contentTypeMask,
+                                    const std::vector<std::string>& documentUrls,
+                                    const std::string& siteKey,
+                                    bool specificOnly) const
 {
   assert(IsEnabled());
   if (documentUrls.empty())
-    return CheckFilterMatch(url, contentTypeMask, "", siteKey, specificOnly);
-
-  std::string lastDocumentUrl = documentUrls.front();
-  for (const auto& documentUrl : documentUrls)
   {
-    auto match = CheckFilterMatch(
-        documentUrl, CONTENT_TYPE_DOCUMENT, lastDocumentUrl, siteKey, specificOnly);
-    if (match.IsValid() && match.GetType() == AdblockPlus::IFilterImplementation::TYPE_EXCEPTION)
-      return match;
-    lastDocumentUrl = documentUrl;
+    // We must be at the top of the frame hierarchy.
+    return Matches(url, contentTypeMask, "", siteKey, specificOnly);
   }
-
-  return CheckFilterMatch(url, contentTypeMask, lastDocumentUrl, siteKey, specificOnly);
+  // Only the immediate parent of |url| is considered when matching a non-allowing filter.
+  // This is consistent with how WebExt does it:
+  // https://gitlab.com/eyeo/adblockplus/adblockpluschrome/-/blob/6a345b830841052c09cfce6faf77eb8e682d7b7a/lib/requestBlocker.js#L191
+  return Matches(url, contentTypeMask, documentUrls.front(), siteKey, specificOnly);
 }
 
 bool DefaultFilterEngine::IsGenericblockWhitelisted(const std::string& url,
@@ -164,11 +163,20 @@ bool DefaultFilterEngine::IsElemhideWhitelisted(const std::string& url,
   return GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey).IsValid();
 }
 
-AdblockPlus::Filter DefaultFilterEngine::CheckFilterMatch(const std::string& url,
-                                                          ContentTypeMask contentTypeMask,
-                                                          const std::string& documentUrl,
-                                                          const std::string& siteKey,
-                                                          bool specificOnly) const
+bool DefaultFilterEngine::IsContentAllowlisted(const std::string& url,
+                                               ContentTypeMask contentTypeMask,
+                                               const std::vector<std::string>& documentUrls,
+                                               const std::string& sitekey) const
+{
+  return GetWhitelistingFilter(url, contentTypeMask, documentUrls, sitekey).IsValid();
+}
+
+// |documentUrl| gets converted to a hostname (domain) within "API.checkFilterMatch".
+Filter DefaultFilterEngine::CheckFilterMatch(const std::string& url,
+                                             ContentTypeMask contentTypeMask,
+                                             const std::string& documentUrl,
+                                             const std::string& siteKey,
+                                             bool specificOnly) const
 {
   if (url.empty())
     return Filter();
@@ -315,37 +323,26 @@ DefaultFilterEngine::ComposeFilterSuggestions(const IElement* element) const
 
 Filter DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
                                                   ContentTypeMask contentTypeMask,
-                                                  const std::string& documentUrl,
-                                                  const std::string& sitekey) const
-{
-  auto match = Matches(url, contentTypeMask, documentUrl, sitekey);
-  if (match.IsValid() && match.GetType() == IFilterImplementation::TYPE_EXCEPTION)
-  {
-    return match;
-  }
-  return Filter();
-}
-
-Filter DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
-                                                  ContentTypeMask contentTypeMask,
                                                   const std::vector<std::string>& documentUrls,
                                                   const std::string& sitekey) const
 {
-  if (documentUrls.empty())
-  {
-    return GetWhitelistingFilter(url, contentTypeMask, "", sitekey);
-  }
-
+  // WebExt finds allow filters by iterating through parent frames of |url|.
+  // https://gitlab.com/eyeo/adblockplus/adblockpluschrome/-/blob/6a345b830841052c09cfce6faf77eb8e682d7b7a/lib/allowlisting.js#L84
   for (auto it = documentUrls.begin(); it != documentUrls.end(); ++it)
   {
-    const std::string& currentUrl = *it;
+    const auto& currentUrl = *it;
     const auto parentIterator = std::next(it);
-    const std::string& parentUrl = parentIterator != documentUrls.end() ? *parentIterator : "";
-    Filter filter = GetWhitelistingFilter(currentUrl, contentTypeMask, parentUrl, sitekey);
-    if (filter.IsValid())
+    auto parentUrl = parentIterator != documentUrls.end() ? *parentIterator : "";
+    if (parentUrl.empty())
     {
-      return filter;
+      // This is the top of the frame hierarchy, pass currentUrl as parent.
+      // This is consistent with WebExt ("|| frame.url.hostname"):
+      // https://gitlab.com/eyeo/adblockplus/adblockpluschrome/-/blob/6a345b830841052c09cfce6faf77eb8e682d7b7a/lib/allowlisting.js#L53
+      parentUrl = currentUrl;
     }
+    auto match = CheckFilterMatch(currentUrl, contentTypeMask, parentUrl, sitekey, false);
+    if (match.IsValid())
+      return match;
   }
   return Filter();
 }
