@@ -81,6 +81,10 @@ LIBV8_INCLUDE_DIR should point to the include directory of V8, e.g.
 `.../v8/include` and there should be `libv8_monolith.a` in the directory
 LIBV8_LIB_DIR.
 
+To clone:
+
+git clone --recursive https://gitlab.com/eyeo/adblockplus/libadblockplus
+
 To build:
 
 Using Make:
