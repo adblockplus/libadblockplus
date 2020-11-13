@@ -24,6 +24,7 @@
 #include <AdblockPlus/Platform.h>
 
 #include "DefaultFileSystem.h"
+#include "DefaultResourceReader.h"
 #include "DefaultTimer.h"
 #include "DefaultWebRequest.h"
 
@@ -50,6 +51,7 @@ Platform::Platform(CreationParameters&& creationParameters)
   ASSIGN_PLATFORM_PARAM(timer);
   ASSIGN_PLATFORM_PARAM(fileSystem);
   ASSIGN_PLATFORM_PARAM(webRequest);
+  ASSIGN_PLATFORM_PARAM(resourceReader);
 }
 
 Platform::~Platform()
@@ -143,6 +145,12 @@ void Platform::WithLogSystem(const WithLogSystemCallback& callback)
     callback(*logSystem);
 }
 
+void Platform::WithResourceReader(const WithResourceReaderCallback& callback)
+{
+  if (resourceReader && callback)
+    callback(*resourceReader);
+}
+
 namespace
 {
   class DefaultPlatform : public Platform
@@ -159,6 +167,7 @@ namespace
     void WithFileSystem(const WithFileSystemCallback&) override;
     void WithWebRequest(const WithWebRequestCallback&) override;
     void WithLogSystem(const WithLogSystemCallback&) override;
+    void WithResourceReader(const WithResourceReaderCallback&) override;
 
   private:
     DefaultPlatformBuilder::AsyncExecutorPtr asyncExecutor;
@@ -172,12 +181,14 @@ namespace
     TimerPtr tmpTimer;
     FileSystemPtr tmpFileSystem;
     WebRequestPtr tmpWebRequest;
+    std::unique_ptr<IResourceReader> tmpResourceReader;
     {
       std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
       tmpLogSystem = std::move(logSystem);
       tmpTimer = std::move(timer);
       tmpFileSystem = std::move(fileSystem);
       tmpWebRequest = std::move(webRequest);
+      tmpResourceReader = std::move(resourceReader);
     }
   }
 
@@ -203,6 +214,12 @@ namespace
   {
     std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
     Platform::WithLogSystem(callback);
+  }
+
+  void DefaultPlatform::WithResourceReader(const WithResourceReaderCallback& callback)
+  {
+    std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
+    Platform::WithResourceReader(callback);
   }
 }
 
@@ -243,9 +260,13 @@ void DefaultPlatformBuilder::CreateDefaultLogSystem()
   logSystem.reset(new DefaultLogSystem());
 }
 
+void DefaultPlatformBuilder::CreateDefaultResourceReader()
+{
+  resourceReader.reset(new DefaultResourceReader());
+}
+
 std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
 {
-
   if (!logSystem)
     CreateDefaultLogSystem();
   if (!timer)
@@ -254,6 +275,8 @@ std::unique_ptr<Platform> DefaultPlatformBuilder::CreatePlatform()
     CreateDefaultFileSystem();
   if (!webRequest)
     CreateDefaultWebRequest();
+  if (!resourceReader)
+    CreateDefaultResourceReader();
 
   std::unique_ptr<Platform> platform(
       new DefaultPlatform(std::move(sharedAsyncExecutor), std::move(*this)));

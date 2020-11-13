@@ -15,8 +15,8 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MOCKS_H
-#define MOCKS_H
+#ifndef ADBLOCK_PLUS_BASE_JS_TEST_H
+#define ADBLOCK_PLUS_BASE_JS_TEST_H
 
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
@@ -28,9 +28,9 @@
 
 // Strictly speaking in each test there should be a special implementation of
 // an interface, which is merely referenced by a wrapper and the latter should
-// be injected into JsEngine or what ever. However the everthing a test often
+// be injected into JsEngine or what ever. However the everything a test often
 // actually needs is the access to pending tasks. Therefore instantiation of
-// implemenation of an interface, creation of shared tasks and sharing them
+// implementation of an interface, creation of shared tasks and sharing them
 // with tasks in test is located in this class.
 //
 // Task is passed as an additional template parameter instead of using traits
@@ -92,7 +92,7 @@ public:
   // JS part often schedules download requests asynchronously using promises.
   // So, we need to firstly process those timers to actually schedule web
   // requests and afterwards we may inspect pending web requests.
-  // Non-immeditate timers are not touched.
+  // Non-immediate timers are not touched.
   static void ProcessImmediateTimers(DelayedTimer::SharedTasks& timerTasks);
 };
 
@@ -143,9 +143,19 @@ class ThrowingWebRequest : public AdblockPlus::IWebRequest
 public:
   void GET(const std::string& url,
            const AdblockPlus::HeaderList& requestHeaders,
-           const GetCallback&) override
+           const GetCallback& callback) override
   {
     throw std::runtime_error("Unexpected GET: " + url);
+  }
+};
+
+class ThrowingResourceReader : public AdblockPlus::IResourceReader
+{
+public:
+  void ReadPreloadedFilterList(const std::string& url,
+                               const ReadCallback& doneCallback) const override
+  {
+    throw std::runtime_error("Unexpected ReadPreloadedFilterList: " + url);
   }
 };
 
@@ -290,9 +300,9 @@ CreateFilterEngine(AdblockPlus::Platform& platform,
 class NoopWebRequest : public AdblockPlus::IWebRequest
 {
 public:
-  void GET(const std::string& /*url*/,
-           const AdblockPlus::HeaderList& /*requestHeaders*/,
-           const GetCallback& /*callback*/) override
+  void GET(const std::string& url,
+           const AdblockPlus::HeaderList& requestHeaders,
+           const GetCallback& callback) override
   {
   }
 };
@@ -369,4 +379,4 @@ protected:
   }
 };
 
-#endif
+#endif // ADBLOCK_PLUS_BASE_JS_TEST_H

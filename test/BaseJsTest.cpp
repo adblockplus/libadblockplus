@@ -42,10 +42,9 @@ IFilterEngine& CreateFilterEngine(Platform& platform,
   std::promise<void> promise;
   std::future<void> future = promise.get_future();
 
-  platform.CreateFilterEngineAsync(creationParams,
-                                   [&promise](const IFilterEngine& /*filterEngine*/) {
-                                     promise.set_value();
-                                   });
+  platform.CreateFilterEngineAsync(creationParams, [&promise](const IFilterEngine& filterEngine) {
+    promise.set_value();
+  });
 
   future.wait();
   return platform.GetFilterEngine();
@@ -57,4 +56,5 @@ ThrowingPlatformCreationParameters::ThrowingPlatformCreationParameters()
   timer.reset(new ThrowingTimer());
   fileSystem.reset(new ThrowingFileSystem());
   webRequest.reset(new ThrowingWebRequest());
+  resourceReader.reset(new ThrowingResourceReader());
 }

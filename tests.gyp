@@ -18,11 +18,13 @@
       'test/ConsoleJsObject.cpp',
       'test/DefaultFileSystem.cpp',
       'test/FileSystemJsObject.cpp',
+      'test/FilterEngineTest.h',
       'test/FilterEngine.cpp',
       'test/GlobalJsObject.cpp',
       'test/JsEngine.cpp',
       'test/JsValue.cpp',
       'test/Prefs.cpp',
+      'test/PreloadedSubscriptions.cpp',
       'test/ReferrerMapping.cpp',
       'test/Utils.cpp',
       'test/WebRequest.cpp'
