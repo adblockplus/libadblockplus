@@ -25,6 +25,7 @@
 #include "AppInfoJsObject.h"
 #include "ConsoleJsObject.h"
 #include "FileSystemJsObject.h"
+#include "ResourceReaderJsObject.h"
 #include "Thread.h"
 #include "Utils.h"
 #include "WebRequestJsObject.h"
@@ -77,5 +78,7 @@ JsValue& GlobalJsObject::Setup(JsEngine& jsEngine, const AppInfo& appInfo, JsVal
   obj.SetProperty("console", ConsoleJsObject::Setup(jsEngine, value));
   value = jsEngine.NewObject();
   obj.SetProperty("_appInfo", AppInfoJsObject::Setup(appInfo, value));
+  value = jsEngine.NewObject();
+  obj.SetProperty("_resourceReader", ResourceReaderJsObject::Setup(jsEngine, value));
   return obj;
 }

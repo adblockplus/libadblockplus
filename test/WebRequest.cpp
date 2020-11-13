@@ -19,6 +19,7 @@
 #include <mutex>
 #include <sstream>
 
+#include "../src/DefaultResourceReader.h"
 #include "../src/DefaultWebRequest.h"
 #include "../src/Thread.h"
 #include "BaseJsTest.h"
@@ -42,6 +43,7 @@ namespace
       platformParams.timer.reset(new NoopTimer());
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest = CreateWebRequest();
+      platformParams.resourceReader.reset(new AdblockPlus::DefaultResourceReader());
       platform.reset(new Platform(std::move(platformParams)));
     }
 

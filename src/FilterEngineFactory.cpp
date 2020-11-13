@@ -118,7 +118,7 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
   }
 
   jsEngine.SetEventCallback("_init",
-                            [&jsEngine, wrappedFilterEngine, onCreated](JsValueList&& /*params*/) {
+                            [&jsEngine, wrappedFilterEngine, onCreated](JsValueList&& params) {
                               auto uniqueFilterEngine = std::move(*wrappedFilterEngine);
                               onCreated(std::move(uniqueFilterEngine));
                               jsEngine.RemoveEventCallback("_init");

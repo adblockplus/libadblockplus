@@ -17,6 +17,7 @@
 
 #include <sstream>
 
+#include "../src/DefaultResourceReader.h"
 #include "../src/Thread.h"
 #include "BaseJsTest.h"
 
@@ -93,6 +94,7 @@ namespace
       platformParams.webRequest.reset(new NoopWebRequest());
       platformParams.logSystem.reset(new LazyLogSystem());
       platformParams.timer.reset(new NoopTimer());
+      platformParams.resourceReader.reset(new AdblockPlus::DefaultResourceReader());
       platform.reset(new Platform(std::move(platformParams)));
     }
 

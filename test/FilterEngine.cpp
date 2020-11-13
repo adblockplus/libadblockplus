@@ -18,141 +18,12 @@
 #include <condition_variable>
 #include <thread>
 
-#include <AdblockPlus/DefaultLogSystem.h>
-
-#include "BaseJsTest.h"
+#include "FilterEngineTest.h"
 
 using namespace AdblockPlus;
 
-namespace AdblockPlus
-{
-  namespace Utils
-  {
-    inline bool BeginsWith(const std::string& str, const std::string& beginning)
-    {
-      return 0 == str.compare(0, beginning.size(), beginning);
-    }
-  }
-}
-
 namespace
 {
-  class NoFilesFileSystem : public LazyFileSystem
-  {
-  public:
-    void Stat(const std::string& /*fileName*/, const StatCallback& callback) const override
-    {
-      scheduler([callback] {
-        callback(StatResult(), "");
-      });
-    }
-  };
-
-  template<class LazyFileSystemT, class LogSystem> class FilterEngineTestGeneric : public BaseJsTest
-  {
-  public:
-  protected:
-    void SetUp() override
-    {
-      LazyFileSystemT* fileSystem;
-      ThrowingPlatformCreationParameters platformParams;
-      platformParams.logSystem.reset(new LogSystem());
-      platformParams.timer.reset(new NoopTimer());
-      platformParams.fileSystem.reset(fileSystem = new LazyFileSystemT());
-      platformParams.webRequest.reset(new NoopWebRequest());
-      platform.reset(new Platform(std::move(platformParams)));
-      ::CreateFilterEngine(*platform);
-    }
-
-    IFilterEngine& GetFilterEngine()
-    {
-      return platform->GetFilterEngine();
-    }
-  };
-
-  typedef FilterEngineTestGeneric<LazyFileSystem, AdblockPlus::DefaultLogSystem> FilterEngineTest;
-  typedef FilterEngineTestGeneric<NoFilesFileSystem, LazyLogSystem> FilterEngineTestNoData;
-
-  class FilterEngineWithInMemoryFS : public BaseJsTest
-  {
-  protected:
-    void InitPlatformAndAppInfo(AdblockPlus::Platform::CreationParameters params =
-                                    AdblockPlus::Platform::CreationParameters(),
-                                const AppInfo& appInfo = AppInfo())
-    {
-      if (!params.logSystem)
-        params.logSystem.reset(new LazyLogSystem());
-      if (!params.timer)
-        params.timer.reset(new NoopTimer());
-      if (!params.fileSystem)
-        params.fileSystem.reset(new InMemoryFileSystem());
-      if (!params.webRequest)
-        params.webRequest.reset(new NoopWebRequest());
-      platform.reset(new Platform(std::move(params)));
-      platform->SetUpJsEngine(appInfo);
-    }
-
-    IFilterEngine&
-    CreateFilterEngine(const FilterEngineFactory::CreationParameters& creationParams =
-                           FilterEngineFactory::CreationParameters())
-    {
-      ::CreateFilterEngine(*platform, creationParams);
-      return platform->GetFilterEngine();
-    }
-  };
-
-  class FilterEngineInitallyDisabledTest : public FilterEngineWithInMemoryFS
-  {
-  protected:
-    int webRequestCounter;
-
-    enum class AutoselectState
-    {
-      Enabled,
-      Disabled
-    };
-
-    enum class EngineState
-    {
-      Enabled,
-      Disabled
-    };
-
-    AdblockPlus::IFilterEngine& ConfigureEngine(AutoselectState autoselect_state,
-                                                EngineState engine_satate)
-    {
-      webRequestCounter = 0;
-      auto impl = [this](const std::string&,
-                         const AdblockPlus::HeaderList&,
-                         const AdblockPlus::IWebRequest::GetCallback& callback) {
-        ++webRequestCounter;
-        ServerResponse response;
-        response.responseStatus = 200;
-        response.status = IWebRequest::NS_OK;
-        response.responseText = "[Adblock Plus 2.0]\n||example.com";
-        callback(response);
-      };
-
-      {
-        AppInfo info;
-        info.locale = "en";
-        AdblockPlus::Platform::CreationParameters params;
-        params.webRequest.reset(new WrappingWebRequest(impl));
-        params.logSystem.reset(new AdblockPlus::DefaultLogSystem());
-        InitPlatformAndAppInfo(std::move(params), info);
-      }
-
-      FilterEngineFactory::CreationParameters createParams;
-      createParams.preconfiguredPrefs.emplace(
-          FilterEngineFactory::PrefName::FilterEngineEnabled,
-          GetJsEngine().NewValue(engine_satate == EngineState::Enabled));
-      createParams.preconfiguredPrefs.emplace(
-          FilterEngineFactory::PrefName::FirstRunSubscriptionAutoselect,
-          GetJsEngine().NewValue(autoselect_state == AutoselectState::Enabled));
-      return CreateFilterEngine(createParams);
-    }
-  };
-
   class FilterEngineIsSubscriptionDownloadAllowedTest : public BaseJsTest
   {
   protected:
@@ -176,6 +47,7 @@ namespace
       platformParams.timer = DelayedTimer::New(timerTasks);
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest = DelayedWebRequest::New(webRequestTasks);
+      platformParams.resourceReader.reset(new DefaultResourceReader());
       platform.reset(new Platform(std::move(platformParams)));
 
       createParams.preconfiguredPrefs.clear();
@@ -225,7 +97,7 @@ namespace
       EXPECT_EQ(0, subscription.GetLastDownloadSuccessTime());
       subscription.UpdateFilters();
 
-      // Since currently the check is called from implemenation of web request
+      // Since currently the check is called from implementation of web request
       // they have to been firstly scheduled, namely before processing of
       // 'is subscription download allowed' callbacks;
       DelayedTimer::ProcessImmediateTimers(timerTasks);
@@ -1500,7 +1372,7 @@ TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
   appInfo.locale = "zh";
   const std::string langSubscriptionUrl =
       "https://easylist-downloads.adblockplus.org/easylistchina+easylist.txt";
-  InitPlatformAndAppInfo(AdblockPlus::Platform::CreationParameters(), appInfo);
+  InitPlatformAndAppInfo(Platform::CreationParameters(), appInfo);
   auto& filterEngine = CreateFilterEngine();
   auto subscriptions = filterEngine.GetListedSubscriptions();
   ASSERT_EQ(2u, subscriptions.size());

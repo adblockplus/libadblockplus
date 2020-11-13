@@ -29,6 +29,7 @@
 #include "FilterEngineFactory.h"
 #include "IFileSystem.h"
 #include "IFilterEngine.h"
+#include "IResourceReader.h"
 #include "ITimer.h"
 #include "IWebRequest.h"
 #include "LogSystem.h"
@@ -64,6 +65,7 @@ namespace AdblockPlus
       TimerPtr timer;
       WebRequestPtr webRequest;
       FileSystemPtr fileSystem;
+      std::unique_ptr<IResourceReader> resourceReader;
     };
 
     /**
@@ -129,6 +131,9 @@ namespace AdblockPlus
     typedef std::function<void(LogSystem&)> WithLogSystemCallback;
     virtual void WithLogSystem(const WithLogSystemCallback&);
 
+    typedef std::function<void(IResourceReader&)> WithResourceReaderCallback;
+    virtual void WithResourceReader(const WithResourceReaderCallback&);
+
   private:
     std::unique_ptr<JsEngine> jsEngine;
 
@@ -137,6 +142,7 @@ namespace AdblockPlus
     TimerPtr timer;
     FileSystemPtr fileSystem;
     WebRequestPtr webRequest;
+    std::unique_ptr<IResourceReader> resourceReader;
 
   private:
     // used for creation and deletion of modules.
@@ -189,6 +195,8 @@ namespace AdblockPlus
      * Constructs default implementation of `LogSystem`.
      */
     void CreateDefaultLogSystem();
+
+    void CreateDefaultResourceReader();
 
     /**
      * Constructs Platform with default implementations of platform interfaces
