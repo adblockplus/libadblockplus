@@ -171,8 +171,7 @@ namespace
   }
 
   // The reason for such splitting for different implementations and different
-  // platforms is the limited number of threads and time to run tests on
-  // travis-ci.
+  // platforms is the limited number of threads and time to run tests on ci.
   // E.g. 100 x 1000 is already too much, so the generators are split.
   // 0 - 10      1 - 100, 1000
   const auto MultithreadedCallsGenerator1 = ::testing::Combine(
