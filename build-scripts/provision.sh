@@ -3,8 +3,8 @@
 echo "NOTE: Must be run privileged (root). Run with sudo"
 
 apt-get update && apt-get install -yyq build-essential python wget p7zip-full clang libc++-dev libc++abi-dev unzip pv || exit 1
-chmod u+x .travis/nix-script.sh
-chmod u+x .travis/android-script.sh
+chmod u+x build-scripts/nix-script.sh
+chmod u+x build-scripts/android-script.sh
 
 NDK_ARCHIVE_OUTPUT_DIR=third_party/
 NDK_ARCHIVE_FILENAME=android-ndk.zip

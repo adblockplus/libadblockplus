@@ -71,8 +71,9 @@ to invoke make.
 Pass `WGET_QUIET=true` to download the files silently.
 
 If you switch the version of V8 using the same source tree, you should
-manually remove the `third_party/prebuilt-v8` directory and redownload
-again with the right options.
+manually remove the `third_party/prebuilt-v8` (also,
+`third_party/v8-include.tar.xz` and `third_party/v8-prebuilt.tar.xz` are not
+needed) directory and redownload again with the right options.
 
 Or
 

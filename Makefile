@@ -65,7 +65,9 @@ ifdef TEST_RESULTS_XML
 TEST_EXECUTABLE += --gtest_output="xml:${TEST_RESULTS_XML}"
 endif
 
-URL_PREFIX ?= "https://v8.eyeofiles.com/v8-$(shell sed -nE 's/.*V8_COMMIT=([^\s]+) .*/\1/p' .travis.yml|head -n1)/"
+# 7.2.502.24
+V8_COMMIT = "4d72a9931a125d21901d25d67896f0e40105bd16"
+URL_PREFIX ?= "https://v8.eyeofiles.com/v8-${V8_COMMIT}"
 
 ifeq ($(WGET_QUIET),true)
 WGET_FLAGS=-q
@@ -92,10 +94,10 @@ get-prebuilt-v8:
 	TARGET_OS=${TARGET_OS} ABP_TARGET_ARCH=${ABP_TARGET_ARCH} \
 	TRAVIS_OS_NAME=${TRAVIS_OS_NAME} Configuration=${Configuration} \
 	WGET_FLAGS=${WGET_FLAGS} \
-	bash .travis/prepare-prebuilt-v8.sh
+	bash build-scripts/prepare-prebuilt-v8.sh
 
 clean:
-	$(RM) -r ${BUILD_DIR} docs third_party/prebuilt-v8/
+	$(RM) -r ${BUILD_DIR} docs third_party/prebuilt-v8/ third_party/v8-include.tar.xz third_party/v8-prebuilt.tar.xz
 
 ifeq ($(TARGET_OS),android)
 GYP_FILE ?= tests.gyp
