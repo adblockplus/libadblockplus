@@ -19,10 +19,28 @@
 
 using namespace AdblockPlus;
 
+StringPreloadedFilterResponse::StringPreloadedFilterResponse(std::string data)
+    : data(std::move(data))
+{
+}
+
+bool StringPreloadedFilterResponse::exists() const
+{
+  return !data.empty();
+}
+
+const char* StringPreloadedFilterResponse::content() const
+{
+  return data.c_str();
+}
+
+size_t StringPreloadedFilterResponse::size() const
+{
+  return data.size();
+}
+
 void DefaultResourceReader::ReadPreloadedFilterList(const std::string& url,
                                                     const ReadCallback& doneCallback) const
 {
-  IResourceReader::PreloadedFilterResponse response;
-  response.exists = false;
-  doneCallback(response);
+  doneCallback(std::make_unique<StringPreloadedFilterResponse>());
 }

@@ -28,6 +28,7 @@ const std::string kMethodName = "readPreloadedFilterList";
 
 namespace ReadPreloadedFilterListCallback
 {
+
   void V8Callback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
     try
@@ -53,11 +54,13 @@ namespace ReadPreloadedFilterListCallback
         jsEngine->GetPlatform().WithResourceReader([url, jsEngine, callback = converted[1]](
                                                        IResourceReader& reader) {
           reader.ReadPreloadedFilterList(
-              url, [jsEngine, callback](const IResourceReader::PreloadedFilterResponse& response) {
+              url, [jsEngine, callback](std::unique_ptr<IPreloadedFilterResponse> response) {
+                bool exists = response->exists();
                 const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
                 auto result = jsEngine->NewObject();
-                result.SetProperty("exists", response.exists);
-                result.SetStringBufferProperty("content", response.content);
+                result.SetProperty("exists", exists);
+                if (exists)
+                  result.SetProperty("content", response->content(), response->size());
                 callback.Call(result);
               });
         });
