@@ -1,4 +1,4 @@
-HOST_ARCH :=$(shell python third_party/detect_v8_host_arch.py)
+HOST_ARCH :=$(shell python build-scripts/detect_v8_host_arch.py)
 
 ifndef HOST_OS
   raw_OS = $(shell uname -s)
@@ -90,6 +90,7 @@ docs:
 	doxygen
 
 get-prebuilt-v8:
+	$(RM) -r third_party/prebuilt-v8/ third_party/v8-include.tar.xz third_party/v8-prebuilt.tar.xz
 	URL_PREFIX=${URL_PREFIX} \
 	TARGET_OS=${TARGET_OS} ABP_TARGET_ARCH=${ABP_TARGET_ARCH} \
 	TRAVIS_OS_NAME=${TRAVIS_OS_NAME} Configuration=${Configuration} \
@@ -97,7 +98,7 @@ get-prebuilt-v8:
 	bash build-scripts/prepare-prebuilt-v8.sh
 
 clean:
-	$(RM) -r ${BUILD_DIR} docs third_party/prebuilt-v8/ third_party/v8-include.tar.xz third_party/v8-prebuilt.tar.xz
+	$(RM) -r ${BUILD_DIR} docs
 
 ifeq ($(TARGET_OS),android)
 GYP_FILE ?= tests.gyp
