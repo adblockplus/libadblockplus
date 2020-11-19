@@ -237,6 +237,16 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, const JsValue& v
   SetProperty(name, val.UnwrapValue());
 }
 
+void JsValue::SetProperty(const std::string& name, const char* val, size_t size)
+{
+  const JsContext context(isolate, *jsContext);
+
+  SetProperty(
+      name,
+      CHECKED_TO_LOCAL(isolate,
+                       v8::String::NewFromUtf8(isolate, val, v8::NewStringType::kNormal, size)));
+}
+
 void AdblockPlus::JsValue::SetProperty(const std::string& name, bool val)
 {
   const JsContext context(isolate, *jsContext);

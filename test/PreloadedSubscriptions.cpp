@@ -33,11 +33,7 @@ public:
   void ReadPreloadedFilterList(const std::string& url,
                                const ReadCallback& doneCallback) const override
   {
-    PreloadedFilterResponse response;
-    std::string content = impl(url);
-    response.exists = !content.empty();
-    response.content = IOBuffer(content.begin(), content.end());
-    doneCallback(response);
+    doneCallback(std::make_unique<StringPreloadedFilterResponse>(impl(url)));
   }
 
   Implementation impl;
