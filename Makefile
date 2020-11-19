@@ -1,4 +1,4 @@
-HOST_ARCH :=$(shell python third_party/detect_v8_host_arch.py)
+HOST_ARCH :=$(shell python build-scripts/detect_v8_host_arch.py)
 
 ifndef HOST_OS
   raw_OS = $(shell uname -s)
