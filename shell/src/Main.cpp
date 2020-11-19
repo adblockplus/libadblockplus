@@ -30,9 +30,9 @@
 
 namespace
 {
-  void Add(CommandMap& commands, Command* command)
+  void Add(CommandMap& commands, std::unique_ptr<Command>&& command)
   {
-    commands[command->name] = command;
+    commands[command->name].swap(command);
   }
 
   bool ReadCommandLine(std::string& commandLine)
@@ -69,16 +69,20 @@ int main()
     auto& filterEngine = platform->GetFilterEngine();
 
     CommandMap commands;
-    Add(commands, new GcCommand(jsEngine));
-    Add(commands, new HelpCommand(commands));
-    Add(commands, new FiltersCommand(filterEngine));
-    Add(commands, new SubscriptionsCommand(filterEngine));
-    Add(commands, new MatchesCommand(filterEngine));
-    Add(commands, new PrefsCommand(filterEngine));
+    Add(commands, std::make_unique<GcCommand>(jsEngine));
+    Add(commands, std::make_unique<HelpCommand>(commands));
+    Add(commands, std::make_unique<FiltersCommand>(filterEngine));
+    Add(commands, std::make_unique<SubscriptionsCommand>(filterEngine));
+    Add(commands, std::make_unique<MatchesCommand>(filterEngine));
+    Add(commands, std::make_unique<PrefsCommand>(filterEngine));
 
     std::string commandLine;
     while (ReadCommandLine(commandLine))
     {
+      if (commandLine == "exit" || commandLine == "q")
+      {
+        break;
+      }
       std::string commandName;
       std::string arguments;
       ParseCommandLine(commandLine, commandName, arguments);

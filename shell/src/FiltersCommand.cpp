@@ -103,7 +103,7 @@ std::string FiltersCommand::GetDescription() const
 
 std::string FiltersCommand::GetUsage() const
 {
-  return name + " [add FILTER|remove FILTER]";
+  return name + " [add FILTER|remove FILTER|<empty> (to list)]";
 }
 
 void FiltersCommand::ShowFilters()
