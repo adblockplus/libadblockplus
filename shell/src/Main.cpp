@@ -30,7 +30,7 @@
 
 namespace
 {
-  void Add(CommandMap& commands, std::unique_ptr<Command>&& command)
+  void Add(CommandMap& commands, std::unique_ptr<Command> command)
   {
     commands[command->name].swap(command);
   }
