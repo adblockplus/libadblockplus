@@ -67,13 +67,13 @@ namespace AdblockPlus
   };
 
   /**
-   * Web request interface used to implement XMLHttpRequest.
+   * Web request interface, used to implement XMLHttpRequest.
    */
   struct IWebRequest
   {
     /**
-     * Possible [Mozilla status
-     * codes](https://developer.mozilla.org/en/docs/Table_Of_Errors#Network_Errors).
+     * Possible network status codes returned when making a web request, based on [Mozilla
+     * status codes](https://developer.mozilla.org/en/docs/Table_Of_Errors#Network_Errors).
      */
     enum MozillaStatusCode
     {
@@ -120,17 +120,6 @@ namespace AdblockPlus
    */
   typedef std::unique_ptr<IWebRequest> WebRequestPtr;
 
-  /**
-   * Private functionality.
-   */
-  struct IWebRequestSync
-  {
-    virtual ~IWebRequestSync()
-    {
-    }
-    virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
-  };
-  typedef std::unique_ptr<IWebRequestSync> WebRequestSyncPtr;
 }
 
 #endif
