@@ -224,3 +224,12 @@ TEST_F(JsValueTest, ThrowingConversion)
   ASSERT_EQ("", value.AsString());
   ASSERT_ANY_THROW(value.AsInt());
 }
+
+#if defined(UNBLOCK_UPDATE_PAST_DP_1347_ON_ANDROID)
+TEST_F(JsValueTest, JsValueGoesAwayAfterEngineWithoutCrash)
+{
+  auto value = GetJsEngine().Evaluate("true");
+  platform.reset();
+  printf("IT MUST NOT CRASH AFTER THIS!\n");
+}
+#endif
