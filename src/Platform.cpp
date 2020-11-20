@@ -243,16 +243,14 @@ void DefaultPlatformBuilder::CreateDefaultTimer()
 
 void DefaultPlatformBuilder::CreateDefaultFileSystem(const std::string& basePath)
 {
-  fileSystem.reset(new DefaultFileSystem(
-      GetDefaultAsyncExecutor(),
-      std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(basePath))));
+  fileSystem.reset(new DefaultFileSystem(GetDefaultAsyncExecutor(),
+                                         std::make_unique<DefaultFileSystemSync>(basePath)));
 }
 
-void DefaultPlatformBuilder::CreateDefaultWebRequest(std::unique_ptr<IWebRequestSync> webRequest)
+void DefaultPlatformBuilder::CreateDefaultWebRequest()
 {
-  if (!webRequest)
-    webRequest.reset(new DefaultWebRequestSync());
-  this->webRequest.reset(new DefaultWebRequest(GetDefaultAsyncExecutor(), std::move(webRequest)));
+  webRequest.reset(
+      new DefaultWebRequest(GetDefaultAsyncExecutor(), std::make_unique<DefaultWebRequestSync>()));
 }
 
 void DefaultPlatformBuilder::CreateDefaultLogSystem()

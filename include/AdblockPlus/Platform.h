@@ -56,7 +56,7 @@ namespace AdblockPlus
      *
      * @param logSystem Implementation of log system.
      * @param timer Implementation of timer.
-     * @param webRequest Implementation of web request.
+     * @param webRequest Implementation of asynchronous web request.
      * @param fileSystem Implementation of filesystem.
      */
     struct CreationParameters
@@ -189,7 +189,7 @@ namespace AdblockPlus
     /**
      * Constructs default implementation of `IWebRequest`.
      */
-    void CreateDefaultWebRequest(WebRequestSyncPtr webRequest = nullptr);
+    void CreateDefaultWebRequest();
 
     /**
      * Constructs default implementation of `LogSystem`.

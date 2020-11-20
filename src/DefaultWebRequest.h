@@ -23,6 +23,20 @@
 
 namespace AdblockPlus
 {
+
+  /**
+   * Synchronous web request interface, used for requests using OS libraries.
+   */
+  struct IWebRequestSync
+  {
+    virtual ~IWebRequestSync()
+    {
+    }
+    virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
+  };
+
+  typedef std::unique_ptr<IWebRequestSync> WebRequestSyncPtr;
+
   /**
    * `WebRequest` implementation that uses `WinInet` on Windows and libcurl
    * on other platforms. A dummy implementation that always reports failure is
@@ -34,6 +48,9 @@ namespace AdblockPlus
     ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const override;
   };
 
+  /**
+   * Asynchronous web request, implemented as a wrapper of a synchronous one.
+   */
   class DefaultWebRequest : public IWebRequest
   {
   public:
