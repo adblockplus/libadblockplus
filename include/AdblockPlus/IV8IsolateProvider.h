@@ -24,7 +24,7 @@ namespace v8
   class Isolate;
 }
 
-// #define UNBLOCK_UPDATE_PAST_DP_1347_ON_ANDROID
+#define UNBLOCK_UPDATE_PAST_DP_1347_ON_ANDROID
 
 namespace AdblockPlus
 {
