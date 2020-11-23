@@ -206,7 +206,7 @@ namespace AdblockPlus
     /**
      * @see IsContentAllowlisted.
      * Asserts that the engine is enabled.
-     * @return `true` if the URL is whitelisted.
+     * @return `true` if the URL is allowlisted.
      */
     [[deprecated(
         "Use IsContentAllowlisted() with contentTypeMask=CONTENT_TYPE_GENERICBLOCK.")]] virtual bool
