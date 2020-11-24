@@ -614,7 +614,7 @@ TEST_F(FilterEngineTestSiteKey, MatchesBlockingSiteKey)
   ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, match3.GetType());
 }
 
-TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKey)
+TEST_F(FilterEngineTestSiteKey, MatchesAllowlistedSiteKey)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.AddFilter(filterEngine.GetFilter("adbanner.gif"));
@@ -634,7 +634,7 @@ TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKey)
   ASSERT_FALSE(match2.IsValid()) << "should not match different content type";
 }
 
-TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKeyFromNestedFrameRequest)
+TEST_F(FilterEngineTestSiteKey, MatchesAllowlistedSiteKeyFromNestedFrameRequest)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.AddFilter(filterEngine.GetFilter("adbanner.gif"));
@@ -649,7 +649,7 @@ TEST_F(FilterEngineTestSiteKey, MatchesWhitelistedSiteKeyFromNestedFrameRequest)
   ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, match1.GetType());
 }
 
-TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideWhitelsitedMatchesWhitelistedSiteKey)
+TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideAllowlistedMatchesAllowlistedSiteKey)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.AddFilter(filterEngine.GetFilter("adframe"));
@@ -659,7 +659,7 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideWhitelsitedMatchesWhitelistedS
   filterEngine.AddFilter(filterEngine.GetFilter("@@$elemhide,sitekey=" + elemhideSiteKey));
 
   {
-    // normally the frame is not whitelisted
+    // normally the frame is not allowlisted
     { // no sitekey
       AdblockPlus::Filter matchResult =
           filterEngine.Matches("http://my-ads.com/adframe",
@@ -678,7 +678,7 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideWhitelsitedMatchesWhitelistedS
       EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
     }
     if (false) // TODO: should be enabled during DP-235
-    {          // the sitekey, but filter does not whitelist subdocument
+    {          // the sitekey, but filter does not allowlist subdocument
       AdblockPlus::Filter matchResult =
           filterEngine.Matches("http://my-ads.com/adframe",
                                AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
@@ -713,7 +713,7 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideWhitelsitedMatchesWhitelistedS
                                                   elemhideSiteKey));
   }
 
-  { // the frame withing a whitelisted frame
+  { // the frame within an allowlisted frame
     std::vector<std::string> documentUrls;
     documentUrls.push_back("http://example.com/");
     documentUrls.push_back("http:/my-ads.com/adframe");
@@ -753,7 +753,7 @@ TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
   EXPECT_EQ(1, timesCalled);
 }
 
-TEST_F(FilterEngineTest, DocumentWhitelisting)
+TEST_F(FilterEngineTest, DocumentAllowlisting)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.AddFilter(filterEngine.GetFilter("@@||example.org^$document"));
@@ -797,7 +797,7 @@ TEST_F(FilterEngineTest, DocumentWhitelisting)
        "http://testpages.adblockplus.org/en/exceptions/document"}));
 }
 
-TEST_F(FilterEngineTest, ElemhideWhitelisting)
+TEST_F(FilterEngineTest, ElemhideAllowlisting)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.AddFilter(filterEngine.GetFilter("@@||example.org^$elemhide"));
@@ -986,25 +986,25 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListEmpty)
   EXPECT_TRUE(sels.empty());
 }
 
-TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsWhitelist)
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsAllowlist)
 {
   auto& filterEngine = GetFilterEngine();
 
   filterEngine.AddFilter(filterEngine.GetFilter("example.org#?#foo"));
 
-  // before whitelisting
-  std::vector<IFilterEngine::EmulationSelector> selsBeforeWhitelisting =
+  // before allowlisting
+  std::vector<IFilterEngine::EmulationSelector> selsBeforeAllowlisting =
       filterEngine.GetElementHidingEmulationSelectors("example.org");
-  ASSERT_EQ(1u, selsBeforeWhitelisting.size());
-  EXPECT_EQ("foo", selsBeforeWhitelisting[0].selector);
-  EXPECT_EQ("example.org#?#foo", selsBeforeWhitelisting[0].text);
+  ASSERT_EQ(1u, selsBeforeAllowlisting.size());
+  EXPECT_EQ("foo", selsBeforeAllowlisting[0].selector);
+  EXPECT_EQ("example.org#?#foo", selsBeforeAllowlisting[0].text);
 
-  // whitelist it
+  // allowlist it
   filterEngine.AddFilter(filterEngine.GetFilter("example.org#@#foo"));
 
-  std::vector<IFilterEngine::EmulationSelector> selsAfterWhitelisting =
+  std::vector<IFilterEngine::EmulationSelector> selsAfterAllowlisting =
       filterEngine.GetElementHidingEmulationSelectors("example.org");
-  EXPECT_TRUE(selsAfterWhitelisting.empty());
+  EXPECT_TRUE(selsAfterAllowlisting.empty());
 
   // add another filter
   filterEngine.AddFilter(filterEngine.GetFilter("example.org#?#another"));
@@ -1024,7 +1024,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsWhitelist)
   EXPECT_EQ("foo", sels2[0].selector);
   EXPECT_EQ("example2.org#?#foo", sels2[0].text);
 
-  // check the type of the whitelist (exception) filter
+  // check the type of the allowlist (exception) filter
   auto filter = filterEngine.GetFilter("example.org#@#bar");
   EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_ELEMHIDE_EXCEPTION, filter.GetType());
 }
@@ -1045,7 +1045,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
       "~foo.example.org,example.org#?#div:-abp-properties(width: 213px)",
       "~othersiteneg.org#?#div:-abp-properties(width: 213px)",
 
-      // whitelisted
+      // allowlisted
       "example.org#@#foo",
 
       // other site
@@ -1159,7 +1159,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDiff)
       filterEngine.GetFilter("example1.org#?#div:-abp-properties(width: 213px)"));
   filterEngine.AddFilter(
       filterEngine.GetFilter("example2.org#?#div:-abp-properties(width: 213px)"));
-  // whitelisted
+  // allowlisted
   filterEngine.AddFilter(
       filterEngine.GetFilter("example2.org#@#div:-abp-properties(width: 213px)"));
 

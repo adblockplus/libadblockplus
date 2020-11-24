@@ -144,7 +144,7 @@ bool DefaultFilterEngine::IsGenericblockWhitelisted(const std::string& url,
                                                     const std::string& sitekey) const
 {
   assert(IsEnabled());
-  return GetWhitelistingFilter(url, CONTENT_TYPE_GENERICBLOCK, documentUrls, sitekey).IsValid();
+  return GetAllowlistingFilter(url, CONTENT_TYPE_GENERICBLOCK, documentUrls, sitekey).IsValid();
 }
 
 bool DefaultFilterEngine::IsDocumentWhitelisted(const std::string& url,
@@ -152,7 +152,7 @@ bool DefaultFilterEngine::IsDocumentWhitelisted(const std::string& url,
                                                 const std::string& sitekey) const
 {
   assert(IsEnabled());
-  return GetWhitelistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey).IsValid();
+  return GetAllowlistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey).IsValid();
 }
 
 bool DefaultFilterEngine::IsElemhideWhitelisted(const std::string& url,
@@ -160,7 +160,7 @@ bool DefaultFilterEngine::IsElemhideWhitelisted(const std::string& url,
                                                 const std::string& sitekey) const
 {
   assert(IsEnabled());
-  return GetWhitelistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey).IsValid();
+  return GetAllowlistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey).IsValid();
 }
 
 bool DefaultFilterEngine::IsContentAllowlisted(const std::string& url,
@@ -168,7 +168,7 @@ bool DefaultFilterEngine::IsContentAllowlisted(const std::string& url,
                                                const std::vector<std::string>& documentUrls,
                                                const std::string& sitekey) const
 {
-  return GetWhitelistingFilter(url, contentTypeMask, documentUrls, sitekey).IsValid();
+  return GetAllowlistingFilter(url, contentTypeMask, documentUrls, sitekey).IsValid();
 }
 
 // |documentUrl| gets converted to a hostname (domain) within "API.checkFilterMatch".
@@ -321,7 +321,7 @@ DefaultFilterEngine::ComposeFilterSuggestions(const IElement* element) const
   return res;
 }
 
-Filter DefaultFilterEngine::GetWhitelistingFilter(const std::string& url,
+Filter DefaultFilterEngine::GetAllowlistingFilter(const std::string& url,
                                                   ContentTypeMask contentTypeMask,
                                                   const std::vector<std::string>& documentUrls,
                                                   const std::string& sitekey) const

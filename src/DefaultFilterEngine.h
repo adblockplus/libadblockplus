@@ -125,7 +125,7 @@ namespace AdblockPlus
                             const std::string& siteKey,
                             bool specificOnly) const;
     void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
-    Filter GetWhitelistingFilter(const std::string& url,
+    Filter GetAllowlistingFilter(const std::string& url,
                                  ContentTypeMask contentTypeMask,
                                  const std::vector<std::string>& documentUrls,
                                  const std::string& sitekey) const;

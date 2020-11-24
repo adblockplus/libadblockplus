@@ -289,7 +289,7 @@ specific.
 ### Working with sitekey-restricted filters
 
 Some filters should be applied only for sites providing special key. It is
-provided in `X-Adblock-Key` header. Usually it is used to whitelist specific
+provided in `X-Adblock-Key` header. Usually it is used to allowlist specific
 sites. You can read more about this in
 [filters documentation](https://help.eyeo.com/adblockplus/how-to-write-filters#sitekey-restrictions).
 
