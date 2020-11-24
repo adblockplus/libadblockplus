@@ -297,7 +297,7 @@ for [`IFilterEngine::Matches`](https://gitlab.com/eyeo/adblockplus/libadblockplu
 It should contain decoded and verified public key extracted from `X-Adblock-Key` header.
 
     Filter match =
-      filterEngine.Matches("http://example.com/ad.png", "DOCUMENT", "",
+      filterEngine.Matches("http://example.com/ad.png", "IMAGE", "",
          "DECODED PUBLIC KEY");
 
 You can [take a look](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/test/IFilterEngine.cpp#L668) for the sitekey-related tests for reference.
