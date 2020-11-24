@@ -45,7 +45,7 @@ void MatchesCommand::operator()(const std::string& arguments)
   {
     contentTypeStr.clear();
   }
-  if (!url.size() || !contentTypeStr.size() || !documentUrl.size())
+  if (!url.size() || !contentTypeStr.size())
   {
     ShowUsage();
     return;
@@ -53,7 +53,10 @@ void MatchesCommand::operator()(const std::string& arguments)
 
   AdblockPlus::Filter match = filterEngine.Matches(url, contentType, documentUrl, siteKey);
   if (!match.IsValid())
+  {
+    std::cout << "No match found" << std::endl;
     return;
+  }
   if (match.GetType() == AdblockPlus::IFilterImplementation::TYPE_EXCEPTION)
     std::cout << "Whitelisted by " << match.GetRaw() << std::endl;
   else
