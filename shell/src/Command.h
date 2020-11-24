@@ -21,6 +21,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <memory>
 
 class Command
 {
@@ -37,7 +38,7 @@ protected:
   void ShowUsage() const;
 };
 
-typedef std::map<const std::string, Command*> CommandMap;
+typedef std::map<const std::string, std::unique_ptr<Command>> CommandMap;
 
 class NoSuchCommandError : public std::runtime_error
 {
