@@ -238,7 +238,7 @@ void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName,
 
 void AdblockPlus::JsEngine::Gc()
 {
-  while (!GetIsolate()->IdleNotificationDeadline(1))
+  while (!GetIsolate()->IdleNotificationDeadline(10))
     ;
 }
 
