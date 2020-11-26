@@ -51,6 +51,11 @@ AdblockPlus::JsValue::~JsValue()
 {
   if (value)
   {
+#if defined(UNBLOCK_UPDATE_PAST_DP_1347_ON_ANDROID)
+  std::unique_lock<std::mutex> lock;
+  if (isolate->GetGlobalLock())
+    lock = std::unique_lock<std::mutex>{*(isolate->GetGlobalLock())};
+#endif
     if (isolate->Get())
     {
       const JsContext context(isolate->Get(), *jsContext);

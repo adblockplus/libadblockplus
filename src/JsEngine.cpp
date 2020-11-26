@@ -109,6 +109,8 @@ namespace
 
 using namespace AdblockPlus;
 
+std::mutex g_global_lock;
+
 JsEngine::JsWeakValuesList::~JsWeakValuesList()
 {
 }
@@ -167,7 +169,17 @@ AdblockPlus::JsEngine::JsEngine(Platform& platform, std::unique_ptr<IV8IsolatePr
 #endif
 }
 
-JsEngine::~JsEngine() = default;
+JsEngine::~JsEngine() {
+#if defined(UNBLOCK_UPDATE_PAST_DP_1347_ON_ANDROID)
+  std::unique_lock<std::mutex> lock;
+  if (isolate->GetGlobalLock())
+    lock = std::unique_lock<std::mutex>{*(isolate->GetGlobalLock())};
+  jsWeakValuesLists.clear();
+  eventCallbacks.clear();
+  context.reset();
+  isolate = nullptr;
+#endif
+}
 
 std::unique_ptr<AdblockPlus::JsEngine> AdblockPlus::JsEngine::New(
     const AppInfo& appInfo,
@@ -398,6 +410,10 @@ v8::Isolate* JsEngine::IV8IsolateProviderWrapper::Get()
   }
 
   return nullptr;
+}
+
+std::mutex* JsEngine::IV8IsolateProviderWrapper::GetGlobalLock() {
+  return &g_global_lock;
 }
 #endif
 
