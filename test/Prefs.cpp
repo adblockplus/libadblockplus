@@ -105,10 +105,26 @@ namespace
 
       for (auto& pref : preconfiguredPrefs)
       {
-        FilterEngineFactory::PrefName prefName;
-        if (FilterEngineFactory::StringToPrefName(pref.first, prefName))
+        if (pref.second.IsBool())
         {
-          createParams.preconfiguredPrefs.insert({prefName, pref.second});
+          FilterEngineFactory::BooleanPrefName prefName;
+          if (FilterEngineFactory::StringToPrefName(pref.first, prefName))
+          {
+            createParams.preconfiguredPrefs.booleanPrefs.insert({prefName, pref.second.AsBool()});
+          }
+        }
+        else if (pref.second.IsString())
+        {
+          FilterEngineFactory::StringPrefName prefName;
+          if (FilterEngineFactory::StringToPrefName(pref.first, prefName))
+          {
+            createParams.preconfiguredPrefs.stringPrefs.insert({prefName, pref.second.AsString()});
+          }
+        }
+        else
+        {
+          EXPECT_EQ(std::string{"Pref type is supported"},
+                    std::string{"Pref type is not supported"});
         }
       }
 

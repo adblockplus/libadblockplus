@@ -155,12 +155,12 @@ protected:
     }
 
     AdblockPlus::FilterEngineFactory::CreationParameters createParams;
-    createParams.preconfiguredPrefs.emplace(
-        AdblockPlus::FilterEngineFactory::PrefName::FilterEngineEnabled,
-        GetJsEngine().NewValue(engineState == EngineState::Enabled));
-    createParams.preconfiguredPrefs.emplace(
-        AdblockPlus::FilterEngineFactory::PrefName::FirstRunSubscriptionAutoselect,
-        GetJsEngine().NewValue(autoselectState == AutoselectState::Enabled));
+    createParams.preconfiguredPrefs.booleanPrefs.emplace(
+        AdblockPlus::FilterEngineFactory::BooleanPrefName::FilterEngineEnabled,
+        engineState == EngineState::Enabled);
+    createParams.preconfiguredPrefs.booleanPrefs.emplace(
+        AdblockPlus::FilterEngineFactory::BooleanPrefName::FirstRunSubscriptionAutoselect,
+        autoselectState == AutoselectState::Enabled);
     return CreateFilterEngine(createParams);
   }
 };

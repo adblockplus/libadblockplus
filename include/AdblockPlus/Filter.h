@@ -45,18 +45,16 @@ namespace AdblockPlus
      * instead.
      */
     [[deprecated("Use IFilterEngine::GetListedFilters() combined with find"
-                 " instead")]]
-    bool IsListed() const;
+                 " instead")]] bool
+    IsListed() const;
     /**
      * DEPRECATED. Use IFilterEngine::AddFilter() instead.
      */
-    [[deprecated("Use IFilterEngine::AddFilter() instead")]]
-    void AddToList();
+    [[deprecated("Use IFilterEngine::AddFilter() instead")]] void AddToList();
     /**
      * DEPRECATED. Use IFilterEngine::RemoveFilter() instead.
      */
-    [[deprecated("Use IFilterEngine::RemoveFilter() instead")]]
-    void RemoveFromList();
+    [[deprecated("Use IFilterEngine::RemoveFilter() instead")]] void RemoveFromList();
 
   private:
     std::unique_ptr<IFilterImplementation> implementation;
