@@ -20,6 +20,7 @@
 
 #include <functional>
 #include <string>
+#include <unordered_map>
 
 #include <AdblockPlus/IFilterEngine.h>
 
@@ -39,17 +40,24 @@ namespace AdblockPlus
      * - allowed_connection_type - default: "", @see IFilterEngine::SetAllowedConnectionType,
      * IsConnectionAllowedAsyncCallback
      */
-    enum class PrefName
+    enum class BooleanPrefName
     {
       FilterEngineEnabled,
-      FirstRunSubscriptionAutoselect,
+      FirstRunSubscriptionAutoselect
+    };
+
+    enum class StringPrefName
+    {
       AllowedConnectionType
     };
 
-    static std::string PrefNameToString(PrefName prefName);
-    static bool StringToPrefName(const std::string& prefNameStr, PrefName& prefName);
+    static std::string PrefNameToString(StringPrefName prefName);
+    static std::string PrefNameToString(BooleanPrefName prefName);
+    static bool StringToPrefName(const std::string& prefNameStr, StringPrefName& prefName);
+    static bool StringToPrefName(const std::string& prefNameStr, BooleanPrefName& prefName);
 
-    typedef std::map<PrefName, AdblockPlus::JsValue> Prefs;
+    typedef std::unordered_map<StringPrefName, std::string> StringPrefs;
+    typedef std::unordered_map<BooleanPrefName, bool> BooleanPrefs;
     /**
      * Asynchronous callback function passing false when current connection
      * type does not correspond to allowedConnectionType, e.g. because it is a
@@ -68,7 +76,17 @@ namespace AdblockPlus
        * `AdblockPlus::IFilterEngine::Prefs` name - value list of preconfigured
        * prefs.
        */
-      Prefs preconfiguredPrefs;
+      struct Prefs
+      {
+        void clear()
+        {
+          stringPrefs.clear();
+          booleanPrefs.clear();
+        }
+        StringPrefs stringPrefs;
+        BooleanPrefs booleanPrefs;
+      } preconfiguredPrefs;
+
       /**
        * A callback of `AdblockPlus::IFilterEngine::IsConnectionAllowedAsyncCallback` type
        * checking whether the request to download a subscription from Adblock Plus may be performed

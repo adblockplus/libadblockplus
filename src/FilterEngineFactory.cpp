@@ -30,39 +30,61 @@
 using namespace AdblockPlus;
 
 // static
-std::string FilterEngineFactory::PrefNameToString(PrefName prefName)
+std::string FilterEngineFactory::PrefNameToString(BooleanPrefName prefName)
 {
   switch (prefName)
   {
-  case PrefName::FilterEngineEnabled:
+  case BooleanPrefName::FilterEngineEnabled:
     return "filter_engine_enabled";
 
-  case PrefName::FirstRunSubscriptionAutoselect:
+  case BooleanPrefName::FirstRunSubscriptionAutoselect:
     return "first_run_subscription_auto_select";
 
-  case PrefName::AllowedConnectionType:
-    return "allowed_connection_type";
+  default:
+    assert(!"Missing case");
+    return {};
   }
 }
 
 // static
-bool FilterEngineFactory::StringToPrefName(const std::string& prefNameStr, PrefName& prefName)
+std::string FilterEngineFactory::PrefNameToString(StringPrefName prefName)
+{
+  switch (prefName)
+  {
+  case StringPrefName::AllowedConnectionType:
+    return "allowed_connection_type";
+
+  default:
+    assert(!"Missing case");
+    return {};
+  }
+}
+
+// static
+bool FilterEngineFactory::StringToPrefName(const std::string& prefNameStr,
+                                           BooleanPrefName& prefName)
 {
   if (prefNameStr == "filter_engine_enabled")
   {
-    prefName = PrefName::FilterEngineEnabled;
+    prefName = BooleanPrefName::FilterEngineEnabled;
     return true;
   }
 
   if (prefNameStr == "first_run_subscription_auto_select")
   {
-    prefName = PrefName::FirstRunSubscriptionAutoselect;
+    prefName = BooleanPrefName::FirstRunSubscriptionAutoselect;
     return true;
   }
 
+  return false;
+}
+
+// static
+bool FilterEngineFactory::StringToPrefName(const std::string& prefNameStr, StringPrefName& prefName)
+{
   if (prefNameStr == "allowed_connection_type")
   {
-    prefName = PrefName::AllowedConnectionType;
+    prefName = StringPrefName::AllowedConnectionType;
     return true;
   }
 
@@ -135,7 +157,12 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
   const JsContext context(jsEngine.GetIsolate(), jsEngine.GetContext());
   // Set the preconfigured prefs
   auto preconfiguredPrefsObject = jsEngine.NewObject();
-  for (const auto& pref : params.preconfiguredPrefs)
+  for (const auto& pref : params.preconfiguredPrefs.booleanPrefs)
+  {
+    preconfiguredPrefsObject.SetProperty(PrefNameToString(pref.first), pref.second);
+  }
+
+  for (const auto& pref : params.preconfiguredPrefs.stringPrefs)
   {
     preconfiguredPrefsObject.SetProperty(PrefNameToString(pref.first), pref.second);
   }

@@ -276,14 +276,18 @@ namespace AdblockPlus
      * @param pref Preference name.
      * @return Preference value, or `null` if it doesn't exist.
      */
-    virtual JsValue GetPref(const std::string& pref) const = 0;
+    [[deprecated("Use specific APIs instead e.g. GetAllowedConnectionType(),"
+                 " IsEnabled()")]] virtual JsValue
+    GetPref(const std::string& pref) const = 0;
 
     /**
      * Sets a preference value.
      * @param pref Preference name.
      * @param value New value of the preference.
      */
-    virtual void SetPref(const std::string& pref, const JsValue& value) = 0;
+    [[deprecated("Use specific APIs instead e.g. SetAllowedConnectionType(),"
+                 " SetEnabled()")]] virtual void
+    SetPref(const std::string& pref, const JsValue& value) = 0;
 
     /**
      * Extracts the host from a URL.
