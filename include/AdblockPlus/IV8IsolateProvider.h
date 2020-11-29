@@ -43,10 +43,6 @@ namespace AdblockPlus
      * the same pointer to v8::Isolate as the first call.
      */
     virtual v8::Isolate* Get() = 0;
-
-#if defined(UNBLOCK_UPDATE_PAST_DP_1347_ON_ANDROID)
-    virtual std::mutex* GetGlobalLock() { return nullptr; }
-#endif
   };
 
   using IV8IsolateProviderPtr =

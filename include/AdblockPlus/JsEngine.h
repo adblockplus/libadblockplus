@@ -288,7 +288,6 @@ namespace AdblockPlus
     public:
       explicit IV8IsolateProviderWrapper(std::weak_ptr<IV8IsolateProvider> weakIsolate);
       v8::Isolate* Get() override;
-      std::mutex* GetGlobalLock() override;
 
     private:
       std::weak_ptr<IV8IsolateProvider> isolate;
