@@ -244,3 +244,25 @@ TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
   PumpTask();
   EXPECT_TRUE(hasStatRemovedFileRun);
 }
+
+TEST_F(DefaultFileSystemTest, ReadAfterRelease)
+{
+  AdblockPlus::AppInfo appInfo;
+  appInfo.version = "1.0";
+  appInfo.name = "abpshell";
+  appInfo.application = "standalone";
+  appInfo.applicationVersion = "1.0";
+  appInfo.locale = "en-US";
+  AdblockPlus::Platform::CreationParameters platformParams;
+  platformParams.timer.reset(new NoopTimer());
+  platformParams.webRequest.reset(new NoopWebRequest());
+  platformParams.logSystem.reset(new LazyLogSystem());
+  platformParams.fileSystem.reset(fileSystem.release());
+
+  auto platform = std::make_shared<Platform>(std::move(platformParams));
+  platform->SetUpJsEngine(appInfo);
+  AdblockPlus::JsEngine& jsEngine = platform->GetJsEngine();
+
+  jsEngine.Evaluate("let result = {}; _fileSystem.read('', function(r) {result.content = r.content;}, function(error) {result.error = error;})");
+  platform.reset();
+}
