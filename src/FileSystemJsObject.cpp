@@ -36,26 +36,6 @@ namespace
 {
   namespace ReadCallback
   {
-    struct WeakData
-    {
-    public:
-      WeakData(JsEngine& jsEngine,
-               JsEngine::JsWeakValuesID weakResolveCallback,
-               JsEngine::JsWeakValuesID weakRejectCallback)
-          : jsEngine(jsEngine), weakResolveCallback(weakResolveCallback),
-            weakRejectCallback(weakRejectCallback)
-      {
-      }
-      virtual ~WeakData()
-      {
-        jsEngine.TakeJsValues(weakResolveCallback);
-        jsEngine.TakeJsValues(weakRejectCallback);
-      }
-      JsEngine& jsEngine;
-      JsEngine::JsWeakValuesID weakResolveCallback;
-      JsEngine::JsWeakValuesID weakRejectCallback;
-    };
-
     static void V8Callback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
     {
       AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
@@ -72,25 +52,22 @@ namespace
 
       auto weakResolveCallback = jsEngine->StoreJsValues({converted[1]});
       auto weakRejectCallback = jsEngine->StoreJsValues({converted[2]});
-      auto weakData =
-          std::make_shared<WeakData>(*jsEngine, weakResolveCallback, weakRejectCallback);
       auto fileName = converted[0].AsString();
       jsEngine->GetPlatform().WithFileSystem(
-          [jsEngine, weakData, fileName](IFileSystem& fileSystem) {
+          [jsEngine, weakResolveCallback, weakRejectCallback, fileName](IFileSystem& fileSystem) {
             fileSystem.Read(
                 fileName,
-                [jsEngine, weakData](IFileSystem::IOBuffer&& content) {
+                [jsEngine, weakResolveCallback](IFileSystem::IOBuffer&& content) {
                   const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
                   auto result = jsEngine->NewObject();
                   result.SetStringBufferProperty("content", content);
-                  jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call(result);
+                  jsEngine->GetJsValues(weakResolveCallback)[0].Call(result);
                 },
-                [jsEngine, weakData](const std::string& error) {
+                [jsEngine, weakRejectCallback](const std::string& error) {
                   if (error.empty())
                     return;
                   const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-                  jsEngine->GetJsValues(weakData->weakRejectCallback)[0].Call(
-                      jsEngine->NewValue(error));
+                  jsEngine->GetJsValues(weakRejectCallback)[0].Call(jsEngine->NewValue(error));
                 });
           });
     } // V8Callback
@@ -119,24 +96,6 @@ namespace
       return ii;
     }
 
-    struct WeakData : ReadCallback::WeakData
-    {
-    public:
-      WeakData(JsEngine& jsEngine,
-               JsEngine::JsWeakValuesID weakResolveCallback,
-               JsEngine::JsWeakValuesID weakRejectCallback,
-               JsEngine::JsWeakValuesID weakProcessFunc)
-          : ReadCallback::WeakData(jsEngine, weakResolveCallback, weakRejectCallback),
-            weakProcessFunc(weakProcessFunc)
-      {
-      }
-      ~WeakData()
-      {
-        jsEngine.TakeJsValues(weakProcessFunc);
-      }
-      JsEngine::JsWeakValuesID weakProcessFunc;
-    };
-
     void V8Callback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
     {
       AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
@@ -161,16 +120,15 @@ namespace
       auto weakProcessFunc = jsEngine->StoreJsValues({converted[1]});
       auto weakResolveCallback = jsEngine->StoreJsValues({converted[2]});
       auto weakRejectCallback = jsEngine->StoreJsValues({converted[3]});
-      auto weakData = std::make_shared<WeakData>(
-          *jsEngine, weakResolveCallback, weakRejectCallback, weakProcessFunc);
       auto fileName = converted[0].AsString();
       jsEngine->GetPlatform().WithFileSystem(
-          [jsEngine, weakData, fileName](IFileSystem& fileSystem) {
+          [jsEngine, weakProcessFunc, weakResolveCallback, weakRejectCallback, fileName](
+              IFileSystem& fileSystem) {
             fileSystem.Read(
                 fileName,
-                [jsEngine, weakData](IFileSystem::IOBuffer&& content) {
+                [jsEngine, weakProcessFunc, weakResolveCallback](IFileSystem::IOBuffer&& content) {
                   const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-                  auto jsValues = jsEngine->GetJsValues(weakData->weakProcessFunc);
+                  auto jsValues = jsEngine->GetJsValues(weakProcessFunc);
                   auto processFunc = jsValues[0].UnwrapValue().As<v8::Function>();
                   auto globalContext = context.GetV8Context()->Global();
                   if (!globalContext->IsObject())
@@ -196,13 +154,12 @@ namespace
 
                     stringBegin = SkipEndOfLine(stringEnd, contentEnd);
                   } while (stringBegin != contentEnd);
-                  jsEngine->GetJsValues(weakData->weakResolveCallback)[0].Call();
+                  jsEngine->GetJsValues(weakResolveCallback)[0].Call();
                 },
-                [jsEngine, weakData](const std::string& error) {
+                [jsEngine, weakRejectCallback](const std::string& error) {
                   if (error.empty())
                     return;
-                  jsEngine->GetJsValues(weakData->weakRejectCallback)[0].Call(
-                      jsEngine->NewValue(error));
+                  jsEngine->GetJsValues(weakRejectCallback)[0].Call(jsEngine->NewValue(error));
                 });
           });
     } // V8Callback
