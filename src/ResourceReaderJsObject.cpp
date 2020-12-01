@@ -51,19 +51,21 @@ namespace ReadPreloadedFilterListCallback
 
       try
       {
-        jsEngine->GetPlatform().WithResourceReader(
-            [url, jsEngine, callback = converted[1]](IResourceReader& reader) {
-              reader.ReadPreloadedFilterList(
-                  url, [jsEngine, callback](std::unique_ptr<IPreloadedFilterResponse> response) {
-                    bool exists = response->exists();
-                    const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-                    auto result = jsEngine->NewObject();
-                    result.SetProperty("exists", exists);
-                    if (exists)
-                      result.SetProperty("content", response->content(), response->size());
-                    callback.Call(result);
-                  });
-            });
+        auto weakCallback = jsEngine->StoreJsValues({converted[1]});
+        jsEngine->GetPlatform().WithResourceReader([url, jsEngine, weakCallback](
+                                                       IResourceReader& reader) {
+          reader.ReadPreloadedFilterList(
+              url, [jsEngine, weakCallback](std::unique_ptr<IPreloadedFilterResponse> response) {
+                bool exists = response->exists();
+                const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+                auto result = jsEngine->NewObject();
+                result.SetProperty("exists", exists);
+                if (exists)
+                  result.SetProperty("content", response->content(), response->size());
+                auto callback = jsEngine->TakeJsValues(weakCallback);
+                callback[0].Call(result);
+              });
+        });
       }
       catch (const std::exception& e)
       {

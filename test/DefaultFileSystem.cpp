@@ -15,13 +15,13 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../src/DefaultFileSystem.h"
-
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
 #include <memory>
 #include <sstream>
 
+#include "../src/DefaultFileSystem.h"
+#include "../src/DefaultResourceReader.h"
 #include "BaseJsTest.h"
 
 using AdblockPlus::FileSystemPtr;
@@ -240,4 +240,36 @@ TEST_F(DefaultFileSystemTest, WriteMoveStatRemove)
   EXPECT_FALSE(hasStatRemovedFileRun);
   PumpTask();
   EXPECT_TRUE(hasStatRemovedFileRun);
+}
+
+TEST_F(DefaultFileSystemTest, ResetAfterCallbackScheduled)
+{
+  AdblockPlus::AppInfo appInfo;
+  appInfo.version = "1.0";
+  appInfo.name = "abpshell";
+  appInfo.application = "standalone";
+  appInfo.applicationVersion = "1.0";
+  appInfo.locale = "en-US";
+  AdblockPlus::Platform::CreationParameters platformParams;
+  platformParams.timer.reset(new NoopTimer());
+  platformParams.webRequest.reset(new NoopWebRequest());
+  platformParams.logSystem.reset(new LazyLogSystem());
+  platformParams.resourceReader.reset(new DefaultResourceReader());
+  platformParams.fileSystem.reset(fileSystem.release());
+
+  auto platform = std::make_unique<Platform>(std::move(platformParams));
+  platform->SetUpJsEngine(appInfo);
+  AdblockPlus::JsEngine& jsEngine = platform->GetJsEngine();
+
+  jsEngine.Evaluate("let result = {}; _fileSystem.read('', function(r) {result.content = "
+                    "r.content;}, function(error) {result.error = error;})");
+  // Normally the line below makes sure all the scheduled callbacks are executed
+  // and no new can be scheduled. However if JsValue is bound to the callback
+  // passed to embedder it may  outlive the platform making the destruction order
+  // incorrect. This should not happen due to JsWeakValues usage; we do not
+  // bind JsValues to the callbacks passed to embedder but a "weak reference" to
+  // them and the weak references go away with JsEngine so the destruction order is correct.
+  // However there was a bug in file system making weak values not weak and without the fix this
+  // crashed.
+  platform.reset();
 }
