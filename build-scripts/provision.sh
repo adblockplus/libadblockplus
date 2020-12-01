@@ -21,7 +21,7 @@ function DownloadNDK() {
 	# Let's take the chance and will recover later.
 
     if [ ! -f $NDK_ARCHIVE_PATH ]; then
-	    wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O $NDK_ARCHIVE_PATH
+	    wget https://dl.google.com/android/repository/android-ndk-r20b-linux-x86_64.zip -O $NDK_ARCHIVE_PATH
         return 0
     fi
 

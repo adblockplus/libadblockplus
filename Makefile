@@ -65,8 +65,8 @@ ifdef TEST_RESULTS_XML
 TEST_EXECUTABLE += --gtest_output="xml:${TEST_RESULTS_XML}"
 endif
 
-# 7.2.502.24
-V8_COMMIT = "4d72a9931a125d21901d25d67896f0e40105bd16"
+# 8.7.220.29
+V8_COMMIT = 45d51f3f
 URL_PREFIX ?= "https://v8.eyeofiles.com/v8-${V8_COMMIT}"
 
 ifeq ($(WGET_QUIET),true)
@@ -97,6 +97,9 @@ get-prebuilt-v8:
 	WGET_FLAGS=${WGET_FLAGS} \
 	bash build-scripts/prepare-prebuilt-v8.sh
 
+get-v8-commit:
+	@echo $(V8_COMMIT)
+
 clean:
 	$(RM) -r ${BUILD_DIR} docs
 
@@ -104,7 +107,7 @@ ifeq ($(TARGET_OS),android)
 GYP_FILE ?= tests.gyp
 all:
 	GYP_DEFINES="${GYP_PARAMETERS}" \
-	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r16b ${GYP_FILE}
+	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r20b ${GYP_FILE}
 	$(ANDROID_NDK_ROOT)/ndk-build -C ${BUILD_DIR} installed_modules \
 	MAKEFLAGS="${ADDITIONALMAKEFLAGS}" \
 	BUILDTYPE=Release \
