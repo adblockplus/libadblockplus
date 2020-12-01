@@ -225,3 +225,12 @@ TEST_F(JsValueTest, ThrowingConversion)
   ASSERT_EQ("", value.AsString());
   ASSERT_ANY_THROW(value.AsInt());
 }
+
+#if defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
+TEST_F(JsValueTest, JsValueGoesAwayAfterEngineWithoutCrash)
+{
+  auto value = GetJsEngine().Evaluate("true");
+  platform.reset();
+  printf("IT MUST NOT CRASH AFTER THIS!\n");
+}
+#endif

@@ -155,8 +155,15 @@ void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
 }
 
 AdblockPlus::JsEngine::JsEngine(Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate)
-    : platform(platform), isolate(std::move(isolate))
+    : platform(platform)
+#if !defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
+      ,
+      isolate(std::move(isolate))
+#endif
 {
+#if defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
+  this->isolate = std::shared_ptr<IV8IsolateProvider>(isolate.release());
+#endif
 }
 
 JsEngine::~JsEngine() = default;
@@ -173,7 +180,6 @@ std::unique_ptr<AdblockPlus::JsEngine> AdblockPlus::JsEngine::New(
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
   const v8::HandleScope handleScope(result->GetIsolate());
-
   result->context.reset(
       new v8::Global<v8::Context>(result->GetIsolate(), v8::Context::New(result->GetIsolate())));
   auto global = result->GetGlobalObject();
@@ -184,7 +190,7 @@ std::unique_ptr<AdblockPlus::JsEngine> AdblockPlus::JsEngine::New(
 AdblockPlus::JsValue AdblockPlus::JsEngine::GetGlobalObject()
 {
   JsContext context(GetIsolate(), GetContext());
-  return JsValue(GetIsolate(), GetContext(), context.GetV8Context()->Global());
+  return JsValue(GetIsolateProviderPtr(), GetContext(), context.GetV8Context()->Global());
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::Evaluate(const std::string& source,
@@ -197,7 +203,7 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::Evaluate(const std::string& source,
       CHECKED_TO_LOCAL_WITH_TRY_CATCH(isolate, CompileScript(isolate, source, filename), tryCatch);
   auto result =
       CHECKED_TO_LOCAL_WITH_TRY_CATCH(isolate, script->Run(isolate->GetCurrentContext()), tryCatch);
-  return JsValue(isolate, GetContext(), result);
+  return JsValue(GetIsolateProviderPtr(), GetContext(), result);
 }
 
 void AdblockPlus::JsEngine::SetEventCallback(const std::string& eventName,
@@ -243,25 +249,27 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(const std::string& val)
   auto isolate = GetIsolate();
   const JsContext context(isolate, GetContext());
 
-  return JsValue(isolate, GetContext(), CHECKED_TO_LOCAL(isolate, Utils::ToV8String(isolate, val)));
+  return JsValue(GetIsolateProviderPtr(),
+                 GetContext(),
+                 CHECKED_TO_LOCAL(isolate, Utils::ToV8String(isolate, val)));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(int64_t val)
 {
   const JsContext context(GetIsolate(), GetContext());
-  return JsValue(GetIsolate(), GetContext(), v8::Number::New(GetIsolate(), val));
+  return JsValue(GetIsolateProviderPtr(), GetContext(), v8::Number::New(GetIsolate(), val));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(bool val)
 {
   const JsContext context(GetIsolate(), GetContext());
-  return JsValue(GetIsolate(), GetContext(), v8::Boolean::New(GetIsolate(), val));
+  return JsValue(GetIsolateProviderPtr(), GetContext(), v8::Boolean::New(GetIsolate(), val));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewObject()
 {
   const JsContext context(GetIsolate(), GetContext());
-  return JsValue(GetIsolate(), GetContext(), v8::Object::New(GetIsolate()));
+  return JsValue(GetIsolateProviderPtr(), GetContext(), v8::Object::New(GetIsolate()));
 }
 
 JsValue JsEngine::NewArray(const std::vector<std::string>& values)
@@ -276,8 +284,9 @@ JsValue JsEngine::NewArray(const std::vector<std::string>& values)
     elements.push_back(CHECKED_TO_LOCAL(isolate, Utils::ToV8String(isolate, cur)));
   }
 
-  return JsValue(
-      GetIsolate(), GetContext(), v8::Array::New(isolate, elements.data(), elements.size()));
+  return JsValue(GetIsolateProviderPtr(),
+                 GetContext(),
+                 v8::Array::New(isolate, elements.data(), elements.size()));
 }
 
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(const v8::FunctionCallback& callback)
@@ -289,7 +298,7 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::NewCallback(const v8::FunctionCallba
   // It's safe to bind a bare pointer to self.
   v8::Local<v8::FunctionTemplate> templ =
       v8::FunctionTemplate::New(isolate, callback, v8::External::New(isolate, this));
-  return JsValue(isolate,
+  return JsValue(GetIsolateProviderPtr(),
                  GetContext(),
                  CHECKED_TO_LOCAL(isolate, templ->GetFunction(isolate->GetCurrentContext())));
 }
@@ -328,8 +337,8 @@ JsValueList JsEngine::TakeJsValues(const JsWeakValuesID& id)
     JsContext context(GetIsolate(), GetContext());
     for (const auto& v8Value : id.iterator->values)
     {
-      retValue.emplace_back(
-          JsValue(GetIsolate(), GetContext(), v8::Local<v8::Value>::New(GetIsolate(), v8Value)));
+      retValue.emplace_back(JsValue(
+          GetIsolateProviderPtr(), GetContext(), v8::Local<v8::Value>::New(GetIsolate(), v8Value)));
     }
   }
   {
@@ -345,8 +354,8 @@ JsValueList JsEngine::GetJsValues(const JsWeakValuesID& id)
   JsContext context(GetIsolate(), GetContext());
   for (const auto& v8Value : id.iterator->values)
   {
-    retValue.emplace_back(
-        JsValue(GetIsolate(), GetContext(), v8::Local<v8::Value>::New(GetIsolate(), v8Value)));
+    retValue.emplace_back(JsValue(
+        GetIsolateProviderPtr(), GetContext(), v8::Local<v8::Value>::New(GetIsolate(), v8Value)));
   }
   return retValue;
 }
@@ -357,7 +366,7 @@ AdblockPlus::JsEngine::ConvertArguments(const v8::FunctionCallbackInfo<v8::Value
   const JsContext context(GetIsolate(), GetContext());
   JsValueList list;
   for (int i = 0; i < arguments.Length(); i++)
-    list.push_back(JsValue(GetIsolate(), GetContext(), arguments[i]));
+    list.push_back(JsValue(GetIsolateProviderPtr(), GetContext(), arguments[i]));
   return list;
 }
 
@@ -371,4 +380,31 @@ void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name,
 v8::Global<v8::Context>& JsEngine::GetContext() const
 {
   return *context;
+}
+
+#if defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
+JsEngine::IV8IsolateProviderWrapper::IV8IsolateProviderWrapper(
+    std::weak_ptr<IV8IsolateProvider> weakIsolate)
+    : isolate(weakIsolate)
+{
+}
+
+v8::Isolate* JsEngine::IV8IsolateProviderWrapper::Get()
+{
+  if (auto locked = isolate.lock())
+  {
+    return locked->Get();
+  }
+
+  return nullptr;
+}
+#endif
+
+IV8IsolateProviderPtr JsEngine::GetIsolateProviderPtr() const
+{
+#if defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
+  return std::make_shared<IV8IsolateProviderWrapper>(isolate);
+#else
+  return isolate.get();
+#endif
 }

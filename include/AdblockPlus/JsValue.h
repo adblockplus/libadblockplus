@@ -24,10 +24,10 @@
 #include <vector>
 
 #include <AdblockPlus/IFileSystem.h>
+#include <AdblockPlus/IV8IsolateProvider.h>
 
 namespace v8
 {
-  class Isolate;
   class Value;
   class Context;
   class Object;
@@ -154,7 +154,7 @@ namespace AdblockPlus
     v8::Local<v8::Value> UnwrapValue() const;
 
   private:
-    JsValue(v8::Isolate* isolate,
+    JsValue(IV8IsolateProviderPtr isolate,
             const v8::Global<v8::Context>& jsContext,
             v8::Local<v8::Value> value);
     void SetProperty(const std::string& name, v8::Local<v8::Value> val);
@@ -163,7 +163,7 @@ namespace AdblockPlus
     // passed to v8::Function::Call but the latter does not expect a const pointer.
     JsValue Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Object> thisObj) const;
 
-    v8::Isolate* isolate;
+    IV8IsolateProviderPtr isolate;
     std::unique_ptr<v8::Global<v8::Context>> jsContext;
     std::unique_ptr<v8::Global<v8::Value>> value;
   };
