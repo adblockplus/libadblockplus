@@ -37,6 +37,12 @@
         'ARCHS': ["x86_64"]
       }
     }],
+    ['target_arch=="x64" or target_arch=="arm64"', {
+      'target_defaults': {
+        # https://www.mail-archive.com/v8-dev@googlegroups.com/msg160557.html
+        'cflags_cc': [ '-DV8_COMPRESS_POINTERS', '-DV8_31BIT_SMIS_ON_64BIT_ARCH' ]
+      }
+    }],
   ],
 
   'target_defaults': {
