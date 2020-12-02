@@ -41,7 +41,7 @@ std::string FilterEngineFactory::PrefNameToString(BooleanPrefName prefName)
     return "first_run_subscription_auto_select";
 
   default:
-    assert(!"Missing case");
+    assert(false && "Missing case");
     return {};
   }
 }
@@ -55,7 +55,7 @@ std::string FilterEngineFactory::PrefNameToString(StringPrefName prefName)
     return "allowed_connection_type";
 
   default:
-    assert(!"Missing case");
+    assert(false && "Missing case");
     return {};
   }
 }
