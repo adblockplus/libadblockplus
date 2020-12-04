@@ -18,7 +18,7 @@
 #ifndef ADBLOCK_DEFAULT_RESOURCE_READER_H
 #define ADBLOCK_DEFAULT_RESOURCE_READER_H
 
-#include "AdblockPlus/IResourceReader.h"
+#include <AdblockPlus/IResourceReader.h>
 
 namespace AdblockPlus
 {

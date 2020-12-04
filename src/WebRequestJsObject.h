@@ -18,7 +18,7 @@
 #ifndef ADBLOCK_PLUS_WEB_REQUEST_JS_OBJECT_H
 #define ADBLOCK_PLUS_WEB_REQUEST_JS_OBJECT_H
 
-#include <AdblockPlus/JsEngine.h>
+#include "JsEngine.h"
 
 namespace AdblockPlus
 {

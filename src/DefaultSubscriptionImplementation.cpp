@@ -20,8 +20,7 @@
 #include <exception>
 #include <string>
 
-#include <AdblockPlus/JsEngine.h>
-
+#include "JsEngine.h"
 #include "Utils.h"
 
 using namespace AdblockPlus;

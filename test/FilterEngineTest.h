@@ -18,8 +18,7 @@
 #ifndef ADBLOCK_PLUS_FILTER_ENGINE_TEST_H
 #define ADBLOCK_PLUS_FILTER_ENGINE_TEST_H
 
-#include <AdblockPlus/DefaultLogSystem.h>
-
+#include "../src/DefaultLogSystem.h"
 #include "../src/DefaultResourceReader.h"
 #include "BaseJsTest.h"
 
@@ -58,7 +57,7 @@ protected:
     platformParams.fileSystem.reset(fileSystem = new LazyFileSystemT());
     platformParams.webRequest.reset(new NoopWebRequest());
     platformParams.resourceReader.reset(new AdblockPlus::DefaultResourceReader());
-    platform.reset(new AdblockPlus::Platform(std::move(platformParams)));
+    platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(platformParams));
     ::CreateFilterEngine(*platform);
   }
 
@@ -74,8 +73,8 @@ typedef FilterEngineTestGeneric<NoFilesFileSystem, LazyLogSystem> FilterEngineTe
 class FilterEngineWithInMemoryFS : public BaseJsTest
 {
 protected:
-  void InitPlatformAndAppInfo(AdblockPlus::Platform::CreationParameters&& params =
-                                  AdblockPlus::Platform::CreationParameters(),
+  void InitPlatformAndAppInfo(AdblockPlus::PlatformFactory::CreationParameters&& params =
+                                  AdblockPlus::PlatformFactory::CreationParameters(),
                               const AdblockPlus::AppInfo& appInfo = AdblockPlus::AppInfo())
   {
     if (!params.logSystem)
@@ -88,8 +87,8 @@ protected:
       params.webRequest.reset(new NoopWebRequest());
     if (!params.resourceReader)
       params.resourceReader.reset(new AdblockPlus::DefaultResourceReader());
-    platform.reset(new AdblockPlus::Platform(std::move(params)));
-    platform->SetUpJsEngine(appInfo);
+    platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(params));
+    platform->SetUp(appInfo);
   }
 
   AdblockPlus::IFilterEngine&
@@ -130,10 +129,11 @@ protected:
     webRequestCounter = 0;
   }
 
-  AdblockPlus::IFilterEngine& ConfigureEngine(AutoselectState autoselectState,
-                                              EngineState engineState,
-                                              AdblockPlus::Platform::CreationParameters&& params =
-                                                  AdblockPlus::Platform::CreationParameters())
+  AdblockPlus::IFilterEngine&
+  ConfigureEngine(AutoselectState autoselectState,
+                  EngineState engineState,
+                  AdblockPlus::PlatformFactory::CreationParameters&& params =
+                      AdblockPlus::PlatformFactory::CreationParameters())
   {
     auto impl = [this](const std::string&,
                        const AdblockPlus::HeaderList&,

@@ -30,11 +30,7 @@
 #ifndef ADBLOCK_PLUS_ADBLOCK_PLUS_H
 #define ADBLOCK_PLUS_ADBLOCK_PLUS_H
 
-#include <AdblockPlus/AppInfo.h>
-#include <AdblockPlus/IFilterEngine.h>
-#include <AdblockPlus/JsEngine.h>
-#include <AdblockPlus/JsValue.h>
-#include <AdblockPlus/LogSystem.h>
+#include <AdblockPlus/PlatformFactory.h>
 #include <AdblockPlus/ReferrerMapping.h>
 
 #endif

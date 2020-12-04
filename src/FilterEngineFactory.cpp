@@ -108,9 +108,7 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
     auto isSubscriptionDownloadAllowedCallback = params.isSubscriptionDownloadAllowedCallback;
     jsEngine.SetEventCallback(
         "_isSubscriptionDownloadAllowed",
-        [bareFilterEngine, isSubscriptionDownloadAllowedCallback](JsValueList&& params) {
-          auto& jsEngine = bareFilterEngine->GetJsEngine();
-
+        [isSubscriptionDownloadAllowedCallback, &jsEngine](JsValueList&& params) {
           // param[0] - nullable string Prefs.allowed_connection_type
           // param[1] - function(Boolean)
           bool areArgumentsValid = params.size() == 2 &&
@@ -126,11 +124,9 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
             params[1].Call(jsEngine.NewValue(true));
             return;
           }
-          auto valuesID = jsEngine.StoreJsValues(params);
-          auto callJsCallback = [bareFilterEngine, valuesID](bool isAllowed) {
-            auto& jsEngine = bareFilterEngine->GetJsEngine();
-            auto jsParams = jsEngine.TakeJsValues(valuesID);
-            jsParams[1].Call(jsEngine.NewValue(isAllowed));
+          auto jsFunction = jsEngine.StoreJsValues({params[1]});
+          auto callJsCallback = [&jsEngine, jsFunction](bool isAllowed) {
+            jsEngine.GetJsValues(jsFunction)[0].Call(jsEngine.NewValue(isAllowed));
           };
           std::string allowedConnectionType =
               params[0].IsString() ? params[0].AsString() : std::string();
@@ -146,11 +142,10 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
                               jsEngine.RemoveEventCallback("_init");
                             });
 
-  bareFilterEngine->SetFilterChangeCallback(
-      [bareFilterEngine](const std::string& reason, JsValue&&) {
-        if (reason == "save")
-          bareFilterEngine->GetJsEngine().NotifyLowMemory();
-      });
+  bareFilterEngine->SetFilterChangeCallback([&jsEngine](const std::string& reason, JsValue&&) {
+    if (reason == "save")
+      jsEngine.NotifyLowMemory();
+  });
 
   // Lock the JS engine while we are loading scripts, no timeouts should fire
   // until we are done.

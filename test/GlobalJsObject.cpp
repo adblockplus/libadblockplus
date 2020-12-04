@@ -28,7 +28,7 @@ namespace
     {
       ThrowingPlatformCreationParameters params;
       params.timer.reset(new AdblockPlus::DefaultTimer());
-      platform.reset(new AdblockPlus::Platform(std::move(params)));
+      platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(params));
     }
   };
 }

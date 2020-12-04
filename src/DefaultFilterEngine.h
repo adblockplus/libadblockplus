@@ -27,11 +27,6 @@ namespace AdblockPlus
   public:
     explicit DefaultFilterEngine(JsEngine& jsEngine);
 
-    JsEngine& GetJsEngine() const final
-    {
-      return jsEngine;
-    }
-
     void SetEnabled(bool enabled) final;
 
     bool IsEnabled() const final;

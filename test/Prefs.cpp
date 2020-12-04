@@ -95,11 +95,12 @@ namespace
       platformParams.logSystem.reset(new LazyLogSystem());
       platformParams.timer.reset(new NoopTimer());
       platformParams.resourceReader.reset(new AdblockPlus::DefaultResourceReader());
-      platform.reset(new Platform(std::move(platformParams)));
+      platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(platformParams));
     }
 
-    IFilterEngine& CreateFilterEngine(const AdblockPlus::IFilterEngine::Prefs& preconfiguredPrefs =
-                                          AdblockPlus::IFilterEngine::Prefs())
+    IFilterEngine&
+    CreateFilterEngine(const std::map<std::string, AdblockPlus::JsValue>& preconfiguredPrefs =
+                           std::map<std::string, AdblockPlus::JsValue>())
     {
       AdblockPlus::FilterEngineFactory::CreationParameters createParams;
 
@@ -190,7 +191,7 @@ TEST_F(PrefsTest, SyntaxFailure)
 
 TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
 {
-  AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
+  std::map<std::string, AdblockPlus::JsValue> preconfiguredPrefs;
   preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
@@ -200,7 +201,7 @@ TEST_F(PrefsTest, PreconfiguredPrefsPreconfigured)
 
 TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
 {
-  AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
+  std::map<std::string, AdblockPlus::JsValue> preconfiguredPrefs;
   preconfiguredPrefs.emplace("unsupported_preconfig", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
@@ -209,7 +210,7 @@ TEST_F(PrefsTest, PreconfiguredPrefsUnsupported)
 
 TEST_F(PrefsTest, PreconfiguredPrefsOverride)
 {
-  AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
+  std::map<std::string, AdblockPlus::JsValue> preconfiguredPrefs;
   preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(true));
   auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
@@ -221,7 +222,7 @@ TEST_F(PrefsTest, PreconfiguredPrefsOverride)
 TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
 {
   {
-    AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
+    std::map<std::string, AdblockPlus::JsValue> preconfiguredPrefs;
     preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(true));
     auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 
@@ -233,7 +234,7 @@ TEST_F(PrefsTest, PrefsPersistWhenPreconfigured)
 
   {
     ResetPlatform();
-    AdblockPlus::IFilterEngine::Prefs preconfiguredPrefs;
+    std::map<std::string, AdblockPlus::JsValue> preconfiguredPrefs;
     preconfiguredPrefs.emplace("first_run_subscription_auto_select", GetJsEngine().NewValue(true));
     auto& filterEngine = CreateFilterEngine(preconfiguredPrefs);
 

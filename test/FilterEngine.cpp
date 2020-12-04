@@ -48,7 +48,7 @@ namespace
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest = DelayedWebRequest::New(webRequestTasks);
       platformParams.resourceReader.reset(new DefaultResourceReader());
-      platform.reset(new Platform(std::move(platformParams)));
+      platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(platformParams));
 
       createParams.preconfiguredPrefs.clear();
       createParams.preconfiguredPrefs.booleanPrefs.emplace(
@@ -1371,7 +1371,7 @@ TEST_F(FilterEngineWithInMemoryFS, LangAndAASubscriptionsAreChosenOnFirstRun)
   appInfo.locale = "zh";
   const std::string langSubscriptionUrl =
       "https://easylist-downloads.adblockplus.org/easylistchina+easylist.txt";
-  InitPlatformAndAppInfo(Platform::CreationParameters(), appInfo);
+  InitPlatformAndAppInfo(PlatformFactory::CreationParameters(), appInfo);
   auto& filterEngine = CreateFilterEngine();
   auto subscriptions = filterEngine.GetListedSubscriptions();
   ASSERT_EQ(2u, subscriptions.size());
@@ -1768,7 +1768,7 @@ namespace AA_ApiTest
       platformParams.timer.reset(new NoopTimer());
       platformParams.fileSystem.reset(new LazyFileSystem());
       platformParams.webRequest.reset(new NoopWebRequest());
-      platform.reset(new Platform(std::move(platformParams)));
+      platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(platformParams));
 
       FilterEngineFactory::CreationParameters params;
       params.preconfiguredPrefs.booleanPrefs.emplace(

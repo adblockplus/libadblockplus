@@ -25,7 +25,8 @@
 #include <v8.h>
 #include <vector>
 
-#include "AdblockPlus/JsValue.h"
+#include <AdblockPlus/JsValue.h>
+
 #include "JsError.h"
 
 namespace AdblockPlus

@@ -20,8 +20,11 @@
 #include <iostream>
 #include <sstream>
 
-PrefsCommand::PrefsCommand(AdblockPlus::IFilterEngine& filterEngine)
-    : Command("prefs"), filterEngine(filterEngine)
+#include "../src/JsEngine.h"
+
+PrefsCommand::PrefsCommand(AdblockPlus::IFilterEngine& filterEngine,
+                           AdblockPlus::JsEngine& jsEngine)
+    : Command("prefs"), filterEngine(filterEngine), jsEngine(jsEngine)
 {
 }
 
@@ -69,19 +72,19 @@ void PrefsCommand::operator()(const std::string& arguments)
     {
       std::string value;
       std::getline(argumentStream, value);
-      filterEngine.SetPref(pref, filterEngine.GetJsEngine().NewValue(value));
+      filterEngine.SetPref(pref, jsEngine.NewValue(value));
     }
     else if (current.IsNumber())
     {
       int64_t value;
       argumentStream >> value;
-      filterEngine.SetPref(pref, filterEngine.GetJsEngine().NewValue(value));
+      filterEngine.SetPref(pref, jsEngine.NewValue(value));
     }
     else if (current.IsBool())
     {
       bool value;
       argumentStream >> value;
-      filterEngine.SetPref(pref, filterEngine.GetJsEngine().NewValue(value));
+      filterEngine.SetPref(pref, jsEngine.NewValue(value));
     }
     else
       std::cout << "Cannot set a preference of unknown type" << std::endl;

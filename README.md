@@ -189,40 +189,39 @@ namespace. For brevity's sake, we'll assume the following `using` declaration:
     using namespace AdblockPlus;
 
 Most of the functionality of libadblockplus is available via the
-[`IFilterEngine`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L191)
-class. Since libadblockplus uses the Adblock Plus core code under the hood, you
-first need to create a
-[`JsEngine`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/JsEngine.h#L73)
-instance and pass some information about your
-application to it.
+[`IFilterEngine`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/IFilterEngine.h#L39)
+class. First you need to create a
+[`Platform`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/Platform.h#L51)
+instance based on information about your application.
 
     AppInfo appInfo;
     appInfo.name = "awesomewebfilter";
     appInfo.version = "0.1";
     appInfo.locale = "en-US";
 
-    auto platform = AdblockPlus::DefaultPlatformBuilder().CreatePlatform();
-    platform->SetUpJsEngine(appInfo);
-    JsEngine& jsEngine = platform->GetJsEngine();
+    PlatformFactory::CreationParameters platformParameters;
+    auto platform = PlatformFactory::CreatePlatform(std::move(platformParameters));
+    platform->SetUp(appInfo);
 
-`JsEngine` needs to store files, make web requests and write log messages. Default implementations
-are created using
-[`DefaultPlatformBuilder`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/Platform.h#L152).
+Depending on your application and platform, you possibly will need to supply your own
+implementations for subsytems dealing with logging, network, files, etc. For this, modify
+[`PlatformFactory::CreationParameters`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/PlatformFactory.h#L33)
+fields. In this case it is important to remember that if your implementation uses a
+multi-threaded model, `Platform` instance should be destroyed only after all threads
+have finished.
 
-Depending on your application and platform, you might want to supply your own
-implementations. For this, supply `Platform::CreationParameters`
-for [`Platform`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/Platform.h#L48) constructor.
+In addition, it is expected that other objects returned by the API, such as Filter,
+Subscription and JsValue, will be released before the Platform.
 
-With the `JsEngine` instance created, you can create a `IFilterEngine` instance:
+Next, you can create a `IFilterEngine` instance:
 
-    auto filterEngine = IFilterEngine::Create(jsEngine);
-
-Please also pay attention to asynchronous version of factory method
-FilterEngineFactory::CreateAsync and to optional creationParameters.
+    FilterEngineFactory::CreationParameters engineParamters;
+    platform->CreateFilterEngineAsync(engineParamters, [](const IFilterEngine&)> { ... });
 
 When initialised, `IFilterEngine` will automatically select a suitable ad
 blocking subscription based on `AppInfo::locale` and download the filters for
-it.
+it. To manually configure subscriptions you can modify `StringPrefName::FirstRunSubscriptionAutoselect` in preconfiguredPrefs for
+[`FilterEngineFactory::CreationParameters`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/FilterEngineFactory.h#L65).
 
 ### Managing subscriptions
 

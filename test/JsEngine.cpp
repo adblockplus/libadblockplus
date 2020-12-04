@@ -174,10 +174,9 @@ TEST_F(JsEngineTest, EventCallbacks)
   ASSERT_FALSE(callbackCalled);
 }
 
-TEST(NewJsEngineTest, GlobalPropertyTest)
+TEST_F(JsEngineTest, GlobalPropertyTest)
 {
-  Platform platform{ThrowingPlatformCreationParameters()};
-  auto& jsEngine = platform.GetJsEngine();
+  auto& jsEngine = GetJsEngine();
   jsEngine.SetGlobalProperty("foo", jsEngine.NewValue("bar"));
   auto foo = jsEngine.Evaluate("foo");
   ASSERT_TRUE(foo.IsString());
@@ -186,12 +185,11 @@ TEST(NewJsEngineTest, GlobalPropertyTest)
 
 #if UINTPTR_MAX == UINT32_MAX // detection of 32-bit platform
 static_assert(sizeof(intptr_t) == 4, "It should be 32bit platform");
-TEST(NewJsEngineTest, 32bitsOnly_MemoryLeak_NoLeak)
+TEST_F(JsEngineTest, 32bitsOnly_MemoryLeak_NoLeak)
 #else
-TEST(NewJsEngineTest, DISABLED_32bitsOnly_MemoryLeak_NoLeak)
+TEST_F(JsEngineTest, DISABLED_32bitsOnly_MemoryLeak_NoLeak)
 #endif
 {
-  Platform platform{ThrowingPlatformCreationParameters()};
   // v8::Isolate by default requires 32MB (depends on platform), so if there is
   // a memory leak than we will run out of memory on 32 bit platform because it
   // will allocate 32000 MB which is less than 2GB where it reaches out of
@@ -199,6 +197,6 @@ TEST(NewJsEngineTest, DISABLED_32bitsOnly_MemoryLeak_NoLeak)
   // makes sense.
   for (int i = 0; i < 1000; ++i)
   {
-    JsEngine::New(AppInfo(), platform);
+    JsEngine::New(AppInfo(), *platform);
   }
 }

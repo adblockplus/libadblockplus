@@ -19,8 +19,8 @@
 #include <iostream>
 #include <sstream>
 
-#include <AdblockPlus/Platform.h>
-
+#include "../src/DefaultPlatform.h"
+#include "../src/JsEngine.h"
 #include "FiltersCommand.h"
 #include "GcCommand.h"
 #include "HelpCommand.h"
@@ -63,9 +63,10 @@ int main()
     appInfo.applicationVersion = "1.0";
     appInfo.locale = "en-US";
 
-    auto platform = AdblockPlus::DefaultPlatformBuilder().CreatePlatform();
-    platform->SetUpJsEngine(appInfo);
-    AdblockPlus::JsEngine& jsEngine = platform->GetJsEngine();
+    auto platform = AdblockPlus::PlatformFactory::CreatePlatform();
+    platform->SetUp(appInfo);
+    AdblockPlus::JsEngine& jsEngine =
+        static_cast<AdblockPlus::DefaultPlatform*>(platform.get())->GetJsEngine();
     auto& filterEngine = platform->GetFilterEngine();
 
     CommandMap commands;
@@ -74,7 +75,7 @@ int main()
     Add(commands, std::make_unique<FiltersCommand>(filterEngine));
     Add(commands, std::make_unique<SubscriptionsCommand>(filterEngine));
     Add(commands, std::make_unique<MatchesCommand>(filterEngine));
-    Add(commands, std::make_unique<PrefsCommand>(filterEngine));
+    Add(commands, std::make_unique<PrefsCommand>(filterEngine, jsEngine));
 
     std::string commandLine;
     while (ReadCommandLine(commandLine))

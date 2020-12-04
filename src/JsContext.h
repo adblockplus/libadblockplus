@@ -20,7 +20,7 @@
 
 #include <v8.h>
 
-#include <AdblockPlus/JsEngine.h>
+#include "JsEngine.h"
 
 namespace AdblockPlus
 {
