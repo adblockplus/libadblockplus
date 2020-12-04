@@ -47,7 +47,7 @@ namespace
     {
       ThrowingPlatformCreationParameters platformParams;
       platformParams.logSystem.reset(mockLogSystem = new MockLogSystem());
-      platform.reset(new Platform(std::move(platformParams)));
+      platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(platformParams));
     }
   };
 }

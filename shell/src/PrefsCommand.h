@@ -26,13 +26,14 @@
 class PrefsCommand : public Command
 {
 public:
-  explicit PrefsCommand(AdblockPlus::IFilterEngine& filterEngine);
+  explicit PrefsCommand(AdblockPlus::IFilterEngine& filterEngine, AdblockPlus::JsEngine& jsEngine);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;
 
 private:
   AdblockPlus::IFilterEngine& filterEngine;
+  AdblockPlus::JsEngine& jsEngine;
 };
 
 #endif

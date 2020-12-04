@@ -15,9 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
+#include "DefaultLogSystem.h"
 
-#include <AdblockPlus/DefaultLogSystem.h>
+#include <iostream>
 
 void AdblockPlus::DefaultLogSystem::operator()(AdblockPlus::LogSystem::LogLevel logLevel,
                                                const std::string& message,

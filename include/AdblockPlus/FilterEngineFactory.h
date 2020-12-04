@@ -73,7 +73,7 @@ namespace AdblockPlus
     struct CreationParameters
     {
       /**
-       * `AdblockPlus::IFilterEngine::Prefs` name - value list of preconfigured
+       * `AdblockPlus::FilterEngineFactory::Prefs` name - value list of preconfigured
        * prefs.
        */
       struct Prefs

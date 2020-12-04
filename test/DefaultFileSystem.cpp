@@ -250,16 +250,17 @@ TEST_F(DefaultFileSystemTest, ResetAfterCallbackScheduled)
   appInfo.application = "standalone";
   appInfo.applicationVersion = "1.0";
   appInfo.locale = "en-US";
-  AdblockPlus::Platform::CreationParameters platformParams;
+  AdblockPlus::PlatformFactory::CreationParameters platformParams;
   platformParams.timer.reset(new NoopTimer());
   platformParams.webRequest.reset(new NoopWebRequest());
   platformParams.logSystem.reset(new LazyLogSystem());
   platformParams.resourceReader.reset(new DefaultResourceReader());
   platformParams.fileSystem.reset(fileSystem.release());
 
-  auto platform = std::make_unique<Platform>(std::move(platformParams));
-  platform->SetUpJsEngine(appInfo);
-  AdblockPlus::JsEngine& jsEngine = platform->GetJsEngine();
+  auto platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(platformParams));
+  platform->SetUp(appInfo);
+  AdblockPlus::JsEngine& jsEngine =
+      static_cast<AdblockPlus::DefaultPlatform*>(platform.get())->GetJsEngine();
 
   jsEngine.Evaluate("let result = {}; _fileSystem.read('', function(r) {result.content = "
                     "r.content;}, function(error) {result.error = error;})");

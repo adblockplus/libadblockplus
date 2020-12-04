@@ -25,7 +25,6 @@
 
 #include <AdblockPlus/Filter.h>
 #include <AdblockPlus/IElement.h>
-#include <AdblockPlus/JsEngine.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/Subscription.h>
 
@@ -91,11 +90,6 @@ namespace AdblockPlus
      */
     typedef std::function<void(const std::string&, JsValue&&)> FilterChangeCallback;
 
-    /**
-     * Container of name-value pairs representing a set of preferences.
-     */
-    typedef std::map<std::string, AdblockPlus::JsValue> Prefs;
-
     virtual ~IFilterEngine() = default;
 
     /**
@@ -106,12 +100,6 @@ namespace AdblockPlus
     virtual void SetEnabled(bool enabled) = 0;
 
     virtual bool IsEnabled() const = 0;
-
-    /**
-     * Retrieves the `JsEngine` instance associated with this `IFilterEngine`
-     * instance.
-     */
-    virtual JsEngine& GetJsEngine() const = 0;
 
     /**
      * Retrieves a filter object from its text representation.

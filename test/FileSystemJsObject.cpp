@@ -132,7 +132,7 @@ namespace
     {
       ThrowingPlatformCreationParameters params;
       params.fileSystem.reset(mockFileSystem = new MockFileSystem());
-      platform.reset(new AdblockPlus::Platform(std::move(params)));
+      platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(params));
     }
   };
 }

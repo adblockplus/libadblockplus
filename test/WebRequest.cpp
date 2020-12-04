@@ -44,7 +44,7 @@ namespace
       platformParams.fileSystem.reset(fileSystem = new LazyFileSystem());
       platformParams.webRequest = CreateWebRequest();
       platformParams.resourceReader.reset(new AdblockPlus::DefaultResourceReader());
-      platform.reset(new Platform(std::move(platformParams)));
+      platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(platformParams));
     }
 
     virtual WebRequestPtr CreateWebRequest() = 0;

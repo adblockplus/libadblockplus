@@ -22,9 +22,10 @@
 #include <gtest/gtest.h>
 #include <thread>
 
-#include <AdblockPlus/Platform.h>
-
+#include "../src/DefaultPlatform.h"
+#include "../src/JsEngine.h"
 #include "../src/Thread.h"
+#include "AdblockPlus/Platform.h"
 
 // Strictly speaking in each test there should be a special implementation of
 // an interface, which is merely referenced by a wrapper and the latter should
@@ -356,7 +357,7 @@ public:
   }
 };
 
-struct ThrowingPlatformCreationParameters : AdblockPlus::Platform::CreationParameters
+struct ThrowingPlatformCreationParameters : AdblockPlus::PlatformFactory::CreationParameters
 {
   ThrowingPlatformCreationParameters();
 };
@@ -368,14 +369,14 @@ protected:
 
   BaseJsTest()
   {
-    platform.reset(new AdblockPlus::Platform(ThrowingPlatformCreationParameters()));
+    platform = AdblockPlus::PlatformFactory::CreatePlatform(ThrowingPlatformCreationParameters());
   }
 
   AdblockPlus::JsEngine& GetJsEngine()
   {
     if (!platform)
       throw std::runtime_error("Platform must be initialized");
-    return platform->GetJsEngine();
+    return static_cast<AdblockPlus::DefaultPlatform*>(platform.get())->GetJsEngine();
   }
 };
 

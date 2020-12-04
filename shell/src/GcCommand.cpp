@@ -17,6 +17,8 @@
 
 #include "GcCommand.h"
 
+#include "../src/JsEngine.h"
+
 GcCommand::GcCommand(AdblockPlus::JsEngine& jsEngine) : Command("gc"), jsEngine(jsEngine)
 {
 }

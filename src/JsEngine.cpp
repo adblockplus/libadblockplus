@@ -18,8 +18,6 @@
 #include <AdblockPlus.h>
 #include <libplatform/libplatform.h>
 
-#include <AdblockPlus/Platform.h>
-
 #include "GlobalJsObject.h"
 #include "JsContext.h"
 #include "JsError.h"

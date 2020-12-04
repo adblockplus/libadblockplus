@@ -18,7 +18,7 @@
 #ifndef ADBLOCK_PLUS_DEFAULT_LOG_SYSTEM_H
 #define ADBLOCK_PLUS_DEFAULT_LOG_SYSTEM_H
 
-#include "LogSystem.h"
+#include <AdblockPlus/LogSystem.h>
 
 namespace AdblockPlus
 {

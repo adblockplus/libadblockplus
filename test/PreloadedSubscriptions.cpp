@@ -49,7 +49,7 @@ protected:
                                               const std::string& content)
   {
     resourceLoaderCounter = 0;
-    Platform::CreationParameters params;
+    PlatformFactory::CreationParameters params;
     params.resourceReader.reset(new WrappingResourceLoader(
         [subscriptionUrl, content, this](const std::string& url) -> std::string {
           if (url != subscriptionUrl)
@@ -166,12 +166,12 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, Expires)
   EXPECT_EQ(0, webRequestCounter);
 
   int period = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours(5)).count();
-  int softExpiration = engine.GetJsEngine()
+  int softExpiration = GetJsEngine()
                            .Evaluate("API.getSubscriptionFromUrl('" + url +
                                      "').softExpiration - (Date.now() / 1000)")
                            .AsInt();
   int hardExpiration =
-      engine.GetJsEngine()
+      GetJsEngine()
           .Evaluate("API.getSubscriptionFromUrl('" + url + "').expires - (Date.now() / 1000)")
           .AsInt();
 
