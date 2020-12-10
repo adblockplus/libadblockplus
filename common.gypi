@@ -42,7 +42,9 @@
 
   'target_defaults': {
     'configurations': {
-      'Debug': {},
+      'Debug': {
+        'cflags_cc': [ '-g' ],
+      },
       'Release': {}
     },
     'msvs_cygwin_shell': 0,
