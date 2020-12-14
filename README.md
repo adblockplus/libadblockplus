@@ -254,7 +254,7 @@ Removing a subscription is not rocket science either:
 
 Working with custom filters is very similar to working with subscriptions:
 
-    Filterr filter = filterEngine.GetFilter("||example.com/ad.png");
+    Filter filter = filterEngine.GetFilter("||example.com/ad.png");
     filterEngine.AddFilter(filter);
     filterEngine.RemoveFilter(filter);
 
@@ -274,7 +274,7 @@ To demonstrate this, we'll add a custom filter:
 Now we'll call matches on an URL that should be blocked:
 
     Filter match =
-      filterEngine.Matches("http://example.com/ad.png", "DOCUMENT", "");
+      filterEngine.Matches("http://example.com/ad.png", "IMAGE", "");
 
 Since we've added a matching filter, `match` will point to the same filter
 object as `filter`.
@@ -297,7 +297,7 @@ for [`IFilterEngine::Matches`](https://gitlab.com/eyeo/adblockplus/libadblockplu
 It should contain decoded and verified public key extracted from `X-Adblock-Key` header.
 
     Filter match =
-      filterEngine.Matches("http://example.com/ad.png", "DOCUMENT", "",
+      filterEngine.Matches("http://example.com/ad.png", "IMAGE", "",
          "DECODED PUBLIC KEY");
 
 You can [take a look](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/test/IFilterEngine.cpp#L668) for the sitekey-related tests for reference.
