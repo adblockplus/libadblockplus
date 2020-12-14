@@ -197,6 +197,11 @@ TEST_F(JsEngineTest, DISABLED_32bitsOnly_MemoryLeak_NoLeak)
   // makes sense.
   for (int i = 0; i < 1000; ++i)
   {
-    JsEngine::New(AppInfo(), *platform);
+    JsEngine::Interfaces interfaces{platform->GetTimer(),
+                                    platform->GetFileSystem(),
+                                    platform->GetWebRequest(),
+                                    platform->GetLogSystem(),
+                                    platform->GetResourceReader()};
+    JsEngine::New(AppInfo(), interfaces);
   }
 }

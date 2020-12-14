@@ -40,11 +40,14 @@ namespace AdblockPlus
         const OnFilterEngineCreatedCallback& onCreated = OnFilterEngineCreatedCallback()) override;
 
     IFilterEngine& GetFilterEngine() override;
-    void WithTimer(const WithTimerCallback&) override;
-    void WithFileSystem(const WithFileSystemCallback&) override;
-    void WithWebRequest(const WithWebRequestCallback&) override;
-    void WithLogSystem(const WithLogSystemCallback&) override;
-    void WithResourceReader(const WithResourceReaderCallback&) override;
+    ITimer& GetTimer() const override;
+    IFileSystem& GetFileSystem() const override;
+    IWebRequest& GetWebRequest() const override;
+    LogSystem& GetLogSystem() const override;
+    IResourceReader& GetResourceReader() const override;
+
+  private:
+    std::unique_ptr<JsEngine> jsEngine;
 
   protected:
     LogSystemPtr logSystem;
@@ -54,9 +57,7 @@ namespace AdblockPlus
     std::unique_ptr<IResourceReader> resourceReader;
 
   private:
-    std::unique_ptr<JsEngine> jsEngine;
     std::unique_ptr<IExecutor> executor;
-    std::recursive_mutex interfacesMutex;
     // used for creation and deletion of modules.
     std::mutex modulesMutex;
     std::shared_future<std::unique_ptr<IFilterEngine>> filterEngine;

@@ -15,10 +15,9 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "DefaultPlatform.h"
-
 #include <cassert>
 
+#include "DefaultPlatform.h"
 #include "JsEngine.h"
 
 using namespace AdblockPlus;
@@ -53,19 +52,6 @@ DefaultPlatform::DefaultPlatform(PlatformFactory::CreationParameters&& creationP
 DefaultPlatform::~DefaultPlatform()
 {
   executor->Stop();
-  LogSystemPtr tmpLogSystem;
-  TimerPtr tmpTimer;
-  FileSystemPtr tmpFileSystem;
-  WebRequestPtr tmpWebRequest;
-  std::unique_ptr<IResourceReader> tmpResourceReader;
-  {
-    std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
-    tmpLogSystem = std::move(logSystem);
-    tmpTimer = std::move(timer);
-    tmpFileSystem = std::move(fileSystem);
-    tmpWebRequest = std::move(webRequest);
-    tmpResourceReader = std::move(resourceReader);
-  }
 }
 
 JsEngine& DefaultPlatform::GetJsEngine()
@@ -79,7 +65,8 @@ void DefaultPlatform::SetUp(const AppInfo& appInfo, std::unique_ptr<IV8IsolatePr
   std::lock_guard<std::mutex> lock(modulesMutex);
   if (jsEngine)
     return;
-  jsEngine = JsEngine::New(appInfo, *this, std::move(isolate));
+  JsEngine::Interfaces interfaces{*timer, *fileSystem, *webRequest, *logSystem, *resourceReader};
+  jsEngine = JsEngine::New(appInfo, interfaces, std::move(isolate));
 }
 
 void DefaultPlatform::CreateFilterEngineAsync(
@@ -114,39 +101,29 @@ IFilterEngine& DefaultPlatform::GetFilterEngine()
   return *filterEngine.get().get();
 }
 
-void DefaultPlatform::WithTimer(const WithTimerCallback& callback)
+ITimer& DefaultPlatform::GetTimer() const
 {
-  std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
-  if (timer && callback)
-    callback(*timer);
+  return *timer;
 }
 
-void DefaultPlatform::WithFileSystem(const WithFileSystemCallback& callback)
+IFileSystem& DefaultPlatform::GetFileSystem() const
 {
-  std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
-  if (fileSystem && callback)
-    callback(*fileSystem);
+  return *fileSystem;
 }
 
-void DefaultPlatform::WithWebRequest(const WithWebRequestCallback& callback)
+IWebRequest& DefaultPlatform::GetWebRequest() const
 {
-  std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
-  if (webRequest && callback)
-    callback(*webRequest);
+  return *webRequest;
 }
 
-void DefaultPlatform::WithLogSystem(const WithLogSystemCallback& callback)
+LogSystem& DefaultPlatform::GetLogSystem() const
 {
-  std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
-  if (logSystem && callback)
-    callback(*logSystem);
+  return *logSystem;
 }
 
-void DefaultPlatform::WithResourceReader(const WithResourceReaderCallback& callback)
+IResourceReader& DefaultPlatform::GetResourceReader() const
 {
-  std::lock_guard<std::recursive_mutex> lock(interfacesMutex);
-  if (resourceReader && callback)
-    callback(*resourceReader);
+  return *resourceReader;
 }
 
 std::function<void(const std::string&)> DefaultPlatform::GetEvaluateCallback()

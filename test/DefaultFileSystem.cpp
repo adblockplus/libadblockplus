@@ -15,12 +15,13 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "../src/DefaultFileSystem.h"
+
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
 #include <memory>
 #include <sstream>
 
-#include "../src/DefaultFileSystem.h"
 #include "../src/DefaultResourceReader.h"
 #include "BaseJsTest.h"
 

@@ -86,21 +86,11 @@ namespace AdblockPlus
      * a dead lock.
      */
     virtual IFilterEngine& GetFilterEngine() = 0;
-
-    typedef std::function<void(ITimer&)> WithTimerCallback;
-    virtual void WithTimer(const WithTimerCallback&) = 0;
-
-    typedef std::function<void(IFileSystem&)> WithFileSystemCallback;
-    virtual void WithFileSystem(const WithFileSystemCallback&) = 0;
-
-    typedef std::function<void(IWebRequest&)> WithWebRequestCallback;
-    virtual void WithWebRequest(const WithWebRequestCallback&) = 0;
-
-    typedef std::function<void(LogSystem&)> WithLogSystemCallback;
-    virtual void WithLogSystem(const WithLogSystemCallback&) = 0;
-
-    typedef std::function<void(IResourceReader&)> WithResourceReaderCallback;
-    virtual void WithResourceReader(const WithResourceReaderCallback&) = 0;
+    virtual ITimer& GetTimer() const = 0;
+    virtual IFileSystem& GetFileSystem() const = 0;
+    virtual IWebRequest& GetWebRequest() const = 0;
+    virtual LogSystem& GetLogSystem() const = 0;
+    virtual IResourceReader& GetResourceReader() const = 0;
   };
 }
 
