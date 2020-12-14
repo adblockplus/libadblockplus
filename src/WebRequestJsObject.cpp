@@ -76,9 +76,7 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
 
     webRequestParams[2].Call(resultObject);
   };
-  jsEngine->GetPlatform().WithWebRequest([url, headers, getCallback](IWebRequest& webRequest) {
-    webRequest.GET(url, headers, getCallback);
-  });
+  jsEngine->GetWebRequest().GET(url, headers, getCallback);
 }
 
 namespace

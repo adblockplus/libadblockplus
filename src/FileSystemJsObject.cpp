@@ -53,22 +53,19 @@ namespace
       auto weakResolveCallback = jsEngine->StoreJsValues({converted[1]});
       auto weakRejectCallback = jsEngine->StoreJsValues({converted[2]});
       auto fileName = converted[0].AsString();
-      jsEngine->GetPlatform().WithFileSystem(
-          [jsEngine, weakResolveCallback, weakRejectCallback, fileName](IFileSystem& fileSystem) {
-            fileSystem.Read(
-                fileName,
-                [jsEngine, weakResolveCallback](IFileSystem::IOBuffer&& content) {
-                  const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-                  auto result = jsEngine->NewObject();
-                  result.SetStringBufferProperty("content", content);
-                  jsEngine->GetJsValues(weakResolveCallback)[0].Call(result);
-                },
-                [jsEngine, weakRejectCallback](const std::string& error) {
-                  if (error.empty())
-                    return;
-                  const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-                  jsEngine->GetJsValues(weakRejectCallback)[0].Call(jsEngine->NewValue(error));
-                });
+      jsEngine->GetFileSystem().Read(
+          fileName,
+          [jsEngine, weakResolveCallback](IFileSystem::IOBuffer&& content) {
+            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+            auto result = jsEngine->NewObject();
+            result.SetStringBufferProperty("content", content);
+            jsEngine->GetJsValues(weakResolveCallback)[0].Call(result);
+          },
+          [jsEngine, weakRejectCallback](const std::string& error) {
+            if (error.empty())
+              return;
+            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+            jsEngine->GetJsValues(weakRejectCallback)[0].Call(jsEngine->NewValue(error));
           });
     } // V8Callback
   }   // namespace ReadCallback
@@ -121,46 +118,42 @@ namespace
       auto weakResolveCallback = jsEngine->StoreJsValues({converted[2]});
       auto weakRejectCallback = jsEngine->StoreJsValues({converted[3]});
       auto fileName = converted[0].AsString();
-      jsEngine->GetPlatform().WithFileSystem(
-          [jsEngine, weakProcessFunc, weakResolveCallback, weakRejectCallback, fileName](
-              IFileSystem& fileSystem) {
-            fileSystem.Read(
-                fileName,
-                [jsEngine, weakProcessFunc, weakResolveCallback](IFileSystem::IOBuffer&& content) {
-                  const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-                  auto jsValues = jsEngine->GetJsValues(weakProcessFunc);
-                  auto processFunc = jsValues[0].UnwrapValue().As<v8::Function>();
-                  auto globalContext = context.GetV8Context()->Global();
-                  if (!globalContext->IsObject())
-                    throw std::runtime_error("`this` pointer has to be an object");
+      jsEngine->GetFileSystem().Read(
+          fileName,
+          [jsEngine, weakProcessFunc, weakResolveCallback](IFileSystem::IOBuffer&& content) {
+            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+            auto jsValues = jsEngine->GetJsValues(weakProcessFunc);
+            auto processFunc = jsValues[0].UnwrapValue().As<v8::Function>();
+            auto globalContext = context.GetV8Context()->Global();
+            if (!globalContext->IsObject())
+              throw std::runtime_error("`this` pointer has to be an object");
 
-                  auto isolate = jsEngine->GetIsolate();
-                  const v8::TryCatch tryCatch(isolate);
-                  const auto contentEnd = content.cend();
-                  auto stringBegin = SkipEndOfLine(content.begin(), contentEnd);
-                  auto v8Context = isolate->GetCurrentContext();
-                  do
-                  {
-                    auto stringEnd = AdvanceToEndOfLine(stringBegin, contentEnd);
-                    auto jsLine = CHECKED_TO_LOCAL_WITH_TRY_CATCH(
-                                      isolate,
-                                      Utils::StringBufferToV8String(
-                                          isolate, StringBuffer(stringBegin, stringEnd)),
-                                      tryCatch)
-                                      .As<v8::Value>();
+            auto isolate = jsEngine->GetIsolate();
+            const v8::TryCatch tryCatch(isolate);
+            const auto contentEnd = content.cend();
+            auto stringBegin = SkipEndOfLine(content.begin(), contentEnd);
+            auto v8Context = isolate->GetCurrentContext();
+            do
+            {
+              auto stringEnd = AdvanceToEndOfLine(stringBegin, contentEnd);
+              auto jsLine =
+                  CHECKED_TO_LOCAL_WITH_TRY_CATCH(
+                      isolate,
+                      Utils::StringBufferToV8String(isolate, StringBuffer(stringBegin, stringEnd)),
+                      tryCatch)
+                      .As<v8::Value>();
 
-                    CHECKED_TO_LOCAL_WITH_TRY_CATCH(
-                        isolate, processFunc->Call(v8Context, globalContext, 1, &jsLine), tryCatch);
+              CHECKED_TO_LOCAL_WITH_TRY_CATCH(
+                  isolate, processFunc->Call(v8Context, globalContext, 1, &jsLine), tryCatch);
 
-                    stringBegin = SkipEndOfLine(stringEnd, contentEnd);
-                  } while (stringBegin != contentEnd);
-                  jsEngine->GetJsValues(weakResolveCallback)[0].Call();
-                },
-                [jsEngine, weakRejectCallback](const std::string& error) {
-                  if (error.empty())
-                    return;
-                  jsEngine->GetJsValues(weakRejectCallback)[0].Call(jsEngine->NewValue(error));
-                });
+              stringBegin = SkipEndOfLine(stringEnd, contentEnd);
+            } while (stringBegin != contentEnd);
+            jsEngine->GetJsValues(weakResolveCallback)[0].Call();
+          },
+          [jsEngine, weakRejectCallback](const std::string& error) {
+            if (error.empty())
+              return;
+            jsEngine->GetJsValues(weakRejectCallback)[0].Call(jsEngine->NewValue(error));
           });
     } // V8Callback
   }   // namespace ReadFromFileCallback
@@ -181,15 +174,13 @@ namespace
     auto weakCallback = jsEngine->StoreJsValues(values);
     auto content = converted[1].AsStringBuffer();
     auto fileName = converted[0].AsString();
-    jsEngine->GetPlatform().WithFileSystem(
-        [jsEngine, weakCallback, fileName, content](IFileSystem& fileSystem) {
-          fileSystem.Write(fileName, content, [jsEngine, weakCallback](const std::string& error) {
-            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-            JsValueList params;
-            if (!error.empty())
-              params.push_back(jsEngine->NewValue(error));
-            jsEngine->TakeJsValues(weakCallback)[0].Call(params);
-          });
+    jsEngine->GetFileSystem().Write(
+        fileName, content, [jsEngine, weakCallback](const std::string& error) {
+          const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+          JsValueList params;
+          if (!error.empty())
+            params.push_back(jsEngine->NewValue(error));
+          jsEngine->TakeJsValues(weakCallback)[0].Call(params);
         });
   }
 
@@ -209,16 +200,13 @@ namespace
     auto weakCallback = jsEngine->StoreJsValues(values);
     auto from = converted[0].AsString();
     auto to = converted[1].AsString();
-    jsEngine->GetPlatform().WithFileSystem(
-        [jsEngine, weakCallback, from, to](IFileSystem& fileSystem) {
-          fileSystem.Move(from, to, [jsEngine, weakCallback](const std::string& error) {
-            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-            JsValueList params;
-            if (!error.empty())
-              params.push_back(jsEngine->NewValue(error));
-            jsEngine->TakeJsValues(weakCallback)[0].Call(params);
-          });
-        });
+    jsEngine->GetFileSystem().Move(from, to, [jsEngine, weakCallback](const std::string& error) {
+      const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+      JsValueList params;
+      if (!error.empty())
+        params.push_back(jsEngine->NewValue(error));
+      jsEngine->TakeJsValues(weakCallback)[0].Call(params);
+    });
   }
 
   void RemoveCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
@@ -237,16 +225,13 @@ namespace
     values.push_back(converted[1]);
     auto weakCallback = jsEngine->StoreJsValues(values);
     auto fileName = converted[0].AsString();
-    jsEngine->GetPlatform().WithFileSystem(
-        [jsEngine, weakCallback, fileName](IFileSystem& fileSystem) {
-          fileSystem.Remove(fileName, [jsEngine, weakCallback](const std::string& error) {
-            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-            JsValueList params;
-            if (!error.empty())
-              params.push_back(jsEngine->NewValue(error));
-            jsEngine->TakeJsValues(weakCallback)[0].Call(params);
-          });
-        });
+    jsEngine->GetFileSystem().Remove(fileName, [jsEngine, weakCallback](const std::string& error) {
+      const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+      JsValueList params;
+      if (!error.empty())
+        params.push_back(jsEngine->NewValue(error));
+      jsEngine->TakeJsValues(weakCallback)[0].Call(params);
+    });
   }
 
   void StatCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
@@ -264,23 +249,21 @@ namespace
     values.push_back(converted[1]);
     auto weakCallback = jsEngine->StoreJsValues(values);
     auto fileName = converted[0].AsString();
-    jsEngine->GetPlatform().WithFileSystem(
-        [jsEngine, weakCallback, fileName](IFileSystem& fileSystem) {
-          fileSystem.Stat(fileName,
-                          [jsEngine, weakCallback](const IFileSystem::StatResult& statResult,
-                                                   const std::string& error) {
-                            const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
-                            auto result = jsEngine->NewObject();
+    jsEngine->GetFileSystem().Stat(
+        fileName,
+        [jsEngine, weakCallback](const IFileSystem::StatResult& statResult,
+                                 const std::string& error) {
+          const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+          auto result = jsEngine->NewObject();
 
-                            result.SetProperty("exists", statResult.exists);
-                            result.SetProperty("lastModified", statResult.lastModified);
-                            if (!error.empty())
-                              result.SetProperty("error", error);
+          result.SetProperty("exists", statResult.exists);
+          result.SetProperty("lastModified", statResult.lastModified);
+          if (!error.empty())
+            result.SetProperty("error", error);
 
-                            JsValueList params;
-                            params.push_back(result);
-                            jsEngine->TakeJsValues(weakCallback)[0].Call(params);
-                          });
+          JsValueList params;
+          params.push_back(result);
+          jsEngine->TakeJsValues(weakCallback)[0].Call(params);
         });
   }
 }

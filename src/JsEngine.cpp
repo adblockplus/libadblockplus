@@ -135,10 +135,8 @@ void JsEngine::ScheduleTimer(const v8::FunctionCallbackInfo<v8::Value>& argument
   int64_t millis =
       CHECKED_TO_VALUE(arguments[1]->IntegerValue(arguments.GetIsolate()->GetCurrentContext()));
 
-  jsEngine->platform.WithTimer([millis, jsEngine, timerParamsID](ITimer& timer) {
-    timer.SetTimer(std::chrono::milliseconds(millis), [jsEngine, timerParamsID] {
-      jsEngine->CallTimerTask(timerParamsID);
-    });
+  jsEngine->GetTimer().SetTimer(std::chrono::milliseconds(millis), [jsEngine, timerParamsID] {
+    jsEngine->CallTimerTask(timerParamsID);
   });
 }
 
@@ -152,8 +150,10 @@ void JsEngine::CallTimerTask(const JsWeakValuesID& timerParamsID)
   callback.Call(timerParams);
 }
 
-AdblockPlus::JsEngine::JsEngine(Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate)
-    : platform(platform)
+AdblockPlus::JsEngine::JsEngine(const Interfaces& interfaces,
+                                std::unique_ptr<IV8IsolateProvider> isolate)
+    : timer(interfaces.timer), fileSystem(interfaces.fileSystem), webRequest(interfaces.webRequest),
+      logSystem(interfaces.logSystem), resourceReader(interfaces.resourceReader)
 #if !defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
       ,
       isolate(std::move(isolate))
@@ -166,14 +166,16 @@ AdblockPlus::JsEngine::JsEngine(Platform& platform, std::unique_ptr<IV8IsolatePr
 
 JsEngine::~JsEngine() = default;
 
-std::unique_ptr<AdblockPlus::JsEngine> AdblockPlus::JsEngine::New(
-    const AppInfo& appInfo, Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate)
+std::unique_ptr<AdblockPlus::JsEngine>
+AdblockPlus::JsEngine::New(const AppInfo& appInfo,
+                           const Interfaces& interfaces,
+                           std::unique_ptr<IV8IsolateProvider> isolate)
 {
   if (!isolate)
   {
     isolate.reset(new ScopedV8Isolate());
   }
-  std::unique_ptr<AdblockPlus::JsEngine> result(new JsEngine(platform, std::move(isolate)));
+  std::unique_ptr<AdblockPlus::JsEngine> result(new JsEngine(interfaces, std::move(isolate)));
 
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());

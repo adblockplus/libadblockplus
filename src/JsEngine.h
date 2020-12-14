@@ -28,6 +28,7 @@
 
 #include <AdblockPlus/AppInfo.h>
 #include <AdblockPlus/IFileSystem.h>
+#include <AdblockPlus/IResourceReader.h>
 #include <AdblockPlus/ITimer.h>
 #include <AdblockPlus/IV8IsolateProvider.h>
 #include <AdblockPlus/IWebRequest.h>
@@ -45,7 +46,6 @@ namespace v8
 namespace AdblockPlus
 {
   class JsEngine;
-  class Platform;
   /**
    * JavaScript engine used by `IFilterEngine`, wraps v8.
    */
@@ -62,6 +62,15 @@ namespace AdblockPlus
     typedef std::list<JsWeakValuesList> JsWeakValuesLists;
 
   public:
+    struct Interfaces
+    {
+      ITimer& timer;
+      IFileSystem& fileSystem;
+      IWebRequest& webRequest;
+      LogSystem& logSystem;
+      IResourceReader& resourceReader;
+    };
+
     ~JsEngine();
 
     /**
@@ -87,14 +96,13 @@ namespace AdblockPlus
      * Creates a new JavaScript engine instance.
      *
      * @param appInfo Information about the app.
-     * @param platform AdblockPlus platform providing with necessary
-     *        dependencies.
+     * @param interfaces contains implementation for the interfaces JsEngine uses.
      * @param isolate A provider of v8::Isolate, if the value is nullptr then
      *        a default implementation is used.
      * @return New `JsEngine` instance.
      */
     static std::unique_ptr<JsEngine> New(const AppInfo& appInfo,
-                                         Platform& platform,
+                                         const Interfaces& interfaces,
                                          std::unique_ptr<IV8IsolateProvider> isolate = nullptr);
 
     /**
@@ -258,22 +266,44 @@ namespace AdblockPlus
      */
     void NotifyLowMemory();
 
-    /**
-     * Private functionality.
-     */
-    Platform& GetPlatform()
+    ITimer& GetTimer() const
     {
-      return platform;
+      return timer;
+    }
+
+    IFileSystem& GetFileSystem() const
+    {
+      return fileSystem;
+    }
+
+    IWebRequest& GetWebRequest() const
+    {
+      return webRequest;
+    }
+
+    LogSystem& GetLogSystem() const
+    {
+      return logSystem;
+    }
+
+    IResourceReader& GetResourceReader() const
+    {
+      return resourceReader;
     }
 
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
-    JsEngine(Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate);
+    JsEngine(const Interfaces& interfaces, std::unique_ptr<IV8IsolateProvider> isolate);
 
     JsValue GetGlobalObject();
 
-    Platform& platform;
+    ITimer& timer;
+    IFileSystem& fileSystem;
+    IWebRequest& webRequest;
+    LogSystem& logSystem;
+    IResourceReader& resourceReader;
+
 #if !defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.
