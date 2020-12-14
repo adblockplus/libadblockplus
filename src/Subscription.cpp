@@ -17,7 +17,6 @@
 
 #include <assert.h>
 
-#include <AdblockPlus/ISubscriptionImplementation.h>
 #include <AdblockPlus/Subscription.h>
 
 using namespace AdblockPlus;

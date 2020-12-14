@@ -187,9 +187,9 @@ std::string DefaultFileSystemSync::Resolve(const std::string& path) const
   }
 }
 
-DefaultFileSystem::DefaultFileSystem(const Scheduler& scheduler,
+DefaultFileSystem::DefaultFileSystem(IExecutor& executor,
                                      std::unique_ptr<DefaultFileSystemSync> syncImpl)
-    : scheduler(scheduler), syncImpl(std::move(syncImpl))
+    : executor(executor), syncImpl(std::move(syncImpl))
 {
 }
 
@@ -197,7 +197,7 @@ void DefaultFileSystem::Read(const std::string& fileName,
                              const ReadCallback& doneCallback,
                              const Callback& errorCallback) const
 {
-  scheduler([this, fileName, doneCallback, errorCallback] {
+  executor.Dispatch([this, fileName, doneCallback, errorCallback] {
     std::string error;
     try
     {
@@ -228,7 +228,7 @@ void DefaultFileSystem::Write(const std::string& fileName,
                               const IOBuffer& data,
                               const Callback& callback)
 {
-  scheduler([this, fileName, data, callback] {
+  executor.Dispatch([this, fileName, data, callback] {
     std::string error;
     try
     {
@@ -250,7 +250,7 @@ void DefaultFileSystem::Move(const std::string& fromFileName,
                              const std::string& toFileName,
                              const Callback& callback)
 {
-  scheduler([this, fromFileName, toFileName, callback] {
+  executor.Dispatch([this, fromFileName, toFileName, callback] {
     std::string error;
     try
     {
@@ -270,7 +270,7 @@ void DefaultFileSystem::Move(const std::string& fromFileName,
 
 void DefaultFileSystem::Remove(const std::string& fileName, const Callback& callback)
 {
-  scheduler([this, fileName, callback] {
+  executor.Dispatch([this, fileName, callback] {
     std::string error;
     try
     {
@@ -290,7 +290,7 @@ void DefaultFileSystem::Remove(const std::string& fileName, const Callback& call
 
 void DefaultFileSystem::Stat(const std::string& fileName, const StatCallback& callback) const
 {
-  scheduler([this, fileName, callback] {
+  executor.Dispatch([this, fileName, callback] {
     std::string error;
     try
     {

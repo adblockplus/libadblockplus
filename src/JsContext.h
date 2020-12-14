@@ -27,7 +27,7 @@ namespace AdblockPlus
   class JsContext
   {
   public:
-    explicit JsContext(v8::Isolate* isolate, const v8::Global<v8::Context>& context);
+    JsContext(v8::Isolate* isolate, const v8::Global<v8::Context>& context);
 
     v8::Local<v8::Context> GetV8Context() const
     {

@@ -19,8 +19,6 @@
 
 #include <cassert>
 
-#include <AdblockPlus/AsyncExecutor.h>
-
 #include "JsEngine.h"
 
 using namespace AdblockPlus;
@@ -37,9 +35,7 @@ namespace
   }
 }
 
-DefaultPlatform::DefaultPlatform(PlatformFactory::CreationParameters&& creationParameters,
-                                 std::shared_ptr<OptionalAsyncExecutor> asyncExecutor)
-    : asyncExecutor(asyncExecutor)
+DefaultPlatform::DefaultPlatform(PlatformFactory::CreationParameters&& creationParameters)
 {
 #define ASSIGN_PLATFORM_PARAM(param)                                                               \
   ValidatePlatformCreationParameter(param = std::move(creationParameters.param), #param)
@@ -49,13 +45,14 @@ DefaultPlatform::DefaultPlatform(PlatformFactory::CreationParameters&& creationP
   ASSIGN_PLATFORM_PARAM(fileSystem);
   ASSIGN_PLATFORM_PARAM(webRequest);
   ASSIGN_PLATFORM_PARAM(resourceReader);
+  ASSIGN_PLATFORM_PARAM(executor);
 
 #undef ASSIGN_PLATFORM_PARAM
 }
 
 DefaultPlatform::~DefaultPlatform()
 {
-  asyncExecutor->Invalidate();
+  executor->Stop();
   LogSystemPtr tmpLogSystem;
   TimerPtr tmpTimer;
   FileSystemPtr tmpFileSystem;

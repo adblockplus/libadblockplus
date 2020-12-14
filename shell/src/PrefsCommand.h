@@ -26,7 +26,7 @@
 class PrefsCommand : public Command
 {
 public:
-  explicit PrefsCommand(AdblockPlus::IFilterEngine& filterEngine, AdblockPlus::JsEngine& jsEngine);
+  PrefsCommand(AdblockPlus::IFilterEngine& filterEngine, AdblockPlus::JsEngine& jsEngine);
   void operator()(const std::string& arguments);
   std::string GetDescription() const;
   std::string GetUsage() const;

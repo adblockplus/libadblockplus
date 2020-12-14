@@ -329,6 +329,28 @@ public:
   Implementation impl;
 };
 
+class WrappingExecutor : public AdblockPlus::IExecutor
+{
+public:
+  typedef std::function<void(const std::function<void()>&)> Implementation;
+
+  WrappingExecutor(const Implementation& callback) : impl(callback)
+  {
+  }
+
+  void Dispatch(const std::function<void()>& task) override
+  {
+    impl(task);
+  }
+
+  void Stop() override
+  {
+  }
+
+private:
+  Implementation impl;
+};
+
 struct DelayedWebRequestTask
 {
   std::string url;

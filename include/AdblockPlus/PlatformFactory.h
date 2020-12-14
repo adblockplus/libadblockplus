@@ -18,6 +18,7 @@
 #ifndef ADBLOCK_PLUS_PLATFORM_FACTORY_H
 #define ADBLOCK_PLUS_PLATFORM_FACTORY_H
 
+#include <AdblockPlus/IExecutor.h>
 #include <AdblockPlus/Platform.h>
 
 namespace AdblockPlus
@@ -41,6 +42,11 @@ namespace AdblockPlus
        * Optional base path for file system. Used only if fileSystem is not provided.
        */
       std::string basePath;
+      /**
+       * Optional executor to initialize default implementations of subsystems. Used only if some
+       * subsystems is not provided.
+       */
+      std::unique_ptr<IExecutor> executor;
     };
 
     /**
@@ -49,6 +55,8 @@ namespace AdblockPlus
      */
     static std::unique_ptr<Platform>
     CreatePlatform(CreationParameters&& parameters = CreationParameters());
+
+    static std::unique_ptr<IExecutor> CreateExecutor();
   };
 }
 

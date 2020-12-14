@@ -17,6 +17,7 @@
 
 #include <AdblockPlus/PlatformFactory.h>
 
+#include "AsyncExecutor.h"
 #include "DefaultFileSystem.h"
 #include "DefaultLogSystem.h"
 #include "DefaultPlatform.h"
@@ -28,11 +29,8 @@ using namespace AdblockPlus;
 
 std::unique_ptr<Platform> PlatformFactory::CreatePlatform(CreationParameters&& parameters)
 {
-  auto sharedAsyncExecutor = std::make_shared<OptionalAsyncExecutor>();
-  Scheduler scheduler = [sharedAsyncExecutor](const SchedulerTask& task) {
-    sharedAsyncExecutor->Dispatch(task);
-  };
-
+  if (!parameters.executor)
+    parameters.executor = CreateExecutor();
   if (!parameters.logSystem)
     parameters.logSystem.reset(new DefaultLogSystem());
   if (!parameters.timer)
@@ -40,16 +38,21 @@ std::unique_ptr<Platform> PlatformFactory::CreatePlatform(CreationParameters&& p
   if (!parameters.webRequest)
   {
     parameters.webRequest.reset(
-        new DefaultWebRequest(scheduler, std::make_unique<DefaultWebRequestSync>()));
+        new DefaultWebRequest(*parameters.executor, std::make_unique<DefaultWebRequestSync>()));
   }
   if (!parameters.fileSystem)
   {
     parameters.fileSystem.reset(new DefaultFileSystem(
-        scheduler,
+        *parameters.executor,
         std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(parameters.basePath))));
   }
   if (!parameters.resourceReader)
     parameters.resourceReader.reset(new DefaultResourceReader());
 
-  return std::make_unique<DefaultPlatform>(std::move(parameters), sharedAsyncExecutor);
+  return std::make_unique<DefaultPlatform>(std::move(parameters));
+}
+
+std::unique_ptr<IExecutor> PlatformFactory::CreateExecutor()
+{
+  return std::unique_ptr<IExecutor>(new OptionalAsyncExecutor());
 }

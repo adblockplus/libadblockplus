@@ -32,7 +32,6 @@
 #include <AdblockPlus/ITimer.h>
 #include <AdblockPlus/IWebRequest.h>
 #include <AdblockPlus/LogSystem.h>
-#include <AdblockPlus/Scheduler.h>
 
 namespace AdblockPlus
 {

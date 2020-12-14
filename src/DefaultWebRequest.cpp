@@ -21,8 +21,18 @@
 
 using namespace AdblockPlus;
 
-DefaultWebRequest::DefaultWebRequest(const Scheduler& scheduler, WebRequestSyncPtr syncImpl)
-    : scheduler(scheduler), syncImpl(std::move(syncImpl))
+AdblockPlus::ServerResponse
+AdblockPlus::DefaultWebRequestSync::GET(const std::string& url,
+                                        const HeaderList& requestHeaders) const
+{
+  AdblockPlus::ServerResponse result;
+  result.status = IWebRequest::NS_ERROR_FAILURE;
+  result.responseStatus = 0;
+  return result;
+}
+
+DefaultWebRequest::DefaultWebRequest(IExecutor& executor, WebRequestSyncPtr syncImpl)
+    : executor(executor), syncImpl(std::move(syncImpl))
 {
 }
 
@@ -34,7 +44,7 @@ void DefaultWebRequest::GET(const std::string& url,
                             const HeaderList& requestHeaders,
                             const GetCallback& getCallback)
 {
-  scheduler([this, url, requestHeaders, getCallback] {
+  executor.Dispatch([this, url, requestHeaders, getCallback] {
     getCallback(this->syncImpl->GET(url, requestHeaders));
   });
 }
