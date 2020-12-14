@@ -33,7 +33,6 @@
 #include <AdblockPlus/IWebRequest.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/LogSystem.h>
-#include <AdblockPlus/Scheduler.h>
 
 namespace v8
 {
@@ -270,7 +269,7 @@ namespace AdblockPlus
   private:
     void CallTimerTask(const JsWeakValuesID& timerParamsID);
 
-    explicit JsEngine(Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate);
+    JsEngine(Platform& platform, std::unique_ptr<IV8IsolateProvider> isolate);
 
     JsValue GetGlobalObject();
 

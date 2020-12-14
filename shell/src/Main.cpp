@@ -28,6 +28,10 @@
 #include "PrefsCommand.h"
 #include "SubscriptionsCommand.h"
 
+#ifdef HAVE_CURL
+#include "WebRequestCurl.h"
+#endif // HAVE_CURL
+
 namespace
 {
   void Add(CommandMap& commands, std::unique_ptr<Command> command)
@@ -63,7 +67,15 @@ int main()
     appInfo.applicationVersion = "1.0";
     appInfo.locale = "en-US";
 
-    auto platform = AdblockPlus::PlatformFactory::CreatePlatform();
+    AdblockPlus::PlatformFactory::CreationParameters params;
+
+#ifdef HAVE_CURL
+    params.executor = AdblockPlus::PlatformFactory::CreateExecutor();
+    params.webRequest.reset(
+        new AdblockPlus::DefaultWebRequest(*params.executor, std::make_unique<WebRequestCurl>()));
+#endif // HAVE_CURL
+
+    auto platform = AdblockPlus::PlatformFactory::CreatePlatform(std::move(params));
     platform->SetUp(appInfo);
     AdblockPlus::JsEngine& jsEngine =
         static_cast<AdblockPlus::DefaultPlatform*>(platform.get())->GetJsEngine();

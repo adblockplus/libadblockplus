@@ -26,27 +26,27 @@
 
 using AdblockPlus::FileSystemPtr;
 using AdblockPlus::IFileSystem;
-using AdblockPlus::SchedulerTask;
 
 using namespace AdblockPlus;
+
 namespace
 {
   const std::string testFileName = "libadblockplus-t\xc3\xa4st-file";
 
-  FileSystemPtr CreateDefaultFileSystem(const Scheduler& scheduler)
-  {
-    return FileSystemPtr(new DefaultFileSystem(
-        scheduler, std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(""))));
-  }
-
   class DefaultFileSystemTest : public ::testing::Test
   {
   public:
+    DefaultFileSystemTest()
+        : executor([this](const std::function<void()>& task) {
+            fileSystemTasks.emplace_back(task);
+          })
+    {
+    }
+
     void SetUp() override
     {
-      fileSystem = CreateDefaultFileSystem([this](const SchedulerTask& task) {
-        fileSystemTasks.emplace_back(task);
-      });
+      fileSystem = FileSystemPtr(new DefaultFileSystem(
+          executor, std::unique_ptr<DefaultFileSystemSync>(new DefaultFileSystemSync(""))));
     }
 
   protected:
@@ -71,7 +71,8 @@ namespace
       fileSystemTasks.pop_front();
     }
 
-    std::list<SchedulerTask> fileSystemTasks;
+    WrappingExecutor executor;
+    std::list<std::function<void()>> fileSystemTasks;
     FileSystemPtr fileSystem;
   };
 }

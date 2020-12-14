@@ -15,10 +15,10 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "../src/AsyncExecutor.h"
+
 #include <future>
 #include <gtest/gtest.h>
-
-#include <AdblockPlus/AsyncExecutor.h>
 
 using namespace AdblockPlus;
 

@@ -15,12 +15,14 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "WebRequestCurl.h"
+
+#ifdef HAVE_CURL
+
 #include <algorithm>
 #include <cctype>
 #include <curl/curl.h>
 #include <sstream>
-
-#include "DefaultWebRequest.h"
 
 namespace
 {
@@ -122,12 +124,11 @@ namespace
   }
 }
 
-AdblockPlus::ServerResponse
-AdblockPlus::DefaultWebRequestSync::GET(const std::string& url,
-                                        const HeaderList& requestHeaders) const
+AdblockPlus::ServerResponse WebRequestCurl::GET(const std::string& url,
+                                                const AdblockPlus::HeaderList& requestHeaders) const
 {
   AdblockPlus::ServerResponse result;
-  result.status = IWebRequest::NS_ERROR_NOT_INITIALIZED;
+  result.status = AdblockPlus::IWebRequest::NS_ERROR_NOT_INITIALIZED;
   result.responseStatus = 0;
 
   CURL* curl = curl_easy_init();
@@ -187,3 +188,5 @@ AdblockPlus::DefaultWebRequestSync::GET(const std::string& url,
   }
   return result;
 }
+
+#endif // HAVE_CURL

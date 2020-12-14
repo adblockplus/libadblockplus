@@ -15,6 +15,9 @@
  * along with Adblock Plus. If not, see <http://www.gnu.org/licenses/>.
  */
 #pragma once
+
+#include <AdblockPlus/IExecutor.h>
+
 #include "ActiveObject.h"
 
 namespace AdblockPlus
@@ -73,11 +76,11 @@ namespace AdblockPlus
    * `AsyncExecutor`. Any subsequent calls of `Dispatch` have no effect,
    * what allows to safely share `AsyncExecutor` but control it's operability.
    */
-  class OptionalAsyncExecutor
+  class OptionalAsyncExecutor : public IExecutor
   {
   public:
     /**
-     * Contructor.
+     * Constructor.
      *
      * Initially constructed the class behaves as `AsyncExecutor`.
      */
@@ -91,7 +94,7 @@ namespace AdblockPlus
      *        different from the caller thread. There is no effect if `call` is
      *        empty or if `Invalidate` had been already called.
      */
-    void Dispatch(const std::function<void()>& call)
+    void Dispatch(const std::function<void()>& call) override
     {
       std::lock_guard<std::mutex> lock(asyncExecutorMutex);
       if (!executor)
@@ -103,7 +106,7 @@ namespace AdblockPlus
      * Destroys internally held `AsyncExecutor`, any subsequent calls of
      * `Dispatch` have no effect.
      */
-    void Invalidate()
+    void Stop() override
     {
       std::unique_ptr<AsyncExecutor> tmp;
       {

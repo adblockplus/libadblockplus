@@ -1207,8 +1207,8 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsNonExisting)
 class TestElement : public IElement
 {
 public:
-  explicit TestElement(const std::map<std::string, std::string>& attributes,
-                       const std::vector<TestElement>& children = {})
+  TestElement(const std::map<std::string, std::string>& attributes,
+              const std::vector<TestElement>& children = {})
       : data(attributes), subelemets(children)
   {
   }

@@ -1,18 +1,4 @@
 {
-  'conditions': [[
-    # We don't want to use curl on Windows and Android, skip the check there
-    'OS=="win" or OS=="android"',
-    {
-      'variables': {
-        'have_curl': 0
-      }
-    },
-    {
-      'variables': {
-        'have_curl': '<!(python check_curl.py)'
-      }
-    }
-  ]],
   'includes': ['v8.gypi'],
   'variables': {
     'library_files': [
@@ -80,63 +66,78 @@
       '<(libv8_include_dir)'
     ],
     'sources': [
-      'include/AdblockPlus/ActiveObject.h',
-      'include/AdblockPlus/AsyncExecutor.h',
+      'include/AdblockPlus/AppInfo.h',
       'include/AdblockPlus/Filter.h',
       'include/AdblockPlus/FilterEngineFactory.h',
       'include/AdblockPlus/IElement.h',
+      'include/AdblockPlus/IExecutor.h',
       'include/AdblockPlus/IFileSystem.h',
       'include/AdblockPlus/IFilterEngine.h',
       'include/AdblockPlus/IFilterImplementation.h',
       'include/AdblockPlus/IResourceReader.h',
+      'include/AdblockPlus/ISubscriptionImplementation.h',
       'include/AdblockPlus/ITimer.h',
+      'include/AdblockPlus/IV8IsolateProvider.h',
       'include/AdblockPlus/IWebRequest.h',
+      'include/AdblockPlus/JSValue.h',
       'include/AdblockPlus/Platform.h',
       'include/AdblockPlus/PlatformFactory.h',
-      'include/AdblockPlus/Scheduler.h',
-      'include/AdblockPlus/SynchronizedCollection.h',
+      'include/AdblockPlus/ReferrerMapping.h',
+      'include/AdblockPlus/Subscription.h',
       'src/ActiveObject.cpp',
+      'src/ActiveObject.h',
       'src/AsyncExecutor.cpp',
+      'src/AsyncExecutor.h',
       'src/AppInfoJsObject.cpp',
+      'src/AppInfoJsObject.h',
       'src/ConsoleJsObject.cpp',
-      'src/DefaultLogSystem.h',
-      'src/DefaultLogSystem.cpp',
-      'src/DefaultFileSystem.h',
+      'src/ConsoleJsObject.h',
       'src/DefaultFileSystem.cpp',
-      'src/DefaultFilterImplementation.h',
-      'src/DefaultFilterImplementation.cpp',
-      'src/DefaultFilterEngine.h',
+      'src/DefaultFileSystem.h',
       'src/DefaultFilterEngine.cpp',
-      'src/DefaultPlatform.h',
+      'src/DefaultFilterEngine.h',
+      'src/DefaultFilterImplementation.cpp',
+      'src/DefaultFilterImplementation.h',
+      'src/DefaultLogSystem.cpp',
+      'src/DefaultLogSystem.h',
       'src/DefaultPlatform.cpp',
-      'src/DefaultResourceReader.h',
+      'src/DefaultPlatform.h',
       'src/DefaultResourceReader.cpp',
-      'src/DefaultSubscriptionImplementation.h',
+      'src/DefaultResourceReader.h',
       'src/DefaultSubscriptionImplementation.cpp',
+      'src/DefaultSubscriptionImplementation.h',
       'src/DefaultTimer.cpp',
       'src/DefaultTimer.h',
-      'src/DefaultWebRequest.h',
       'src/DefaultWebRequest.cpp',
+      'src/DefaultWebRequest.h',
       'src/FileSystemJsObject.cpp',
+      'src/FileSystemJsObject.h',
       'src/Filter.cpp',
       'src/FilterEngineFactory.cpp',
       'src/GlobalJsObject.cpp',
-      'src/ElementUtils.h',
+      'src/GlobalJsObject.h',
       'src/ElementUtils.cpp',
+      'src/ElementUtils.h',
       'src/IFilterEngine.cpp',
       'src/JsContext.cpp',
+      'src/JsContext.h',
       'src/JsEngine.cpp',
       'src/JsEngine.h',
       'src/JsError.cpp',
+      'src/JsError.h',
       'src/JsValue.cpp',
       'src/PlatformFactory.cpp',
       'src/ReferrerMapping.cpp',
-      'src/ResourceReaderJsObject.h',
       'src/ResourceReaderJsObject.cpp',
+      'src/ResourceReaderJsObject.h',
       'src/Subscription.cpp',
+      'src/SynchronizedCollection.h',
       'src/Thread.cpp',
+      'src/Thread.h',
       'src/Utils.cpp',
+      'src/Utils.h',
       'src/WebRequestJsObject.cpp',
+      'src/WebRequestJsObject.h',
       '<(INTERMEDIATE_DIR)/adblockplus.js.cpp'
     ],
     'defines': [
@@ -176,37 +177,7 @@
     'conditions': [
       ['OS=="android"', {
         'standalone_static_library': 1, # disable thin archives
-      }],
-      ['have_curl==1',
-        {
-          'sources': [
-            'src/DefaultWebRequestCurl.cpp',
-          ],
-          'link_settings': {
-            'libraries': ['-lcurl']
-          },
-          'all_dependent_settings': {
-            'defines': ['HAVE_CURL'],
-          }
-        }
-      ],
-      ['OS=="win"',
-        {
-          'sources': [
-            'src/DefaultWebRequestWinInet.cpp',
-          ],
-          'link_settings': {
-            'libraries': [ '-lshlwapi.lib', '-lwinhttp.lib' ]
-          }
-        }
-      ],
-      ['have_curl!=1 and OS!="win"',
-        {
-          'sources': [
-            'src/DefaultWebRequestDummy.cpp',
-          ]
-        }
-      ],
+      }]
     ],
     'actions': [{
       'action_name': 'convert_js',

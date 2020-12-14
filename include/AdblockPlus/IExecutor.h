@@ -15,19 +15,29 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_SCHEDULER_H
-#define ADBLOCK_PLUS_SCHEDULER_H
+#ifndef ADBLOCK_PLUS_IEXECUTOR_H
+#define ADBLOCK_PLUS_IEXECUTOR_H
+
+#include <functional>
 
 namespace AdblockPlus
 {
-  /**
-   * Task object which can be passed to `Scheduler` to be executed asynchronously.
-   */
-  typedef std::function<void()> SchedulerTask;
+  class IExecutor
+  {
+  public:
+    virtual ~IExecutor() = default;
 
-  /**
-   * Scheduler object executing tasks asynchronously.
-   */
-  typedef std::function<void(const SchedulerTask&)> Scheduler;
+    /**
+     * Executes the given task at some time in the future. Task will be never executed after Stop is
+     * called.
+     */
+    virtual void Dispatch(const std::function<void()>& task) = 0;
+
+    /**
+     * Stop accepting tasks.
+     */
+    virtual void Stop() = 0;
+  };
 }
-#endif // ADBLOCK_PLUS_SCHEDULER_H
+
+#endif // ADBLOCK_PLUS_IEXECUTOR_H

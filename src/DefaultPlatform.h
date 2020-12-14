@@ -18,7 +18,7 @@
 #ifndef ADBLOCK_PLUS_DEFAULT_PLATFORM_H
 #define ADBLOCK_PLUS_DEFAULT_PLATFORM_H
 
-#include <AdblockPlus/AsyncExecutor.h>
+#include <AdblockPlus/IExecutor.h>
 #include <AdblockPlus/PlatformFactory.h>
 
 namespace AdblockPlus
@@ -26,8 +26,7 @@ namespace AdblockPlus
   class DefaultPlatform : public Platform
   {
   public:
-    DefaultPlatform(PlatformFactory::CreationParameters&& creationParameters,
-                    std::shared_ptr<OptionalAsyncExecutor> asyncExecutor);
+    DefaultPlatform(PlatformFactory::CreationParameters&& creationParameters);
     ~DefaultPlatform() override;
 
     JsEngine& GetJsEngine();
@@ -56,7 +55,7 @@ namespace AdblockPlus
 
   private:
     std::unique_ptr<JsEngine> jsEngine;
-    std::shared_ptr<OptionalAsyncExecutor> asyncExecutor;
+    std::unique_ptr<IExecutor> executor;
     std::recursive_mutex interfacesMutex;
     // used for creation and deletion of modules.
     std::mutex modulesMutex;

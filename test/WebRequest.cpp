@@ -28,11 +28,6 @@ using namespace AdblockPlus;
 
 namespace
 {
-  WebRequestPtr CreateDefaultWebRequest(const Scheduler& scheduler)
-  {
-    return WebRequestPtr(
-        new DefaultWebRequest(scheduler, WebRequestSyncPtr(new DefaultWebRequestSync())));
-  }
   class BaseWebRequestTest : public BaseJsTest
   {
   protected:
@@ -61,11 +56,20 @@ namespace
   {
     WebRequestPtr CreateWebRequest() override
     {
-      return CreateDefaultWebRequest([this](const SchedulerTask& task) {
-        webRequestTasks.emplace_back(task);
-      });
+      return WebRequestPtr(
+          new DefaultWebRequest(executor, WebRequestSyncPtr(new DefaultWebRequestSync())));
     }
-    std::list<SchedulerTask> webRequestTasks;
+
+    std::list<std::function<void()>> webRequestTasks;
+    WrappingExecutor executor;
+
+  public:
+    DefaultWebRequestTest()
+        : executor([this](const std::function<void()>& task) {
+            webRequestTasks.emplace_back(task);
+          })
+    {
+    }
 
   protected:
     void WaitForVariable(const std::string& variable, AdblockPlus::JsEngine& jsEngine)
@@ -183,54 +187,6 @@ TEST_F(MockWebRequestTest, SuccessfulRequest)
             jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
 }
 
-#if defined(HAVE_CURL) || defined(_WIN32)
-TEST_F(DefaultWebRequestTest, RealWebRequest)
-{
-  auto& jsEngine = GetJsEngine();
-  // This URL should redirect to easylist-downloads.adblockplus.org and we
-  // should get the actual filter list back.
-  jsEngine.Evaluate(
-      "let foo; _webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, "
-      "function(result) {foo = result;} )");
-  WaitForVariable("foo", jsEngine);
-  ASSERT_EQ("text/plain",
-            jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
-  ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("foo.status").AsInt());
-  ASSERT_EQ(200, jsEngine.Evaluate("foo.responseStatus").AsInt());
-  ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("foo.responseText.substr(0, 14)").AsString());
-  ASSERT_EQ("text/plain",
-            jsEngine.Evaluate("foo.responseHeaders['content-type'].substr(0, 10)").AsString());
-#if defined(HAVE_CURL)
-  ASSERT_EQ("gzip",
-            jsEngine.Evaluate("foo.responseHeaders['content-encoding'].substr(0, 4)").AsString());
-#endif
-  ASSERT_TRUE(jsEngine.Evaluate("foo.responseHeaders['location']").IsUndefined());
-}
-
-TEST_F(DefaultWebRequestTest, XMLHttpRequest)
-{
-  auto& jsEngine = GetJsEngine();
-  CreateFilterEngine(*platform);
-
-  ResetTestXHR(jsEngine, "https://easylist-downloads.adblockplus.org/easylist.txt");
-  jsEngine.Evaluate("\
-    request.setRequestHeader('X', 'Y');\
-    request.setRequestHeader('X2', 'Y2');\
-    request.send(null);");
-  WaitForVariable("result", jsEngine);
-  ASSERT_EQ(200, jsEngine.Evaluate("request.status").AsInt());
-  ASSERT_EQ("[Adblock Plus ", jsEngine.Evaluate("result.substr(0, 14)").AsString());
-  ASSERT_EQ(
-      "text/plain",
-      jsEngine.Evaluate("request.getResponseHeader('Content-Type').substr(0, 10)").AsString());
-#if defined(HAVE_CURL)
-  ASSERT_EQ(
-      "gzip",
-      jsEngine.Evaluate("request.getResponseHeader('Content-Encoding').substr(0, 4)").AsString());
-#endif
-  ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Location')").IsNull());
-}
-#else
 TEST_F(DefaultWebRequestTest, DummyWebRequest)
 {
   auto& jsEngine = GetJsEngine();
@@ -258,8 +214,6 @@ TEST_F(DefaultWebRequestTest, DummyXMLHttpRequest)
   ASSERT_EQ("error", jsEngine.Evaluate("result").AsString());
   ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Content-Type')").IsNull());
 }
-
-#endif
 
 namespace
 {

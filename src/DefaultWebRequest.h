@@ -18,8 +18,8 @@
 #ifndef ADBLOCK_PLUS_DEFAULT_WEB_REQUEST_H
 #define ADBLOCK_PLUS_DEFAULT_WEB_REQUEST_H
 
+#include <AdblockPlus/IExecutor.h>
 #include <AdblockPlus/IWebRequest.h>
-#include <AdblockPlus/Scheduler.h>
 
 namespace AdblockPlus
 {
@@ -29,19 +29,12 @@ namespace AdblockPlus
    */
   struct IWebRequestSync
   {
-    virtual ~IWebRequestSync()
-    {
-    }
+    virtual ~IWebRequestSync() = default;
     virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
   };
 
   typedef std::unique_ptr<IWebRequestSync> WebRequestSyncPtr;
 
-  /**
-   * `WebRequest` implementation that uses `WinInet` on Windows and libcurl
-   * on other platforms. A dummy implementation that always reports failure is
-   * used if libcurl is not available.
-   */
   class DefaultWebRequestSync : public IWebRequestSync
   {
   public:
@@ -54,7 +47,7 @@ namespace AdblockPlus
   class DefaultWebRequest : public IWebRequest
   {
   public:
-    explicit DefaultWebRequest(const Scheduler& scheduler, WebRequestSyncPtr syncImpl);
+    DefaultWebRequest(IExecutor& executor, WebRequestSyncPtr syncImpl);
     ~DefaultWebRequest();
 
     void GET(const std::string& url,
@@ -62,7 +55,7 @@ namespace AdblockPlus
              const GetCallback& getCallback) override;
 
   private:
-    Scheduler scheduler;
+    IExecutor& executor;
     WebRequestSyncPtr syncImpl;
   };
 }

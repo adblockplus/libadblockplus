@@ -1,4 +1,18 @@
 {
+  'conditions': [[
+    # We don't want to use curl on Windows and Android, skip the check there
+    'OS=="win" or OS=="android"',
+    {
+      'variables': {
+        'have_curl': 0
+      }
+    },
+    {
+      'variables': {
+        'have_curl': '<!(python check_curl.py)'
+      }
+    }
+  ]],
   'targets': [{
     'target_name': 'abpshell',
     'type': 'executable',
@@ -6,14 +20,16 @@
       'libadblockplus.gyp:libadblockplus'
     ],
     'sources': [
-      'shell/src/Main.cpp',
       'shell/src/Command.cpp',
+      'shell/src/FiltersCommand.cpp',
       'shell/src/GcCommand.cpp',
       'shell/src/HelpCommand.cpp',
-      'shell/src/FiltersCommand.cpp',
+      'shell/src/Main.cpp',
       'shell/src/MatchesCommand.cpp',
       'shell/src/PrefsCommand.cpp',
-      'shell/src/SubscriptionsCommand.cpp'
+      'shell/src/SubscriptionsCommand.cpp',
+      'shell/src/WebRequestCurl.cpp',
+      'shell/src/WebRequestCurl.h',
     ],
     'msvs_settings': {
       'VCLinkerTool': {

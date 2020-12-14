@@ -21,9 +21,10 @@
 #include <string>
 #include <vector>
 
+#include <AdblockPlus/ISubscriptionImplementation.h>
+
 namespace AdblockPlus
 {
-  class ISubscriptionImplementation;
   class Subscription
   {
   public:
