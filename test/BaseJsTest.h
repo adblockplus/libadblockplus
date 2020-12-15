@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_BASE_JS_TEST_H
-#define ADBLOCK_PLUS_BASE_JS_TEST_H
+#pragma once
 
 #include <AdblockPlus.h>
 #include <gtest/gtest.h>
@@ -401,5 +400,3 @@ protected:
     return static_cast<AdblockPlus::DefaultPlatform*>(platform.get())->GetJsEngine();
   }
 };
-
-#endif // ADBLOCK_PLUS_BASE_JS_TEST_H

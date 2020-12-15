@@ -1,5 +1,4 @@
-#ifndef WEB_REQUEST_CURL_H
-#define WEB_REQUEST_CURL_H
+#pragma once
 
 #ifdef HAVE_CURL
 
@@ -13,4 +12,3 @@ public:
 };
 
 #endif // HAVE_CURL
-#endif // WEB_REQUEST_CURL_H

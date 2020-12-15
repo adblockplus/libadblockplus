@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_LOG_SYSTEM_H
-#define ADBLOCK_PLUS_LOG_SYSTEM_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -61,5 +60,3 @@ namespace AdblockPlus
    */
   typedef std::unique_ptr<LogSystem> LogSystemPtr;
 }
-
-#endif

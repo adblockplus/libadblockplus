@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_APP_INFO_JS_OBJECT_H
-#define ADBLOCK_PLUS_APP_INFO_JS_OBJECT_H
+#pragma once
 
 #include <AdblockPlus/JsValue.h>
 
@@ -29,5 +28,3 @@ namespace AdblockPlus
     JsValue& Setup(const AppInfo& appInfo, JsValue& obj);
   }
 }
-
-#endif

@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_FILTER_ENGINE_IMPL_H
-#define ADBLOCK_PLUS_FILTER_ENGINE_IMPL_H
+#pragma once
 
 #include <AdblockPlus/IFilterEngine.h>
 
@@ -126,5 +125,3 @@ namespace AdblockPlus
                                  const std::string& sitekey) const;
   };
 }
-
-#endif

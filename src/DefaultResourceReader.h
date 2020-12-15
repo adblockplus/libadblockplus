@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_DEFAULT_RESOURCE_READER_H
-#define ADBLOCK_DEFAULT_RESOURCE_READER_H
+#pragma once
 
 #include <AdblockPlus/IResourceReader.h>
 
@@ -29,5 +28,3 @@ namespace AdblockPlus
                                  const ReadCallback& doneCallback) const final;
   };
 }
-
-#endif // ADBLOCK_DEFAULT_RESOURCE_READER_H

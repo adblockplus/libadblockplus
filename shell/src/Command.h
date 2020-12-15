@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef COMMAND_H
-#define COMMAND_H
+#pragma once
 
 #include <map>
 #include <stdexcept>
@@ -45,5 +44,3 @@ class NoSuchCommandError : public std::runtime_error
 public:
   explicit NoSuchCommandError(const std::string& commandName);
 };
-
-#endif

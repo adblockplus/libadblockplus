@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_DEFAULT_FILTER_H
-#define ADBLOCK_PLUS_DEFAULT_FILTER_H
+#pragma once
 
 #include <AdblockPlus/IFilterImplementation.h>
 #include <AdblockPlus/JsValue.h>
@@ -51,5 +50,3 @@ namespace AdblockPlus
     JsEngine* jsEngine;
   };
 }
-
-#endif

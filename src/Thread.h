@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCKPLUS_THREAD_H
-#define ADBLOCKPLUS_THREAD_H
+#pragma once
 
 #include <chrono>
 #include <condition_variable>
@@ -76,5 +75,3 @@ namespace AdblockPlus
 
   void Sleep(int millis);
 }
-
-#endif

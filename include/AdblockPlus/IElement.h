@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_IELEMENT_H
-#define ADBLOCK_PLUS_IELEMENT_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -53,5 +52,3 @@ namespace AdblockPlus
     virtual std::vector<const IElement*> GetChildren() const = 0;
   };
 }
-
-#endif // ADBLOCK_PLUS_IELEMENT_H

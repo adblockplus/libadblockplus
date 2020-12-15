@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_FILTER_ENGINE_FACTORY_H
-#define ADBLOCK_PLUS_FILTER_ENGINE_FACTORY_H
+#pragma once
 
 #include <functional>
 #include <string>
@@ -120,5 +119,3 @@ namespace AdblockPlus
                             const CreationParameters& parameters = CreationParameters());
   };
 }
-
-#endif

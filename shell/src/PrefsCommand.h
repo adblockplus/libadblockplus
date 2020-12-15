@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PREFS_COMMAND_H
-#define PREFS_COMMAND_H
+#pragma once
 
 #include <AdblockPlus.h>
 #include <string>
@@ -35,5 +34,3 @@ private:
   AdblockPlus::IFilterEngine& filterEngine;
   AdblockPlus::JsEngine& jsEngine;
 };
-
-#endif

@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_APP_INFO_H
-#define ADBLOCK_PLUS_APP_INFO_H
+#pragma once
 
 #include <string>
 
@@ -56,5 +55,3 @@ namespace AdblockPlus
     std::string locale;
   };
 }
-
-#endif

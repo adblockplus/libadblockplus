@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HELP_COMMAND_H
-#define HELP_COMMAND_H
+#pragma once
 
 #include "Command.h"
 
@@ -34,5 +33,3 @@ private:
   void ShowCommandHelp(const std::string& commandName) const;
   void ShowCommandList() const;
 };
-
-#endif

@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_FILTER_ENGINE_TEST_H
-#define ADBLOCK_PLUS_FILTER_ENGINE_TEST_H
+#pragma once
 
 #include "../src/DefaultLogSystem.h"
 #include "../src/DefaultResourceReader.h"
@@ -164,5 +163,3 @@ protected:
     return CreateFilterEngine(createParams);
   }
 };
-
-#endif // ADBLOCK_PLUS_FILTER_ENGINE_TEST_H

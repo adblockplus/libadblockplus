@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_FILE_SYSTEM_JS_OBJECT_H
-#define ADBLOCK_PLUS_FILE_SYSTEM_JS_OBJECT_H
+#pragma once
 
 #include "JsEngine.h"
 
@@ -27,5 +26,3 @@ namespace AdblockPlus
     JsValue& Setup(JsEngine& jsEngine, JsValue& obj);
   }
 }
-
-#endif

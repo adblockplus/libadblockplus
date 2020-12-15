@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_FILTER_ENGINE_H
-#define ADBLOCK_PLUS_FILTER_ENGINE_H
+#pragma once
 
 #include <functional>
 #include <map>
@@ -385,5 +384,3 @@ namespace AdblockPlus
     static std::string ContentTypeToString(ContentType contentType);
   };
 }
-
-#endif

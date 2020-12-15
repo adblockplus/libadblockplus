@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_DEFAULT_PLATFORM_H
-#define ADBLOCK_PLUS_DEFAULT_PLATFORM_H
+#pragma once
 
 #include <AdblockPlus/IExecutor.h>
 #include <AdblockPlus/PlatformFactory.h>
@@ -67,5 +66,3 @@ namespace AdblockPlus
     std::function<void(const std::string&)> GetEvaluateCallback();
   };
 }
-
-#endif // ADBLOCK_PLUS_DEFAULT_PLATFORM_H
