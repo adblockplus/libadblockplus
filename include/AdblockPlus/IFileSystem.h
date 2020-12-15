@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_IFILE_SYSTEM_H
-#define ADBLOCK_PLUS_IFILE_SYSTEM_H
+#pragma once
 
 #include <cstdint>
 #include <functional>
@@ -132,5 +131,3 @@ namespace AdblockPlus
    */
   typedef std::unique_ptr<IFileSystem> FileSystemPtr;
 }
-
-#endif

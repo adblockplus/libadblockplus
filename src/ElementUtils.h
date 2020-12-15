@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_ELEMENT_UTILS_H
-#define ADBLOCK_PLUS_ELEMENT_UTILS_H
+#pragma once
 
 #include <AdblockPlus/IElement.h>
 
@@ -30,5 +29,3 @@ namespace AdblockPlus
     std::vector<std::string> GetAssociatedUrls(const IElement* element);
   }
 }
-
-#endif // ADBLOCK_PLUS_ELEMENT_UTILS_H

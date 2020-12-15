@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_PLATFORM_H
-#define ADBLOCK_PLUS_PLATFORM_H
+#pragma once
 
 #include <functional>
 #include <future>
@@ -93,5 +92,3 @@ namespace AdblockPlus
     virtual IResourceReader& GetResourceReader() const = 0;
   };
 }
-
-#endif // ADBLOCK_PLUS_PLATFORM_H

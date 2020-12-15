@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_DEFAULT_FILE_SYSTEM_H
-#define ADBLOCK_PLUS_DEFAULT_FILE_SYSTEM_H
+#pragma once
 
 #include <AdblockPlus/IExecutor.h>
 #include <AdblockPlus/IFileSystem.h>
@@ -72,5 +71,3 @@ namespace AdblockPlus
     std::unique_ptr<DefaultFileSystemSync> syncImpl;
   };
 }
-
-#endif

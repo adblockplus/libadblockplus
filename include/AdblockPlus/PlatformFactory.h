@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_PLATFORM_FACTORY_H
-#define ADBLOCK_PLUS_PLATFORM_FACTORY_H
+#pragma once
 
 #include <AdblockPlus/IExecutor.h>
 #include <AdblockPlus/Platform.h>
@@ -59,5 +58,3 @@ namespace AdblockPlus
     static std::unique_ptr<IExecutor> CreateExecutor();
   };
 }
-
-#endif // ADBLOCK_PLUS_PLATFORM_FACTORY_H

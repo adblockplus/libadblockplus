@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_DEFAULT_TIMER_H
-#define ADBLOCK_PLUS_DEFAULT_TIMER_H
+#pragma once
 
 #include <condition_variable>
 #include <mutex>
@@ -61,5 +60,3 @@ namespace AdblockPlus
     std::thread m_thread;
   };
 }
-
-#endif

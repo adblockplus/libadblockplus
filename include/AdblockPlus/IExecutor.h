@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_IEXECUTOR_H
-#define ADBLOCK_PLUS_IEXECUTOR_H
+#pragma once
 
 #include <functional>
 
@@ -39,5 +38,3 @@ namespace AdblockPlus
     virtual void Stop() = 0;
   };
 }
-
-#endif // ADBLOCK_PLUS_IEXECUTOR_H

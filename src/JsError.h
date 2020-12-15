@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_JS_ERROR_H
-#define ADBLOCK_PLUS_JS_ERROR_H
+#pragma once
 
 #include <sstream>
 #include <stdexcept>
@@ -37,5 +36,3 @@ namespace AdblockPlus
     static std::string ErrorToString(const char* message, const char* filename, int line);
   };
 }
-
-#endif

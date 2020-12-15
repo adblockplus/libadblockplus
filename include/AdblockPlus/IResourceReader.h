@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_IRESOURCE_READER_H
-#define ADBLOCK_IRESOURCE_READER_H
+#pragma once
 
 #include <cstdint>
 #include <functional>
@@ -85,5 +84,3 @@ namespace AdblockPlus
                                          const ReadCallback& doneCallback) const = 0;
   };
 }
-
-#endif // ADBLOCK_IRESOURCE_READER_H

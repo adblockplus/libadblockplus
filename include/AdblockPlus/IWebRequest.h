@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_IWEB_REQUEST_H
-#define ADBLOCK_PLUS_IWEB_REQUEST_H
+#pragma once
 
 #include <cstdint>
 #include <functional>
@@ -121,5 +120,3 @@ namespace AdblockPlus
   typedef std::unique_ptr<IWebRequest> WebRequestPtr;
 
 }
-
-#endif

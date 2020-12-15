@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_UTILS_H
-#define ADBLOCK_PLUS_UTILS_H
+#pragma once
 
 #include <algorithm>
 #include <cctype>
@@ -106,5 +105,3 @@ namespace AdblockPlus
 #endif
   }
 }
-
-#endif

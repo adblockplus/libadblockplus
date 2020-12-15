@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_REFERRER_MAPPING_H
-#define ADBLOCK_PLUS_REFERRER_MAPPING_H
+#pragma once
 
 #include <list>
 #include <map>
@@ -63,5 +62,3 @@ namespace AdblockPlus
     std::list<std::string> cachedUrls;
   };
 }
-
-#endif

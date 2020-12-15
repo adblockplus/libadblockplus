@@ -27,10 +27,7 @@
  * Main namespace of libadblockplus.
  */
 
-#ifndef ADBLOCK_PLUS_ADBLOCK_PLUS_H
-#define ADBLOCK_PLUS_ADBLOCK_PLUS_H
+#pragma once
 
 #include <AdblockPlus/PlatformFactory.h>
 #include <AdblockPlus/ReferrerMapping.h>
-
-#endif

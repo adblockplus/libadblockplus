@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_JS_CONTEXT_H
-#define ADBLOCK_PLUS_JS_CONTEXT_H
+#pragma once
 
 #include <v8.h>
 
@@ -42,5 +41,3 @@ namespace AdblockPlus
     const v8::Context::Scope contextScope;
   };
 }
-
-#endif

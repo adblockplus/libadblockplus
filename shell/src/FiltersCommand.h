@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FILTERS_COMMAND_H
-#define FILTERS_COMMAND_H
+#pragma once
 
 #include <AdblockPlus.h>
 #include <string>
@@ -38,5 +37,3 @@ private:
   void AddFilter(const std::string& text);
   void RemoveFilter(const std::string& text);
 };
-
-#endif

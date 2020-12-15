@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_DEFAULT_WEB_REQUEST_H
-#define ADBLOCK_PLUS_DEFAULT_WEB_REQUEST_H
+#pragma once
 
 #include <AdblockPlus/IExecutor.h>
 #include <AdblockPlus/IWebRequest.h>
@@ -59,5 +58,3 @@ namespace AdblockPlus
     WebRequestSyncPtr syncImpl;
   };
 }
-
-#endif

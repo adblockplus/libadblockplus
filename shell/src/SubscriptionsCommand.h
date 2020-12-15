@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SUBSCRIPTIONS_COMMAND_H
-#define SUBSCRIPTIONS_COMMAND_H
+#pragma once
 
 #include <AdblockPlus.h>
 #include <string>
@@ -40,5 +39,3 @@ private:
   void UpdateSubscriptions();
   void FetchSubscriptions();
 };
-
-#endif

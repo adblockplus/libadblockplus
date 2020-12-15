@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_TIMER_H
-#define ADBLOCK_PLUS_TIMER_H
+#pragma once
 
 #include <chrono>
 #include <functional>
@@ -51,5 +50,3 @@ namespace AdblockPlus
    */
   typedef std::unique_ptr<ITimer> TimerPtr;
 }
-
-#endif

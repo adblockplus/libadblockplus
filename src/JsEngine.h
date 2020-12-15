@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_JS_ENGINE_H
-#define ADBLOCK_PLUS_JS_ENGINE_H
+#pragma once
 
 #include <functional>
 #include <list>
@@ -335,5 +334,3 @@ namespace AdblockPlus
     std::mutex jsWeakValuesListsMutex;
   };
 }
-
-#endif

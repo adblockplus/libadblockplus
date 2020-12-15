@@ -15,8 +15,7 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADBLOCK_PLUS_JS_VALUE_H
-#define ADBLOCK_PLUS_JS_VALUE_H
+#pragma once
 
 #include <memory>
 #include <stdint.h>
@@ -168,5 +167,3 @@ namespace AdblockPlus
     std::unique_ptr<v8::Global<v8::Value>> value;
   };
 }
-
-#endif
