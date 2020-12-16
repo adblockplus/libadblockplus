@@ -31,10 +31,6 @@ General:
 * You need a C++14 compatible compiler to build libadblockplus. Below there is
 the list of tested tools.
 
-* 7z
-We use 7z for prebuilt V8. In order to install it on a debian-based system
-one can use `p7zip-full` package, or `p7zip-plugins` on rpm-based.
-
 Win32:
 * At least v141 Visual C++ toolset (available in Microsoft Visual Studio 2017).
 
@@ -52,8 +48,8 @@ Mac:
 Android:
 * The host system should be Linux or OS X (for Windows 10 [see below](#build-for-android-on-windows))
 * android-ndk-r16b, here are the links for downloading
-  [OS X](https://dl.google.com/android/repository/android-ndk-r16b-darwin-x86_64.zip),
-  [Linux 64](https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip).
+  [OS X](https://dl.google.com/android/repository/android-ndk-r20b-darwin-x86_64.zip),
+  [Linux 64](https://dl.google.com/android/repository/android-ndk-r20b-linux-x86_64.zip).
 * g++ multilib
 
 If you have a compilation issue with another compiler please [create an issue](https://issues.adblockplus.org/).
@@ -66,7 +62,7 @@ You need V8 prior to building. Two options:
 `get-prebuilt-v8`. This will download and extract the prebuilt V8 for
 your setup. The default environment will be set by the Makefile at
 build time. If you are cross compiling use the same options as below
-to invoke make.
+to invoke make. This option works only on Linux
 
 Pass `WGET_QUIET=true` to download the files silently.
 
