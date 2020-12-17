@@ -139,7 +139,9 @@ std::function<void(const std::string&)> DefaultPlatform::GetEvaluateCallback()
       {
         jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
         evaluatedJsSources.insert(filename);
-        break;
+        return;
       }
+
+    assert(false && "Invalid argument: unknown JavaScript file");
   };
 }
