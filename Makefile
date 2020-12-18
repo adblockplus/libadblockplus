@@ -119,7 +119,7 @@ all:
 	NDK_PROJECT_PATH=. \
 	NDK_OUT=. \
 	${ANDROID_FIXES} \
-	NDK_APP_DST_DIR=android-$(ABP_TARGET_ARCH).release
+	NDK_APP_DST_DIR=android-$(ABP_TARGET_ARCH)-$(Configuration)
 else
 SUB_ACTION ?= all
 ifdef CXX
