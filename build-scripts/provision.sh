@@ -2,7 +2,7 @@
 
 echo "NOTE: Must be run privileged (root). Run with sudo"
 
-apt-get update && apt-get install -yyq build-essential python wget p7zip-full clang libc++-dev libc++abi-dev unzip pv || exit 1
+apt-get update && apt-get install -yyq build-essential python wget clang libc++-dev libc++abi-dev unzip pv || exit 1
 chmod u+x build-scripts/nix-script.sh
 chmod u+x build-scripts/android-script.sh
 
@@ -21,7 +21,7 @@ function DownloadNDK() {
 	# Let's take the chance and will recover later.
 
     if [ ! -f $NDK_ARCHIVE_PATH ]; then
-	    wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip -O $NDK_ARCHIVE_PATH
+	    wget https://dl.google.com/android/repository/android-ndk-r20b-linux-x86_64.zip -O $NDK_ARCHIVE_PATH
         return 0
     fi
 

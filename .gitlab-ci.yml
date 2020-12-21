@@ -3,11 +3,11 @@ stages:
   - build
   - generate_docs
 
-image: "registry.gitlab.com/eyeo/docker/libadblockplus_gitlab-runner:202004.1"
+image: "registry.gitlab.com/eyeo/docker/libadblockplus_gitlab-runner:202011.1"
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   WGET_FLAGS: "--quiet"
-  ANDROID_NDK_ROOT: "/third_party/android-ndk-r16b" #NDK is part of the docker image
+  ANDROID_NDK_ROOT: "/third_party/android-ndk-r20b" #NDK is part of the docker image
 
 build_nix_and_test:
   interruptible: true
@@ -25,19 +25,18 @@ build_nix_and_test:
 .build_template:
   stage: build
   interruptible: true
-  variables:
-    V8_COMMIT: 4d72a9931a125d21901d25d67896f0e40105bd16
   script:
     # set some dynamic env vars
     - export ADDITIONALMAKEFLAGS="-j $(nproc)"
-    - export URL_PREFIX="https://v8.eyeofiles.com/v8-$V8_COMMIT/"
+    - export URL_PREFIX="https://v8.eyeofiles.com/v8-$(make get-v8-commit)"
     - export Configuration=release
     - export TARGET_OS=android
     # ensure that one can build libadblockplus.a without having binaries of V8
     - |
       if [[ ! -d "third_party/prebuilt-v8/include" ]]; then
-        wget ${WGET_FLAGS} ${URL_PREFIX}include.7z -O third_party/v8-include.7z
-        7z x third_party/v8-include.7z -othird_party/prebuilt-v8
+        wget ${WGET_FLAGS} ${URL_PREFIX}/include.tar.xz -O third_party/v8-include.tar.xz
+        mkdir -p third_party/prebuilt-v8/
+        tar -xJf third_party/v8-include.tar.xz -C third_party/prebuilt-v8
       fi
     - make GYP_FILE=libadblockplus.gyp APP_MODULES=adblockplus
     # build tests

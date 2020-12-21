@@ -10,7 +10,7 @@
        or OS=="netbsd" or OS=="android"', {
       'target_defaults': {
         'cflags': [ '-pthread' ],
-        'cflags_cc': [ '-fno-rtti', '-std=c++14', '-fexceptions', '-stdlib=libc++' ],
+        'cflags_cc': [ '-fno-rtti', '-std=c++14', '-fexceptions', '-stdlib=libc++', '-DV8_REVERSE_JSARGS' ],
         'ldflags': [ '-pthread'],
       },
     }],
@@ -42,7 +42,9 @@
 
   'target_defaults': {
     'configurations': {
-      'Debug': {},
+      'Debug': {
+        'cflags_cc': [ '-g' ],
+      },
       'Release': {}
     },
     'msvs_cygwin_shell': 0,
