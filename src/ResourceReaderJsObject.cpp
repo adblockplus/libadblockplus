@@ -55,7 +55,7 @@ namespace ReadPreloadedFilterListCallback
         jsEngine->GetResourceReader().ReadPreloadedFilterList(
             url, [jsEngine, weakCallback](std::unique_ptr<IPreloadedFilterResponse> response) {
               bool exists = response->exists();
-              const JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+              const JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
               auto result = jsEngine->NewObject();
               result.SetProperty("exists", exists);
               if (exists)

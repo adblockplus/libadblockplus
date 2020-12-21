@@ -250,7 +250,7 @@ namespace AdblockPlus
       return isolate->Get();
     }
 
-    const v8::Global<v8::Context>& GetContext() const;
+    v8::Global<v8::Context>* GetContext();
 
     /**
      * Notifies JS engine about critically low memory what should cause a

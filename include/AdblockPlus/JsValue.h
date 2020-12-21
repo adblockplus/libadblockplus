@@ -146,7 +146,7 @@ namespace AdblockPlus
 
   private:
     JsValue(IV8IsolateProviderPtr isolate,
-            const v8::Global<v8::Context>& jsContext,
+            v8::Global<v8::Context>* jsContext,
             v8::Local<v8::Value> value);
     void SetProperty(const std::string& name, v8::Local<v8::Value> val);
 
@@ -155,7 +155,7 @@ namespace AdblockPlus
     JsValue Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Object> thisObj) const;
 
     IV8IsolateProviderPtr isolate;
-    v8::Global<v8::Context> jsContext;
+    v8::Global<v8::Context>* jsContext;
     v8::Global<v8::Value> value;
   };
 }

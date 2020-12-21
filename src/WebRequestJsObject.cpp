@@ -60,7 +60,7 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
   auto getCallback = [jsEngine, paramsID](const ServerResponse& response) {
     auto webRequestParams = jsEngine->TakeJsValues(paramsID);
 
-    AdblockPlus::JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+    AdblockPlus::JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
 
     auto resultObject = jsEngine->NewObject();
     resultObject.SetProperty("status", response.status);
