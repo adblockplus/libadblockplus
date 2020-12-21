@@ -180,8 +180,9 @@ AdblockPlus::JsEngine::New(const AppInfo& appInfo,
   const v8::Locker locker(result->GetIsolate());
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
   const v8::HandleScope handleScope(result->GetIsolate());
-  result->context.reset(
-      new v8::Global<v8::Context>(result->GetIsolate(), v8::Context::New(result->GetIsolate())));
+
+  result->context =
+      v8::Global<v8::Context>(result->GetIsolate(), v8::Context::New(result->GetIsolate()));
   auto global = result->GetGlobalObject();
   AdblockPlus::GlobalJsObject::Setup(*result, appInfo, global);
   return result;
@@ -378,9 +379,9 @@ void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name,
   global.SetProperty(name, value);
 }
 
-v8::Global<v8::Context>& JsEngine::GetContext() const
+const v8::Global<v8::Context>& JsEngine::GetContext() const
 {
-  return *context;
+  return context;
 }
 
 #if defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)

@@ -33,14 +33,7 @@
 #include <AdblockPlus/IWebRequest.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/LogSystem.h>
-
-namespace v8
-{
-  class Value;
-  class Context;
-  template<typename T> class FunctionCallbackInfo;
-  typedef void (*FunctionCallback)(const FunctionCallbackInfo<Value>& info);
-}
+#include <v8.h>
 
 namespace AdblockPlus
 {
@@ -257,7 +250,7 @@ namespace AdblockPlus
       return isolate->Get();
     }
 
-    v8::Global<v8::Context>& GetContext() const;
+    const v8::Global<v8::Context>& GetContext() const;
 
     /**
      * Notifies JS engine about critically low memory what should cause a
@@ -327,7 +320,7 @@ namespace AdblockPlus
 
     IV8IsolateProviderPtr GetIsolateProviderPtr() const;
 
-    std::unique_ptr<v8::Global<v8::Context>> context;
+    v8::Global<v8::Context> context;
     EventMap eventCallbacks;
     std::mutex eventCallbacksMutex;
     JsWeakValuesLists jsWeakValuesLists;

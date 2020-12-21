@@ -24,6 +24,9 @@
           'V8_IMMINENT_DEPRECATION_WARNINGS'
         ]
       }
-    ]]
+    ]],
+    'all_dependent_settings': {
+      'include_dirs': [ '<(libv8_include_dir)' ],
+    },
   }
 }
