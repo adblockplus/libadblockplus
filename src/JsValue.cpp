@@ -33,21 +33,18 @@ AdblockPlus::JsValue::JsValue(IV8IsolateProviderPtr isolate,
 }
 
 AdblockPlus::JsValue::JsValue(AdblockPlus::JsValue&& src)
-    : isolate(src.isolate), jsContext(std::move(src.jsContext)), value(std::move(src.value))
 {
-  src.isolate = nullptr;
+  *this = std::move(src);
 }
 
 AdblockPlus::JsValue::JsValue(const JsValue& src)
-    : isolate(src.isolate), jsContext(new v8::Global<v8::Context>(isolate->Get(), *src.jsContext))
 {
-  const JsContext context(isolate->Get(), *jsContext);
-  value.reset(new v8::Global<v8::Value>(isolate->Get(), *src.value));
+  *this = src;
 }
 
 AdblockPlus::JsValue::~JsValue()
 {
-  if (value)
+  if (isolate)
   {
     if (isolate->Get())
     {
@@ -68,21 +65,20 @@ AdblockPlus::JsValue::~JsValue()
 
 JsValue& AdblockPlus::JsValue::operator=(const JsValue& src)
 {
+  const JsContext context(src.isolate->Get(), *src.jsContext);
   isolate = src.isolate;
   jsContext.reset(new v8::Global<v8::Context>(isolate->Get(), *src.jsContext));
-  const JsContext context(isolate->Get(), *jsContext);
   value.reset(new v8::Global<v8::Value>(isolate->Get(), *src.value));
-
   return *this;
 }
 
 JsValue& AdblockPlus::JsValue::operator=(JsValue&& src)
 {
+  const JsContext context(src.isolate->Get(), *src.jsContext);
   isolate = src.isolate;
   src.isolate = nullptr;
   jsContext = std::move(src.jsContext);
   value = std::move(src.value);
-
   return *this;
 }
 
@@ -217,6 +213,7 @@ void AdblockPlus::JsValue::SetProperty(const std::string& name, v8::Local<v8::Va
   if (!IsObject())
     throw std::runtime_error("Attempting to set property on a non-object");
 
+  const JsContext context(isolate->Get(), *jsContext);
   v8::Local<v8::String> property =
       CHECKED_TO_LOCAL(isolate->Get(), Utils::ToV8String(isolate->Get(), name));
   v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(UnwrapValue());

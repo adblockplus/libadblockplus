@@ -373,6 +373,7 @@ AdblockPlus::JsEngine::ConvertArguments(const v8::FunctionCallbackInfo<v8::Value
 void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name,
                                               const AdblockPlus::JsValue& value)
 {
+  const JsContext context(GetIsolate(), GetContext());
   auto global = GetGlobalObject();
   global.SetProperty(name, value);
 }
