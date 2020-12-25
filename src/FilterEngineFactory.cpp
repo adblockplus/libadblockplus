@@ -126,7 +126,7 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
           }
           auto jsFunction = jsEngine.StoreJsValues({params[1]});
           auto callJsCallback = [&jsEngine, jsFunction](bool isAllowed) {
-            jsEngine.GetJsValues(jsFunction)[0].Call(jsEngine.NewValue(isAllowed));
+            jsEngine.TakeJsValues(jsFunction)[0].Call(jsEngine.NewValue(isAllowed));
           };
           std::string allowedConnectionType =
               params[0].IsString() ? params[0].AsString() : std::string();

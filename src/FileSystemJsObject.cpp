@@ -50,22 +50,24 @@ namespace
       if (!converted[2].IsFunction())
         return ThrowExceptionInJS(isolate, "Third argument to _fileSystem.read must be a function");
 
-      auto weakResolveCallback = jsEngine->StoreJsValues({converted[1]});
-      auto weakRejectCallback = jsEngine->StoreJsValues({converted[2]});
+      constexpr size_t kResolve = 0;
+      constexpr size_t kReject = 1;
+      auto callbacks = jsEngine->StoreJsValues({converted[1], converted[2]});
       auto fileName = converted[0].AsString();
       jsEngine->GetFileSystem().Read(
           fileName,
-          [jsEngine, weakResolveCallback](IFileSystem::IOBuffer&& content) {
+          [jsEngine, callbacks](IFileSystem::IOBuffer&& content) {
             const JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
             auto result = jsEngine->NewObject();
             result.SetStringBufferProperty("content", content);
-            jsEngine->GetJsValues(weakResolveCallback)[0].Call(result);
+            jsEngine->GetJsValues(callbacks)[kResolve].Call(result);
+            jsEngine->TakeJsValues(callbacks);
           },
-          [jsEngine, weakRejectCallback](const std::string& error) {
-            if (error.empty())
-              return;
+          [jsEngine, callbacks](const std::string& error) {
             const JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
-            jsEngine->GetJsValues(weakRejectCallback)[0].Call(jsEngine->NewValue(error));
+            auto jsValues = jsEngine->TakeJsValues(callbacks);
+            if (!error.empty())
+              jsValues[kReject].Call(jsEngine->NewValue(error));
           });
     } // V8Callback
   }   // namespace ReadCallback
@@ -114,16 +116,17 @@ namespace
             isolate,
             "Third argument to _fileSystem.readFromFile must be a function (error callback)");
 
-      auto weakProcessFunc = jsEngine->StoreJsValues({converted[1]});
-      auto weakResolveCallback = jsEngine->StoreJsValues({converted[2]});
-      auto weakRejectCallback = jsEngine->StoreJsValues({converted[3]});
+      constexpr size_t kListener = 0;
+      constexpr size_t kResolve = 1;
+      constexpr size_t kReject = 2;
+      auto callbacks = jsEngine->StoreJsValues({converted[1], converted[2], converted[3]});
       auto fileName = converted[0].AsString();
       jsEngine->GetFileSystem().Read(
           fileName,
-          [jsEngine, weakProcessFunc, weakResolveCallback](IFileSystem::IOBuffer&& content) {
+          [jsEngine, callbacks](IFileSystem::IOBuffer&& content) {
             const JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
-            auto jsValues = jsEngine->GetJsValues(weakProcessFunc);
-            auto processFunc = jsValues[0].UnwrapValue().As<v8::Function>();
+            auto jsValues = jsEngine->GetJsValues(callbacks);
+            auto processFunc = jsValues[kListener].UnwrapValue().As<v8::Function>();
             auto globalContext = context.GetV8Context()->Global();
             if (!globalContext->IsObject())
               throw std::runtime_error("`this` pointer has to be an object");
@@ -148,12 +151,14 @@ namespace
 
               stringBegin = SkipEndOfLine(stringEnd, contentEnd);
             } while (stringBegin != contentEnd);
-            jsEngine->GetJsValues(weakResolveCallback)[0].Call();
+            jsValues[kResolve].Call();
+            jsEngine->TakeJsValues(callbacks);
           },
-          [jsEngine, weakRejectCallback](const std::string& error) {
-            if (error.empty())
-              return;
-            jsEngine->GetJsValues(weakRejectCallback)[0].Call(jsEngine->NewValue(error));
+          [jsEngine, callbacks](const std::string& error) {
+            const JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
+            auto jsValues = jsEngine->TakeJsValues(callbacks);
+            if (!error.empty())
+              jsValues[kReject].Call(jsEngine->NewValue(error));
           });
     } // V8Callback
   }   // namespace ReadFromFileCallback
@@ -169,18 +174,16 @@ namespace
     if (!converted[2].IsFunction())
       return ThrowExceptionInJS(isolate, "Third argument to _fileSystem.write must be a function");
 
-    JsValueList values;
-    values.push_back(converted[2]);
-    auto weakCallback = jsEngine->StoreJsValues(values);
+    auto callback = jsEngine->StoreJsValues({converted[2]});
     auto content = converted[1].AsStringBuffer();
     auto fileName = converted[0].AsString();
     jsEngine->GetFileSystem().Write(
-        fileName, content, [jsEngine, weakCallback](const std::string& error) {
+        fileName, content, [jsEngine, callback](const std::string& error) {
           const JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
           JsValueList params;
           if (!error.empty())
             params.push_back(jsEngine->NewValue(error));
-          jsEngine->TakeJsValues(weakCallback)[0].Call(params);
+          jsEngine->TakeJsValues(callback)[0].Call(params);
         });
   }
 

@@ -56,12 +56,9 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
   if (!converted[2].IsFunction())
     throw std::runtime_error("Third argument to GET must be a function");
 
-  auto paramsID = jsEngine->StoreJsValues(converted);
-  auto getCallback = [jsEngine, paramsID](const ServerResponse& response) {
-    auto webRequestParams = jsEngine->TakeJsValues(paramsID);
-
+  auto callback = jsEngine->StoreJsValues({converted[2]});
+  auto getCallback = [jsEngine, callback](const ServerResponse& response) {
     AdblockPlus::JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
-
     auto resultObject = jsEngine->NewObject();
     resultObject.SetProperty("status", response.status);
     resultObject.SetProperty("responseStatus", response.responseStatus);
@@ -74,7 +71,7 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
     }
     resultObject.SetProperty("responseHeaders", headersObject);
 
-    webRequestParams[2].Call(resultObject);
+    jsEngine->TakeJsValues(callback)[0].Call(resultObject);
   };
   jsEngine->GetWebRequest().GET(url, headers, getCallback);
 }
