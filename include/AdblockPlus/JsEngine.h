@@ -19,28 +19,22 @@
 #define ADBLOCK_PLUS_JS_ENGINE_H
 
 #include <functional>
-#include <map>
 #include <list>
+#include <map>
+#include <mutex>
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
-#include <mutex>
-#include <AdblockPlus/AppInfo.h>
-#include <AdblockPlus/LogSystem.h>
-#include <AdblockPlus/IFileSystem.h>
-#include <AdblockPlus/IV8IsolateProvider.h>
-#include <AdblockPlus/JsValue.h>
-#include <AdblockPlus/IWebRequest.h>
-#include <AdblockPlus/ITimer.h>
-#include <AdblockPlus/Scheduler.h>
 
-namespace v8
-{
-  class Value;
-  class Context;
-  template<typename T> class FunctionCallbackInfo;
-  typedef void(*FunctionCallback)(const FunctionCallbackInfo<Value>& info);
-}
+#include <AdblockPlus/AppInfo.h>
+#include <AdblockPlus/IFileSystem.h>
+#include <AdblockPlus/ITimer.h>
+#include <AdblockPlus/IV8IsolateProvider.h>
+#include <AdblockPlus/IWebRequest.h>
+#include <AdblockPlus/JsValue.h>
+#include <AdblockPlus/LogSystem.h>
+#include <AdblockPlus/Scheduler.h>
+#include <v8.h>
 
 namespace AdblockPlus
 {
@@ -252,7 +246,7 @@ namespace AdblockPlus
       return isolate->Get();
     }
 
-    v8::Global<v8::Context>& GetContext() const;
+    v8::Global<v8::Context>* GetContext();
 
     /**
      * Notifies JS engine about critically low memory what should cause a
@@ -300,7 +294,7 @@ namespace AdblockPlus
 
     IV8IsolateProviderPtr GetIsolateProviderPtr() const;
 
-    std::unique_ptr<v8::Global<v8::Context>> context;
+    v8::Global<v8::Context> context;
     EventMap eventCallbacks;
     std::mutex eventCallbacksMutex;
     JsWeakValuesLists jsWeakValuesLists;

@@ -18,22 +18,14 @@
 #ifndef ADBLOCK_PLUS_JS_VALUE_H
 #define ADBLOCK_PLUS_JS_VALUE_H
 
+#include <memory>
 #include <stdint.h>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <AdblockPlus/IFileSystem.h>
 #include <AdblockPlus/IV8IsolateProvider.h>
-
-namespace v8
-{
-  class Value;
-  class Context;
-  class Object;
-  template<class T> class Local;
-  template<class T> class Global;
-}
+#include <v8.h>
 
 namespace AdblockPlus
 {
@@ -153,7 +145,7 @@ namespace AdblockPlus
 
   private:
     JsValue(IV8IsolateProviderPtr isolate,
-            const v8::Global<v8::Context>& jsContext,
+            v8::Global<v8::Context>* jsContext,
             v8::Local<v8::Value> value);
     void SetProperty(const std::string& name, v8::Local<v8::Value> val);
 
@@ -162,8 +154,8 @@ namespace AdblockPlus
     JsValue Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Object> thisObj) const;
 
     IV8IsolateProviderPtr isolate;
-    std::unique_ptr<v8::Global<v8::Context>> jsContext;
-    std::unique_ptr<v8::Global<v8::Value>> value;
+    v8::Global<v8::Context>* jsContext;
+    v8::Global<v8::Value> value;
   };
 }
 
