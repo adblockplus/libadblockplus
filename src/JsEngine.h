@@ -53,6 +53,15 @@ namespace AdblockPlus
     };
     typedef std::list<JsWeakValuesList> JsWeakValuesLists;
 
+    /**
+     * An opaque structure representing ID of stored JsValueList.
+     */
+    class JsWeakValuesID
+    {
+      friend class JsEngine;
+      JsWeakValuesLists::const_iterator iterator;
+    };
+
   public:
     struct Interfaces
     {
@@ -76,12 +85,37 @@ namespace AdblockPlus
     typedef std::map<std::string, EventCallback> EventMap;
 
     /**
-     * An opaque structure representing ID of stored JsValueList.
+     * Class representing JsValues which are stored in the JsEngine and are owned by the JsEngine
+     * and are automatically released when going out of scope.
      */
-    class JsWeakValuesID
+    class ScopedWeakValues
     {
+    public:
+      ScopedWeakValues(JsEngine* engine, const JsValueList& value);
+      ~ScopedWeakValues();
+      JsValueList Values() const;
+
+    private:
+      class RegisteredWeakValue
+      {
+      public:
+        RegisteredWeakValue(JsEngine* engine, const JsValueList& val);
+        ~RegisteredWeakValue();
+        RegisteredWeakValue& operator=(const RegisteredWeakValue&) = delete;
+        RegisteredWeakValue(const RegisteredWeakValue&) = delete;
+        RegisteredWeakValue& operator=(RegisteredWeakValue&&) = delete;
+        RegisteredWeakValue(RegisteredWeakValue&&) = delete;
+
+        JsValueList Values() const;
+        void Invalidate();
+
+      private:
+        JsEngine* engine;
+        JsWeakValuesID weakId;
+      };
+
       friend class JsEngine;
-      JsWeakValuesLists::const_iterator iterator;
+      std::shared_ptr<RegisteredWeakValue> state;
     };
 
     /**
@@ -188,34 +222,6 @@ namespace AdblockPlus
      */
     static JsEngine* FromArguments(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
-    /**
-     * Stores `JsValue`s in a way they don't keep a strong reference to
-     * `JsEngine` and which are destroyed when `JsEngine` is destroyed. These
-     * methods should be used when one needs to carry a JsValue in a callback
-     * directly or indirectly passed to `JsEngine`.
-     * The method is thread-safe.
-     * @param `JsValueList` to store.
-     * @return `JsWeakValuesID` of stored values which allows to restore them
-     * later.
-     */
-    JsWeakValuesID StoreJsValues(const JsValueList& values);
-
-    /**
-     * Extracts and removes from `JsEngine` earlier stored `JsValue`s.
-     * The method is thread-safe.
-     * @param id `JsWeakValuesID` of values.
-     * @return `JsValueList` of stored values.
-     */
-    JsValueList TakeJsValues(const JsWeakValuesID& id);
-
-    /**
-     * Extracts earlier stored `JsValue`s from `JsEgnine` but does not remove
-     * them, one still must call `TakeJsValues`.
-     * @param id `JsWeakValuesID` of values.
-     * @return `JsValueList` of stored values.
-     */
-    JsValueList GetJsValues(const JsWeakValuesID& id);
-
     /*
      * Private functionality required to implement timers.
      * @param arguments `v8::FunctionCallbackInfo` is the arguments received in C++
@@ -289,6 +295,12 @@ namespace AdblockPlus
     JsEngine(const Interfaces& interfaces, std::unique_ptr<IV8IsolateProvider> isolate);
 
     JsValue GetGlobalObject();
+    friend class ScopedWeakValues::RegisteredWeakValue;
+    JsWeakValuesID StoreJsValues(const JsValueList& values);
+    JsValueList TakeJsValues(const JsWeakValuesID& id);
+    JsValueList GetJsValues(const JsWeakValuesID& id);
+    void RegisterScopedWeakValue(ScopedWeakValues::RegisteredWeakValue* value);
+    void UnregisterScopedWeakValue(ScopedWeakValues::RegisteredWeakValue* value);
 
     ITimer& timer;
     IFileSystem& fileSystem;
@@ -325,5 +337,6 @@ namespace AdblockPlus
     std::mutex eventCallbacksMutex;
     JsWeakValuesLists jsWeakValuesLists;
     std::mutex jsWeakValuesListsMutex;
+    std::vector<ScopedWeakValues::RegisteredWeakValue*> registeredWeakValues;
   };
 }

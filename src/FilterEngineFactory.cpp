@@ -124,9 +124,9 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
             params[1].Call(jsEngine.NewValue(true));
             return;
           }
-          auto jsFunction = jsEngine.StoreJsValues({params[1]});
-          auto callJsCallback = [&jsEngine, jsFunction](bool isAllowed) {
-            jsEngine.TakeJsValues(jsFunction)[0].Call(jsEngine.NewValue(isAllowed));
+          JsEngine::ScopedWeakValues jsFunctionWeakValue(&jsEngine, {params[1]});
+          auto callJsCallback = [&jsEngine, jsFunctionWeakValue](bool isAllowed) {
+            jsFunctionWeakValue.Values()[0].Call(jsEngine.NewValue(isAllowed));
           };
           std::string allowedConnectionType =
               params[0].IsString() ? params[0].AsString() : std::string();
