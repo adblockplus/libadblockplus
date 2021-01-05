@@ -16,6 +16,7 @@
  */
 
 #include <AdblockPlus.h>
+#include <assert.h>
 #include <libplatform/libplatform.h>
 
 #include "GlobalJsObject.h"
@@ -164,7 +165,12 @@ AdblockPlus::JsEngine::JsEngine(const Interfaces& interfaces,
 #endif
 }
 
-JsEngine::~JsEngine() = default;
+JsEngine::~JsEngine()
+{
+  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
+  for (auto* weakValue : registeredWeakValues)
+    weakValue->Invalidate();
+}
 
 std::unique_ptr<AdblockPlus::JsEngine>
 AdblockPlus::JsEngine::New(const AppInfo& appInfo,
@@ -409,4 +415,60 @@ IV8IsolateProviderPtr JsEngine::GetIsolateProviderPtr() const
 #else
   return isolate.get();
 #endif
+}
+
+void JsEngine::RegisterScopedWeakValue(ScopedWeakValues::RegisteredWeakValue* value)
+{
+  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
+  assert(std::find(registeredWeakValues.begin(), registeredWeakValues.end(), value) ==
+         registeredWeakValues.end());
+  registeredWeakValues.push_back(value);
+}
+
+void JsEngine::UnregisterScopedWeakValue(ScopedWeakValues::RegisteredWeakValue* value)
+{
+  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
+  auto elem = std::find(registeredWeakValues.begin(), registeredWeakValues.end(), value);
+  assert(elem != registeredWeakValues.end());
+  registeredWeakValues.erase(elem);
+}
+
+JsEngine::ScopedWeakValues::ScopedWeakValues(JsEngine* jsEngine, const JsValueList& values)
+    : state(std::make_shared<RegisteredWeakValue>(jsEngine, values))
+{
+}
+
+JsEngine::ScopedWeakValues::~ScopedWeakValues() = default;
+
+JsEngine::ScopedWeakValues::RegisteredWeakValue::RegisteredWeakValue(JsEngine* jsEngine,
+                                                                     const JsValueList& values)
+    : engine(jsEngine)
+{
+  engine->RegisterScopedWeakValue(this);
+  weakId = engine->StoreJsValues(values);
+}
+
+JsEngine::ScopedWeakValues::RegisteredWeakValue::~RegisteredWeakValue()
+{
+  if (engine)
+  {
+    engine->TakeJsValues(weakId);
+    engine->UnregisterScopedWeakValue(this);
+  }
+}
+
+JsValueList JsEngine::ScopedWeakValues::RegisteredWeakValue::Values() const
+{
+  assert(engine != nullptr);
+  return engine->GetJsValues(weakId);
+}
+
+void JsEngine::ScopedWeakValues::RegisteredWeakValue::Invalidate()
+{
+  engine = nullptr;
+}
+
+JsValueList JsEngine::ScopedWeakValues::Values() const
+{
+  return state->Values();
 }
