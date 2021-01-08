@@ -33,6 +33,8 @@
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/LogSystem.h>
 #include <AdblockPlus/Scheduler.h>
+#include <AdblockPlus/IV8IsolateProvider.h>
+#include <v8.h>
 
 namespace v8
 {
@@ -47,23 +49,6 @@ namespace AdblockPlus
 {
   class JsEngine;
   class Platform;
-
-  /**
-   * Provides with isolate. The main aim of this iterface is to delegate a
-   * proper initialization and deinitialization of v8::Isolate to an embedder.
-   */
-  struct IV8IsolateProvider
-  {
-    virtual ~IV8IsolateProvider()
-    {
-    }
-
-    /**
-     * Returns v8::Isolate. All subsequent calls of this method should return
-     * the same pointer to v8::Isolate as the first call.
-     */
-    virtual v8::Isolate* Get() = 0;
-  };
 
   /**
    * JavaScript engine used by `IFilterEngine`, wraps v8.
@@ -269,7 +254,7 @@ namespace AdblockPlus
       return isolate->Get();
     }
 
-    v8::Global<v8::Context>& GetContext() const;
+    v8::Global<v8::Context>* GetContext();
 
     /**
      * Notifies JS engine about critically low memory what should cause a
@@ -293,11 +278,31 @@ namespace AdblockPlus
     JsValue GetGlobalObject();
 
     Platform& platform;
+#if !defined(UNBLOCK_UPDATE_PAST_DP_1347_ON_ANDROID)
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.
     std::unique_ptr<IV8IsolateProvider> isolate;
+#else
+    // Due to lack of control on Java side this is needed to make JsValue dtor
+    // not crashing.
+    class IV8IsolateProviderWrapper : public IV8IsolateProvider
+    {
+    public:
+      explicit IV8IsolateProviderWrapper(std::weak_ptr<IV8IsolateProvider> weakIsolate);
+      v8::Isolate* Get() override;
 
-    std::unique_ptr<v8::Global<v8::Context>> context;
+    private:
+      std::weak_ptr<IV8IsolateProvider> isolate;
+    };
+
+    // This is shared only to be able to create weak_ptrs of it.
+    // It's not really shared i.e. passed as shared anywhere.
+    std::shared_ptr<IV8IsolateProvider> isolate;
+#endif
+
+    IV8IsolateProviderPtr GetIsolateProviderPtr() const;
+
+    v8::Global<v8::Context> context;
     EventMap eventCallbacks;
     std::mutex eventCallbacksMutex;
     JsWeakValuesLists jsWeakValuesLists;

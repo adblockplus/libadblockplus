@@ -32,7 +32,7 @@ namespace
              const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
     AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    const AdblockPlus::JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+    const AdblockPlus::JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     std::stringstream message;
@@ -84,7 +84,7 @@ namespace
   void TraceCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
   {
     AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
-    const AdblockPlus::JsContext context(jsEngine->GetIsolate(), jsEngine->GetContext());
+    const AdblockPlus::JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
     AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
 
     auto isolate = arguments.GetIsolate();

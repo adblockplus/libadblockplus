@@ -132,7 +132,7 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
 
   // Lock the JS engine while we are loading scripts, no timeouts should fire
   // until we are done.
-  const JsContext context(jsEngine.GetIsolate(), jsEngine.GetContext());
+  const JsContext context(jsEngine.GetIsolate(), *jsEngine.GetContext());
   // Set the preconfigured prefs
   auto preconfiguredPrefsObject = jsEngine.NewObject();
   for (const auto& pref : params.preconfiguredPrefs)
