@@ -136,7 +136,7 @@ protected:
   {
     auto impl = [this](const std::string&,
                        const AdblockPlus::HeaderList&,
-                       const AdblockPlus::IWebRequest::GetCallback& callback) {
+                       const AdblockPlus::IWebRequest::RequestCallback& callback) {
       ++webRequestCounter;
       AdblockPlus::ServerResponse response;
       response.responseStatus = 200;
@@ -148,7 +148,7 @@ protected:
     {
       AdblockPlus::AppInfo info;
       info.locale = "en";
-      params.webRequest.reset(new WrappingWebRequest(impl));
+      params.webRequest.reset(new WrappingWebRequest(impl, impl));
       params.logSystem.reset(new AdblockPlus::DefaultLogSystem());
       InitPlatformAndAppInfo(std::move(params), info);
     }

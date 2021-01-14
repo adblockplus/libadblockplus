@@ -31,6 +31,16 @@ AdblockPlus::DefaultWebRequestSync::GET(const std::string& url,
   return result;
 }
 
+AdblockPlus::ServerResponse
+AdblockPlus::DefaultWebRequestSync::HEAD(const std::string& url,
+                                         const HeaderList& requestHeaders) const
+{
+  AdblockPlus::ServerResponse result;
+  result.status = IWebRequest::NS_ERROR_FAILURE;
+  result.responseStatus = 0;
+  return result;
+}
+
 DefaultWebRequest::DefaultWebRequest(IExecutor& executor, WebRequestSyncPtr syncImpl)
     : executor(executor), syncImpl(std::move(syncImpl))
 {
@@ -42,9 +52,18 @@ DefaultWebRequest::~DefaultWebRequest()
 
 void DefaultWebRequest::GET(const std::string& url,
                             const HeaderList& requestHeaders,
-                            const GetCallback& getCallback)
+                            const RequestCallback& requestCallback)
 {
-  executor.Dispatch([this, url, requestHeaders, getCallback] {
-    getCallback(this->syncImpl->GET(url, requestHeaders));
+  executor.Dispatch([this, url, requestHeaders, requestCallback] {
+    requestCallback(this->syncImpl->GET(url, requestHeaders));
+  });
+}
+
+void DefaultWebRequest::HEAD(const std::string& url,
+                             const HeaderList& requestHeaders,
+                             const RequestCallback& requestCallback)
+{
+  executor.Dispatch([this, url, requestHeaders, requestCallback] {
+    requestCallback(this->syncImpl->HEAD(url, requestHeaders));
   });
 }

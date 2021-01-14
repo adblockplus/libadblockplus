@@ -98,7 +98,7 @@ namespace AdblockPlus
      * Callback type invoked when the server response is ready.
      * The parameter is the server response.
      */
-    typedef std::function<void(const ServerResponse&)> GetCallback;
+    typedef std::function<void(const ServerResponse&)> RequestCallback;
     virtual ~IWebRequest()
     {
     }
@@ -107,11 +107,21 @@ namespace AdblockPlus
      * Performs a GET request.
      * @param url Request URL.
      * @param requestHeaders Request headers.
-     * @param getCallback to invoke when the server response is ready.
+     * @param requestCallback to invoke when the server response is ready.
      */
     virtual void GET(const std::string& url,
                      const HeaderList& requestHeaders,
-                     const GetCallback& getCallback) = 0;
+                     const RequestCallback& requestCallback) = 0;
+
+    /**
+     * Performs a HEAD request.
+     * @param url Request URL.
+     * @param requestHeaders Request headers.
+     * @param requestCallback to invoke when the server response is ready.
+     */
+    virtual void HEAD(const std::string& url,
+                      const HeaderList& requestHeaders,
+                      const RequestCallback& requestCallback) = 0;
   };
 
   /**
