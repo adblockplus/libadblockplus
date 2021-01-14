@@ -30,6 +30,7 @@ namespace AdblockPlus
   {
     virtual ~IWebRequestSync() = default;
     virtual ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const = 0;
+    virtual ServerResponse HEAD(const std::string& url, const HeaderList& requestHeaders) const = 0;
   };
 
   typedef std::unique_ptr<IWebRequestSync> WebRequestSyncPtr;
@@ -38,6 +39,7 @@ namespace AdblockPlus
   {
   public:
     ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const override;
+    ServerResponse HEAD(const std::string& url, const HeaderList& requestHeaders) const override;
   };
 
   /**
@@ -51,8 +53,11 @@ namespace AdblockPlus
 
     void GET(const std::string& url,
              const HeaderList& requestHeaders,
-             const GetCallback& getCallback) override;
+             const RequestCallback& requestCallback) override;
 
+    void HEAD(const std::string& url,
+              const HeaderList& requestHeaders,
+              const RequestCallback& requestCallback) override;
   private:
     IExecutor& executor;
     WebRequestSyncPtr syncImpl;

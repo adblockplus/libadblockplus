@@ -143,9 +143,16 @@ class ThrowingWebRequest : public AdblockPlus::IWebRequest
 public:
   void GET(const std::string& url,
            const AdblockPlus::HeaderList& requestHeaders,
-           const GetCallback& callback) override
+           const RequestCallback& callback) override
   {
     throw std::runtime_error("Unexpected GET: " + url);
+  }
+
+  void HEAD(const std::string& url,
+            const AdblockPlus::HeaderList& requestHeaders,
+            const RequestCallback& callback) override
+  {
+    throw std::runtime_error("Unexpected HEAD: " + url);
   }
 };
 
@@ -302,30 +309,46 @@ class NoopWebRequest : public AdblockPlus::IWebRequest
 public:
   void GET(const std::string& url,
            const AdblockPlus::HeaderList& requestHeaders,
-           const GetCallback& callback) override
+           const RequestCallback& callback) override
   {
   }
+
+  void HEAD(const std::string& url,
+            const AdblockPlus::HeaderList& requestHeaders,
+            const RequestCallback& callback) override
+  {
+  }
+
 };
 
 class WrappingWebRequest : public AdblockPlus::IWebRequest
 {
 public:
   typedef std::function<void(
-      const std::string&, const AdblockPlus::HeaderList&, const GetCallback&)>
+      const std::string&, const AdblockPlus::HeaderList&, const RequestCallback&)>
       Implementation;
 
-  WrappingWebRequest(Implementation callback) : impl(callback)
+  WrappingWebRequest(Implementation callbackGET, Implementation callbackHEAD)
+  : implGET(callbackGET), implHEAD(callbackHEAD)
   {
   }
 
   void GET(const std::string& url,
            const AdblockPlus::HeaderList& requestHeaders,
-           const GetCallback& callback) override
+           const RequestCallback& callback) override
   {
-    impl(url, requestHeaders, callback);
+    implGET(url, requestHeaders, callback);
   }
 
-  Implementation impl;
+  void HEAD(const std::string& url,
+            const AdblockPlus::HeaderList& requestHeaders,
+            const RequestCallback& callback) override
+  {
+    implHEAD(url, requestHeaders, callback);
+  }
+
+  Implementation implGET;
+  Implementation implHEAD;
 };
 
 class WrappingExecutor : public AdblockPlus::IExecutor
@@ -354,7 +377,20 @@ struct DelayedWebRequestTask
 {
   std::string url;
   AdblockPlus::HeaderList headers;
-  AdblockPlus::IWebRequest::GetCallback getCallback;
+  AdblockPlus::IWebRequest::RequestCallback requestCallback;
+
+  DelayedWebRequestTask(const std::string& url,
+                        const AdblockPlus::HeaderList& headers,
+                        const AdblockPlus::IWebRequest::RequestCallback& requestCallback)
+    : url(url), headers(headers), requestCallback(requestCallback) {}
+};
+
+struct DelayedGETWebRequestTask: DelayedWebRequestTask {
+  using DelayedWebRequestTask::DelayedWebRequestTask;
+};
+
+struct DelayedHEADWebRequestTask: DelayedWebRequestTask {
+  using DelayedWebRequestTask::DelayedWebRequestTask;
 };
 
 class DelayedWebRequest
@@ -363,9 +399,17 @@ class DelayedWebRequest
 public:
   void GET(const std::string& url,
            const AdblockPlus::HeaderList& requestHeaders,
-           const GetCallback& callback) override
+           const RequestCallback& callback) override
   {
-    Task task = {url, requestHeaders, callback};
+    DelayedGETWebRequestTask task = {url, requestHeaders, callback};
+    tasks->emplace_back(task);
+  }
+
+  void HEAD(const std::string& url,
+            const AdblockPlus::HeaderList& requestHeaders,
+            const RequestCallback& callback) override
+  {
+    DelayedHEADWebRequestTask task = {url, requestHeaders, callback};
     tasks->emplace_back(task);
   }
 };

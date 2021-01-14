@@ -124,7 +124,7 @@ namespace
           exampleSubscriptionResponse.responseStatus = 200;
           exampleSubscriptionResponse.status = IWebRequest::NS_OK;
           exampleSubscriptionResponse.responseText = "[Adblock Plus 2.0]\n||example.com";
-          ii_webRequest->getCallback(exampleSubscriptionResponse);
+          ii_webRequest->requestCallback(exampleSubscriptionResponse);
         }
       }
       EXPECT_TRUE(isSubscriptionDownloadStatusReceived);

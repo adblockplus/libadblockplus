@@ -27,22 +27,22 @@
 
 using namespace AdblockPlus;
 
-void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arguments)
+void JsEngine::ScheduleWebRequest(WebRequestMethod method, const v8::FunctionCallbackInfo<v8::Value>& arguments)
 {
   AdblockPlus::JsEngine* jsEngine = AdblockPlus::JsEngine::FromArguments(arguments);
   AdblockPlus::JsValueList converted = jsEngine->ConvertArguments(arguments);
   if (converted.size() != 3u)
-    throw std::runtime_error("GET requires exactly 3 arguments");
+    throw std::runtime_error("Web request requires exactly 3 arguments");
 
   auto url = converted[0].AsString();
   if (!url.length())
-    throw std::runtime_error("Invalid string passed as first argument to GET");
+    throw std::runtime_error("Invalid string passed as first argument to the web request");
 
   AdblockPlus::HeaderList headers;
   {
     const AdblockPlus::JsValue& headersObj = converted[1];
     if (!headersObj.IsObject())
-      throw std::runtime_error("Second argument to GET must be an object");
+      throw std::runtime_error("Second argument to the web request must be an object");
 
     std::vector<std::string> properties = headersObj.GetOwnPropertyNames();
     for (const auto& header : properties)
@@ -54,10 +54,10 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
   }
 
   if (!converted[2].IsFunction())
-    throw std::runtime_error("Third argument to GET must be a function");
+    throw std::runtime_error("Third argument to the web request must be a function");
 
   JsEngine::ScopedWeakValues weakCallbackValue(jsEngine, {converted[2]});
-  auto getCallback = [jsEngine, weakCallbackValue](const ServerResponse& response) {
+  auto reuqestCallback = [jsEngine, weakCallbackValue](const ServerResponse& response) {
     AdblockPlus::JsContext context(jsEngine->GetIsolate(), *jsEngine->GetContext());
     auto resultObject = jsEngine->NewObject();
     resultObject.SetProperty("status", response.status);
@@ -73,7 +73,13 @@ void JsEngine::ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arg
 
     weakCallbackValue.Values()[0].Call(resultObject);
   };
-  jsEngine->GetWebRequest().GET(url, headers, getCallback);
+
+  if (method == WebRequestMethod::kGet)
+    jsEngine->GetWebRequest().GET(url, headers, reuqestCallback);
+  else if (method == WebRequestMethod::kHead)
+    jsEngine->GetWebRequest().HEAD(url, headers, reuqestCallback);
+  else
+    throw std::runtime_error("Unknown web request method");
 }
 
 namespace
@@ -82,7 +88,19 @@ namespace
   {
     try
     {
-      AdblockPlus::JsEngine::ScheduleWebRequest(arguments);
+      AdblockPlus::JsEngine::ScheduleWebRequest(JsEngine::WebRequestMethod::kGet, arguments);
+    }
+    catch (const std::exception& e)
+    {
+      return AdblockPlus::Utils::ThrowExceptionInJS(arguments.GetIsolate(), e.what());
+    }
+  }
+
+  void HEADCallback(const v8::FunctionCallbackInfo<v8::Value>& arguments)
+  {
+    try
+    {
+      AdblockPlus::JsEngine::ScheduleWebRequest(JsEngine::WebRequestMethod::kHead, arguments);
     }
     catch (const std::exception& e)
     {
@@ -95,5 +113,6 @@ AdblockPlus::JsValue& AdblockPlus::WebRequestJsObject::Setup(AdblockPlus::JsEngi
                                                              AdblockPlus::JsValue& obj)
 {
   obj.SetProperty("GET", jsEngine.NewCallback(::GETCallback));
+  obj.SetProperty("HEAD", jsEngine.NewCallback(::HEADCallback));
   return obj;
 }
