@@ -37,7 +37,6 @@ AdblockPlus::JsValue::JsValue(AdblockPlus::JsValue&& src)
 }
 
 AdblockPlus::JsValue::JsValue(const JsValue& src)
-    : isolate(src.isolate), jsContext(new v8::Global<v8::Context>(isolate->Get(), *src.jsContext))
 {
   *this = src;
 }

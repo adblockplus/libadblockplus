@@ -2145,3 +2145,21 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest,
   EXPECT_TRUE(capturedConnectionTypes[0].first);
   EXPECT_EQ(testConnection, capturedConnectionTypes[0].second);
 }
+
+void callAPI(IFilterEngine* filterEngine)
+{
+  for (int i = 0; i < 10000; ++i) {
+    EXPECT_FALSE(filterEngine->IsGenericblockWhitelisted(
+            "http://example.com/add.png",
+            {"http://example.com/frame.html", "http://example.com/index.html"}));
+  }
+}
+
+TEST_F(FilterEngineTest, CallApiFromThreads)
+{
+  auto& filterEngine = GetFilterEngine();
+  std::thread firstThread(callAPI, &filterEngine);
+  std::thread secondThread(callAPI, &filterEngine);
+  firstThread.join();
+  secondThread.join();
+}
