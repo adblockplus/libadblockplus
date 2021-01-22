@@ -108,7 +108,7 @@ namespace
           result.responseText +=
               webRequestTask.headers[0].first + "\n" + webRequestTask.headers[0].second;
         }
-        webRequestTask.getCallback(result);
+        webRequestTask.requestCallback(result);
       }
     }
 
@@ -132,7 +132,8 @@ namespace
   };
 
   // we return the url of the XHR.
-  std::string ResetTestXHR(AdblockPlus::JsEngine& jsEngine, const std::string& defaultUrl = "")
+  std::string ResetTestXHR(AdblockPlus::JsEngine& jsEngine, const std::string& defaultUrl = "",
+    JsEngine::WebRequestMethod method = JsEngine::WebRequestMethod::kGet)
   {
     std::string url = defaultUrl;
     // make up a unique URL if we don't have one.
@@ -142,11 +143,12 @@ namespace
       url += std::to_string(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
     }
 
+    const std::string methodStr = (method == JsEngine::WebRequestMethod::kGet) ? "GET" : "HEAD";
+
     jsEngine.Evaluate(std::string("\
       var result;\
       var request = new XMLHttpRequest();\
-      request.open('GET', '") +
-                      url + "'); \
+      request.open('") + methodStr + "', '" + url + "'); \
       request.overrideMimeType('text/plain');\
       request.addEventListener('load', function() {result = request.responseText;}, false);\
       request.addEventListener('error', function() {result = 'error';}, false);\
@@ -155,7 +157,7 @@ namespace
   }
 }
 
-TEST_F(MockWebRequestTest, BadCall)
+TEST_F(MockWebRequestTest, BadCallGET)
 {
   auto& jsEngine = GetJsEngine();
   ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.GET()"));
@@ -167,10 +169,36 @@ TEST_F(MockWebRequestTest, BadCall)
       jsEngine.Evaluate("_webRequest.GET('http://example.com/', {}, function(){}, 0)"));
 }
 
-TEST_F(MockWebRequestTest, SuccessfulRequest)
+TEST_F(MockWebRequestTest, BadCallHEAD)
+{
+  auto& jsEngine = GetJsEngine();
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.HEAD()"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.HEAD('', {}, function(){})"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.HEAD({toString: false}, {}, function(){})"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.HEAD('http://example.com/', null, function(){})"));
+  ASSERT_ANY_THROW(jsEngine.Evaluate("_webRequest.HEAD('http://example.com/', {}, null)"));
+  ASSERT_ANY_THROW(
+      jsEngine.Evaluate("_webRequest.HEAD('http://example.com/', {}, function(){}, 0)"));
+}
+
+TEST_F(MockWebRequestTest, SuccessfulRequestGET)
 {
   auto& jsEngine = GetJsEngine();
   jsEngine.Evaluate("let foo; _webRequest.GET('http://example.com/', {X: 'Y'}, function(result) "
+                    "{foo = result;} )");
+  ASSERT_TRUE(jsEngine.Evaluate("foo").IsUndefined());
+  ProcessPendingWebRequests();
+  ASSERT_EQ(IWebRequest::NS_OK, jsEngine.Evaluate("foo.status").AsInt());
+  ASSERT_EQ(123, jsEngine.Evaluate("foo.responseStatus").AsInt());
+  ASSERT_EQ("http://example.com/\nX\nY", jsEngine.Evaluate("foo.responseText").AsString());
+  ASSERT_EQ("{\"Foo\":\"Bar\"}",
+            jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
+}
+
+TEST_F(MockWebRequestTest, SuccessfulRequestHEAD)
+{
+  auto& jsEngine = GetJsEngine();
+  jsEngine.Evaluate("let foo; _webRequest.HEAD('http://example.com/', {X: 'Y'}, function(result) "
                     "{foo = result;} )");
   ASSERT_TRUE(jsEngine.Evaluate("foo").IsUndefined());
   ProcessPendingWebRequests();
@@ -229,7 +257,8 @@ TEST_F(DefaultWebRequestTest, XMLHttpRequest)
   ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Location')").IsNull());
 }
 #else
-TEST_F(DefaultWebRequestTest, DummyWebRequest)
+
+TEST_F(DefaultWebRequestTest, DummyWebRequestGET)
 {
   auto& jsEngine = GetJsEngine();
   jsEngine.Evaluate(
@@ -242,12 +271,27 @@ TEST_F(DefaultWebRequestTest, DummyWebRequest)
   ASSERT_EQ("{}", jsEngine.Evaluate("JSON.stringify(foo.responseHeaders)").AsString());
 }
 
-TEST_F(DefaultWebRequestTest, DummyXMLHttpRequest)
+TEST_F(DefaultWebRequestTest, DummyXMLHttpRequestGET)
 {
   auto& jsEngine = GetJsEngine();
   CreateFilterEngine(*platform);
 
   ResetTestXHR(jsEngine);
+  jsEngine.Evaluate("\
+    request.setRequestHeader('X', 'Y');\
+    request.send(null);");
+  WaitForVariable("result", jsEngine);
+  ASSERT_EQ(0, jsEngine.Evaluate("request.status").AsInt());
+  ASSERT_EQ("error", jsEngine.Evaluate("result").AsString());
+  ASSERT_TRUE(jsEngine.Evaluate("request.getResponseHeader('Content-Type')").IsNull());
+}
+
+TEST_F(DefaultWebRequestTest, DummyXMLHttpRequestHEAD)
+{
+  auto& jsEngine = GetJsEngine();
+  CreateFilterEngine(*platform);
+
+  ResetTestXHR(jsEngine, "", JsEngine::WebRequestMethod::kHead);
   jsEngine.Evaluate("\
     request.setRequestHeader('X', 'Y');\
     request.send(null);");

@@ -26,3 +26,13 @@ AdblockPlus::DefaultWebRequestSync::GET(const std::string& url,
   result.responseStatus = 0;
   return result;
 }
+
+AdblockPlus::ServerResponse
+AdblockPlus::DefaultWebRequestSync::HEAD(const std::string& url,
+                                         const HeaderList& requestHeaders) const
+{
+  AdblockPlus::ServerResponse result;
+  result.status = IWebRequest::NS_ERROR_FAILURE;
+  result.responseStatus = 0;
+  return result;
+}
