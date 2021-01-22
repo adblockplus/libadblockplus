@@ -187,3 +187,69 @@ AdblockPlus::DefaultWebRequestSync::GET(const std::string& url,
   }
   return result;
 }
+
+AdblockPlus::ServerResponse
+AdblockPlus::DefaultWebRequestSync::HEAD(const std::string& url,
+                                         const HeaderList& requestHeaders) const
+{
+  AdblockPlus::ServerResponse result;
+  result.status = IWebRequest::NS_ERROR_NOT_INITIALIZED;
+  result.responseStatus = 0;
+
+  CURL* curl = curl_easy_init();
+  if (curl)
+  {
+    std::stringstream responseText;
+    HeaderData headerData;
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, ReceiveData);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responseText);
+    // Request compressed data. Using any supported aglorithm
+    curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, ReceiveHeader);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerData);
+
+    struct curl_slist* headerList = 0;
+    for (const auto& header : requestHeaders)
+    {
+      headerList = curl_slist_append(headerList, (header.first + ": " + header.second).c_str());
+    }
+    if (headerList)
+      curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
+
+    result.status = ConvertErrorCode(curl_easy_perform(curl));
+    result.responseStatus = headerData.status;
+    result.responseText = responseText.str();
+    for (const auto& header : headerData.headers)
+    {
+      // Parse header name and value out of something like "Foo: bar"
+      size_t colonPos = header.find(':');
+      if (colonPos != std::string::npos)
+      {
+        size_t nameStart = 0;
+        size_t nameEnd = colonPos;
+        while (nameEnd > nameStart && isspace(header[nameEnd - 1]))
+          nameEnd--;
+
+        size_t valueStart = colonPos + 1;
+        while (valueStart < header.length() && isspace(header[valueStart]))
+          valueStart++;
+        size_t valueEnd = header.length();
+
+        if (nameEnd > nameStart && valueEnd > valueStart)
+        {
+          std::string name = header.substr(nameStart, nameEnd - nameStart);
+          std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+          std::string value = header.substr(valueStart, valueEnd - valueStart);
+          result.responseHeaders.push_back(std::pair<std::string, std::string>(name, value));
+        }
+      }
+    }
+
+    if (headerList)
+      curl_slist_free_all(headerList);
+    curl_easy_cleanup(curl);
+  }
+  return result;
+}

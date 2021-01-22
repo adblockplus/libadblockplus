@@ -32,6 +32,7 @@ namespace AdblockPlus
   {
   public:
     ServerResponse GET(const std::string& url, const HeaderList& requestHeaders) const override;
+    ServerResponse HEAD(const std::string& url, const HeaderList& requestHeaders) const override;
   };
 
   class DefaultWebRequest : public IWebRequest
@@ -42,8 +43,11 @@ namespace AdblockPlus
 
     void GET(const std::string& url,
              const HeaderList& requestHeaders,
-             const GetCallback& getCallback) override;
+             const RequestCallback& requestCallback) override;
 
+    void HEAD(const std::string& url,
+              const HeaderList& requestHeaders,
+              const RequestCallback& requestCallback) override;
   private:
     Scheduler scheduler;
     WebRequestSyncPtr syncImpl;

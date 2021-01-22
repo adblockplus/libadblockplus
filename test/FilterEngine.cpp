@@ -124,20 +124,20 @@ namespace
       webRequestCounter = 0;
       auto impl = [this](const std::string&,
                          const AdblockPlus::HeaderList&,
-                         const AdblockPlus::IWebRequest::GetCallback& callback) {
+                         const AdblockPlus::IWebRequest::RequestCallback& requestCallback) {
         ++webRequestCounter;
         ServerResponse response;
         response.responseStatus = 200;
         response.status = IWebRequest::NS_OK;
         response.responseText = "[Adblock Plus 2.0]\n||example.com";
-        callback(response);
+        requestCallback(response);
       };
 
       {
         AppInfo info;
         info.locale = "en";
         AdblockPlus::Platform::CreationParameters params;
-        params.webRequest.reset(new WrappingWebRequest(impl));
+        params.webRequest.reset(new WrappingWebRequest(impl, impl));
         params.logSystem.reset(new AdblockPlus::DefaultLogSystem());
         InitPlatformAndAppInfo(std::move(params), info);
       }
@@ -253,7 +253,7 @@ namespace
           exampleSubscriptionResponse.responseStatus = 200;
           exampleSubscriptionResponse.status = IWebRequest::NS_OK;
           exampleSubscriptionResponse.responseText = "[Adblock Plus 2.0]\n||example.com";
-          ii_webRequest->getCallback(exampleSubscriptionResponse);
+          ii_webRequest->requestCallback(exampleSubscriptionResponse);
         }
       }
       EXPECT_TRUE(isSubscriptionDownloadStatusReceived);

@@ -32,9 +32,18 @@ DefaultWebRequest::~DefaultWebRequest()
 
 void DefaultWebRequest::GET(const std::string& url,
                             const HeaderList& requestHeaders,
-                            const GetCallback& getCallback)
+                            const RequestCallback& requestCallback)
 {
-  scheduler([this, url, requestHeaders, getCallback] {
-    getCallback(this->syncImpl->GET(url, requestHeaders));
+  scheduler([this, url, requestHeaders, requestCallback] {
+    requestCallback(this->syncImpl->GET(url, requestHeaders));
+  });
+}
+
+void DefaultWebRequest::HEAD(const std::string& url,
+                             const HeaderList& requestHeaders,
+                             const RequestCallback& requestCallback)
+{
+  scheduler([this, url, requestHeaders, requestCallback] {
+    requestCallback(this->syncImpl->HEAD(url, requestHeaders));
   });
 }

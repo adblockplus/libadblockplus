@@ -68,6 +68,8 @@ namespace AdblockPlus
   public:
     ~JsEngine();
 
+    enum class WebRequestMethod { kGet, kHead };
+
     /**
      * Event callback function.
      */
@@ -227,12 +229,13 @@ namespace AdblockPlus
      */
     static void ScheduleTimer(const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
-    /*
+    /**
      * Private functionality required to implement web requests.
+     * @param method `WebRequestMethod` is a request method.
      * @param arguments `v8::FunctionCallbackInfo` is the arguments received in C++
      * callback associated for global GET method.
      */
-    static void ScheduleWebRequest(const v8::FunctionCallbackInfo<v8::Value>& arguments);
+    static void ScheduleWebRequest(WebRequestMethod method, const v8::FunctionCallbackInfo<v8::Value>& arguments);
 
     /**
      * Converts v8 arguments to `JsValue` objects.
