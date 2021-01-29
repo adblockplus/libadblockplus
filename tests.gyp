@@ -21,6 +21,7 @@
       'test/FilterEngineTest.h',
       'test/FilterEngine.cpp',
       'test/GlobalJsObject.cpp',
+      'test/HarnessTest.cpp',
       'test/JsEngine.cpp',
       'test/JsValue.cpp',
       'test/Prefs.cpp',

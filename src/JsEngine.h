@@ -177,6 +177,7 @@ namespace AdblockPlus
     JsValue NewValue(const std::string& val);
     JsValue NewValue(int64_t val);
     JsValue NewValue(bool val);
+    JsValue NewValue(double val);
     inline JsValue NewValue(const char* val)
     {
       return NewValue(std::string(val));
