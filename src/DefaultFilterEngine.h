@@ -52,24 +52,6 @@ namespace AdblockPlus
                    const std::string& siteKey = "",
                    bool specificOnly = false) const final;
 
-    Filter Matches(const std::string& url,
-                   ContentTypeMask contentTypeMask,
-                   const std::vector<std::string>& documentUrls,
-                   const std::string& siteKey = "",
-                   bool specificOnly = false) const final;
-
-    bool IsGenericblockWhitelisted(const std::string& url,
-                                   const std::vector<std::string>& documentUrls,
-                                   const std::string& sitekey = "") const final;
-
-    bool IsDocumentWhitelisted(const std::string& url,
-                               const std::vector<std::string>& documentUrls,
-                               const std::string& sitekey = "") const final;
-
-    bool IsElemhideWhitelisted(const std::string& url,
-                               const std::vector<std::string>& documentUrls,
-                               const std::string& sitekey = "") const final;
-
     bool IsContentAllowlisted(const std::string& url,
                               ContentTypeMask contentTypeMask,
                               const std::vector<std::string>& documentUrls,
