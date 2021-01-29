@@ -309,19 +309,6 @@ namespace AdblockPlus
     virtual std::unique_ptr<std::string> GetAllowedConnectionType() const = 0;
 
     /**
-     * Compares two version strings in
-     * [Mozilla toolkit version
-     * format](https://developer.mozilla.org/en/docs/Toolkit_version_format).
-     * @param v1 First version string.
-     * @param v2 Second version string.
-     * @return
-     *         - `0` if `v1` and `v2` are identical.
-     *         - A negative number if `v1` is less than `v2`.
-     *         - A positive number if `v1` is greater than `v2`.
-     */
-    virtual int CompareVersions(const std::string& v1, const std::string& v2) const = 0;
-
-    /**
      * Checks whether the sitekey signature is valid for the given public key and data,
      * where data consists of (uri + "\0" + host + "\0" + userAgent).
      * @param base64 encoded public key.

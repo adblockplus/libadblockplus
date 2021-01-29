@@ -34,7 +34,6 @@
       'adblockpluscore/lib/matcher.js',
       'adblockpluscore/lib/filterListener.js',
       'adblockpluscore/lib/filterEngine.js',
-      'adblockpluscore/lib/versions.js',
       'adblockpluscore/lib/synchronizer.js',
       'lib/filterUpdateRegistration.js',
       'lib/compose.js',
