@@ -95,8 +95,6 @@ namespace AdblockPlus
 
     std::unique_ptr<std::string> GetAllowedConnectionType() const final;
 
-    int CompareVersions(const std::string& v1, const std::string& v2) const final;
-
     bool VerifySignature(const std::string& key,
                          const std::string& signature,
                          const std::string& uri,

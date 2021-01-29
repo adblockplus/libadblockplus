@@ -272,15 +272,6 @@ void DefaultFilterEngine::FilterChanged(const IFilterEngine::FilterChangeCallbac
   callback(action, std::move(item));
 }
 
-int DefaultFilterEngine::CompareVersions(const std::string& v1, const std::string& v2) const
-{
-  JsValueList params;
-  params.push_back(jsEngine.NewValue(v1));
-  params.push_back(jsEngine.NewValue(v2));
-  JsValue func = jsEngine.Evaluate("API.compareVersions");
-  return func.Call(params).AsInt();
-}
-
 bool DefaultFilterEngine::VerifySignature(const std::string& key,
                                           const std::string& signature,
                                           const std::string& uri,
