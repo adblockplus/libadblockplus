@@ -25,7 +25,7 @@
 using namespace AdblockPlus;
 
 AdblockPlus::JsValue::JsValue(IV8IsolateProviderPtr isolate,
-                              v8::Global<v8::Context>*  jsContext,
+                              v8::Global<v8::Context>* jsContext,
                               v8::Local<v8::Value> value)
     : isolate(isolate), jsContext(jsContext), value(isolate->Get(), value)
 {
@@ -156,6 +156,14 @@ bool AdblockPlus::JsValue::AsBool() const
 {
   const JsContext context(isolate->Get(), *jsContext);
   return UnwrapValue()->BooleanValue(isolate->Get());
+}
+
+double AdblockPlus::JsValue::AsDouble() const
+{
+  const JsContext context(isolate->Get(), *jsContext);
+  auto currentContext = isolate->Get()->GetCurrentContext();
+  auto value = UnwrapValue()->NumberValue(currentContext);
+  return CHECKED_TO_VALUE(std::move(value));
 }
 
 AdblockPlus::JsValueList AdblockPlus::JsValue::AsList() const

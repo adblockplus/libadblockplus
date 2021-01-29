@@ -273,6 +273,12 @@ AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(bool val)
   return JsValue(GetIsolateProviderPtr(), GetContext(), v8::Boolean::New(GetIsolate(), val));
 }
 
+AdblockPlus::JsValue AdblockPlus::JsEngine::NewValue(double val)
+{
+  const JsContext context(GetIsolate(), *GetContext());
+  return JsValue(GetIsolateProviderPtr(), GetContext(), v8::Number::New(GetIsolate(), val));
+}
+
 AdblockPlus::JsValue AdblockPlus::JsEngine::NewObject()
 {
   const JsContext context(GetIsolate(), *GetContext());

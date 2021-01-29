@@ -66,6 +66,7 @@ namespace AdblockPlus
     StringBuffer AsStringBuffer() const;
     int64_t AsInt() const;
     bool AsBool() const;
+    double AsDouble() const;
     JsValueList AsList() const;
 
     /**
