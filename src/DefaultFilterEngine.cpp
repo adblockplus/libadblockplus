@@ -121,48 +121,6 @@ Filter DefaultFilterEngine::Matches(const std::string& url,
   return CheckFilterMatch(url, contentTypeMask, documentUrl, siteKey, specificOnly);
 }
 
-Filter DefaultFilterEngine::Matches(const std::string& url,
-                                    ContentTypeMask contentTypeMask,
-                                    const std::vector<std::string>& documentUrls,
-                                    const std::string& siteKey,
-                                    bool specificOnly) const
-{
-  assert(IsEnabled());
-  if (documentUrls.empty())
-  {
-    // We must be at the top of the frame hierarchy.
-    return Matches(url, contentTypeMask, "", siteKey, specificOnly);
-  }
-  // Only the immediate parent of |url| is considered when matching a non-allowing filter.
-  // This is consistent with how WebExt does it:
-  // https://gitlab.com/eyeo/adblockplus/adblockpluschrome/-/blob/6a345b830841052c09cfce6faf77eb8e682d7b7a/lib/requestBlocker.js#L191
-  return Matches(url, contentTypeMask, documentUrls.front(), siteKey, specificOnly);
-}
-
-bool DefaultFilterEngine::IsGenericblockWhitelisted(const std::string& url,
-                                                    const std::vector<std::string>& documentUrls,
-                                                    const std::string& sitekey) const
-{
-  assert(IsEnabled());
-  return GetAllowlistingFilter(url, CONTENT_TYPE_GENERICBLOCK, documentUrls, sitekey).IsValid();
-}
-
-bool DefaultFilterEngine::IsDocumentWhitelisted(const std::string& url,
-                                                const std::vector<std::string>& documentUrls,
-                                                const std::string& sitekey) const
-{
-  assert(IsEnabled());
-  return GetAllowlistingFilter(url, CONTENT_TYPE_DOCUMENT, documentUrls, sitekey).IsValid();
-}
-
-bool DefaultFilterEngine::IsElemhideWhitelisted(const std::string& url,
-                                                const std::vector<std::string>& documentUrls,
-                                                const std::string& sitekey) const
-{
-  assert(IsEnabled());
-  return GetAllowlistingFilter(url, CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey).IsValid();
-}
-
 bool DefaultFilterEngine::IsContentAllowlisted(const std::string& url,
                                                ContentTypeMask contentTypeMask,
                                                const std::vector<std::string>& documentUrls,

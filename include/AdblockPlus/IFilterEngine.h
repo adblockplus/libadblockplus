@@ -179,48 +179,6 @@ namespace AdblockPlus
                            bool specificOnly = false) const = 0;
 
     /**
-     * DEPRECATED. Use Matches() overload with a single documentUrl. Only the
-     * first URL in |documentUrls| is used and passed to that overload, rest are
-     * ignored.
-     */
-    [[deprecated("Use Matches() overload with a single documentUrl.")]] virtual Filter
-    Matches(const std::string& url,
-            ContentTypeMask contentTypeMask,
-            const std::vector<std::string>& documentUrls,
-            const std::string& siteKey = "",
-            bool specificOnly = false) const = 0;
-
-    /**
-     * @see IsContentAllowlisted.
-     * Asserts that the engine is enabled.
-     * @return `true` if the URL is allowlisted.
-     */
-    [[deprecated(
-        "Use IsContentAllowlisted() with contentTypeMask=CONTENT_TYPE_GENERICBLOCK.")]] virtual bool
-    IsGenericblockWhitelisted(const std::string& url,
-                              const std::vector<std::string>& documentUrls,
-                              const std::string& sitekey = "") const = 0;
-
-    /**
-     * @see IsContentAllowlisted.
-     * Asserts that the engine is enabled.
-     */
-    [[deprecated(
-        "Use IsContentAllowlisted() with contentTypeMask=CONTENT_TYPE_DOCUMENT.")]] virtual bool
-    IsDocumentWhitelisted(const std::string& url,
-                          const std::vector<std::string>& documentUrls,
-                          const std::string& sitekey = "") const = 0;
-
-    /**
-     * @see IsContentAllowlisted.
-     */
-    [[deprecated(
-        "Use IsContentAllowlisted() with contentTypeMask=CONTENT_TYPE_ELEMHIDE.")]] virtual bool
-    IsElemhideWhitelisted(const std::string& url,
-                          const std::vector<std::string>& documentUrls,
-                          const std::string& sitekey = "") const = 0;
-
-    /**
      * Checks whether the resource at the supplied URL is allowlisted.
      * Asserts that the engine is enabled.
      * @param url URL of the resource.
