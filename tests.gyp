@@ -24,7 +24,6 @@
       'test/HarnessTest.cpp',
       'test/JsEngine.cpp',
       'test/JsValue.cpp',
-      'test/Prefs.cpp',
       'test/PreloadedSubscriptions.cpp',
       'test/ReferrerMapping.cpp',
       'test/Utils.cpp',

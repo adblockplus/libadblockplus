@@ -25,7 +25,6 @@
 #include "GcCommand.h"
 #include "HelpCommand.h"
 #include "MatchesCommand.h"
-#include "PrefsCommand.h"
 #include "SubscriptionsCommand.h"
 
 #ifdef HAVE_CURL
@@ -87,7 +86,6 @@ int main()
     Add(commands, std::make_unique<FiltersCommand>(filterEngine));
     Add(commands, std::make_unique<SubscriptionsCommand>(filterEngine));
     Add(commands, std::make_unique<MatchesCommand>(filterEngine));
-    Add(commands, std::make_unique<PrefsCommand>(filterEngine, jsEngine));
 
     std::string commandLine;
     while (ReadCommandLine(commandLine))

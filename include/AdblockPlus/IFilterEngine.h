@@ -217,24 +217,6 @@ namespace AdblockPlus
     GetElementHidingEmulationSelectors(const std::string& domain) const = 0;
 
     /**
-     * Retrieves a preference value.
-     * @param pref Preference name.
-     * @return Preference value, or `null` if it doesn't exist.
-     */
-    [[deprecated("Use specific APIs instead e.g. GetAllowedConnectionType(),"
-                 " IsEnabled()")]] virtual JsValue
-    GetPref(const std::string& pref) const = 0;
-
-    /**
-     * Sets a preference value.
-     * @param pref Preference name.
-     * @param value New value of the preference.
-     */
-    [[deprecated("Use specific APIs instead e.g. SetAllowedConnectionType(),"
-                 " SetEnabled()")]] virtual void
-    SetPref(const std::string& pref, const JsValue& value) = 0;
-
-    /**
      * Extracts the host from a URL.
      * @param url URL to extract the host from.
      * @return Extracted host.
