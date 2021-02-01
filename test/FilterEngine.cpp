@@ -24,7 +24,37 @@ using namespace AdblockPlus;
 
 namespace
 {
-  class FilterEngineIsSubscriptionDownloadAllowedTest : public BaseJsTest
+  // TODO(pstanek): GMOCK isn't there in libabp.
+  struct FakeFilterEventObserver : IFilterEngine::EventObserver
+  {
+    void OnFilterEvent(IFilterEngine::FilterEvent event, const Filter& filter) override
+    {
+      filterEvents.push_back(event);
+      lastFilter.reset(new Filter(filter));
+    }
+
+    void OnSubscriptionEvent(IFilterEngine::SubscriptionEvent event,
+                             const Subscription& subscription) override
+    {
+      subscriptionEvents.push_back(event);
+      lastSubscription.reset(new Subscription(subscription));
+    }
+
+    void Reset()
+    {
+      filterEvents.clear();
+      subscriptionEvents.clear();
+      lastFilter = nullptr;
+      lastSubscription = nullptr;
+    }
+
+    std::vector<IFilterEngine::FilterEvent> filterEvents;
+    std::vector<IFilterEngine::SubscriptionEvent> subscriptionEvents;
+    std::unique_ptr<Filter> lastFilter;
+    std::unique_ptr<Subscription> lastSubscription;
+  };
+
+   class FilterEngineIsSubscriptionDownloadAllowedTest : public BaseJsTest
   {
   protected:
     typedef std::vector<std::pair<bool, std::string>> ConnectionTypes;
@@ -36,6 +66,7 @@ namespace
     std::vector<std::function<void(bool)>> isSubscriptionDownloadAllowedCallbacks;
     LazyFileSystem* fileSystem;
     bool isFilterEngineCreated;
+    FakeFilterEventObserver observer;
 
     void SetUp() override
     {
@@ -88,6 +119,7 @@ namespace
                   item.GetProperty("url").AsString() == subscriptionUrl)
                 isSubscriptionDownloadStatusReceived = true;
             });
+        platform->GetFilterEngine().AddEventObserver(&observer);
       }
       auto subscription = platform->GetFilterEngine().GetSubscription(subscriptionUrl);
       EXPECT_EQ(0, subscription.GetFilterCount()) << subscriptionUrl;
@@ -750,6 +782,93 @@ TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
   filterEngine.RemoveFilterChangeCallback();
   filterEngine.RemoveFilter(filterEngine.GetFilter("foo"));
   EXPECT_EQ(1, timesCalled);
+}
+
+TEST_F(FilterEngineTest, AddRemoveFilterEventObserver)
+{
+  auto& filterEngine = GetFilterEngine();
+  int timesCalled = 0;
+  filterEngine.SetFilterChangeCallback([&timesCalled](const std::string&, AdblockPlus::JsValue&&) {
+    timesCalled++;
+  });
+
+  std::string raw = "foo";
+
+  FakeFilterEventObserver observer;
+  filterEngine.AddEventObserver(&observer);
+  filterEngine.AddFilter(filterEngine.GetFilter(raw));
+  EXPECT_EQ(1, timesCalled);
+  ASSERT_EQ(1u, observer.filterEvents.size());
+  ASSERT_EQ(IFilterEngine::FilterEvent::FILTER_ADDED, observer.filterEvents[0]);
+  ASSERT_NE(nullptr, observer.lastFilter);
+  EXPECT_EQ(raw, observer.lastFilter->GetRaw());
+  filterEngine.RemoveFilterChangeCallback();
+  filterEngine.RemoveFilter(filterEngine.GetFilter(raw));
+  EXPECT_EQ(1, timesCalled);
+  ASSERT_EQ(2u, observer.filterEvents.size());
+  ASSERT_EQ(IFilterEngine::FilterEvent::FILTER_REMOVED, observer.filterEvents[1]);
+  ASSERT_NE(nullptr, observer.lastFilter);
+  EXPECT_EQ(raw, observer.lastFilter->GetRaw());
+  raw = "foo2";
+  filterEngine.AddFilter(filterEngine.GetFilter(raw));
+  EXPECT_EQ(1, timesCalled);
+  ASSERT_EQ(3u, observer.filterEvents.size());
+  ASSERT_EQ(IFilterEngine::FilterEvent::FILTER_ADDED, observer.filterEvents[2]);
+  ASSERT_NE(nullptr, observer.lastFilter);
+  EXPECT_EQ(raw, observer.lastFilter->GetRaw());
+  filterEngine.RemoveEventObserver(&observer);
+  filterEngine.RemoveFilter(filterEngine.GetFilter(raw));
+  ASSERT_EQ(3u, observer.filterEvents.size());
+  ASSERT_EQ(IFilterEngine::FilterEvent::FILTER_ADDED, observer.filterEvents[2]);
+  ASSERT_NE(nullptr, observer.lastFilter);
+  EXPECT_EQ(raw, observer.lastFilter->GetRaw());
+}
+
+TEST_F(FilterEngineTest, AddRemoveSubsciptionEventCallback)
+{
+  auto& filterEngine = GetFilterEngine();
+  std::string url = "https://foo/";
+  int timesCalled = 0;
+  filterEngine.SetFilterChangeCallback([&timesCalled](const std::string&, AdblockPlus::JsValue&&) {
+    timesCalled++;
+  });
+
+  FakeFilterEventObserver observer;
+  filterEngine.AddEventObserver(&observer);
+
+  auto subscription = filterEngine.GetSubscription(url);
+  filterEngine.AddSubscription(subscription);
+  EXPECT_EQ(2, timesCalled);
+  ASSERT_EQ(2u, observer.subscriptionEvents.size());
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_ADDED, observer.subscriptionEvents[0]);
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_DOWNLOADING,
+            observer.subscriptionEvents[1]);
+  ASSERT_NE(nullptr, observer.lastSubscription);
+  EXPECT_EQ(url, observer.lastSubscription->GetUrl());
+
+  filterEngine.RemoveFilterChangeCallback();
+  observer.Reset();
+  filterEngine.RemoveSubscription(subscription);
+  EXPECT_EQ(2, timesCalled);
+  ASSERT_EQ(1u, observer.subscriptionEvents.size());
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_REMOVED, observer.subscriptionEvents[0]);
+  ASSERT_NE(nullptr, observer.lastSubscription);
+  EXPECT_EQ(url, observer.lastSubscription->GetUrl());
+  url = "https://bar/";
+  subscription = filterEngine.GetSubscription(url);
+  observer.Reset();
+  filterEngine.AddSubscription(subscription);
+  EXPECT_EQ(2, timesCalled);
+  ASSERT_EQ(2u, observer.subscriptionEvents.size());
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_ADDED, observer.subscriptionEvents[0]);
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_DOWNLOADING,
+            observer.subscriptionEvents[1]);
+  ASSERT_NE(nullptr, observer.lastSubscription);
+  EXPECT_EQ(url, observer.lastSubscription->GetUrl());
+  filterEngine.RemoveEventObserver(&observer);
+  observer.Reset();
+  filterEngine.RemoveSubscription(subscription);
+  EXPECT_EQ(0u, observer.subscriptionEvents.size());
 }
 
 TEST_F(FilterEngineTest, DocumentAllowlisting)
@@ -1931,6 +2050,19 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AbsentCallbackAllowsUpdati
   EXPECT_LT(0, subscription.GetLastDownloadSuccessTime());
 
   EXPECT_EQ(1, subscription.GetFilterCount());
+}
+
+TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, SubscriptionEventsWhenUpdating)
+{
+  EnsureExampleSubscriptionAndForceUpdate("");
+  ASSERT_GE(observer.subscriptionEvents.size(), 4u);
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_DOWNLOADING,
+            observer.subscriptionEvents[0]);
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_LASTDOWNLOAD,
+            observer.subscriptionEvents[1]);
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_DOWNLOADSTATUS,
+            observer.subscriptionEvents[2]);
+  EXPECT_EQ(IFilterEngine::SubscriptionEvent::SUBSCRIPTION_UPDATED, observer.subscriptionEvents[3]);
 }
 
 TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest, AllowingCallbackAllowsUpdating)

@@ -64,6 +64,52 @@ namespace AdblockPlus
       CONTENT_TYPE_GENERICHIDE = 1 << 29
     };
 
+    enum class FilterEvent
+    {
+      FILTERS_LOAD,
+      FILTERS_SAVE,
+      FILTER_ADDED,
+      FILTER_REMOVED,
+      FILTER_MOVED,
+      FILTER_DISABLED,
+      FILTER_HITCOUNT,
+      FILTER_LASTHIT,
+    };
+
+    enum class SubscriptionEvent
+    {
+      SUBSCRIPTION_ADDED,
+      SUBSCRIPTION_REMOVED,
+      SUBSCRIPTION_DISABLED,
+      SUBSCRIPTION_DOWNLOADING,
+      SUBSCRIPTION_DOWNLOADSTATUS,
+      SUBSCRIPTION_UPDATED,
+      SUBSCRIPTION_ERRORS,
+      SUBSCRIPTION_TITLE,
+      SUBSCRIPTION_FIXEDTITLE,
+      SUBSCRIPTION_HOMEPAGE,
+      SUBSCRIPTION_LASTCHECK,
+      SUBSCRIPTION_LASTDOWNLOAD,
+    };
+
+    /**
+     * Observer notified about events applying to filters and subscriptions.
+     * @see FilterEvent
+     * @see SubscriptionEvent
+     */
+    class EventObserver
+    {
+    public:
+      virtual ~EventObserver() = default;
+      virtual void OnFilterEvent(FilterEvent, const Filter&)
+      {
+      }
+
+      virtual void OnSubscriptionEvent(SubscriptionEvent, const Subscription&)
+      {
+      }
+    };
+
     /**
      * Bitmask of `ContentType` values.
      * The underlying type is signed 32 bit integer because it is actually used
@@ -87,7 +133,9 @@ namespace AdblockPlus
      * for the full list).
      * The second parameter is the filter/subscription object affected, if any.
      */
-    typedef std::function<void(const std::string&, JsValue&&)> FilterChangeCallback;
+    [[deprecated(
+        "Use FilterEventCallback")]] typedef std::function<void(const std::string&, JsValue&&)>
+        FilterChangeCallback;
 
     virtual ~IFilterEngine() = default;
 
@@ -227,12 +275,30 @@ namespace AdblockPlus
      * Sets the callback invoked when the filters change.
      * @param callback Callback to invoke.
      */
-    virtual void SetFilterChangeCallback(const FilterChangeCallback& callback) = 0;
+    [[deprecated("Use AddEventObserver")]] virtual void
+    SetFilterChangeCallback(const FilterChangeCallback& callback) = 0;
 
     /**
-     * Removes the callback invoked when the filters change.
+     * Adds the observer to be notified on various events applying to filters and subscriptions.
+     *
+     * @param observer Observer to add.
+     * @see EventObserver
+     * @see FilterEvent
+     * @see SubscriptionEvent
      */
-    virtual void RemoveFilterChangeCallback() = 0;
+    virtual void AddEventObserver(EventObserver* observer) = 0;
+
+    /**
+     * Removes the callback invoked when a filter changes.
+     */
+    [[deprecated("Use RemoveEventObserver")]] virtual void RemoveFilterChangeCallback() = 0;
+
+    /**
+     * Removes the event observer.
+     *
+     * @param observer the observer previously added with AddEventObserver()
+     */
+    virtual void RemoveEventObserver(EventObserver* observer) = 0;
 
     /**
      * Stores the value indicating what connection types are allowed, it is

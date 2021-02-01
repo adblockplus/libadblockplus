@@ -142,10 +142,7 @@ void FilterEngineFactory::CreateAsync(JsEngine& jsEngine,
                               jsEngine.RemoveEventCallback("_init");
                             });
 
-  bareFilterEngine->SetFilterChangeCallback([&jsEngine](const std::string& reason, JsValue&&) {
-    if (reason == "save")
-      jsEngine.NotifyLowMemory();
-  });
+  bareFilterEngine->StartObservingEvents();
 
   // Lock the JS engine while we are loading scripts, no timeouts should fire
   // until we are done.

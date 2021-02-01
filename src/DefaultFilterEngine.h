@@ -25,6 +25,7 @@ namespace AdblockPlus
   {
   public:
     explicit DefaultFilterEngine(JsEngine& jsEngine);
+    ~DefaultFilterEngine();
 
     void SetEnabled(bool enabled) final;
 
@@ -66,7 +67,8 @@ namespace AdblockPlus
     std::string GetHostFromURL(const std::string& url) const final;
 
     void SetFilterChangeCallback(const FilterChangeCallback& callback) final;
-
+    void AddEventObserver(EventObserver* observer) final;
+    void RemoveEventObserver(EventObserver* observer) final;
     void RemoveFilterChangeCallback() final;
 
     void SetAllowedConnectionType(const std::string* value) final;
@@ -86,7 +88,24 @@ namespace AdblockPlus
     void AddFilter(const Filter& filter) final;
     void RemoveFilter(const Filter& filter) final;
 
+    void StartObservingEvents();
+
   private:
+    class Observer : public EventObserver
+    {
+    public:
+      explicit Observer(JsEngine& engine) : jsEngine(engine)
+      {
+      }
+
+      ~Observer() override = default;
+
+      void OnFilterEvent(FilterEvent, const Filter&) override;
+
+    private:
+      JsEngine& jsEngine;
+    };
+
     JsEngine& jsEngine;
 
     JsValue GetPref(const std::string& pref) const;
@@ -97,10 +116,18 @@ namespace AdblockPlus
                             const std::string& documentUrl,
                             const std::string& siteKey,
                             bool specificOnly) const;
-    void FilterChanged(const FilterChangeCallback& callback, JsValueList&& params) const;
+
+    void OnSubscriptionOrFilterChanged(JsValueList&& params) const;
     Filter GetAllowlistingFilter(const std::string& url,
                                  ContentTypeMask contentTypeMask,
                                  const std::vector<std::string>& documentUrls,
                                  const std::string& sitekey) const;
+    static bool Transform(const std::string& str, FilterEvent* event);
+    static bool Transform(const std::string& str, SubscriptionEvent* event);
+
+    mutable std::mutex callbacksMutex;
+    FilterChangeCallback legacyCallback;
+    Observer observer{jsEngine};
+    std::vector<IFilterEngine::EventObserver*> observers;
   };
 }

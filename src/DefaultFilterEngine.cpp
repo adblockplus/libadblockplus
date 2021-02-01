@@ -31,6 +31,14 @@ using namespace AdblockPlus;
 
 DefaultFilterEngine::DefaultFilterEngine(JsEngine& jsEngine) : jsEngine(jsEngine)
 {
+  jsEngine.SetEventCallback("filterChange", [this](JsValueList&& params) {
+    this->OnSubscriptionOrFilterChanged(move(params));
+  });
+}
+
+DefaultFilterEngine::~DefaultFilterEngine()
+{
+  jsEngine.RemoveEventCallback("filterChange");
 }
 
 void DefaultFilterEngine::SetEnabled(bool enabled)
@@ -199,19 +207,166 @@ std::string DefaultFilterEngine::GetHostFromURL(const std::string& url) const
 
 void DefaultFilterEngine::SetFilterChangeCallback(const FilterChangeCallback& callback)
 {
-  jsEngine.SetEventCallback("filterChange", [this, callback](JsValueList&& params) {
-    this->FilterChanged(callback, move(params));
-  });
+  std::unique_lock<std::mutex> lock(callbacksMutex);
+  legacyCallback = callback;
+}
+
+void DefaultFilterEngine::AddEventObserver(EventObserver* observer)
+{
+  std::unique_lock<std::mutex> lock(callbacksMutex);
+  assert(std::find(observers.begin(), observers.end(), observer) == observers.end());
+  observers.push_back(observer);
 }
 
 void DefaultFilterEngine::RemoveFilterChangeCallback()
 {
-  jsEngine.RemoveEventCallback("filterChange");
+  std::unique_lock<std::mutex> lock(callbacksMutex);
+  legacyCallback = nullptr;
+}
+
+void DefaultFilterEngine::RemoveEventObserver(EventObserver* observer)
+{
+  std::unique_lock<std::mutex> lock(callbacksMutex);
+  auto registered = std::find(observers.begin(), observers.end(), observer);
+  assert(registered != observers.end());
+  observers.erase(registered);
 }
 
 void DefaultFilterEngine::SetAllowedConnectionType(const std::string* value)
 {
   SetPref("allowed_connection_type", value ? jsEngine.NewValue(*value) : jsEngine.NewValue(""));
+}
+
+// static
+bool DefaultFilterEngine::Transform(const std::string& eventStr, FilterEvent* event)
+{
+  if (eventStr == "load")
+  {
+    *event = FilterEvent::FILTERS_LOAD;
+    return true;
+  }
+
+  if (eventStr == "save")
+  {
+    *event = FilterEvent::FILTERS_SAVE;
+    return true;
+  }
+
+  if (eventStr == "filter.added")
+  {
+    *event = FilterEvent::FILTER_ADDED;
+    return true;
+  }
+
+  if (eventStr == "filter.removed")
+  {
+    *event = FilterEvent::FILTER_REMOVED;
+    return true;
+  }
+
+  if (eventStr == "filter.moved")
+  {
+    *event = FilterEvent::FILTER_MOVED;
+    return true;
+  }
+
+  if (eventStr == "filter.disabled")
+  {
+    *event = FilterEvent::FILTER_DISABLED;
+    return true;
+  }
+
+  if (eventStr == "filter.hitCount")
+  {
+    *event = FilterEvent::FILTER_HITCOUNT;
+    return true;
+  }
+
+  if (eventStr == "filter.lastHit")
+  {
+    *event = FilterEvent::FILTER_LASTHIT;
+    return true;
+  }
+
+  return false;
+}
+
+// static
+bool DefaultFilterEngine::Transform(const std::string& eventStr, SubscriptionEvent* event)
+{
+  if (eventStr == "subscription.added")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_ADDED;
+    return true;
+  }
+
+  if (eventStr == "subscription.removed")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_REMOVED;
+    return true;
+  }
+
+  if (eventStr == "subscription.disabled")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_DISABLED;
+    return true;
+  }
+
+  if (eventStr == "subscription.downloading")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_DOWNLOADING;
+    return true;
+  }
+
+  if (eventStr == "subscription.downloadStatus")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_DOWNLOADSTATUS;
+    return true;
+  }
+
+  if (eventStr == "subscription.errors")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_ERRORS;
+    return true;
+  }
+
+  if (eventStr == "subscription.fixedTitle")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_FIXEDTITLE;
+    return true;
+  }
+
+  if (eventStr == "subscription.title")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_TITLE;
+    return true;
+  }
+
+  if (eventStr == "subscription.homepage")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_HOMEPAGE;
+    return true;
+  }
+
+  if (eventStr == "subscription.lastCheck")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_LASTCHECK;
+    return true;
+  }
+
+  if (eventStr == "subscription.lastDownload")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_LASTDOWNLOAD;
+    return true;
+  }
+
+  if (eventStr == "subscription.updated")
+  {
+    *event = SubscriptionEvent::SUBSCRIPTION_UPDATED;
+    return true;
+  }
+
+  return false;
 }
 
 std::unique_ptr<std::string> DefaultFilterEngine::GetAllowedConnectionType() const
@@ -222,12 +377,41 @@ std::unique_ptr<std::string> DefaultFilterEngine::GetAllowedConnectionType() con
   return std::unique_ptr<std::string>(new std::string(prefValue.AsString()));
 }
 
-void DefaultFilterEngine::FilterChanged(const IFilterEngine::FilterChangeCallback& callback,
-                                        JsValueList&& params) const
+void DefaultFilterEngine::OnSubscriptionOrFilterChanged(JsValueList&& params) const
 {
   std::string action(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
   JsValue item(params.size() >= 2 ? params[1] : jsEngine.NewValue(false));
-  callback(action, std::move(item));
+
+  std::unique_lock<std::mutex> lock(callbacksMutex);
+  if (legacyCallback)
+  {
+    JsValue copy = item;
+    legacyCallback(action, std::move(copy));
+  }
+
+  FilterEvent filterEvent;
+  SubscriptionEvent subscriptionEvent;
+  if (Transform(action, &filterEvent))
+  {
+    Filter filter(item.IsObject()
+                      ? std::make_unique<DefaultFilterImplementation>(std::move(item), &jsEngine)
+                      : nullptr);
+    for (auto* observer : observers)
+    {
+      observer->OnFilterEvent(filterEvent, filter);
+    }
+  }
+  else if (Transform(action, &subscriptionEvent))
+  {
+    Subscription subscription(item.IsObject() ? std::make_unique<DefaultSubscriptionImplementation>(
+                                                    std::move(item), &jsEngine)
+                                              : nullptr);
+
+    for (auto* observer : observers)
+    {
+      observer->OnSubscriptionEvent(subscriptionEvent, subscription);
+    }
+  }
 }
 
 bool DefaultFilterEngine::VerifySignature(const std::string& key,
@@ -328,4 +512,15 @@ void DefaultFilterEngine::RemoveFilter(const Filter& filter)
   const auto* impl = static_cast<const DefaultFilterImplementation*>(filter.Implementation());
   JsValue func = jsEngine.Evaluate("API.removeFilterFromList");
   func.Call(impl->jsObject);
+}
+
+void DefaultFilterEngine::StartObservingEvents()
+{
+  AddEventObserver(&observer);
+}
+
+void DefaultFilterEngine::Observer::OnFilterEvent(FilterEvent event, const Filter&)
+{
+  if (event == IFilterEngine::FilterEvent::FILTERS_SAVE)
+    jsEngine.NotifyLowMemory();
 }
