@@ -31,8 +31,6 @@
       'shell/src/Main.cpp',
       'shell/src/MatchesCommand.cpp',
       'shell/src/MatchesCommand.h',
-      'shell/src/PrefsCommand.cpp',
-      'shell/src/PrefsCommand.h',
       'shell/src/SubscriptionsCommand.cpp',
       'shell/src/SubscriptionsCommand.h',
       'shell/src/WebRequestCurl.cpp',

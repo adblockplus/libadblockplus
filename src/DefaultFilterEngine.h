@@ -63,10 +63,6 @@ namespace AdblockPlus
     std::vector<EmulationSelector>
     GetElementHidingEmulationSelectors(const std::string& domain) const final;
 
-    JsValue GetPref(const std::string& pref) const final;
-
-    void SetPref(const std::string& pref, const JsValue& value) final;
-
     std::string GetHostFromURL(const std::string& url) const final;
 
     void SetFilterChangeCallback(const FilterChangeCallback& callback) final;
@@ -92,6 +88,9 @@ namespace AdblockPlus
 
   private:
     JsEngine& jsEngine;
+
+    JsValue GetPref(const std::string& pref) const;
+    void SetPref(const std::string& pref, const JsValue& value);
 
     Filter CheckFilterMatch(const std::string& url,
                             ContentTypeMask contentTypeMask,
