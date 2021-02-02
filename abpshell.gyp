@@ -36,6 +36,16 @@
       'shell/src/WebRequestCurl.cpp',
       'shell/src/WebRequestCurl.h',
     ],
+    'conditions': [
+      ['have_curl==1',
+        {
+          'link_settings': {
+            'libraries': ['-lcurl']
+          },
+          'defines': ['HAVE_CURL']
+        }
+      ],
+    ],
     'msvs_settings': {
       'VCLinkerTool': {
         'SubSystem': '1',   # Console
