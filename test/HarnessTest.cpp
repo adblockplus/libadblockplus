@@ -166,13 +166,11 @@ protected:
           !engine.IsContentAllowlisted(
               url, AdblockPlus::IFilterEngine::CONTENT_TYPE_ELEMHIDE, documentUrls, sitekey))
       {
-        std::string domain = engine.GetHostFromURL(url);
-
         if (process_id >= 0 && frame_id >= 0)
         {
-          engine.GetElementHidingEmulationSelectors(domain);
+          engine.GetElementHidingEmulationSelectors(url);
           engine.GetElementHidingStyleSheet(
-              domain,
+              url,
               engine.IsContentAllowlisted(
                   url, AdblockPlus::IFilterEngine::CONTENT_TYPE_GENERICHIDE, documentUrls));
         }
