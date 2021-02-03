@@ -246,30 +246,33 @@ namespace AdblockPlus
      * Retrieves CSS style sheet for all element hiding filters active on the
      * supplied domain.
      * Asserts that the engine is enabled.
-     * @param domain Domain to retrieve CSS style sheet for.
+     * @param url Url for the domain of which to retrieve CSS style sheet for. Can be empty, in this
+     * case styles relative to any domain are returned.
      * @param specificOnly true if generic filters should not apply.
      * @return CSS style sheet or empty string if domian does not match available filters.
      */
-    virtual std::string GetElementHidingStyleSheet(const std::string& domain,
+    virtual std::string GetElementHidingStyleSheet(const std::string& url,
                                                    bool specificOnly = false) const = 0;
 
     /**
      * Retrieves CSS selectors for all element hiding emulation filters active on the
      * supplied domain.
      * Asserts that the engine is enabled.
-     * @param domain Domain to retrieve CSS selectors for.
+     * @param url Url for the domain of which to retrieve CSS selectors for. Can be empty, in this
+     * case selectors relative to any domain are returned.
      * @return List of CSS selectors along with the text property, can be empty if domian does not
      * match available filters.
      */
     virtual std::vector<EmulationSelector>
-    GetElementHidingEmulationSelectors(const std::string& domain) const = 0;
+    GetElementHidingEmulationSelectors(const std::string& url) const = 0;
 
     /**
      * Extracts the host from a URL.
      * @param url URL to extract the host from.
      * @return Extracted host.
      */
-    virtual std::string GetHostFromURL(const std::string& url) const = 0;
+    [[deprecated("Please prefer your own implemntation")]] virtual std::string
+    GetHostFromURL(const std::string& url) const = 0;
 
     /**
      * Sets the callback invoked when the filters change.

@@ -970,7 +970,7 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetEmpty)
 {
   auto& filterEngine = GetFilterEngine();
 
-  std::string sheet = filterEngine.GetElementHidingStyleSheet("example.org");
+  std::string sheet = filterEngine.GetElementHidingStyleSheet("http://example.org");
 
   EXPECT_TRUE(sheet.empty());
 }
@@ -997,7 +997,7 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheet)
   for (const auto& filter : filters)
     filterEngine.AddFilter(filterEngine.GetFilter(filter));
 
-  std::string sheet = filterEngine.GetElementHidingStyleSheet("example.org");
+  std::string sheet = filterEngine.GetElementHidingStyleSheet("http://example.org");
 
   EXPECT_EQ(
       "#testcase-eh-id {display: none !important;}\n#testcase-eh-id, .testcase-eh-class, "
@@ -1024,7 +1024,7 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetSingleDomain)
   // element hiding selectors
   filterEngine.AddFilter(filterEngine.GetFilter("example.org##.testcase - eh - class"));
 
-  std::string sheet = filterEngine.GetElementHidingStyleSheet("example.org");
+  std::string sheet = filterEngine.GetElementHidingStyleSheet("http://example.org");
 
   EXPECT_EQ(".testcase - eh - class {display: none !important;}\n", sheet);
 }
@@ -1038,7 +1038,7 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetDup)
   filterEngine.AddFilter(filterEngine.GetFilter("example.org###dup"));
   filterEngine.AddFilter(filterEngine.GetFilter("othersite.org###dup"));
 
-  std::string sheet = filterEngine.GetElementHidingStyleSheet("example.org");
+  std::string sheet = filterEngine.GetElementHidingStyleSheet("http://example.org");
 
   // no dups
   EXPECT_EQ("#dup {display: none !important;}\n", sheet);
@@ -1047,12 +1047,12 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetDup)
   filterEngine.AddFilter(filterEngine.GetFilter("~foo.example.org,example.org###dup"));
   filterEngine.AddFilter(filterEngine.GetFilter("~bar.example.org,example.org###dup"));
 
-  std::string sheetDup = filterEngine.GetElementHidingStyleSheet("example.org");
+  std::string sheetDup = filterEngine.GetElementHidingStyleSheet("http://example.org");
 
   // dups
   EXPECT_EQ("#dup, #dup, #dup {display: none !important;}\n", sheetDup);
 
-  std::string sheetBar = filterEngine.GetElementHidingStyleSheet("bar.example.org");
+  std::string sheetBar = filterEngine.GetElementHidingStyleSheet("http://bar.example.org");
   EXPECT_EQ("#dup, #dup {display: none !important;}\n", sheetBar);
 }
 
@@ -1063,16 +1063,16 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetDiff)
   filterEngine.AddFilter(filterEngine.GetFilter("example1.org###testcase-eh-id"));
   filterEngine.AddFilter(filterEngine.GetFilter("example2.org###testcase-eh-id"));
 
-  std::string sheet1 = filterEngine.GetElementHidingStyleSheet("example1.org");
+  std::string sheet1 = filterEngine.GetElementHidingStyleSheet("http://example1.org");
   EXPECT_EQ("#testcase-eh-id {display: none !important;}\n", sheet1);
 
-  std::string sheet2 = filterEngine.GetElementHidingStyleSheet("example2.org");
+  std::string sheet2 = filterEngine.GetElementHidingStyleSheet("http://example2.org");
   EXPECT_EQ("#testcase-eh-id {display: none !important;}\n", sheet2);
 
   std::string sheetGen = filterEngine.GetElementHidingStyleSheet("");
   EXPECT_TRUE(sheetGen.empty());
 
-  std::string sheetNonExisting = filterEngine.GetElementHidingStyleSheet("non-existing-domain.com");
+  std::string sheetNonExisting = filterEngine.GetElementHidingStyleSheet("http://non-existing-domain.com");
   EXPECT_TRUE(sheetNonExisting.empty());
 }
 
@@ -1084,15 +1084,32 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetGenerichide)
   filterEngine.AddFilter(filterEngine.GetFilter("example.org##.testcase-generichide-notgeneric"));
   filterEngine.AddFilter(filterEngine.GetFilter("@@||example.org$generichide"));
 
-  std::string sheet = filterEngine.GetElementHidingStyleSheet("example.org");
+  std::string sheet = filterEngine.GetElementHidingStyleSheet("http://example.org");
 
   EXPECT_EQ(".testcase-generichide-generic {display: none "
             "!important;}\n.testcase-generichide-notgeneric {display: none !important;}\n",
             sheet);
 
-  std::string sheetSpecificOnly = filterEngine.GetElementHidingStyleSheet("example.org", true);
+  std::string sheetSpecificOnly = filterEngine.GetElementHidingStyleSheet("http://example.org", true);
 
   EXPECT_EQ(".testcase-generichide-notgeneric {display: none !important;}\n", sheetSpecificOnly);
+}
+
+TEST_F(FilterEngineTest, ElementHidingStyleSheetListJustDomain)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.AddFilter(filterEngine.GetFilter("example.org###div"));
+  std::string sheet = filterEngine.GetElementHidingStyleSheet("example.org");
+  EXPECT_EQ("#div {display: none !important;}\n", sheet);
+}
+
+TEST_F(FilterEngineTest, ElementHidingStyleSheetUrlPath)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.AddFilter(filterEngine.GetFilter("example.org###div"));
+  filterEngine.AddFilter(filterEngine.GetFilter("other.org###div"));
+  std::string sheet = filterEngine.GetElementHidingStyleSheet("https://example.org:123/path?q=other.org");
+  EXPECT_EQ("#div {display: none !important;}\n", sheet);
 }
 
 TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListEmpty)
@@ -1100,7 +1117,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListEmpty)
   auto& filterEngine = GetFilterEngine();
 
   std::vector<IFilterEngine::EmulationSelector> sels =
-      filterEngine.GetElementHidingEmulationSelectors("example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example.org");
   EXPECT_TRUE(sels.empty());
 }
 
@@ -1112,7 +1129,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsAllowlist)
 
   // before allowlisting
   std::vector<IFilterEngine::EmulationSelector> selsBeforeAllowlisting =
-      filterEngine.GetElementHidingEmulationSelectors("example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example.org");
   ASSERT_EQ(1u, selsBeforeAllowlisting.size());
   EXPECT_EQ("foo", selsBeforeAllowlisting[0].selector);
   EXPECT_EQ("example.org#?#foo", selsBeforeAllowlisting[0].text);
@@ -1121,14 +1138,14 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsAllowlist)
   filterEngine.AddFilter(filterEngine.GetFilter("example.org#@#foo"));
 
   std::vector<IFilterEngine::EmulationSelector> selsAfterAllowlisting =
-      filterEngine.GetElementHidingEmulationSelectors("example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example.org");
   EXPECT_TRUE(selsAfterAllowlisting.empty());
 
   // add another filter
   filterEngine.AddFilter(filterEngine.GetFilter("example.org#?#another"));
 
   std::vector<IFilterEngine::EmulationSelector> selsAnother =
-      filterEngine.GetElementHidingEmulationSelectors("example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example.org");
   ASSERT_EQ(1u, selsAnother.size());
   EXPECT_EQ("another", selsAnother[0].selector);
   EXPECT_EQ("example.org#?#another", selsAnother[0].text);
@@ -1137,7 +1154,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsAllowlist)
   filterEngine.AddFilter(filterEngine.GetFilter("example2.org#?#foo"));
 
   std::vector<IFilterEngine::EmulationSelector> sels2 =
-      filterEngine.GetElementHidingEmulationSelectors("example2.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example2.org");
   ASSERT_EQ(1u, sels2.size());
   EXPECT_EQ("foo", sels2[0].selector);
   EXPECT_EQ("example2.org#?#foo", sels2[0].text);
@@ -1173,7 +1190,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
     filterEngine.AddFilter(filterEngine.GetFilter(filter));
 
   std::vector<IFilterEngine::EmulationSelector> sels =
-      filterEngine.GetElementHidingEmulationSelectors("example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example.org");
 
   ASSERT_EQ(4u, sels.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels[0].selector);
@@ -1188,7 +1205,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
   EXPECT_EQ("~foo.example.org,example.org#?#div:-abp-properties(width: 213px)", sels[3].text);
 
   std::vector<IFilterEngine::EmulationSelector> sels2 =
-      filterEngine.GetElementHidingEmulationSelectors("foo.example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://foo.example.org");
   ASSERT_EQ(3u, sels2.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels2[0].selector);
   EXPECT_EQ("div:-abp-has(>div>img.testcase-es-has)", sels2[1].selector);
@@ -1199,7 +1216,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsList)
   EXPECT_EQ("example.org#?#span:-abp-contains(ESContainsTarget)", sels2[2].text);
 
   std::vector<IFilterEngine::EmulationSelector> sels3 =
-      filterEngine.GetElementHidingEmulationSelectors("othersiteneg.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://othersiteneg.org");
   ASSERT_EQ(0u, sels3.size());
 }
 
@@ -1211,7 +1228,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListSingleDomain)
   filterEngine.AddFilter(filterEngine.GetFilter("example.org#?#div:-abp-properties(width: 213px)"));
 
   std::vector<IFilterEngine::EmulationSelector> sels =
-      filterEngine.GetElementHidingEmulationSelectors("example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example.org");
 
   ASSERT_EQ(1u, sels.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels[0].selector);
@@ -1229,7 +1246,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListNoDuplicates)
   filterEngine.AddFilter(filterEngine.GetFilter("~foo.example.org#?#dup"));
 
   std::vector<IFilterEngine::EmulationSelector> sels =
-      filterEngine.GetElementHidingEmulationSelectors("example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example.org");
 
   // no dups
   ASSERT_EQ(1u, sels.size());
@@ -1247,7 +1264,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDuplicates)
   filterEngine.AddFilter(filterEngine.GetFilter("~bar.example.org,example.org#?#dup"));
 
   std::vector<IFilterEngine::EmulationSelector> selsDups =
-      filterEngine.GetElementHidingEmulationSelectors("example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example.org");
 
   // dups
   ASSERT_EQ(3u, selsDups.size());
@@ -1260,7 +1277,7 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDuplicates)
   EXPECT_EQ("~bar.example.org,example.org#?#dup", selsDups[2].text);
 
   std::vector<IFilterEngine::EmulationSelector> selsBar =
-      filterEngine.GetElementHidingEmulationSelectors("bar.example.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://bar.example.org");
   ASSERT_EQ(2u, selsBar.size());
   EXPECT_EQ("dup", selsBar[0].selector);
   EXPECT_EQ("dup", selsBar[1].selector);
@@ -1282,13 +1299,13 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListDiff)
       filterEngine.GetFilter("example2.org#@#div:-abp-properties(width: 213px)"));
 
   std::vector<IFilterEngine::EmulationSelector> sels1 =
-      filterEngine.GetElementHidingEmulationSelectors("example1.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example1.org");
   ASSERT_EQ(1u, sels1.size());
   EXPECT_EQ("div:-abp-properties(width: 213px)", sels1[0].selector);
   EXPECT_EQ("example1.org#?#div:-abp-properties(width: 213px)", sels1[0].text);
 
   std::vector<IFilterEngine::EmulationSelector> sels2 =
-      filterEngine.GetElementHidingEmulationSelectors("example2.org");
+      filterEngine.GetElementHidingEmulationSelectors("http://example2.org");
   ASSERT_TRUE(sels2.empty());
 }
 
@@ -1319,8 +1336,35 @@ TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsNonExisting)
   filterEngine.AddFilter(filterEngine.GetFilter("example2.org#@#bar"));
 
   std::vector<IFilterEngine::EmulationSelector> selsNonExisting =
-      filterEngine.GetElementHidingEmulationSelectors("non-existing-domain.com");
+      filterEngine.GetElementHidingEmulationSelectors("http://non-existing-domain.com");
   EXPECT_TRUE(selsNonExisting.empty());
+}
+
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsListJustDomain)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.AddFilter(filterEngine.GetFilter("example.org#?#div"));
+
+  std::vector<IFilterEngine::EmulationSelector> sels =
+      filterEngine.GetElementHidingEmulationSelectors("example.org");
+
+  ASSERT_EQ(1u, sels.size());
+  EXPECT_EQ("div", sels[0].selector);
+  EXPECT_EQ("example.org#?#div", sels[0].text);
+}
+
+TEST_F(FilterEngineTest, ElementHidingEmulationSelectorsUrlPath)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.AddFilter(filterEngine.GetFilter("example.org#?#div"));
+  filterEngine.AddFilter(filterEngine.GetFilter("other.org#?#div"));
+
+  std::vector<IFilterEngine::EmulationSelector> sels =
+      filterEngine.GetElementHidingEmulationSelectors("https://example.org:123/path?q=other.org");
+
+  ASSERT_EQ(1u, sels.size());
+  EXPECT_EQ("div", sels[0].selector);
+  EXPECT_EQ("example.org#?#div", sels[0].text);
 }
 
 class TestElement : public IElement
