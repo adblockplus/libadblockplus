@@ -708,7 +708,6 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideAllowlistedMatchesAllowlistedS
       ASSERT_TRUE(matchResult.IsValid());
       EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
     }
-    if (false) // TODO: should be enabled during DP-235
     {          // the sitekey, but filter does not allowlist subdocument
       AdblockPlus::Filter matchResult =
           filterEngine.Matches("http://my-ads.com/adframe",
