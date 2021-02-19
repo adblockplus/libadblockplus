@@ -60,22 +60,34 @@ private:
 
 struct CallStats
 {
-  CallStats() : elapsedTimeSum(0), elapsedTimeMax(0), count(0)
+  CallStats() : elapsedTimeMax(0), elapsedTimeMin(0)
   {
   }
 
   void Add(double elapsedTime)
   {
-    elapsedTimeSum += elapsedTime;
-    count++;
+    measurements.push_back(elapsedTime);
 
     if (elapsedTimeMax < elapsedTime)
       elapsedTimeMax = elapsedTime;
+    if (elapsedTimeMin == 0 || (elapsedTime > 0 && elapsedTime < elapsedTimeMin))
+      elapsedTimeMin = elapsedTime;
   }
 
-  double elapsedTimeSum;
+  double Median()
+  {
+    size_t size = measurements.size();
+    if (size == 0)
+      return 0;
+
+    std::sort(measurements.begin(), measurements.end());
+    return size % 2 == 0 ? (measurements[size / 2 - 1] + measurements[size / 2]) / 2
+                         : measurements[size / 2];
+  }
+
   double elapsedTimeMax;
-  int count;
+  double elapsedTimeMin;
+  std::vector<double> measurements;
 };
 
 class HarnessTest : public ::testing::Test
@@ -276,6 +288,22 @@ protected:
     EXPECT_EQ(info.GetProperty("_res").AsInt(), decision);
     return lasted;
   }
+
+  void ReportPerformance()
+  {
+    std::cout << std::left << std::fixed << std::setprecision(3) << std::setw(20) << "Name"
+              << " ; Median(us) ;    Max(us) ;    Min(us) ;      Count" << std::endl;
+
+    for (auto& it : stats)
+    {
+      const std::string& name = it.first;
+      CallStats& stats = it.second;
+      std::cout << std::left << std::setw(20) << name << " ; " << std::right << std::setw(10)
+                << stats.Median() << " ; " << std::setw(10) << stats.elapsedTimeMax << " ; "
+                << std::setw(10) << stats.elapsedTimeMin << " ; " << std::setw(10)
+                << stats.measurements.size() << std::endl;
+    }
+  }
 };
 
 TEST_F(HarnessTest, AllSites)
@@ -330,13 +358,5 @@ TEST_F(HarnessTest, AllSites)
   MatchFromFile("data/rec_www_youtube_com.log");
   MatchFromFile("data/rec_yandex_com.log");
 
-  std::cout << std::left << std::fixed << std::setprecision(3) << std::setw(20) << "Name"
-            << " ;  Avg, us ;  Max, us" << std::endl;
-
-  for (auto it = stats.cbegin(), lim = stats.cend(); it != lim; ++it)
-  {
-    std::cout << std::left << std::setw(20) << it->first << " ; " << std::right << std::setw(8)
-              << (it->second.count ? it->second.elapsedTimeSum / it->second.count : 0.0) << " ; "
-              << std::setw(8) << it->second.elapsedTimeMax << std::endl;
-  }
+  ReportPerformance();
 }

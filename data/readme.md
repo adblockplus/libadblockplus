@@ -12,9 +12,9 @@ make Configuration=release FILTER=HarnessTest.AllSites test
 You will have output like this:
 
 ```
-Name                 ;  Avg, us ;  Max, us
-check-filter-match   ;  119.107 ; 3803.000
-generate-js-css      ;  306.869 ; 4427.000
+Name                 ; Median(us) ;    Max(us) ;    Min(us) ;      Count
+check-filter-match   ;    102.000 ;   3431.000 ;     66.000 ;       4339
+generate-js-css      ;    247.000 ;   4566.000 ;     47.000 ;        388
 ```
 
 After that, you must run the same test for the modified source code. The difference between the measurements will help estimate the effect of tweaks.
