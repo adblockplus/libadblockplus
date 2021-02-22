@@ -19,6 +19,14 @@ generate-js-css      ;    247.000 ;   4566.000 ;     47.000 ;        388
 
 After that, you must run the same test for the modified source code. The difference between the measurements will help estimate the effect of tweaks.
 
+**Note:** If the code changes have been applied the ABP core library, you first need to update that dependency to the desired commit:
+
+```bash
+cd adblockpluscore
+git checkout <adblockpluscore_commit>
+cd ..
+```
+
 ## Updating data
 
 You can use the [update.sh](update.sh) script to update the data. Before running the script, you have to:
