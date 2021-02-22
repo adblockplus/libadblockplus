@@ -1,15 +1,19 @@
-This folder contains files with records of ABP Chromium actions when browsing some sites. This data is used for testing, the details available in [HarnessTest.cpp](../test/HarnessTest.cpp). The sites are listed in the [sites.txt](sites.txt).
+# Measuring performance
+
+This folder contains files with records of ABP Chromium actions when browsing some sites. This data is used for performance testing, whose details are available in [HarnessTest.cpp](../test/HarnessTest.cpp). The sites are listed in the [sites.txt](sites.txt).
 
 ## Measuring the effect of optimizations
 
-This data can be used to measure the effect of optimizations as follows. First, it is worth measuring the average time of procedures before changes for the platform on which you are going to test. It should be done for the release build.
+This data can be used to measure the effect of optimizations as follows. It is worth measuring the average time of procedures on the platform on which you are going to test, before applying any code changes.
 
-```
-make Configuration=release get-prebuilt-v8 # If you do not have release V8
+Measurements should be taken against the release build:
+
+```bash
+make Configuration=release get-prebuilt-v8 # If you do not have release V8, only needed once
 make Configuration=release FILTER=HarnessTest.AllSites test
 ```
 
-You will have output like this:
+You should see an output like this:
 
 ```
 Name                 ; Median(us) ;    Max(us) ;    Min(us) ;      Count
@@ -27,9 +31,9 @@ git checkout <adblockpluscore_commit>
 cd ..
 ```
 
-## Updating data
+## Updating trace data
 
-You can use the [update.sh](update.sh) script to update the data. Before running the script, you have to:
+You can use the [update.sh](update.sh) script to update the trace data. Before running the script, you have to:
 
 * Build the ABP Chromium release with the `abp_enable_trace=true` flag
 * Set the `CHROME_SRC` environment variable with the root folder of ABP Chromium
