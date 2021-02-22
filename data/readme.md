@@ -4,7 +4,7 @@ This folder contains recordings of ABP Chromium actions when browsing sites list
 
 ## Measuring the effect of optimizations
 
-This data can be used to measure the effect of optimizations as follows. It is worth measuring the average time of procedures on the platform on which you are going to test, before applying any code changes.
+Before making changes to production code that runs on your desired platform, you may measure the effect of those changes on times of procedures measured on your desktop/laptop.
 
 Measurements should be taken against the release build:
 
@@ -23,7 +23,7 @@ generate-js-css      ;    247.000 ;   4566.000 ;     47.000 ;        388
 
 After that, you must run the same test for the modified source code. The difference between the measurements will help estimate the effect of tweaks.
 
-**Note:** If the code changes have been applied to the ABP core library, you first need to update that dependency to the desired commit:
+**Note:** If you modify adblockpluscore, you need to update that dependency to the desired commit:
 
 ```bash
 cd adblockpluscore
@@ -38,5 +38,5 @@ Use the [update.sh](update.sh) script to update the trace data:
 * Build the ABP Chromium release with the `abp_enable_trace=true` flag
 * Set the `CHROME_SRC` environment variable with the root folder of ABP Chromium
 * Connect the device
-* Run ./update.sh
+* Run `./update.sh`
 
