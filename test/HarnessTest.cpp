@@ -248,38 +248,32 @@ protected:
 
     {
       ElapsedTime timer;
+      bool specificOnly = false;
+      AdblockPlus::Filter filter;
 
-      if (engine.IsContentAllowlisted(
-              url,
-              AdblockPlus::IFilterEngine::ContentType::CONTENT_TYPE_DOCUMENT,
-              documentUrls,
-              sitekey))
+      if (!documentUrls.empty())
+      {
+        specificOnly = engine.IsContentAllowlisted(
+            url,
+            AdblockPlus::IFilterEngine::ContentType::CONTENT_TYPE_GENERICBLOCK,
+            documentUrls,
+            sitekey);
+      }
+
+      if (documentUrls.empty())
+        filter = engine.Matches(url, contentTypeMask, "", sitekey, specificOnly);
+      else
+        filter = engine.Matches(url, contentTypeMask, documentUrls.front(), sitekey, specificOnly);
+
+      decision = filter.IsValid() && filter.GetType() != AdblockPlus::Filter::Type::TYPE_EXCEPTION;
+
+      if (decision && engine.IsContentAllowlisted(
+                          url,
+                          AdblockPlus::IFilterEngine::ContentType::CONTENT_TYPE_DOCUMENT,
+                          documentUrls,
+                          sitekey))
       {
         decision = false;
-      }
-      else
-      {
-        bool specificOnly = false;
-
-        if (!documentUrls.empty())
-        {
-          specificOnly = engine.IsContentAllowlisted(
-              url,
-              AdblockPlus::IFilterEngine::ContentType::CONTENT_TYPE_GENERICBLOCK,
-              documentUrls,
-              sitekey);
-        }
-
-        AdblockPlus::Filter filter;
-
-        if (documentUrls.empty())
-          filter = engine.Matches(url, contentTypeMask, "", sitekey, specificOnly);
-        else
-          filter =
-              engine.Matches(url, contentTypeMask, documentUrls.front(), sitekey, specificOnly);
-
-        decision =
-            filter.IsValid() && filter.GetType() != AdblockPlus::Filter::Type::TYPE_EXCEPTION;
       }
 
       lasted = timer.Microseconds();
