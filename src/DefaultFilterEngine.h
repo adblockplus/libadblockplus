@@ -34,6 +34,7 @@ namespace AdblockPlus
     Filter GetFilter(const std::string& text) const final;
 
     Subscription GetSubscription(const std::string& url) const final;
+    std::vector<Subscription> GetSubscriptionsFromFilter(const Filter& filter) const final;
 
     std::vector<Filter> GetListedFilters() const final;
 
