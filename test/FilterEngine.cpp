@@ -2188,3 +2188,56 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest,
   EXPECT_TRUE(capturedConnectionTypes[0].first);
   EXPECT_EQ(testConnection, capturedConnectionTypes[0].second);
 }
+
+class FilterEngineSubscriptionsByFilterTest : public FilterEngineInitallyDisabledTest
+{
+public:
+  const char* kTestFilter = "||bar.com";
+
+private:
+  void SetUp() override
+  {
+    FilterEngineInitallyDisabledTest::SetUp();
+    filterList = "[Adblock Plus 2.0]\n" + std::string{kTestFilter};
+  }
+};
+
+TEST_F(FilterEngineSubscriptionsByFilterTest, NoSubscription)
+{
+  auto& engine = ConfigureEngine(FilterEngineInitallyDisabledTest::AutoselectState::Disabled,
+                                 FilterEngineInitallyDisabledTest::EngineState::Enabled);
+  auto filter = engine.GetFilter(kTestFilter);
+  auto subscriptions = engine.GetSubscriptionsFromFilter(filter);
+  ASSERT_EQ(0u, subscriptions.size());
+}
+
+TEST_F(FilterEngineSubscriptionsByFilterTest, OneSubscription)
+{
+  auto& engine = ConfigureEngine(FilterEngineInitallyDisabledTest::AutoselectState::Disabled,
+                                 FilterEngineInitallyDisabledTest::EngineState::Enabled);
+  std::string testUrl = "https://foo.bar";
+  auto subscription = engine.GetSubscription(testUrl);
+  engine.AddSubscription(subscription);
+  auto filter = engine.GetFilter(kTestFilter);
+  auto subscriptions = engine.GetSubscriptionsFromFilter(filter);
+  ASSERT_EQ(1u, subscriptions.size());
+  EXPECT_EQ(testUrl, subscriptions[0].GetUrl());
+}
+
+TEST_F(FilterEngineSubscriptionsByFilterTest, MultipleSubscriptions)
+{
+  auto& engine = ConfigureEngine(FilterEngineInitallyDisabledTest::AutoselectState::Disabled,
+                                 FilterEngineInitallyDisabledTest::EngineState::Enabled);
+  std::string testUrl1 = "https://foo.bar";
+  auto subscription1 = engine.GetSubscription(testUrl1);
+  engine.AddSubscription(subscription1);
+
+  std::string testUrl2 = "https://bar.baz";
+  auto subscription2 = engine.GetSubscription(testUrl2);
+  engine.AddSubscription(subscription2);
+  auto filter = engine.GetFilter(kTestFilter);
+  auto subscriptions = engine.GetSubscriptionsFromFilter(filter);
+  ASSERT_EQ(2u, subscriptions.size());
+  EXPECT_EQ(testUrl1, subscriptions[0].GetUrl());
+  EXPECT_EQ(testUrl2, subscriptions[1].GetUrl());
+}

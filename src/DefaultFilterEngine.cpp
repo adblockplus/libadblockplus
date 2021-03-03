@@ -66,6 +66,29 @@ Subscription DefaultFilterEngine::GetSubscription(const std::string& url) const
       func.Call(jsEngine.NewValue(url)), &jsEngine));
 }
 
+std::vector<Subscription>
+DefaultFilterEngine::GetSubscriptionsFromFilter(const Filter& filter) const
+{
+  JsValue func = jsEngine.Evaluate("API.getSubscriptionsFromFilter");
+  auto subscriptions = func.Call(jsEngine.NewValue(filter.GetRaw()));
+  if (subscriptions.IsNull() || subscriptions.IsUndefined())
+  {
+    return {};
+  }
+
+  assert(subscriptions.IsArray());
+  auto subscriptions_values = subscriptions.AsList();
+  std::vector<Subscription> result;
+  result.reserve(subscriptions_values.size());
+  for (auto value : subscriptions_values)
+  {
+    result.push_back(Subscription(
+        std::make_unique<DefaultSubscriptionImplementation>(std::move(value), &jsEngine)));
+  }
+
+  return result;
+}
+
 std::vector<Filter> DefaultFilterEngine::GetListedFilters() const
 {
   JsValue func = jsEngine.Evaluate("API.getListedFilters");

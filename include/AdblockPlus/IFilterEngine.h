@@ -165,6 +165,13 @@ namespace AdblockPlus
     virtual Subscription GetSubscription(const std::string& url) const = 0;
 
     /**
+     * Retrieves subscription object(s) containing the passed in filter.
+     * @param filter Filter text.
+     * @return A list of `Subscription` containing the given filter - if any.
+     */
+    virtual std::vector<Subscription> GetSubscriptionsFromFilter(const Filter& filter) const = 0;
+
+    /**
      * Retrieves the list of custom filters.
      * @return List of custom filters.
      */
