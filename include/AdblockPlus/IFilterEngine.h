@@ -58,10 +58,12 @@ namespace AdblockPlus
       CONTENT_TYPE_MEDIA = 16384,
       CONTENT_TYPE_FONT = 32768,
       CONTENT_TYPE_POPUP = 1 << 24,
-      CONTENT_TYPE_DOCUMENT = 1 << 26,
-      CONTENT_TYPE_GENERICBLOCK = 1 << 27,
-      CONTENT_TYPE_ELEMHIDE = 1 << 28,
-      CONTENT_TYPE_GENERICHIDE = 1 << 29
+      CONTENT_TYPE_CSP = 1 << 25,     // unused
+      CONTENT_TYPE_HEADER = 1 << 26,  // unused
+      CONTENT_TYPE_DOCUMENT = 1 << 27,
+      CONTENT_TYPE_GENERICBLOCK = 1 << 28,
+      CONTENT_TYPE_ELEMHIDE = 1 << 29,
+      CONTENT_TYPE_GENERICHIDE = 1 << 30
     };
 
     enum class FilterEvent
