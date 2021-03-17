@@ -1,5 +1,7 @@
+#include <cmath>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <numeric>
 
 #include "../src/DefaultFileSystem.h"
 #include "../src/JsError.h"
@@ -60,23 +62,14 @@ private:
 
 struct CallStats
 {
-  CallStats() : elapsedTimeMax(0), elapsedTimeMin(0)
-  {
-  }
-
   void Add(double elapsedTime)
   {
     measurements.push_back(elapsedTime);
-
-    if (elapsedTimeMax < elapsedTime)
-      elapsedTimeMax = elapsedTime;
-    if (elapsedTimeMin == 0 || (elapsedTime > 0 && elapsedTime < elapsedTimeMin))
-      elapsedTimeMin = elapsedTime;
   }
 
   double Median()
   {
-    size_t size = measurements.size();
+    const size_t size = measurements.size();
     if (size == 0)
       return 0;
 
@@ -85,8 +78,37 @@ struct CallStats
                          : measurements[size / 2];
   }
 
-  double elapsedTimeMax;
-  double elapsedTimeMin;
+  double Mean()
+  {
+    const size_t size = measurements.size();
+    if (size == 0)
+      return 0;
+    const double total = std::accumulate(measurements.begin(), measurements.end(), 0.0);
+    return total / size;
+  }
+
+  double StdDeviation()
+  {
+    const size_t size = measurements.size();
+    if (size < 2)
+      return 0;
+
+    const double mean = Mean();
+    const double sumOfSquaredDeviations =
+        std::accumulate(measurements.begin(), measurements.end(), 0, [mean](double sum, double b) {
+          return (b - mean) * (b - mean) + sum;
+        });
+    return std::sqrt(sumOfSquaredDeviations / (size - 1));
+  }
+
+  double StdError()
+  {
+    const size_t size = measurements.size();
+    if (size == 0)
+      return 0;
+    return StdDeviation() / std::sqrt(double(size));
+  }
+
   std::vector<double> measurements;
 };
 
@@ -286,15 +308,15 @@ protected:
   void ReportPerformance()
   {
     std::cout << std::left << std::fixed << std::setprecision(3) << std::setw(20) << "Name"
-              << " ; Median(us) ;    Max(us) ;    Min(us) ;      Count" << std::endl;
+              << " ; Median(us) ; StdDev(us) ; StdErr(us) ;      Count" << std::endl;
 
     for (auto& it : stats)
     {
       const std::string& name = it.first;
       CallStats& stats = it.second;
       std::cout << std::left << std::setw(20) << name << " ; " << std::right << std::setw(10)
-                << stats.Median() << " ; " << std::setw(10) << stats.elapsedTimeMax << " ; "
-                << std::setw(10) << stats.elapsedTimeMin << " ; " << std::setw(10)
+                << stats.Median() << " ; " << std::setw(10) << stats.StdDeviation() << " ; "
+                << std::setw(10) << stats.StdError() << " ; " << std::setw(10)
                 << stats.measurements.size() << std::endl;
     }
   }
