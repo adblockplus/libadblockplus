@@ -41,17 +41,6 @@ DefaultFilterEngine::~DefaultFilterEngine()
   jsEngine.RemoveEventCallback("filterChange");
 }
 
-void DefaultFilterEngine::SetEnabled(bool enabled)
-{
-  JsValue func = jsEngine.Evaluate("API.setFilterEngineEnabled");
-  func.Call(jsEngine.NewValue(enabled));
-}
-
-bool DefaultFilterEngine::IsEnabled() const
-{
-  return jsEngine.Evaluate("API.isFilterEngineEnabled()").AsBool();
-}
-
 Filter DefaultFilterEngine::GetFilter(const std::string& text) const
 {
   JsValue func = jsEngine.Evaluate("API.getFilterFromText");
@@ -143,7 +132,6 @@ Filter DefaultFilterEngine::Matches(const std::string& url,
                                     const std::string& siteKey,
                                     bool specificOnly) const
 {
-  assert(IsEnabled());
   if (documentUrl.empty())
   {
     // We must be at the top of the frame hierarchy.
@@ -186,7 +174,6 @@ Filter DefaultFilterEngine::CheckFilterMatch(const std::string& url,
 std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& domain,
                                                             bool specificOnly) const
 {
-  assert(IsEnabled());
   JsValueList params;
   params.push_back(jsEngine.NewValue(domain));
   params.push_back(jsEngine.NewValue(specificOnly));
@@ -197,7 +184,6 @@ std::string DefaultFilterEngine::GetElementHidingStyleSheet(const std::string& d
 std::vector<IFilterEngine::EmulationSelector>
 DefaultFilterEngine::GetElementHidingEmulationSelectors(const std::string& domain) const
 {
-  assert(IsEnabled());
   JsValue func = jsEngine.Evaluate("API.getElementHidingEmulationSelectors");
   JsValueList result = func.Call(jsEngine.NewValue(domain)).AsList();
   std::vector<IFilterEngine::EmulationSelector> selectors;
@@ -535,6 +521,18 @@ void DefaultFilterEngine::RemoveFilter(const Filter& filter)
   const auto* impl = static_cast<const DefaultFilterImplementation*>(filter.Implementation());
   JsValue func = jsEngine.Evaluate("API.removeFilterFromList");
   func.Call(impl->jsObject);
+}
+
+void DefaultFilterEngine::StartSynchronization()
+{
+  JsValue func = jsEngine.Evaluate("API.startSynchronization");
+  func.Call();
+}
+
+void DefaultFilterEngine::StopSynchronization()
+{
+  JsValue func = jsEngine.Evaluate("API.stopSynchronization");
+  func.Call();
 }
 
 void DefaultFilterEngine::StartObservingEvents()

@@ -54,7 +54,7 @@ namespace
     std::unique_ptr<Subscription> lastSubscription;
   };
 
-   class FilterEngineIsSubscriptionDownloadAllowedTest : public BaseJsTest
+  class FilterEngineIsSubscriptionDownloadAllowedTest : public BaseJsTest
   {
   protected:
     typedef std::vector<std::pair<bool, std::string>> ConnectionTypes;
@@ -692,10 +692,10 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideAllowlistedMatchesAllowlistedS
   {
     // normally the frame is not allowlisted
     { // no sitekey
-      AdblockPlus::Filter matchResult =
-          filterEngine.Matches("http://my-ads.com/adframe",
-                               AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
-                               "http://example.com/");
+       AdblockPlus::Filter matchResult =
+           filterEngine.Matches("http://my-ads.com/adframe",
+                                AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+                                "http://example.com/");
       ASSERT_TRUE(matchResult.IsValid());
       EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
     }
@@ -1071,7 +1071,8 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetDiff)
   std::string sheetGen = filterEngine.GetElementHidingStyleSheet("");
   EXPECT_TRUE(sheetGen.empty());
 
-  std::string sheetNonExisting = filterEngine.GetElementHidingStyleSheet("http://non-existing-domain.com");
+  std::string sheetNonExisting =
+      filterEngine.GetElementHidingStyleSheet("http://non-existing-domain.com");
   EXPECT_TRUE(sheetNonExisting.empty());
 }
 
@@ -1089,7 +1090,8 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetGenerichide)
             "!important;}\n.testcase-generichide-notgeneric {display: none !important;}\n",
             sheet);
 
-  std::string sheetSpecificOnly = filterEngine.GetElementHidingStyleSheet("http://example.org", true);
+  std::string sheetSpecificOnly =
+      filterEngine.GetElementHidingStyleSheet("http://example.org", true);
 
   EXPECT_EQ(".testcase-generichide-notgeneric {display: none !important;}\n", sheetSpecificOnly);
 }
@@ -1107,7 +1109,8 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetUrlPath)
   auto& filterEngine = GetFilterEngine();
   filterEngine.AddFilter(filterEngine.GetFilter("example.org###div"));
   filterEngine.AddFilter(filterEngine.GetFilter("other.org###div"));
-  std::string sheet = filterEngine.GetElementHidingStyleSheet("https://example.org:123/path?q=other.org");
+  std::string sheet =
+      filterEngine.GetElementHidingStyleSheet("https://example.org:123/path?q=other.org");
   EXPECT_EQ("#div {display: none !important;}\n", sheet);
 }
 
@@ -1567,223 +1570,6 @@ TEST_F(FilterEngineWithInMemoryFS, DisableSubscriptionsAutoSelectOnFirstRun)
   EXPECT_FALSE(filterEngine.IsAAEnabled());
 }
 
-TEST_F(FilterEngineInitallyDisabledTest, Basic)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Enabled, EngineState::Disabled);
-
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  auto init = GetJsEngine().Evaluate("require('filterStorage').filterStorage.initialized");
-  EXPECT_TRUE(init.IsBool());
-  EXPECT_FALSE(init.AsBool());
-  EXPECT_EQ(0u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(0, webRequestCounter);
-}
-
-TEST_F(FilterEngineInitallyDisabledTest, InitallyEnabledThenDisabled)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Enabled, EngineState::Enabled);
-
-  EXPECT_TRUE(filterEngine.IsEnabled());
-  // 2 subscriptions expected because first_run_subscription_auto_select is true by default,
-  // so AA and EasyList for en locale will be added.
-  EXPECT_EQ(2u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(2, webRequestCounter);
-
-  auto init = GetJsEngine().Evaluate("require(\"filterStorage\").filterStorage.initialized");
-  EXPECT_TRUE(init.IsBool());
-  EXPECT_FALSE(init.AsBool());
-
-  filterEngine.SetEnabled(false);
-  // webRequestCounter is not expected to increase despite requesting UpdateFilters because engine
-  // is disabled
-  for (auto& it : filterEngine.GetListedSubscriptions())
-    it.UpdateFilters();
-
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_EQ(2u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(2, webRequestCounter);
-}
-
-TEST_F(FilterEngineInitallyDisabledTest, EnableWithAutoselect)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Enabled, EngineState::Disabled);
-
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_EQ(0u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetEnabled(true);
-
-  EXPECT_TRUE(filterEngine.IsEnabled());
-  auto init = GetJsEngine().Evaluate("require('filterStorage').filterStorage.initialized");
-  EXPECT_TRUE(init.IsBool());
-  EXPECT_FALSE(init.AsBool());
-  // 2 subscriptions expected because first_run_subscription_auto_select is true by default,
-  // so AA and EasyList for en locale will be added.
-  EXPECT_EQ(2u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(2, webRequestCounter);
-}
-
-TEST_F(FilterEngineInitallyDisabledTest, SubscribeWithAutoselect)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Enabled, EngineState::Disabled);
-
-  AdblockPlus::Subscription subscription = filterEngine.GetSubscription("https://foo/");
-  filterEngine.AddSubscription(subscription);
-
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_TRUE(filterEngine.IsAAEnabled());
-  EXPECT_EQ(1u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetEnabled(true);
-
-  EXPECT_TRUE(filterEngine.IsEnabled());
-  EXPECT_TRUE(filterEngine.IsAAEnabled());
-  // 3 subscriptions expected because first_run_subscription_auto_select is true by default,
-  // so AA, EasyList for en locale and custom subscription will be added .
-  EXPECT_EQ(3u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(3, webRequestCounter);
-}
-
-TEST_F(FilterEngineInitallyDisabledTest, EnableWithoutAutoselect)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Disabled, EngineState::Disabled);
-
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_FALSE(filterEngine.IsAAEnabled());
-  EXPECT_EQ(0u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetEnabled(true);
-
-  EXPECT_TRUE(filterEngine.IsEnabled());
-  EXPECT_FALSE(filterEngine.IsAAEnabled());
-  EXPECT_EQ(0u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(0, webRequestCounter);
-}
-
-TEST_F(FilterEngineInitallyDisabledTest, SubscribeWithoutAutoselect)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Disabled, EngineState::Disabled);
-
-  AdblockPlus::Subscription subscription = filterEngine.GetSubscription("https://foo/");
-  filterEngine.AddSubscription(subscription);
-
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_FALSE(filterEngine.IsAAEnabled());
-  EXPECT_EQ(1u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetEnabled(true);
-
-  EXPECT_TRUE(filterEngine.IsEnabled());
-  EXPECT_FALSE(filterEngine.IsAAEnabled());
-  EXPECT_EQ(1u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(1, webRequestCounter);
-}
-
-TEST_F(FilterEngineInitallyDisabledTest, EnableAA)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Disabled, EngineState::Disabled);
-
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_FALSE(filterEngine.IsAAEnabled());
-  EXPECT_EQ(0u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetAAEnabled(true);
-
-  auto subscriptions = filterEngine.GetListedSubscriptions();
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_TRUE(filterEngine.IsAAEnabled());
-  ASSERT_EQ(1u, subscriptions.size());
-  EXPECT_EQ(filterEngine.GetAAUrl(), subscriptions.front().GetUrl());
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetEnabled(true);
-
-  subscriptions = filterEngine.GetListedSubscriptions();
-  EXPECT_TRUE(filterEngine.IsEnabled());
-  EXPECT_TRUE(filterEngine.IsAAEnabled());
-  ASSERT_EQ(1u, subscriptions.size());
-  EXPECT_EQ(filterEngine.GetAAUrl(), subscriptions.front().GetUrl());
-  EXPECT_EQ(1, webRequestCounter);
-}
-
-TEST_F(FilterEngineInitallyDisabledTest, DisableAA)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Enabled, EngineState::Disabled);
-
-  auto subscriptions = filterEngine.GetListedSubscriptions();
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_TRUE(filterEngine.IsAAEnabled());
-  EXPECT_EQ(0u, subscriptions.size());
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetAAEnabled(false);
-
-  subscriptions = filterEngine.GetListedSubscriptions();
-  EXPECT_FALSE(filterEngine.IsEnabled());
-  EXPECT_FALSE(filterEngine.IsAAEnabled());
-  // expect disabled AA subscription
-  ASSERT_EQ(1u, subscriptions.size());
-  EXPECT_EQ(filterEngine.GetAAUrl(), subscriptions.front().GetUrl());
-  EXPECT_TRUE(subscriptions.front().IsDisabled());
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetEnabled(true);
-
-  subscriptions = filterEngine.GetListedSubscriptions();
-  EXPECT_TRUE(filterEngine.IsEnabled());
-  EXPECT_FALSE(filterEngine.IsAAEnabled());
-  // expect disabled AA subscription and autoconfigured subscription
-  ASSERT_EQ(2u, subscriptions.size());
-  EXPECT_EQ(filterEngine.GetAAUrl(), subscriptions.front().GetUrl());
-  EXPECT_TRUE(subscriptions.front().IsDisabled());
-  // expect only autoconfigured subscription started
-  EXPECT_EQ(1, webRequestCounter);
-}
-
-void ForceSynchronization(AdblockPlus::JsEngine& engine, const std::string& url)
-{
-  engine.Evaluate("(function(){"
-                  "API.getSubscriptionFromUrl('" +
-                  url +
-                  "').expires = 0;"
-                  "require('synchronizer').synchronizer._downloader._doCheck();"
-                  "})();");
-}
-
-TEST_F(FilterEngineInitallyDisabledTest, ForceSync)
-{
-  auto& filterEngine = ConfigureEngine(AutoselectState::Disabled, EngineState::Disabled);
-
-  EXPECT_EQ(0u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(0, webRequestCounter);
-
-  std::string url = "https://foo/";
-  AdblockPlus::Subscription subscription = filterEngine.GetSubscription(url);
-  filterEngine.AddSubscription(subscription);
-
-  ForceSynchronization(GetJsEngine(), url);
-  EXPECT_EQ(0, webRequestCounter);
-
-  filterEngine.SetEnabled(true);
-
-  EXPECT_TRUE(filterEngine.IsEnabled());
-  EXPECT_EQ(1u, filterEngine.GetListedSubscriptions().size());
-  EXPECT_EQ(1, webRequestCounter);
-
-  ForceSynchronization(GetJsEngine(), url);
-  EXPECT_EQ(2, webRequestCounter);
-
-  filterEngine.SetEnabled(false);
-
-  ForceSynchronization(GetJsEngine(), url);
-  EXPECT_EQ(2, webRequestCounter);
-}
-
 namespace AA_ApiTest
 {
   const std::string kOtherSubscriptionUrl = "https://non-existing-subscription.txt";
@@ -2189,7 +1975,7 @@ TEST_F(FilterEngineIsSubscriptionDownloadAllowedTest,
   EXPECT_EQ(testConnection, capturedConnectionTypes[0].second);
 }
 
-class FilterEngineSubscriptionsByFilterTest : public FilterEngineInitallyDisabledTest
+class FilterEngineSubscriptionsByFilterTest : public FilterEngineConfigurableTest
 {
 public:
   const char* kTestFilter = "||bar.com";
@@ -2197,15 +1983,14 @@ public:
 private:
   void SetUp() override
   {
-    FilterEngineInitallyDisabledTest::SetUp();
+    FilterEngineConfigurableTest::SetUp();
     filterList = "[Adblock Plus 2.0]\n" + std::string{kTestFilter};
   }
 };
 
 TEST_F(FilterEngineSubscriptionsByFilterTest, NoSubscription)
 {
-  auto& engine = ConfigureEngine(FilterEngineInitallyDisabledTest::AutoselectState::Disabled,
-                                 FilterEngineInitallyDisabledTest::EngineState::Enabled);
+  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
   auto filter = engine.GetFilter(kTestFilter);
   auto subscriptions = engine.GetSubscriptionsFromFilter(filter);
   ASSERT_EQ(0u, subscriptions.size());
@@ -2213,8 +1998,7 @@ TEST_F(FilterEngineSubscriptionsByFilterTest, NoSubscription)
 
 TEST_F(FilterEngineSubscriptionsByFilterTest, OneSubscription)
 {
-  auto& engine = ConfigureEngine(FilterEngineInitallyDisabledTest::AutoselectState::Disabled,
-                                 FilterEngineInitallyDisabledTest::EngineState::Enabled);
+  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
   std::string testUrl = "https://foo.bar";
   auto subscription = engine.GetSubscription(testUrl);
   engine.AddSubscription(subscription);
@@ -2226,8 +2010,7 @@ TEST_F(FilterEngineSubscriptionsByFilterTest, OneSubscription)
 
 TEST_F(FilterEngineSubscriptionsByFilterTest, MultipleSubscriptions)
 {
-  auto& engine = ConfigureEngine(FilterEngineInitallyDisabledTest::AutoselectState::Disabled,
-                                 FilterEngineInitallyDisabledTest::EngineState::Enabled);
+  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
   std::string testUrl1 = "https://foo.bar";
   auto subscription1 = engine.GetSubscription(testUrl1);
   engine.AddSubscription(subscription1);
@@ -2240,4 +2023,39 @@ TEST_F(FilterEngineSubscriptionsByFilterTest, MultipleSubscriptions)
   ASSERT_EQ(2u, subscriptions.size());
   EXPECT_EQ(testUrl1, subscriptions[0].GetUrl());
   EXPECT_EQ(testUrl2, subscriptions[1].GetUrl());
+}
+
+bool CheckSynchronizerStatus(AdblockPlus::JsEngine& engine)
+{
+  return engine.Evaluate("require('synchronizer').synchronizer._started").AsBool();
+}
+
+TEST_F(FilterEngineConfigurableTest, StartStopSynchronization)
+{
+  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+  engine.StopSynchronization();
+  EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
+  engine.StartSynchronization();
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+}
+
+TEST_F(FilterEngineConfigurableTest, StartStopSynchronizationSecondTime)
+{
+  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+  engine.StopSynchronization();
+  engine.StopSynchronization();
+  EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
+  engine.StartSynchronization();
+  engine.StartSynchronization();
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+}
+
+TEST_F(FilterEngineConfigurableTest, SynchronizationInitiallyDisabled)
+{
+  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Disabled);
+  EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
+  engine.StartSynchronization();
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
 }

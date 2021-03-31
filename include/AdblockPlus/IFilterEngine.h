@@ -58,8 +58,8 @@ namespace AdblockPlus
       CONTENT_TYPE_MEDIA = 16384,
       CONTENT_TYPE_FONT = 32768,
       CONTENT_TYPE_POPUP = 1 << 24,
-      CONTENT_TYPE_CSP = 1 << 25,     // unused
-      CONTENT_TYPE_HEADER = 1 << 26,  // unused
+      CONTENT_TYPE_CSP = 1 << 25,    // unused
+      CONTENT_TYPE_HEADER = 1 << 26, // unused
       CONTENT_TYPE_DOCUMENT = 1 << 27,
       CONTENT_TYPE_GENERICBLOCK = 1 << 28,
       CONTENT_TYPE_ELEMHIDE = 1 << 29,
@@ -142,15 +142,6 @@ namespace AdblockPlus
     virtual ~IFilterEngine() = default;
 
     /**
-     * Subscriptions will only be updated when the engine is enabled. Updates will be started after
-     * enabling. Filter match will always return invalid filter and allowlisting checks will return
-     * false for disabled state.
-     */
-    virtual void SetEnabled(bool enabled) = 0;
-
-    virtual bool IsEnabled() const = 0;
-
-    /**
      * Retrieves a filter object from its text representation.
      * @param text Text representation of the filter,
      *        see https://adblockplus.org/en/filters.
@@ -218,7 +209,6 @@ namespace AdblockPlus
 
     /**
      * Checks if any active filter matches the supplied URL.
-     * Asserts that the engine is enabled.
      * @param url URL to match.
      * @param contentTypeMask Content type mask of the requested resource.
      * @param documentUrl address of the parent frame of |url|. If |url| is at
@@ -237,7 +227,6 @@ namespace AdblockPlus
 
     /**
      * Checks whether the resource at the supplied URL is allowlisted.
-     * Asserts that the engine is enabled.
      * @param url URL of the resource.
      * @param documentUrls Chain of URLs requesting the resource,
      *        starting with the resource's parent frame, ending with
@@ -254,7 +243,6 @@ namespace AdblockPlus
     /**
      * Retrieves CSS style sheet for all element hiding filters active on the
      * supplied domain.
-     * Asserts that the engine is enabled.
      * @param url Url for the domain of which to retrieve CSS style sheet for. Can be empty, in this
      * case styles relative to any domain are returned.
      * @param specificOnly true if generic filters should not apply.
@@ -266,7 +254,6 @@ namespace AdblockPlus
     /**
      * Retrieves CSS selectors for all element hiding emulation filters active on the
      * supplied domain.
-     * Asserts that the engine is enabled.
      * @param url Url for the domain of which to retrieve CSS selectors for. Can be empty, in this
      * case selectors relative to any domain are returned.
      * @return List of CSS selectors along with the text property, can be empty if domian does not
@@ -371,6 +358,24 @@ namespace AdblockPlus
      * Removes this filter from the list of custom filters.
      */
     virtual void RemoveFilter(const Filter& filter) = 0;
+
+    /**
+     * Starts the subscription update timer. After some delay, it will check to see if there are any
+     * outdated subscriptions. This check is performed regularly thereafter. For exact timeouts
+     * please check synchonizer.js. When you call the function again if synchronization is already
+     * started, nothing will happen. Timer state is persisted, e.g. if you stop synchronization and
+     * re-create the filter engine, timer will not be started automatically. Synchronization state
+     * for first run is on by default. It can be configured by
+     * FilterEngineFactory::BooleanPrefName::SynchronizationEnabled.
+     */
+    virtual void StartSynchronization() = 0;
+
+    /**
+     * Stops the subscription update timer. When you call the function again if synchronization is
+     * already stopped, nothing will happen.
+     * @see StartSynchronization.
+     */
+    virtual void StopSynchronization() = 0;
 
     /**
      * Retrieves the `ContentType` for the supplied string.

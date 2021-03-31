@@ -99,10 +99,10 @@ protected:
   }
 };
 
-class FilterEngineInitallyDisabledTest : public FilterEngineWithInMemoryFS
+class FilterEngineConfigurableTest : public FilterEngineWithInMemoryFS
 {
 public:
-  FilterEngineInitallyDisabledTest()
+  FilterEngineConfigurableTest()
   {
   }
 
@@ -110,13 +110,13 @@ protected:
   int webRequestCounter;
   std::string filterList;
 
-  enum class AutoselectState
+  enum class SynchronizationState
   {
     Enabled,
     Disabled
   };
 
-  enum class EngineState
+  enum class AutoselectState
   {
     Enabled,
     Disabled
@@ -130,7 +130,7 @@ protected:
 
   AdblockPlus::IFilterEngine&
   ConfigureEngine(AutoselectState autoselectState,
-                  EngineState engineState,
+                  SynchronizationState syncState,
                   AdblockPlus::PlatformFactory::CreationParameters&& params =
                       AdblockPlus::PlatformFactory::CreationParameters())
   {
@@ -155,8 +155,8 @@ protected:
 
     AdblockPlus::FilterEngineFactory::CreationParameters createParams;
     createParams.preconfiguredPrefs.booleanPrefs.emplace(
-        AdblockPlus::FilterEngineFactory::BooleanPrefName::FilterEngineEnabled,
-        engineState == EngineState::Enabled);
+        AdblockPlus::FilterEngineFactory::BooleanPrefName::SynchronizationEnabled,
+        syncState == SynchronizationState::Enabled);
     createParams.preconfiguredPrefs.booleanPrefs.emplace(
         AdblockPlus::FilterEngineFactory::BooleanPrefName::FirstRunSubscriptionAutoselect,
         autoselectState == AutoselectState::Enabled);

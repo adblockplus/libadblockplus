@@ -39,12 +39,12 @@ public:
   Implementation impl;
 };
 
-class FilterEnginePreloadedSubscriptionsTest : public FilterEngineInitallyDisabledTest
+class FilterEnginePreloadedSubscriptionsTest : public FilterEngineConfigurableTest
 {
 protected:
   int resourceLoaderCounter;
 
-  AdblockPlus::IFilterEngine& ConfigureEngine(EngineState engineState,
+  AdblockPlus::IFilterEngine& ConfigureEngine(SynchronizationState syncState,
                                               const std::string& subscriptionUrl,
                                               const std::string& content)
   {
@@ -59,8 +59,8 @@ protected:
           return content;
         }));
     this->filterList = content;
-    return FilterEngineInitallyDisabledTest::ConfigureEngine(
-        AutoselectState::Disabled, engineState, std::move(params));
+    return FilterEngineConfigurableTest::ConfigureEngine(
+        AutoselectState::Disabled, syncState, std::move(params));
   }
 };
 
@@ -68,7 +68,7 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, SubscribeForEnabledEngine)
 {
   std::string url = "https://test.com/subscription.txt";
   std::string content = "[Adblock Plus 2.0]\n||example.com";
-  auto& engine = ConfigureEngine(EngineState::Enabled, url, content);
+  auto& engine = ConfigureEngine(SynchronizationState::Enabled, url, content);
 
   EXPECT_EQ(0, webRequestCounter);
   EXPECT_EQ(0, resourceLoaderCounter);
@@ -83,35 +83,11 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, SubscribeForEnabledEngine)
   EXPECT_EQ(1, subscription.GetFilterCount());
 }
 
-TEST_F(FilterEnginePreloadedSubscriptionsTest, SubscribeForDisabledEngine)
-{
-  std::string url = "https://test.com/subscription.txt";
-  std::string content = "[Adblock Plus 2.0]\n||example.com\nother.com";
-  auto& engine = ConfigureEngine(EngineState::Disabled, url, content);
-
-  EXPECT_EQ(0, webRequestCounter);
-  EXPECT_EQ(0, resourceLoaderCounter);
-
-  Subscription subscription = engine.GetSubscription(url);
-  engine.AddSubscription(subscription);
-
-  EXPECT_EQ(0, webRequestCounter);
-  EXPECT_EQ(1, resourceLoaderCounter);
-  EXPECT_EQ(2, subscription.GetFilterCount());
-
-  engine.SetEnabled(true);
-
-  // should start download ASAP because Expires not set in content
-  EXPECT_EQ(1, webRequestCounter);
-  EXPECT_EQ(1, resourceLoaderCounter);
-  EXPECT_EQ(2, subscription.GetFilterCount());
-}
-
 TEST_F(FilterEnginePreloadedSubscriptionsTest, Title)
 {
   std::string url = "https://test.com/subscription.txt";
   std::string content = "[Adblock Plus 2.0]\n!Title:Test title \n||example.com";
-  auto& engine = ConfigureEngine(EngineState::Disabled, url, content);
+  auto& engine = ConfigureEngine(SynchronizationState::Disabled, url, content);
 
   Subscription subscription = engine.GetSubscription(url);
   engine.AddSubscription(subscription);
@@ -123,7 +99,7 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, Homepage)
 {
   std::string url = "https://test.com/subscription.txt";
   std::string content = "[Adblock Plus 2.0]\n !   Homepage:  \thttps://test.com\n||example.com";
-  auto& engine = ConfigureEngine(EngineState::Disabled, url, content);
+  auto& engine = ConfigureEngine(SynchronizationState::Disabled, url, content);
 
   Subscription subscription = engine.GetSubscription(url);
   engine.AddSubscription(subscription);
@@ -134,7 +110,7 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, WrongHomepage)
 {
   std::string url = "https://test.com/subscription.txt";
   std::string content = "[Adblock Plus 2.0]\n!Homepage: test.com\n||example.com";
-  auto& engine = ConfigureEngine(EngineState::Disabled, url, content);
+  auto& engine = ConfigureEngine(SynchronizationState::Disabled, url, content);
 
   Subscription subscription = engine.GetSubscription(url);
   engine.AddSubscription(subscription);
@@ -146,7 +122,7 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, IgnoreRedirect)
   std::string url = "https://test.com/subscription.txt";
   std::string content =
       "[Adblock Plus 2.0]\n!Redirect: https://other.com/subscription.txt\n||example.com";
-  auto& engine = ConfigureEngine(EngineState::Disabled, url, content);
+  auto& engine = ConfigureEngine(SynchronizationState::Disabled, url, content);
 
   Subscription subscription = engine.GetSubscription(url);
   engine.AddSubscription(subscription);
@@ -157,7 +133,7 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, Expires)
 {
   std::string url = "https://test.com/subscription.txt";
   std::string content = "[Adblock Plus 2.0]\n!Expires: 5 h\n||example.com";
-  auto& engine = ConfigureEngine(EngineState::Enabled, url, content);
+  auto& engine = ConfigureEngine(SynchronizationState::Enabled, url, content);
 
   Subscription subscription = engine.GetSubscription(url);
   engine.AddSubscription(subscription);

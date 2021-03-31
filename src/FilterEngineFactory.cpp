@@ -34,8 +34,8 @@ std::string FilterEngineFactory::PrefNameToString(BooleanPrefName prefName)
 {
   switch (prefName)
   {
-  case BooleanPrefName::FilterEngineEnabled:
-    return "filter_engine_enabled";
+  case BooleanPrefName::SynchronizationEnabled:
+    return "synchronization_enabled";
 
   case BooleanPrefName::FirstRunSubscriptionAutoselect:
     return "first_run_subscription_auto_select";
@@ -63,10 +63,10 @@ std::string FilterEngineFactory::PrefNameToString(StringPrefName prefName)
 // static
 bool FilterEngineFactory::StringToPrefName(const std::string& prefNameStr,
                                            BooleanPrefName& prefName)
-{
-  if (prefNameStr == "filter_engine_enabled")
+{ 
+  if (prefNameStr == "synchronization_enabled")
   {
-    prefName = BooleanPrefName::FilterEngineEnabled;
+    prefName = BooleanPrefName::SynchronizationEnabled;
     return true;
   }
 

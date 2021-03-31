@@ -27,10 +27,6 @@ namespace AdblockPlus
     explicit DefaultFilterEngine(JsEngine& jsEngine);
     ~DefaultFilterEngine();
 
-    void SetEnabled(bool enabled) final;
-
-    bool IsEnabled() const final;
-
     Filter GetFilter(const std::string& text) const final;
 
     Subscription GetSubscription(const std::string& url) const final;
@@ -88,6 +84,8 @@ namespace AdblockPlus
     void RemoveSubscription(const Subscription& subscription) final;
     void AddFilter(const Filter& filter) final;
     void RemoveFilter(const Filter& filter) final;
+    void StartSynchronization() final;
+    void StopSynchronization() final;
 
     void StartObservingEvents();
 

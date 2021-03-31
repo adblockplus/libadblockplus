@@ -28,25 +28,29 @@ namespace AdblockPlus
   class FilterEngineFactory
   {
   public:
-    /**
-     * Container of name-value pairs representing a set of preferences.
-     * This is default configuration, values can be overridden with actual state from local
-     * preferences storage. Following keys are available:
-     * - filter_engine_enabled - default: true, @see IFilterEngine::SetEnabled
-     * - first_run_subscription_auto_select - default: true. Will automatically subscribe to filter
-     * lists matching AppInfo::locale and Acceptable Ads on first run with enabled FilterEngine if
-     * true.
-     * - allowed_connection_type - default: "", @see IFilterEngine::SetAllowedConnectionType,
-     * IsConnectionAllowedAsyncCallback
-     */
+    /// Keys for CreationParameters::preconfiguredPrefs::booleanPrefs
     enum class BooleanPrefName
     {
-      FilterEngineEnabled,
+      /**
+       * Will automatically start timer to check for subscription update on first run.
+       * Default: true
+       * @see IFilterEngine::StartSynchronization
+       */
+      SynchronizationEnabled,
+      /**
+       * Will automatically subscribe to filter lists matching AppInfo::locale and Acceptable Ads
+       * on first run if true. Default: true
+       */
       FirstRunSubscriptionAutoselect
     };
 
+    /// Keys for CreationParameters::preconfiguredPrefs::stringPrefs
     enum class StringPrefName
     {
+      /**
+       * Initial value for allowed connection type. Default: ""
+       * @see IFilterEngine::SetAllowedConnectionType, IsConnectionAllowedAsyncCallback
+       */
       AllowedConnectionType
     };
 
