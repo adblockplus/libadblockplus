@@ -2059,3 +2059,40 @@ TEST_F(FilterEngineConfigurableTest, SynchronizationInitiallyDisabled)
   engine.StartSynchronization();
   EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
 }
+
+TEST_F(FilterEngineConfigurableTest, RequestsWithSynchronizationEnabled)
+{
+  auto& engine = ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Enabled);
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+  EXPECT_EQ(2u, engine.GetListedSubscriptions().size());
+  EXPECT_EQ(2, webGETRequestCounter);
+}
+
+TEST_F(FilterEngineConfigurableTest, RequestsWithSynchronizationDisabled)
+{
+  auto& engine = ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Disabled);
+
+  EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
+  EXPECT_EQ(2u, engine.GetListedSubscriptions().size());
+  EXPECT_EQ(0, webGETRequestCounter);
+  // HEAD are only sent for synchronizer enabled but disabled subscriptions
+  EXPECT_EQ(0, webHEADRequestCounter);
+}
+
+// DISABLED for now because this is not what happens. The embedder needs to update the subscriptions
+// manually if instant update is needed. Otherwise they'll be updated with the normal logic
+// core uses i.e. depending on expiration with check every hour and initial delay of 1 minute.
+// Decide if enable or remove within DPD-373.
+TEST_F(FilterEngineConfigurableTest, DISABLED_RequestsWithSynchronizationInitiallyDisabledAndThenStarted)
+{
+  auto& engine = ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Disabled);
+
+  EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
+  EXPECT_EQ(2u, engine.GetListedSubscriptions().size());
+  EXPECT_EQ(0, webGETRequestCounter);
+  EXPECT_EQ(0, webHEADRequestCounter);
+  engine.StartSynchronization();
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+  EXPECT_EQ(2, webGETRequestCounter);
+  EXPECT_EQ(0, webHEADRequestCounter);
+}

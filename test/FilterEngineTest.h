@@ -107,7 +107,8 @@ public:
   }
 
 protected:
-  int webRequestCounter;
+  int webGETRequestCounter;
+  int webHEADRequestCounter;
   std::string filterList;
 
   enum class SynchronizationState
@@ -125,7 +126,8 @@ protected:
   void SetUp() override
   {
     filterList = "[Adblock Plus 2.0]\n||example.com";
-    webRequestCounter = 0;
+    webGETRequestCounter = 0;
+    webHEADRequestCounter = 0;
   }
 
   AdblockPlus::IFilterEngine&
@@ -134,10 +136,14 @@ protected:
                   AdblockPlus::PlatformFactory::CreationParameters&& params =
                       AdblockPlus::PlatformFactory::CreationParameters())
   {
-    auto impl = [this](const std::string&,
+    auto impl = [this](WrappingWebRequest::Method method,
+                       const std::string&,
                        const AdblockPlus::HeaderList&,
                        const AdblockPlus::IWebRequest::RequestCallback& callback) {
-      ++webRequestCounter;
+      if (method == WrappingWebRequest::Method::Get)
+        ++webGETRequestCounter;
+      else
+        ++webHEADRequestCounter;
       AdblockPlus::ServerResponse response;
       response.responseStatus = 200;
       response.status = AdblockPlus::IWebRequest::NS_OK;
@@ -148,7 +154,7 @@ protected:
     {
       AdblockPlus::AppInfo info;
       info.locale = "en";
-      params.webRequest.reset(new WrappingWebRequest(impl, impl));
+      params.webRequest.reset(new WrappingWebRequest(impl));
       params.logSystem.reset(new AdblockPlus::DefaultLogSystem());
       InitPlatformAndAppInfo(std::move(params), info);
     }

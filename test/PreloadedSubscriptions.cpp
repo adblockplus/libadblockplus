@@ -70,7 +70,7 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, SubscribeForEnabledEngine)
   std::string content = "[Adblock Plus 2.0]\n||example.com";
   auto& engine = ConfigureEngine(SynchronizationState::Enabled, url, content);
 
-  EXPECT_EQ(0, webRequestCounter);
+  EXPECT_EQ(0, webGETRequestCounter);
   EXPECT_EQ(0, resourceLoaderCounter);
 
   Subscription subscription = engine.GetSubscription(url);
@@ -78,7 +78,7 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, SubscribeForEnabledEngine)
   engine.AddSubscription(subscription);
 
   // should start download ASAP because Expires not set in content
-  EXPECT_EQ(1, webRequestCounter);
+  EXPECT_EQ(1, webGETRequestCounter);
   EXPECT_EQ(1, resourceLoaderCounter);
   EXPECT_EQ(1, subscription.GetFilterCount());
 }
@@ -139,7 +139,7 @@ TEST_F(FilterEnginePreloadedSubscriptionsTest, Expires)
   engine.AddSubscription(subscription);
   EXPECT_EQ(1, resourceLoaderCounter);
   // should not start download because Expires is valid
-  EXPECT_EQ(0, webRequestCounter);
+  EXPECT_EQ(0, webGETRequestCounter);
 
   int period = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours(5)).count();
   int softExpiration = GetJsEngine()
