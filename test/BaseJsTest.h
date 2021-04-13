@@ -324,12 +324,17 @@ public:
 class WrappingWebRequest : public AdblockPlus::IWebRequest
 {
 public:
+  enum class Method {
+    Get,
+    Head
+  };
+
   typedef std::function<void(
-      const std::string&, const AdblockPlus::HeaderList&, const RequestCallback&)>
+      WrappingWebRequest::Method, const std::string&, const AdblockPlus::HeaderList&, const RequestCallback&)>
       Implementation;
 
-  WrappingWebRequest(Implementation callbackGET, Implementation callbackHEAD)
-  : implGET(callbackGET), implHEAD(callbackHEAD)
+  WrappingWebRequest(Implementation callback)
+  : impl(callback)
   {
   }
 
@@ -337,18 +342,17 @@ public:
            const AdblockPlus::HeaderList& requestHeaders,
            const RequestCallback& callback) override
   {
-    implGET(url, requestHeaders, callback);
+    impl(WrappingWebRequest::Method::Get, url, requestHeaders, callback);
   }
 
   void HEAD(const std::string& url,
             const AdblockPlus::HeaderList& requestHeaders,
             const RequestCallback& callback) override
   {
-    implHEAD(url, requestHeaders, callback);
+    impl(WrappingWebRequest::Method::Head, url, requestHeaders, callback);
   }
 
-  Implementation implGET;
-  Implementation implHEAD;
+  Implementation impl;
 };
 
 class WrappingExecutor : public AdblockPlus::IExecutor

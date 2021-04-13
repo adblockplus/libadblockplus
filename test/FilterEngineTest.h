@@ -99,24 +99,25 @@ protected:
   }
 };
 
-class FilterEngineInitallyDisabledTest : public FilterEngineWithInMemoryFS
+class FilterEngineConfigurableTest : public FilterEngineWithInMemoryFS
 {
 public:
-  FilterEngineInitallyDisabledTest()
+  FilterEngineConfigurableTest()
   {
   }
 
 protected:
-  int webRequestCounter;
+  int webGETRequestCounter;
+  int webHEADRequestCounter;
   std::string filterList;
 
-  enum class AutoselectState
+  enum class SynchronizationState
   {
     Enabled,
     Disabled
   };
 
-  enum class EngineState
+  enum class AutoselectState
   {
     Enabled,
     Disabled
@@ -125,19 +126,24 @@ protected:
   void SetUp() override
   {
     filterList = "[Adblock Plus 2.0]\n||example.com";
-    webRequestCounter = 0;
+    webGETRequestCounter = 0;
+    webHEADRequestCounter = 0;
   }
 
   AdblockPlus::IFilterEngine&
   ConfigureEngine(AutoselectState autoselectState,
-                  EngineState engineState,
+                  SynchronizationState syncState,
                   AdblockPlus::PlatformFactory::CreationParameters&& params =
                       AdblockPlus::PlatformFactory::CreationParameters())
   {
-    auto impl = [this](const std::string&,
+    auto impl = [this](WrappingWebRequest::Method method,
+                       const std::string&,
                        const AdblockPlus::HeaderList&,
                        const AdblockPlus::IWebRequest::RequestCallback& callback) {
-      ++webRequestCounter;
+      if (method == WrappingWebRequest::Method::Get)
+        ++webGETRequestCounter;
+      else
+        ++webHEADRequestCounter;
       AdblockPlus::ServerResponse response;
       response.responseStatus = 200;
       response.status = AdblockPlus::IWebRequest::NS_OK;
@@ -148,15 +154,15 @@ protected:
     {
       AdblockPlus::AppInfo info;
       info.locale = "en";
-      params.webRequest.reset(new WrappingWebRequest(impl, impl));
+      params.webRequest.reset(new WrappingWebRequest(impl));
       params.logSystem.reset(new AdblockPlus::DefaultLogSystem());
       InitPlatformAndAppInfo(std::move(params), info);
     }
 
     AdblockPlus::FilterEngineFactory::CreationParameters createParams;
     createParams.preconfiguredPrefs.booleanPrefs.emplace(
-        AdblockPlus::FilterEngineFactory::BooleanPrefName::FilterEngineEnabled,
-        engineState == EngineState::Enabled);
+        AdblockPlus::FilterEngineFactory::BooleanPrefName::SynchronizationEnabled,
+        syncState == SynchronizationState::Enabled);
     createParams.preconfiguredPrefs.booleanPrefs.emplace(
         AdblockPlus::FilterEngineFactory::BooleanPrefName::FirstRunSubscriptionAutoselect,
         autoselectState == AutoselectState::Enabled);
