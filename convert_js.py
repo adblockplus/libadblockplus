@@ -22,18 +22,18 @@ class CStringArray:
         self._strings = []
 
     def add(self, string):
-        string = string.encode('utf-8').replace('\r', '')
+        string = string.replace('\r', '')
         self._strings.append('std::string(buffer + %i, %i)' % (len(self._buffer), len(string)))
         # Patch for non ASCII characters like in comment in rusha.js which contains '≥'
         self._buffer.extend(map(lambda c: str(ord(c) if 128 > ord(c) else ord(' ')), string))
 
     def write(self, outHandle, arrayName):
-        print >>outHandle, '#include <string>'
-        print >>outHandle, 'namespace'
-        print >>outHandle, '{'
-        print >>outHandle, '  const char buffer[] = {%s};' % ', '.join(self._buffer)
-        print >>outHandle, '}'
-        print >>outHandle, 'std::string %s[] = {%s, std::string()};' % (arrayName, ', '.join(self._strings))
+        print('#include <string>', file=outHandle)
+        print('namespace', file=outHandle)
+        print('{', file=outHandle)
+        print('  const char buffer[] = {%s};' % ', '.join(self._buffer), file=outHandle)
+        print('}', file=outHandle)
+        print('std::string %s[] = {%s, std::string()};' % (arrayName, ', '.join(self._strings)), file=outHandle)
 
 
 def addFilesVerbatim(array, files):
@@ -86,7 +86,7 @@ def convert(verbatimBefore, convertFiles, verbatimAfter, outFile):
 
     addFilesVerbatim(array, verbatimAfter)
 
-    outHandle = open(outFile, 'wb')
+    outHandle = open(outFile, 'w')
     array.write(outHandle, 'jsSources')
     outHandle.close()
 
