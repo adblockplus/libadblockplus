@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 """This script fixes the support of manually compiled static libraries for
 android NDK build system.
