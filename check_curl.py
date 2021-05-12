@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 
 import os
@@ -14,7 +14,7 @@ def check_curl():
         os.makedirs(buildDir)
     (fd, name) = tempfile.mkstemp(dir=buildDir, suffix='.h')
     try:
-        handle = os.fdopen(fd, 'wb')
+        handle = os.fdopen(fd, 'w')
         handle.write('#include <curl/curl.h>')
         handle.close()
 

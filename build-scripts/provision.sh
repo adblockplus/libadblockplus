@@ -2,7 +2,7 @@
 
 echo "NOTE: Must be run privileged (root). Run with sudo"
 
-apt-get update && apt-get install -yyq build-essential python wget clang libc++-dev libc++abi-dev unzip pv || exit 1
+apt-get update && apt-get install -yyq build-essential python python3 wget clang libc++-dev libc++abi-dev unzip pv || exit 1
 chmod u+x build-scripts/nix-script.sh
 chmod u+x build-scripts/android-script.sh
 

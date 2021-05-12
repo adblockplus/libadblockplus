@@ -1,4 +1,4 @@
-HOST_ARCH :=$(shell python build-scripts/detect_v8_host_arch.py)
+HOST_ARCH :=$(shell python3 build-scripts/detect_v8_host_arch.py)
 
 ifndef HOST_OS
   raw_OS = $(shell uname -s)
@@ -107,7 +107,7 @@ ifeq ($(TARGET_OS),android)
 GYP_FILE ?= tests.gyp
 all:
 	GYP_DEFINES="${GYP_PARAMETERS}" \
-	python ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r20b ${GYP_FILE}
+	python3 ./make_gyp_wrapper.py --depth=. -f make-android -Ilibadblockplus.gypi --generator-output=${BUILD_DIR} -Gandroid_ndk_version=r20b ${GYP_FILE}
 	$(ANDROID_NDK_ROOT)/ndk-build -C ${BUILD_DIR} installed_modules \
 	MAKEFLAGS="${ADDITIONALMAKEFLAGS}" \
 	BUILDTYPE=Release \
