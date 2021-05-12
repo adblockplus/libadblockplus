@@ -14,7 +14,7 @@ install:
 - cmd: .appveyor\prepare-prebuilt-v8.cmd
 - sh: make get-prebuilt-v8
 - cmd: ensure_dependencies.py
-- sh: python ensure_dependencies.py
+- sh: python3 ensure_dependencies.py
 
 environment:
   global:

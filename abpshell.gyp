@@ -9,7 +9,7 @@
     },
     {
       'variables': {
-        'have_curl': '<!(python check_curl.py)'
+        'have_curl': '<!(python3 check_curl.py)'
       }
     }
   ]],

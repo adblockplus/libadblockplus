@@ -34,7 +34,7 @@ import sys
 
 
 def main():
-  print DoMain([])
+  print(DoMain([]))
   return 0
 
 def DoMain(_):

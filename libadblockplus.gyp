@@ -192,7 +192,7 @@
         '<(INTERMEDIATE_DIR)/adblockplus.js.cpp'
       ],
       'action': [
-        'python',
+        'python3',
         'convert_js.py',
         '<@(_outputs)',
         '--before', '<@(load_before_files)',
