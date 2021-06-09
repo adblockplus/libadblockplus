@@ -40,6 +40,9 @@ std::string FilterEngineFactory::PrefNameToString(BooleanPrefName prefName)
   case BooleanPrefName::FirstRunSubscriptionAutoselect:
     return "first_run_subscription_auto_select";
 
+  case BooleanPrefName::AcceptableAdsEnabled:
+    return "acceptable_ads_enabled";
+
   default:
     assert(false && "Missing case");
     return {};
@@ -63,7 +66,7 @@ std::string FilterEngineFactory::PrefNameToString(StringPrefName prefName)
 // static
 bool FilterEngineFactory::StringToPrefName(const std::string& prefNameStr,
                                            BooleanPrefName& prefName)
-{ 
+{
   if (prefNameStr == "synchronization_enabled")
   {
     prefName = BooleanPrefName::SynchronizationEnabled;
@@ -73,6 +76,12 @@ bool FilterEngineFactory::StringToPrefName(const std::string& prefNameStr,
   if (prefNameStr == "first_run_subscription_auto_select")
   {
     prefName = BooleanPrefName::FirstRunSubscriptionAutoselect;
+    return true;
+  }
+
+  if (prefNameStr == "acceptable_ads_enabled")
+  {
+    prefName = BooleanPrefName::AcceptableAdsEnabled;
     return true;
   }
 

@@ -60,7 +60,7 @@ protected:
         }));
     this->filterList = content;
     return FilterEngineConfigurableTest::ConfigureEngine(
-        AutoselectState::Disabled, syncState, std::move(params));
+        AutoselectState::Disabled, syncState, AAState::Enabled, std::move(params));
   }
 };
 
