@@ -128,17 +128,6 @@ namespace AdblockPlus
       std::string text;
     };
 
-    /**
-     * Callback type invoked when the filters change.
-     * The first parameter is the action event code (see
-     * [filterNotifier.on](https://adblockplus.org/jsdoc/adblockpluscore/EventEmitter.html#on)
-     * for the full list).
-     * The second parameter is the filter/subscription object affected, if any.
-     */
-    [[deprecated(
-        "Use FilterEventCallback")]] typedef std::function<void(const std::string&, JsValue&&)>
-        FilterChangeCallback;
-
     virtual ~IFilterEngine() = default;
 
     /**
@@ -263,21 +252,6 @@ namespace AdblockPlus
     GetElementHidingEmulationSelectors(const std::string& url) const = 0;
 
     /**
-     * Extracts the host from a URL.
-     * @param url URL to extract the host from.
-     * @return Extracted host.
-     */
-    [[deprecated("Please prefer your own implemntation")]] virtual std::string
-    GetHostFromURL(const std::string& url) const = 0;
-
-    /**
-     * Sets the callback invoked when the filters change.
-     * @param callback Callback to invoke.
-     */
-    [[deprecated("Use AddEventObserver")]] virtual void
-    SetFilterChangeCallback(const FilterChangeCallback& callback) = 0;
-
-    /**
      * Adds the observer to be notified on various events applying to filters and subscriptions.
      *
      * @param observer Observer to add.
@@ -286,11 +260,6 @@ namespace AdblockPlus
      * @see SubscriptionEvent
      */
     virtual void AddEventObserver(EventObserver* observer) = 0;
-
-    /**
-     * Removes the callback invoked when a filter changes.
-     */
-    [[deprecated("Use RemoveEventObserver")]] virtual void RemoveFilterChangeCallback() = 0;
 
     /**
      * Removes the event observer.

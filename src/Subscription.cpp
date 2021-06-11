@@ -130,18 +130,3 @@ Subscription::Subscription(Subscription&& other)
 {
   operator=(std::move(other));
 }
-
-bool Subscription::IsListed() const
-{
-  return implementation->IsListed();
-}
-
-void Subscription::AddToList()
-{
-  implementation->AddToList();
-}
-
-void Subscription::RemoveFromList()
-{
-  implementation->RemoveFromList();
-}

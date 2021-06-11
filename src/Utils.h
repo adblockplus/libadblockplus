@@ -21,7 +21,6 @@
 #include <cctype>
 #include <functional>
 #include <string>
-#include <v8.h>
 #include <vector>
 
 #include <AdblockPlus/JsValue.h>

@@ -61,12 +61,8 @@ namespace AdblockPlus
     std::vector<EmulationSelector>
     GetElementHidingEmulationSelectors(const std::string& domain) const final;
 
-    std::string GetHostFromURL(const std::string& url) const final;
-
-    void SetFilterChangeCallback(const FilterChangeCallback& callback) final;
     void AddEventObserver(EventObserver* observer) final;
     void RemoveEventObserver(EventObserver* observer) final;
-    void RemoveFilterChangeCallback() final;
 
     void SetAllowedConnectionType(const std::string* value) final;
 
@@ -125,7 +121,6 @@ namespace AdblockPlus
     static bool Transform(const std::string& str, SubscriptionEvent* event);
 
     mutable std::mutex callbacksMutex;
-    FilterChangeCallback legacyCallback;
     Observer observer{jsEngine};
     std::vector<IFilterEngine::EventObserver*> observers;
   };
