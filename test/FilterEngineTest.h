@@ -123,6 +123,12 @@ protected:
     Disabled
   };
 
+  enum class AAState
+  {
+    Enabled,
+    Disabled
+  };
+
   void SetUp() override
   {
     filterList = "[Adblock Plus 2.0]\n||example.com";
@@ -133,6 +139,7 @@ protected:
   AdblockPlus::IFilterEngine&
   ConfigureEngine(AutoselectState autoselectState,
                   SynchronizationState syncState,
+                  AAState aaState,
                   AdblockPlus::PlatformFactory::CreationParameters&& params =
                       AdblockPlus::PlatformFactory::CreationParameters())
   {
@@ -166,6 +173,9 @@ protected:
     createParams.preconfiguredPrefs.booleanPrefs.emplace(
         AdblockPlus::FilterEngineFactory::BooleanPrefName::FirstRunSubscriptionAutoselect,
         autoselectState == AutoselectState::Enabled);
+    createParams.preconfiguredPrefs.booleanPrefs.emplace(
+        AdblockPlus::FilterEngineFactory::BooleanPrefName::AcceptableAdsEnabled,
+        aaState == AAState::Enabled);
     return CreateFilterEngine(createParams);
   }
 };

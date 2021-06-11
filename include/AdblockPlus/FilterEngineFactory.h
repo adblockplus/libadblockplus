@@ -41,7 +41,8 @@ namespace AdblockPlus
        * Will automatically subscribe to filter lists matching AppInfo::locale and Acceptable Ads
        * on first run if true. Default: true
        */
-      FirstRunSubscriptionAutoselect
+      FirstRunSubscriptionAutoselect,
+      AcceptableAdsEnabled
     };
 
     /// Keys for CreationParameters::preconfiguredPrefs::stringPrefs

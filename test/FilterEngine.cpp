@@ -2035,7 +2035,8 @@ private:
 
 TEST_F(FilterEngineSubscriptionsByFilterTest, NoSubscription)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled, AAState::Enabled);
   auto filter = engine.GetFilter(kTestFilter);
   auto subscriptions = engine.GetSubscriptionsFromFilter(filter);
   ASSERT_EQ(0u, subscriptions.size());
@@ -2043,7 +2044,8 @@ TEST_F(FilterEngineSubscriptionsByFilterTest, NoSubscription)
 
 TEST_F(FilterEngineSubscriptionsByFilterTest, OneSubscription)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled, AAState::Enabled);
   std::string testUrl = "https://foo.bar";
   auto subscription = engine.GetSubscription(testUrl);
   engine.AddSubscription(subscription);
@@ -2055,7 +2057,8 @@ TEST_F(FilterEngineSubscriptionsByFilterTest, OneSubscription)
 
 TEST_F(FilterEngineSubscriptionsByFilterTest, MultipleSubscriptions)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled, AAState::Enabled);
   std::string testUrl1 = "https://foo.bar";
   auto subscription1 = engine.GetSubscription(testUrl1);
   engine.AddSubscription(subscription1);
@@ -2077,7 +2080,8 @@ bool CheckSynchronizerStatus(AdblockPlus::JsEngine& engine)
 
 TEST_F(FilterEngineConfigurableTest, StartStopSynchronization)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled, AAState::Enabled);
   EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
   engine.StopSynchronization();
   EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
@@ -2087,7 +2091,8 @@ TEST_F(FilterEngineConfigurableTest, StartStopSynchronization)
 
 TEST_F(FilterEngineConfigurableTest, StartStopSynchronizationSecondTime)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled, AAState::Enabled);
   EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
   engine.StopSynchronization();
   engine.StopSynchronization();
@@ -2099,7 +2104,8 @@ TEST_F(FilterEngineConfigurableTest, StartStopSynchronizationSecondTime)
 
 TEST_F(FilterEngineConfigurableTest, SynchronizationInitiallyDisabled)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Disabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Disabled, AAState::Enabled);
   EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
   engine.StartSynchronization();
   EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
@@ -2107,7 +2113,8 @@ TEST_F(FilterEngineConfigurableTest, SynchronizationInitiallyDisabled)
 
 TEST_F(FilterEngineConfigurableTest, RequestsWithSynchronizationEnabled)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Enabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Enabled, AAState::Enabled);
   EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
   EXPECT_EQ(2u, engine.GetListedSubscriptions().size());
   EXPECT_EQ(2, webGETRequestCounter);
@@ -2115,7 +2122,8 @@ TEST_F(FilterEngineConfigurableTest, RequestsWithSynchronizationEnabled)
 
 TEST_F(FilterEngineConfigurableTest, RequestsWithSynchronizationDisabled)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Disabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Disabled, AAState::Enabled);
 
   EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
   EXPECT_EQ(2u, engine.GetListedSubscriptions().size());
@@ -2131,7 +2139,8 @@ TEST_F(FilterEngineConfigurableTest, RequestsWithSynchronizationDisabled)
 TEST_F(FilterEngineConfigurableTest,
        DISABLED_RequestsWithSynchronizationInitiallyDisabledAndThenStarted)
 {
-  auto& engine = ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Disabled);
+  auto& engine =
+      ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Disabled, AAState::Enabled);
 
   EXPECT_FALSE(CheckSynchronizerStatus(GetJsEngine()));
   EXPECT_EQ(2u, engine.GetListedSubscriptions().size());
@@ -2141,4 +2150,36 @@ TEST_F(FilterEngineConfigurableTest,
   EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
   EXPECT_EQ(2, webGETRequestCounter);
   EXPECT_EQ(0, webHEADRequestCounter);
+}
+
+TEST_F(FilterEngineConfigurableTest, AAEnabled)
+{
+  auto& engine =
+      ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Enabled, AAState::Enabled);
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+  EXPECT_TRUE(engine.IsAAEnabled());
+  EXPECT_EQ(2, webGETRequestCounter);
+}
+
+TEST_F(FilterEngineConfigurableTest, AADisabled)
+{
+  auto& engine =
+      ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Enabled, AAState::Disabled);
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+  EXPECT_FALSE(engine.IsAAEnabled());
+  EXPECT_EQ(1, webGETRequestCounter);
+  EXPECT_EQ(1, webHEADRequestCounter);
+}
+
+TEST_F(FilterEngineConfigurableTest, AADisabledAtFirstAndThenEnabled)
+{
+  auto& engine =
+      ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Enabled, AAState::Disabled);
+  EXPECT_TRUE(CheckSynchronizerStatus(GetJsEngine()));
+  EXPECT_FALSE(engine.IsAAEnabled());
+  EXPECT_EQ(1, webGETRequestCounter);
+  EXPECT_EQ(1, webHEADRequestCounter);
+  engine.SetAAEnabled(true);
+  EXPECT_EQ(2, webGETRequestCounter);
+  EXPECT_EQ(1, webHEADRequestCounter);
 }
