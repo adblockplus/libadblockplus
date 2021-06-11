@@ -70,21 +70,3 @@ std::unique_ptr<IFilterImplementation> DefaultFilterImplementation::Clone() cons
   auto copyObject = jsObject;
   return std::make_unique<DefaultFilterImplementation>(std::move(copyObject), jsEngine);
 }
-
-bool DefaultFilterImplementation::IsListed() const
-{
-  JsValue func = jsEngine->Evaluate("API.isListedFilter");
-  return func.Call(jsObject).AsBool();
-}
-
-void DefaultFilterImplementation::AddToList()
-{
-  JsValue func = jsEngine->Evaluate("API.addFilterToList");
-  func.Call(jsObject);
-}
-
-void DefaultFilterImplementation::RemoveFromList()
-{
-  JsValue func = jsEngine->Evaluate("API.removeFilterFromList");
-  func.Call(jsObject);
-}

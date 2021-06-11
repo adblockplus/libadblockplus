@@ -110,29 +110,6 @@ namespace AdblockPlus
      */
     virtual int GetLastDownloadSuccessTime() const = 0;
 
-    /**
-     * Checks if this subscription has been added to the list of subscriptions.
-     * @return `true` if this subscription has been added.
-     *
-     * DEPRECATED. Use IFilterEngine::GetListedSubscriptions() combined with
-     * find instead.
-     */
-    virtual bool IsListed() const = 0;
-
-    /**
-     * Adds this subscription to the list of subscriptions.
-     *
-     * DEPRECATED. Use IFilterEngine::AddSubscription() instead.
-     */
-    virtual void AddToList() = 0;
-
-    /**
-     * Removes this subscription from the list of subscriptions.
-     *
-     * DEPRECATED. Use IFilterEngine::RemoveSubscription() instead.
-     */
-    virtual void RemoveFromList() = 0;
-
     virtual bool operator==(const ISubscriptionImplementation& other) const = 0;
 
     virtual std::unique_ptr<ISubscriptionImplementation> Clone() const = 0;
