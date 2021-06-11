@@ -84,21 +84,3 @@ bool Filter::IsValid() const
 {
   return implementation != nullptr;
 }
-
-bool Filter::IsListed() const
-{
-  assert(IsValid());
-  return implementation->IsListed();
-}
-
-void Filter::AddToList()
-{
-  assert(IsValid());
-  implementation->AddToList();
-}
-
-void Filter::RemoveFromList()
-{
-  assert(IsValid());
-  implementation->RemoveFromList();
-}

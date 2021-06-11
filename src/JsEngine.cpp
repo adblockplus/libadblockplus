@@ -17,7 +17,12 @@
 
 #include <AdblockPlus.h>
 #include <assert.h>
+
+// TODO check whether this can be removed after V8 upgrade
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
 #include <libplatform/libplatform.h>
+#pragma clang diagnostic pop
 
 #include "GlobalJsObject.h"
 #include "JsContext.h"

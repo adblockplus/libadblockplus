@@ -17,8 +17,6 @@
 
 #pragma once
 
-#include <v8.h>
-
 #include "JsEngine.h"
 
 namespace AdblockPlus

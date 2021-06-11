@@ -54,6 +54,54 @@ namespace
     std::unique_ptr<Subscription> lastSubscription;
   };
 
+  class WrappingFilterEventObserver : public IFilterEngine::EventObserver
+  {
+  public:
+    using Callback = std::function<void(IFilterEngine::FilterEvent event, const Filter& filter)>;
+
+    explicit WrappingFilterEventObserver(const Callback& callback) : callback_(callback)
+    {
+    }
+
+    void OnFilterEvent(IFilterEngine::FilterEvent event, const Filter& filter) override
+    {
+      callback_(event, filter);
+    }
+
+    void OnSubscriptionEvent(IFilterEngine::SubscriptionEvent event,
+                             const Subscription& subscription) override
+    {
+      // nothing
+    }
+
+  private:
+    Callback callback_;
+  };
+
+  class WrappingSubscriptionEventObserver : public IFilterEngine::EventObserver
+  {
+  public:
+    using Callback = std::function<void(IFilterEngine::SubscriptionEvent, const Subscription&)>;
+
+    explicit WrappingSubscriptionEventObserver(const Callback& callback) : callback_(callback)
+    {
+    }
+
+    void OnFilterEvent(IFilterEngine::FilterEvent event, const Filter& filter) override
+    {
+      // nothing
+    }
+
+    void OnSubscriptionEvent(IFilterEngine::SubscriptionEvent event,
+                             const Subscription& subscription) override
+    {
+      callback_(event, subscription);
+    }
+
+  private:
+    Callback callback_;
+  };
+
   class FilterEngineIsSubscriptionDownloadAllowedTest : public BaseJsTest
   {
   protected:
@@ -108,17 +156,18 @@ namespace
     {
       auto subscriptionUrl = "https://example" + apppendToUrl;
       bool isSubscriptionDownloadStatusReceived = false;
+      WrappingSubscriptionEventObserver statusObserver(
+          [&isSubscriptionDownloadStatusReceived, &subscriptionUrl](
+              IFilterEngine::SubscriptionEvent event, const Subscription& subscription) {
+            if (event == IFilterEngine::SubscriptionEvent::SUBSCRIPTION_DOWNLOADSTATUS &&
+                subscription.GetUrl() == subscriptionUrl)
+              isSubscriptionDownloadStatusReceived = true;
+          });
       if (!isFilterEngineCreated)
       {
         ::CreateFilterEngine(*platform, createParams);
         isFilterEngineCreated = true;
-        platform->GetFilterEngine().SetFilterChangeCallback(
-            [&isSubscriptionDownloadStatusReceived, &subscriptionUrl](const std::string& action,
-                                                                      JsValue&& item) {
-              if (action == "subscription.downloadStatus" &&
-                  item.GetProperty("url").AsString() == subscriptionUrl)
-                isSubscriptionDownloadStatusReceived = true;
-            });
+        platform->GetFilterEngine().AddEventObserver(&statusObserver);
         platform->GetFilterEngine().AddEventObserver(&observer);
       }
       auto subscription = platform->GetFilterEngine().GetSubscription(subscriptionUrl);
@@ -160,6 +209,7 @@ namespace
         }
       }
       EXPECT_TRUE(isSubscriptionDownloadStatusReceived);
+      platform->GetFilterEngine().RemoveEventObserver(&statusObserver);
       return subscription;
     }
   };
@@ -219,13 +269,6 @@ TEST_F(FilterEngineTest, AddRemoveFilters)
   ASSERT_EQ(1u, filterEngine.GetListedFilters().size());
   ASSERT_EQ(filter, filterEngine.GetListedFilters()[0]);
   filterEngine.RemoveFilter(filter);
-  ASSERT_FALSE(filter.IsListed());
-  filter.AddToList();
-  ASSERT_TRUE(filter.IsListed());
-  ASSERT_EQ(1u, filterEngine.GetListedFilters().size());
-  ASSERT_EQ(filter, filterEngine.GetListedFilters()[0]);
-  filter.RemoveFromList();
-  ASSERT_FALSE(filter.IsListed());
   ASSERT_EQ(0u, filterEngine.GetListedFilters().size());
   filterEngine.RemoveFilter(filter);
   ASSERT_EQ(0u, filterEngine.GetListedFilters().size());
@@ -241,17 +284,20 @@ TEST_F(FilterEngineTest, DisablingSubscriptionDisablesItAndFiresEvent)
 {
   auto subscription = GetFilterEngine().GetSubscription("https://foo/");
   int eventFiredCounter = 0;
-  GetFilterEngine().SetFilterChangeCallback(
-      [&eventFiredCounter](const std::string& eventName, JsValue&& subscriptionObject) {
-        if (eventName != "subscription.disabled" ||
-            subscriptionObject.GetProperty("url").AsString() != "https://foo/")
+  WrappingSubscriptionEventObserver observer(
+      [&eventFiredCounter](IFilterEngine::SubscriptionEvent event,
+                           const Subscription& subscription) {
+        if (event != IFilterEngine::SubscriptionEvent::SUBSCRIPTION_DISABLED ||
+            subscription.GetUrl() != "https://foo/")
           return;
         ++eventFiredCounter;
       });
+  GetFilterEngine().AddEventObserver(&observer);
   EXPECT_FALSE(subscription.IsDisabled());
   subscription.SetDisabled(true);
   EXPECT_EQ(1, eventFiredCounter);
   EXPECT_TRUE(subscription.IsDisabled());
+  GetFilterEngine().RemoveEventObserver(&observer);
 }
 
 TEST_F(FilterEngineTest, EnablingSubscriptionEnablesItAndFiresEvent)
@@ -262,16 +308,19 @@ TEST_F(FilterEngineTest, EnablingSubscriptionEnablesItAndFiresEvent)
   EXPECT_TRUE(subscription.IsDisabled());
 
   int eventFiredCounter = 0;
-  GetFilterEngine().SetFilterChangeCallback(
-      [&eventFiredCounter](const std::string& eventName, JsValue&& subscriptionObject) {
-        if (eventName != "subscription.disabled" ||
-            subscriptionObject.GetProperty("url").AsString() != "https://foo/")
+  WrappingSubscriptionEventObserver observer(
+      [&eventFiredCounter](IFilterEngine::SubscriptionEvent event,
+                           const Subscription& subscription) {
+        if (event != IFilterEngine::SubscriptionEvent::SUBSCRIPTION_DISABLED ||
+            subscription.GetUrl() != "https://foo/")
           return;
         ++eventFiredCounter;
       });
+  GetFilterEngine().AddEventObserver(&observer);
   subscription.SetDisabled(false);
   EXPECT_EQ(1, eventFiredCounter);
   EXPECT_FALSE(subscription.IsDisabled());
+  GetFilterEngine().RemoveEventObserver(&observer);
 }
 
 TEST_F(FilterEngineTest, AddRemoveSubscriptions)
@@ -288,13 +337,6 @@ TEST_F(FilterEngineTest, AddRemoveSubscriptions)
   ASSERT_EQ(initialSize + 1, filterEngine.GetListedSubscriptions().size());
   ASSERT_EQ(subscription, filterEngine.GetListedSubscriptions()[initialSize]);
   filterEngine.RemoveSubscription(subscription);
-  ASSERT_FALSE(subscription.IsListed());
-  subscription.AddToList();
-  ASSERT_TRUE(subscription.IsListed());
-  ASSERT_EQ(initialSize + 1, filterEngine.GetListedSubscriptions().size());
-  ASSERT_EQ(subscription, filterEngine.GetListedSubscriptions()[initialSize]);
-  subscription.RemoveFromList();
-  ASSERT_FALSE(subscription.IsListed());
   ASSERT_EQ(initialSize, filterEngine.GetListedSubscriptions().size());
   filterEngine.RemoveSubscription(subscription);
   ASSERT_EQ(initialSize, filterEngine.GetListedSubscriptions().size());
@@ -689,34 +731,32 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideAllowlistedMatchesAllowlistedS
   filterEngine.AddFilter(filterEngine.GetFilter("@@$document,sitekey=" + docSiteKey));
   filterEngine.AddFilter(filterEngine.GetFilter("@@$elemhide,sitekey=" + elemhideSiteKey));
 
-  {
-    // normally the frame is not allowlisted
-    { // no sitekey
-       AdblockPlus::Filter matchResult =
-           filterEngine.Matches("http://my-ads.com/adframe",
-                                AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
-                                "http://example.com/");
-      ASSERT_TRUE(matchResult.IsValid());
-      EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
-    }
-    { // random sitekey
-      AdblockPlus::Filter matchResult =
-          filterEngine.Matches("http://my-ads.com/adframe",
-                               AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
-                               "http://example.com/",
-                               siteKey);
-      ASSERT_TRUE(matchResult.IsValid());
-      EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
-    }
-    {          // the sitekey, but filter does not allowlist subdocument
-      AdblockPlus::Filter matchResult =
-          filterEngine.Matches("http://my-ads.com/adframe",
-                               AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
-                               "http://example.com/",
-                               docSiteKey);
-      ASSERT_TRUE(matchResult.IsValid());
-      EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
-    }
+  // normally the frame is not allowlisted
+  { // no sitekey
+    AdblockPlus::Filter matchResult =
+        filterEngine.Matches("http://my-ads.com/adframe",
+                             AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+                             "http://example.com/");
+    ASSERT_TRUE(matchResult.IsValid());
+    EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
+  }
+  { // random sitekey
+    AdblockPlus::Filter matchResult =
+        filterEngine.Matches("http://my-ads.com/adframe",
+                             AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+                             "http://example.com/",
+                             siteKey);
+    ASSERT_TRUE(matchResult.IsValid());
+    EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
+  }
+  { // the sitekey, but filter does not allowlist subdocument
+    AdblockPlus::Filter matchResult =
+        filterEngine.Matches("http://my-ads.com/adframe",
+                             AdblockPlus::IFilterEngine::CONTENT_TYPE_SUBDOCUMENT,
+                             "http://example.com/",
+                             docSiteKey);
+    ASSERT_TRUE(matchResult.IsValid());
+    EXPECT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, matchResult.GetType());
   }
 
   { // the frame itself
@@ -767,18 +807,19 @@ TEST_F(FilterEngineTestSiteKey, IsDocAndIsElemhideAllowlistedMatchesAllowlistedS
   }
 }
 
-TEST_F(FilterEngineTest, SetRemoveFilterChangeCallback)
+TEST_F(FilterEngineTest, RemoveObserver)
 {
   auto& filterEngine = GetFilterEngine();
   int timesCalled = 0;
-  filterEngine.SetFilterChangeCallback([&timesCalled](const std::string&, AdblockPlus::JsValue&&) {
+  WrappingFilterEventObserver observer([&timesCalled](IFilterEngine::FilterEvent, const Filter&) {
     timesCalled++;
   });
+  filterEngine.AddEventObserver(&observer);
   filterEngine.AddFilter(filterEngine.GetFilter("foo"));
   EXPECT_EQ(1, timesCalled);
 
   // we want to actually check the call count didn't change.
-  filterEngine.RemoveFilterChangeCallback();
+  filterEngine.RemoveEventObserver(&observer);
   filterEngine.RemoveFilter(filterEngine.GetFilter("foo"));
   EXPECT_EQ(1, timesCalled);
 }
@@ -787,9 +828,11 @@ TEST_F(FilterEngineTest, AddRemoveFilterEventObserver)
 {
   auto& filterEngine = GetFilterEngine();
   int timesCalled = 0;
-  filterEngine.SetFilterChangeCallback([&timesCalled](const std::string&, AdblockPlus::JsValue&&) {
-    timesCalled++;
-  });
+  WrappingFilterEventObserver countObserver(
+      [&timesCalled](IFilterEngine::FilterEvent, const Filter&) {
+        timesCalled++;
+      });
+  filterEngine.AddEventObserver(&countObserver);
 
   std::string raw = "foo";
 
@@ -801,7 +844,7 @@ TEST_F(FilterEngineTest, AddRemoveFilterEventObserver)
   ASSERT_EQ(IFilterEngine::FilterEvent::FILTER_ADDED, observer.filterEvents[0]);
   ASSERT_NE(nullptr, observer.lastFilter);
   EXPECT_EQ(raw, observer.lastFilter->GetRaw());
-  filterEngine.RemoveFilterChangeCallback();
+  filterEngine.RemoveEventObserver(&countObserver);
   filterEngine.RemoveFilter(filterEngine.GetFilter(raw));
   EXPECT_EQ(1, timesCalled);
   ASSERT_EQ(2u, observer.filterEvents.size());
@@ -828,9 +871,11 @@ TEST_F(FilterEngineTest, AddRemoveSubsciptionEventCallback)
   auto& filterEngine = GetFilterEngine();
   std::string url = "https://foo/";
   int timesCalled = 0;
-  filterEngine.SetFilterChangeCallback([&timesCalled](const std::string&, AdblockPlus::JsValue&&) {
-    timesCalled++;
-  });
+  WrappingSubscriptionEventObserver countObserver(
+      [&timesCalled](IFilterEngine::SubscriptionEvent, const Subscription&) {
+        timesCalled++;
+      });
+  filterEngine.AddEventObserver(&countObserver);
 
   FakeFilterEventObserver observer;
   filterEngine.AddEventObserver(&observer);
@@ -845,7 +890,7 @@ TEST_F(FilterEngineTest, AddRemoveSubsciptionEventCallback)
   ASSERT_NE(nullptr, observer.lastSubscription);
   EXPECT_EQ(url, observer.lastSubscription->GetUrl());
 
-  filterEngine.RemoveFilterChangeCallback();
+  filterEngine.RemoveEventObserver(&countObserver);
   observer.Reset();
   filterEngine.RemoveSubscription(subscription);
   EXPECT_EQ(2, timesCalled);
@@ -2083,7 +2128,8 @@ TEST_F(FilterEngineConfigurableTest, RequestsWithSynchronizationDisabled)
 // manually if instant update is needed. Otherwise they'll be updated with the normal logic
 // core uses i.e. depending on expiration with check every hour and initial delay of 1 minute.
 // Decide if enable or remove within DPD-373.
-TEST_F(FilterEngineConfigurableTest, DISABLED_RequestsWithSynchronizationInitiallyDisabledAndThenStarted)
+TEST_F(FilterEngineConfigurableTest,
+       DISABLED_RequestsWithSynchronizationInitiallyDisabledAndThenStarted)
 {
   auto& engine = ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Disabled);
 

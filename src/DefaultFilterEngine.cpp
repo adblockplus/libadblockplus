@@ -208,29 +208,11 @@ void DefaultFilterEngine::SetPref(const std::string& pref, const JsValue& value)
   func.Call(params);
 }
 
-std::string DefaultFilterEngine::GetHostFromURL(const std::string& url) const
-{
-  JsValue func = jsEngine.Evaluate("API.getHostFromUrl");
-  return func.Call(jsEngine.NewValue(url)).AsString();
-}
-
-void DefaultFilterEngine::SetFilterChangeCallback(const FilterChangeCallback& callback)
-{
-  std::unique_lock<std::mutex> lock(callbacksMutex);
-  legacyCallback = callback;
-}
-
 void DefaultFilterEngine::AddEventObserver(EventObserver* observer)
 {
   std::unique_lock<std::mutex> lock(callbacksMutex);
   assert(std::find(observers.begin(), observers.end(), observer) == observers.end());
   observers.push_back(observer);
-}
-
-void DefaultFilterEngine::RemoveFilterChangeCallback()
-{
-  std::unique_lock<std::mutex> lock(callbacksMutex);
-  legacyCallback = nullptr;
 }
 
 void DefaultFilterEngine::RemoveEventObserver(EventObserver* observer)
@@ -392,11 +374,6 @@ void DefaultFilterEngine::OnSubscriptionOrFilterChanged(JsValueList&& params) co
   JsValue item(params.size() >= 2 ? params[1] : jsEngine.NewValue(false));
 
   std::unique_lock<std::mutex> lock(callbacksMutex);
-  if (legacyCallback)
-  {
-    JsValue copy = item;
-    legacyCallback(action, std::move(copy));
-  }
 
   FilterEvent filterEvent;
   SubscriptionEvent subscriptionEvent;

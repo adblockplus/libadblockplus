@@ -50,21 +50,6 @@ namespace AdblockPlus
     Subscription& operator=(Subscription&& filter);
     Subscription(const Subscription& other);
     Subscription(Subscription&& other);
-    /**
-     * DEPRECATED. Use IFilterEngine::GetListedSubscriptions() combined with
-     * find instead.
-     */
-    [[deprecated("Use IFilterEngine::GetListedSubscriptions() combined with"
-                 " find instead")]] bool
-    IsListed() const;
-    /**
-     * DEPRECATED. Use IFilterEngine::AddSubscription() instead.
-     */
-    [[deprecated("Use IFilterEngine::AddSubscription() instead")]] void AddToList();
-    /**
-     * DEPRECATED. Use IFilterEngine::RemoveSubscription() instead.
-     */
-    [[deprecated("Use IFilterEngine::RemoveSubscription() instead")]] void RemoveFromList();
 
   private:
     std::unique_ptr<ISubscriptionImplementation> implementation;

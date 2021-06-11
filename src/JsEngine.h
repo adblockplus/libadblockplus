@@ -33,7 +33,6 @@
 #include <AdblockPlus/IWebRequest.h>
 #include <AdblockPlus/JsValue.h>
 #include <AdblockPlus/LogSystem.h>
-#include <v8.h>
 
 namespace AdblockPlus
 {
