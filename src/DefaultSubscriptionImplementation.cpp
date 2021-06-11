@@ -127,21 +127,3 @@ std::unique_ptr<ISubscriptionImplementation> DefaultSubscriptionImplementation::
   JsValue copyObject = jsObject;
   return std::make_unique<DefaultSubscriptionImplementation>(std::move(copyObject), jsEngine);
 }
-
-bool DefaultSubscriptionImplementation::IsListed() const
-{
-  JsValue func = jsEngine->Evaluate("API.isListedSubscription");
-  return func.Call(jsObject).AsBool();
-}
-
-void DefaultSubscriptionImplementation::AddToList()
-{
-  JsValue func = jsEngine->Evaluate("API.addSubscriptionToList");
-  func.Call(jsObject);
-}
-
-void DefaultSubscriptionImplementation::RemoveFromList()
-{
-  JsValue func = jsEngine->Evaluate("API.removeSubscriptionFromList");
-  func.Call(jsObject);
-}

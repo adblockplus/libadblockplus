@@ -53,29 +53,6 @@ namespace AdblockPlus
      */
     virtual std::string GetRaw() const = 0;
 
-    /**
-     * Checks whether this filter has been added to the list of custom filters.
-     * @return `true` if this filter has been added.
-     *
-     * DEPRECATED. Use IFilterEngine::GetListedFilters() combined with find
-     * instead.
-     */
-    virtual bool IsListed() const = 0;
-
-    /**
-     * Adds this filter to the list of custom filters.
-     *
-     * DEPRECATED. Use IFilterEngine::AddFilter() instead.
-     */
-    virtual void AddToList() = 0;
-
-    /**
-     * Removes this filter from the list of custom filters.
-     *
-     * DEPRECATED. Use IFilterEngine::RemoveFilter() instead.
-     */
-    virtual void RemoveFromList() = 0;
-
     virtual bool operator==(const IFilterImplementation& filter) const = 0;
 
     virtual std::unique_ptr<IFilterImplementation> Clone() const = 0;

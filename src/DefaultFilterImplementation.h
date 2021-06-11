@@ -37,9 +37,6 @@ namespace AdblockPlus
     IFilterImplementation::Type GetType() const final;
     std::string GetRaw() const final;
     bool operator==(const IFilterImplementation& filter) const final;
-    bool IsListed() const final;
-    void AddToList() final;
-    void RemoveFromList() final;
     std::unique_ptr<IFilterImplementation> Clone() const final;
 
   private:
