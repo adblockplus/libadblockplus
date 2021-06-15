@@ -2197,16 +2197,41 @@ TEST_F(FilterEngineTest, GetSnippetScriptBasic)
   filterEngine.AddFilter(filterEngine.GetFilter("test.com#$#log Hello"));
   auto script = filterEngine.GetSnippetScript("https://test.com/path", "'use strict';");
   EXPECT_EQ(
-      "\n    \"use strict\";\n    {\n      let libraries = [\"'use strict';\"];\n\n      let "
-      "scripts = [[[\"log\",\"Hello\"]]];\n\n      let imports = Object.create(null);\n      for "
-      "(let library of libraries)\n      {\n        let loadLibrary = new Function(\"exports\", "
-      "\"environment\", library);\n        loadLibrary(imports, {});\n      }\n\n      let "
-      "{hasOwnProperty} = Object.prototype;\n\n      if (hasOwnProperty.call(imports, "
-      "\"prepareInjection\"))\n        imports.prepareInjection();\n\n      for (let script of "
-      "scripts)\n      {\n        for (let [name, ...args] of script)\n        {\n          if "
-      "(hasOwnProperty.call(imports, name))\n          {\n            let value = imports[name];\n "
-      "           if (typeof value == \"function\")\n              value(...args);\n          }\n  "
-      "      }\n      }\n\n      if (hasOwnProperty.call(imports, \"commitInjection\"))\n        "
-      "imports.commitInjection();\n    }\n  ",
+      R"raw(
+    "use strict";
+    {
+      let libraries = ["'use strict';"];
+
+      let scripts = [[["log","Hello"]]];
+
+      let imports = Object.create(null);
+      for (let library of libraries)
+      {
+        let loadLibrary = new Function("exports", "environment", library);
+        loadLibrary(imports, {});
+      }
+
+      let {hasOwnProperty} = Object.prototype;
+
+      if (hasOwnProperty.call(imports, "prepareInjection"))
+        imports.prepareInjection();
+
+      for (let script of scripts)
+      {
+        for (let [name, ...args] of script)
+        {
+          if (hasOwnProperty.call(imports, name))
+          {
+            let value = imports[name];
+            if (typeof value == "function")
+              value(...args);
+          }
+        }
+      }
+
+      if (hasOwnProperty.call(imports, "commitInjection"))
+        imports.commitInjection();
+    }
+  )raw",
       script);
 }
