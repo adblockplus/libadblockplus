@@ -2195,11 +2195,11 @@ TEST_F(FilterEngineTest, GetSnippetScriptBasic)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.AddFilter(filterEngine.GetFilter("test.com#$#log Hello"));
-  auto script = filterEngine.GetSnippetScript("https://test.com/path", "");
+  auto script = filterEngine.GetSnippetScript("https://test.com/path", "'use strict';");
   EXPECT_EQ(
-      "\n    \"use strict\";\n    {\n      let libraries = [\"\"];\n\n      let scripts = "
-      "[[[\"log\",\"Hello\"]]];\n\n      let imports = Object.create(null);\n      for (let "
-      "library of libraries)\n      {\n        let loadLibrary = new Function(\"exports\", "
+      "\n    \"use strict\";\n    {\n      let libraries = [\"'use strict';\"];\n\n      let "
+      "scripts = [[[\"log\",\"Hello\"]]];\n\n      let imports = Object.create(null);\n      for "
+      "(let library of libraries)\n      {\n        let loadLibrary = new Function(\"exports\", "
       "\"environment\", library);\n        loadLibrary(imports, {});\n      }\n\n      let "
       "{hasOwnProperty} = Object.prototype;\n\n      if (hasOwnProperty.call(imports, "
       "\"prepareInjection\"))\n        imports.prepareInjection();\n\n      for (let script of "
