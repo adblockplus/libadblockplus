@@ -347,6 +347,17 @@ namespace AdblockPlus
     virtual void StopSynchronization() = 0;
 
     /**
+     * Compile script to inject as content script. It is executed in tab context on behalf
+     * of web extension. Can be empty if no rule require injection of such script.
+     * @param documentUrl url of the tab
+     * @param librarySource snippet library source to use in generated script. It should be stored
+     * as external resource. Default implementation is located in adblockpluscore
+     * lib/content/snippet.js
+     */
+    virtual std::string GetSnippetScript(const std::string& documentUrl,
+                                         const std::string& librarySource) = 0;
+
+    /**
      * Retrieves the `ContentType` for the supplied string.
      * @param contentType Content type string.
      * @return The `ContentType` for the string.

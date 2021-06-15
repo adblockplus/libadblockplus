@@ -522,3 +522,14 @@ void DefaultFilterEngine::Observer::OnFilterEvent(FilterEvent event, const Filte
   if (event == IFilterEngine::FilterEvent::FILTERS_SAVE)
     jsEngine.NotifyLowMemory();
 }
+
+std::string AdblockPlus::DefaultFilterEngine::GetSnippetScript(const std::string& documentUrl,
+                                                               const std::string& librarySource)
+{
+  JsValueList params;
+  params.push_back(jsEngine.NewValue(documentUrl));
+  params.push_back(jsEngine.NewValue(librarySource));
+
+  JsValue func = jsEngine.Evaluate("API.getSnippetsScript");
+  return func.Call(params).AsString();
+}

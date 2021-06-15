@@ -2183,3 +2183,55 @@ TEST_F(FilterEngineConfigurableTest, AADisabledAtFirstAndThenEnabled)
   EXPECT_EQ(2, webGETRequestCounter);
   EXPECT_EQ(1, webHEADRequestCounter);
 }
+
+TEST_F(FilterEngineTest, GetSnippetScriptEmpty)
+{
+  auto& filterEngine = GetFilterEngine();
+  auto script = filterEngine.GetSnippetScript("https://test.com/path", "");
+  EXPECT_EQ("", script);
+}
+
+TEST_F(FilterEngineTest, GetSnippetScriptBasic)
+{
+  auto& filterEngine = GetFilterEngine();
+  filterEngine.AddFilter(filterEngine.GetFilter("test.com#$#log Hello"));
+  auto script = filterEngine.GetSnippetScript("https://test.com/path", "'use strict';");
+  EXPECT_EQ(
+      R"raw(
+    "use strict";
+    {
+      let libraries = ["'use strict';"];
+
+      let scripts = [[["log","Hello"]]];
+
+      let imports = Object.create(null);
+      for (let library of libraries)
+      {
+        let loadLibrary = new Function("exports", "environment", library);
+        loadLibrary(imports, {});
+      }
+
+      let {hasOwnProperty} = Object.prototype;
+
+      if (hasOwnProperty.call(imports, "prepareInjection"))
+        imports.prepareInjection();
+
+      for (let script of scripts)
+      {
+        for (let [name, ...args] of script)
+        {
+          if (hasOwnProperty.call(imports, name))
+          {
+            let value = imports[name];
+            if (typeof value == "function")
+              value(...args);
+          }
+        }
+      }
+
+      if (hasOwnProperty.call(imports, "commitInjection"))
+        imports.commitInjection();
+    }
+  )raw",
+      script);
+}
