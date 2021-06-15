@@ -82,6 +82,8 @@ namespace AdblockPlus
     void RemoveFilter(const Filter& filter) final;
     void StartSynchronization() final;
     void StopSynchronization() final;
+    std::string GetSnippetScript(const std::string& documentUrl,
+                                 const std::string& librarySource) final;
 
     void StartObservingEvents();
 
