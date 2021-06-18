@@ -2235,3 +2235,16 @@ TEST_F(FilterEngineTest, GetSnippetScriptBasic)
   )raw",
       script);
 }
+
+TEST_F(FilterEngineConfigurableTest, SubscriptionVersion)
+{
+  filterList = "[Adblock Plus 2.0]\n!Version: 1234\n||example.com";
+  auto& engine =
+      ConfigureEngine(AutoselectState::Disabled, SynchronizationState::Enabled, AAState::Disabled);
+
+  std::string testUrl = "https://foo.bar";
+  auto subscription = engine.GetSubscription(testUrl);
+  engine.AddSubscription(subscription);
+
+  EXPECT_EQ(1234, subscription.GetVersion());
+}

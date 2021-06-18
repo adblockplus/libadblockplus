@@ -48,6 +48,7 @@ namespace AdblockPlus
     std::string GetSynchronizationStatus() const final;
     int GetLastDownloadAttemptTime() const final;
     int GetLastDownloadSuccessTime() const final;
+    int GetVersion() const final;
     bool operator==(const ISubscriptionImplementation& value) const final;
     std::unique_ptr<ISubscriptionImplementation> Clone() const final;
 

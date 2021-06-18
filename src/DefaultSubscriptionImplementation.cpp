@@ -105,6 +105,11 @@ int DefaultSubscriptionImplementation::GetLastDownloadSuccessTime() const
   return GetIntProperty("lastSuccess");
 }
 
+int DefaultSubscriptionImplementation::GetVersion() const
+{
+  return GetIntProperty("version");
+}
+
 bool DefaultSubscriptionImplementation::operator==(const ISubscriptionImplementation& value) const
 {
   return GetUrl() == value.GetUrl();
