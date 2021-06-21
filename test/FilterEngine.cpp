@@ -2248,3 +2248,18 @@ TEST_F(FilterEngineConfigurableTest, SubscriptionVersion)
 
   EXPECT_EQ(1234, subscription.GetVersion());
 }
+
+TEST_F(FilterEngineConfigurableTest, RemovingCustomFilterWhichsIsAlsoThereInTheListStillMatches)
+{
+  const char kTestFilter[] = "&bannerid=";
+  filterList = "[Adblock Plus 2.0]\n!Version: 1234\n";
+  filterList += kTestFilter;
+  const char kTestURL[] = "https://somedomain.com?page=1&bannerid=123";
+  auto& engine =
+      ConfigureEngine(AutoselectState::Enabled, SynchronizationState::Enabled, AAState::Enabled);
+  EXPECT_TRUE(engine.Matches(kTestURL, IFilterEngine::CONTENT_TYPE_OTHER, "", "", false).IsValid());
+  engine.AddFilter(engine.GetFilter(kTestFilter));
+  EXPECT_TRUE(engine.Matches(kTestURL, IFilterEngine::CONTENT_TYPE_OTHER, "", "", false).IsValid());
+  engine.RemoveFilter(engine.GetFilter(kTestFilter));
+  EXPECT_TRUE(engine.Matches(kTestURL, IFilterEngine::CONTENT_TYPE_OTHER, "", "", false).IsValid());
+}
