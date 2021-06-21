@@ -106,9 +106,15 @@ namespace AdblockPlus
 
     /**
      * Last time the subscription was successfully downloaded.
-     * @return unix time or 0 if there were no sucessfull attempts.
+     * @return unix time or 0 if there were no successful attempts.
      */
     virtual int GetLastDownloadSuccessTime() const = 0;
+
+    /**
+     * Version number set by !Version header.
+     * @return number or zero if no version set.
+     */
+    virtual int GetVersion() const = 0;
 
     virtual bool operator==(const ISubscriptionImplementation& other) const = 0;
 

@@ -99,6 +99,11 @@ int Subscription::GetLastDownloadSuccessTime() const
   return implementation->GetLastDownloadSuccessTime();
 }
 
+int Subscription::GetVersion() const
+{
+  return implementation->GetVersion();
+}
+
 bool Subscription::operator==(const Subscription& other) const
 {
   return *implementation == *(other.implementation);
