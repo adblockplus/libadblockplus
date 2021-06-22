@@ -2263,3 +2263,16 @@ TEST_F(FilterEngineConfigurableTest, RemovingCustomFilterWhichsIsAlsoThereInTheL
   engine.RemoveFilter(engine.GetFilter(kTestFilter));
   EXPECT_TRUE(engine.Matches(kTestURL, IFilterEngine::CONTENT_TYPE_OTHER, "", "", false).IsValid());
 }
+
+TEST_F(FilterEngineTest, Stun)
+{
+  auto& filterEngine = GetFilterEngine();
+  std::string raw = ":35.224.227.218^$webrtc";
+  filterEngine.AddFilter(filterEngine.GetFilter(raw));
+  auto result = filterEngine.Matches(
+      "stun:35.224.227.218:443", IFilterEngine::CONTENT_TYPE_WEBRTC, "1anim.com");
+
+  ASSERT_TRUE(result.IsValid());
+  EXPECT_EQ(IFilterImplementation::TYPE_BLOCKING, result.GetType());
+  EXPECT_EQ(raw, result.GetRaw());
+}
