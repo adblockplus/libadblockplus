@@ -17,7 +17,7 @@
       'adblockpluscore/data/resources.json',
       'adblockpluscore/lib/url.js',
       'adblockpluscore/lib/filterNotifier.js',
-      'adblockpluscore/lib/recommendations.js',
+      'lib/recommendations.js',
       'adblockpluscore/lib/common.js',
       'adblockpluscore/lib/elemHideExceptions.js',
       'adblockpluscore/lib/contentTypes.js',
