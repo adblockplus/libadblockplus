@@ -230,7 +230,6 @@ protected:
     auto& engine = GetFilterEngine();
     auto url = info.GetProperty("url").AsString();
     auto opener = info.GetProperty("opener").AsString();
-    PopupBlockResult decision = PopupBlockResult::NO_RULE;
     double lasted = 0;
 
     {
@@ -238,17 +237,6 @@ protected:
 
       AdblockPlus::Filter filter =
           engine.Matches(url, AdblockPlus::IFilterEngine::ContentType::CONTENT_TYPE_POPUP, opener);
-
-      if (filter.IsValid())
-      {
-        if (filter.GetType() != AdblockPlus::Filter::Type::TYPE_EXCEPTION)
-          decision = PopupBlockResult::BLOCK_RULE;
-        else
-          decision = PopupBlockResult::ALLOW_RULE;
-      }
-      else
-        decision = PopupBlockResult::NO_RULE;
-
       lasted = timer.Microseconds();
     }
 
