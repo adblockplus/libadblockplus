@@ -122,8 +122,8 @@ namespace AdblockPlus
     static bool Transform(const std::string& str, FilterEvent* event);
     static bool Transform(const std::string& str, SubscriptionEvent* event);
 
-    mutable std::mutex callbacksMutex;
-    Observer observer{jsEngine};
-    std::vector<IFilterEngine::EventObserver*> observers;
+    mutable std::mutex callbacksMutex_;
+    Observer observer_{jsEngine};
+    std::vector<IFilterEngine::EventObserver*> observers_;
   };
 }

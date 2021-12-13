@@ -91,18 +91,18 @@ namespace
       allocator.reset(v8::ArrayBuffer::Allocator::NewDefaultAllocator());
       v8::Isolate::CreateParams isolateParams;
       isolateParams.array_buffer_allocator = allocator.get();
-      isolate = v8::Isolate::New(isolateParams);
+      isolate_ = v8::Isolate::New(isolateParams);
     }
 
     ~ScopedV8Isolate()
     {
-      isolate->Dispose();
-      isolate = nullptr;
+      isolate_->Dispose();
+      isolate_ = nullptr;
     }
 
     v8::Isolate* Get() override
     {
-      return isolate;
+      return isolate_;
     }
 
   private:
@@ -110,7 +110,7 @@ namespace
     ScopedV8Isolate& operator=(const ScopedV8Isolate&);
 
     std::unique_ptr<v8::ArrayBuffer::Allocator> allocator;
-    v8::Isolate* isolate;
+    v8::Isolate* isolate_;
   };
 }
 
@@ -162,18 +162,18 @@ AdblockPlus::JsEngine::JsEngine(const Interfaces& interfaces,
       logSystem(interfaces.logSystem), resourceReader(interfaces.resourceReader)
 #if !defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
       ,
-      isolate(std::move(isolate))
+      isolate_(std::move(isolate))
 #endif
 {
 #if defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
-  this->isolate = std::shared_ptr<IV8IsolateProvider>(isolate.release());
+  this->isolate_ = std::shared_ptr<IV8IsolateProvider>(isolate.release());
 #endif
 }
 
 JsEngine::~JsEngine()
 {
-  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
-  for (auto* weakValue : registeredWeakValues)
+  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex_);
+  for (auto* weakValue : registeredWeakValues_)
     weakValue->Invalidate();
 }
 
@@ -192,7 +192,7 @@ AdblockPlus::JsEngine::New(const AppInfo& appInfo,
   const v8::Isolate::Scope isolateScope(result->GetIsolate());
   const v8::HandleScope handleScope(result->GetIsolate());
 
-  result->context =
+  result->context_ =
       v8::Global<v8::Context>(result->GetIsolate(), v8::Context::New(result->GetIsolate()));
   auto global = result->GetGlobalObject();
   AdblockPlus::GlobalJsObject::Setup(*result, appInfo, global);
@@ -226,14 +226,14 @@ void AdblockPlus::JsEngine::SetEventCallback(const std::string& eventName,
     RemoveEventCallback(eventName);
     return;
   }
-  std::lock_guard<std::mutex> lock(eventCallbacksMutex);
-  eventCallbacks[eventName] = callback;
+  std::lock_guard<std::mutex> lock(eventCallbacksMutex_);
+  eventCallbacks_[eventName] = callback;
 }
 
 void AdblockPlus::JsEngine::RemoveEventCallback(const std::string& eventName)
 {
-  std::lock_guard<std::mutex> lock(eventCallbacksMutex);
-  eventCallbacks.erase(eventName);
+  std::lock_guard<std::mutex> lock(eventCallbacksMutex_);
+  eventCallbacks_.erase(eventName);
 }
 
 void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName,
@@ -241,9 +241,9 @@ void AdblockPlus::JsEngine::TriggerEvent(const std::string& eventName,
 {
   EventCallback callback;
   {
-    std::lock_guard<std::mutex> lock(eventCallbacksMutex);
-    auto it = eventCallbacks.find(eventName);
-    if (it == eventCallbacks.end())
+    std::lock_guard<std::mutex> lock(eventCallbacksMutex_);
+    auto it = eventCallbacks_.find(eventName);
+    if (it == eventCallbacks_.end())
       return;
     callback = it->second;
   }
@@ -333,8 +333,8 @@ JsEngine::JsWeakValuesID JsEngine::StoreJsValues(const JsValueList& values)
 {
   JsWeakValuesLists::iterator it;
   {
-    std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
-    it = jsWeakValuesLists.emplace(jsWeakValuesLists.end());
+    std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex_);
+    it = jsWeakValuesLists_.emplace(jsWeakValuesLists_.end());
   }
   {
     JsContext context(GetIsolate(), *GetContext());
@@ -360,8 +360,8 @@ JsValueList JsEngine::TakeJsValues(const JsWeakValuesID& id)
     }
   }
   {
-    std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
-    jsWeakValuesLists.erase(id.iterator);
+    std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex_);
+    jsWeakValuesLists_.erase(id.iterator);
   }
   return retValue;
 }
@@ -398,19 +398,19 @@ void AdblockPlus::JsEngine::SetGlobalProperty(const std::string& name,
 
 v8::Global<v8::Context>* JsEngine::GetContext()
 {
-  return &context;
+  return &context_;
 }
 
 #if defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
 JsEngine::IV8IsolateProviderWrapper::IV8IsolateProviderWrapper(
     std::weak_ptr<IV8IsolateProvider> weakIsolate)
-    : isolate(weakIsolate)
+    : isolate_(weakIsolate)
 {
 }
 
 v8::Isolate* JsEngine::IV8IsolateProviderWrapper::Get()
 {
-  if (auto locked = isolate.lock())
+  if (auto locked = isolate_.lock())
   {
     return locked->Get();
   }
@@ -424,24 +424,24 @@ IV8IsolateProviderPtr JsEngine::GetIsolateProviderPtr() const
 #if defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
   return std::make_shared<IV8IsolateProviderWrapper>(isolate);
 #else
-  return isolate.get();
+  return isolate_.get();
 #endif
 }
 
 void JsEngine::RegisterScopedWeakValue(ScopedWeakValues::RegisteredWeakValue* value)
 {
-  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
-  assert(std::find(registeredWeakValues.begin(), registeredWeakValues.end(), value) ==
-         registeredWeakValues.end());
-  registeredWeakValues.push_back(value);
+  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex_);
+  assert(std::find(registeredWeakValues_.begin(), registeredWeakValues_.end(), value) ==
+         registeredWeakValues_.end());
+  registeredWeakValues_.push_back(value);
 }
 
 void JsEngine::UnregisterScopedWeakValue(ScopedWeakValues::RegisteredWeakValue* value)
 {
-  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex);
-  auto elem = std::find(registeredWeakValues.begin(), registeredWeakValues.end(), value);
-  assert(elem != registeredWeakValues.end());
-  registeredWeakValues.erase(elem);
+  std::lock_guard<std::mutex> lock(jsWeakValuesListsMutex_);
+  auto elem = std::find(registeredWeakValues_.begin(), registeredWeakValues_.end(), value);
+  assert(elem != registeredWeakValues_.end());
+  registeredWeakValues_.erase(elem);
 }
 
 JsEngine::ScopedWeakValues::ScopedWeakValues(JsEngine* jsEngine, const JsValueList& values)

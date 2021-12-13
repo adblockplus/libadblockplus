@@ -256,7 +256,7 @@ namespace AdblockPlus
 
     v8::Isolate* GetIsolate() const
     {
-      return isolate->Get();
+      return isolate_->Get();
     }
 
     v8::Global<v8::Context>* GetContext();
@@ -314,7 +314,7 @@ namespace AdblockPlus
 #if !defined(MAKE_ISOLATE_IN_JS_VALUE_WEAK)
     /// Isolate must be disposed only after disposing of all objects which are
     /// using it.
-    std::unique_ptr<IV8IsolateProvider> isolate;
+    std::unique_ptr<IV8IsolateProvider> isolate_;
 #else
     // Due to lack of control on Java side this is needed to make JsValue dtor
     // not crashing.
@@ -325,21 +325,21 @@ namespace AdblockPlus
       v8::Isolate* Get() override;
 
     private:
-      std::weak_ptr<IV8IsolateProvider> isolate;
+      std::weak_ptr<IV8IsolateProvider> isolate_;
     };
 
     // This is shared only to be able to create weak_ptrs of it.
     // It's not really shared i.e. passed as shared anywhere.
-    std::shared_ptr<IV8IsolateProvider> isolate;
+    std::shared_ptr<IV8IsolateProvider> isolate_;
 #endif
 
     IV8IsolateProviderPtr GetIsolateProviderPtr() const;
 
-    v8::Global<v8::Context> context;
-    EventMap eventCallbacks;
-    std::mutex eventCallbacksMutex;
-    JsWeakValuesLists jsWeakValuesLists;
-    std::mutex jsWeakValuesListsMutex;
-    std::vector<ScopedWeakValues::RegisteredWeakValue*> registeredWeakValues;
+    v8::Global<v8::Context> context_;
+    EventMap eventCallbacks_;
+    std::mutex eventCallbacksMutex_;
+    JsWeakValuesLists jsWeakValuesLists_;
+    std::mutex jsWeakValuesListsMutex_;
+    std::vector<ScopedWeakValues::RegisteredWeakValue*> registeredWeakValues_;
   };
 }

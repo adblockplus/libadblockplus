@@ -43,7 +43,7 @@
   'target_defaults': {
     'configurations': {
       'Debug': {
-        'cflags_cc': [ '-g', '-Werror', '-Wall', '-Wextra', '-Wno-unused-parameter' ],
+        'cflags_cc': [ '-g', '-Werror', '-Wall', '-Wextra', '-Wno-unused-parameter', '-Wshadow' ],
       },
       'Release': {}
     },

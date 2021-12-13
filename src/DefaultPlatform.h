@@ -58,10 +58,10 @@ namespace AdblockPlus
   private:
     std::unique_ptr<IExecutor> executor;
     // used for creation and deletion of modules.
-    std::mutex modulesMutex;
-    std::shared_future<std::unique_ptr<IFilterEngine>> filterEngine;
-    std::set<std::string> evaluatedJsSources;
-    std::mutex evaluatedJsSourcesMutex;
+    std::mutex modulesMutex_;
+    std::shared_future<std::unique_ptr<IFilterEngine>> filterEngine_;
+    std::set<std::string> evaluatedJsSources_;
+    std::mutex evaluatedJsSourcesMutex_;
 
     std::function<void(const std::string&)> GetEvaluateCallback();
   };

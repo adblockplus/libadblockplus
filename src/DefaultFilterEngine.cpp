@@ -210,17 +210,17 @@ void DefaultFilterEngine::SetPref(const std::string& pref, const JsValue& value)
 
 void DefaultFilterEngine::AddEventObserver(EventObserver* observer)
 {
-  std::unique_lock<std::mutex> lock(callbacksMutex);
-  assert(std::find(observers.begin(), observers.end(), observer) == observers.end());
-  observers.push_back(observer);
+  std::unique_lock<std::mutex> lock(callbacksMutex_);
+  assert(std::find(observers_.begin(), observers_.end(), observer) == observers_.end());
+  observers_.push_back(observer);
 }
 
 void DefaultFilterEngine::RemoveEventObserver(EventObserver* observer)
 {
-  std::unique_lock<std::mutex> lock(callbacksMutex);
-  auto registered = std::find(observers.begin(), observers.end(), observer);
-  assert(registered != observers.end());
-  observers.erase(registered);
+  std::unique_lock<std::mutex> lock(callbacksMutex_);
+  auto registered = std::find(observers_.begin(), observers_.end(), observer);
+  assert(registered != observers_.end());
+  observers_.erase(registered);
 }
 
 void DefaultFilterEngine::SetAllowedConnectionType(const std::string* value)
@@ -373,7 +373,7 @@ void DefaultFilterEngine::OnSubscriptionOrFilterChanged(JsValueList&& params) co
   std::string action(params.size() >= 1 && !params[0].IsNull() ? params[0].AsString() : "");
   JsValue item(params.size() >= 2 ? params[1] : jsEngine.NewValue(false));
 
-  std::unique_lock<std::mutex> lock(callbacksMutex);
+  std::unique_lock<std::mutex> lock(callbacksMutex_);
 
   FilterEvent filterEvent;
   SubscriptionEvent subscriptionEvent;
@@ -382,7 +382,7 @@ void DefaultFilterEngine::OnSubscriptionOrFilterChanged(JsValueList&& params) co
     Filter filter(item.IsObject()
                       ? std::make_unique<DefaultFilterImplementation>(std::move(item), &jsEngine)
                       : nullptr);
-    for (auto* observer : observers)
+    for (auto* observer : observers_)
     {
       observer->OnFilterEvent(filterEvent, filter);
     }
@@ -393,7 +393,7 @@ void DefaultFilterEngine::OnSubscriptionOrFilterChanged(JsValueList&& params) co
                                                     std::move(item), &jsEngine)
                                               : nullptr);
 
-    for (auto* observer : observers)
+    for (auto* observer : observers_)
     {
       observer->OnSubscriptionEvent(subscriptionEvent, subscription);
     }
@@ -514,7 +514,7 @@ void DefaultFilterEngine::StopSynchronization()
 
 void DefaultFilterEngine::StartObservingEvents()
 {
-  AddEventObserver(&observer);
+  AddEventObserver(&observer_);
 }
 
 void DefaultFilterEngine::Observer::OnFilterEvent(FilterEvent event, const Filter&)

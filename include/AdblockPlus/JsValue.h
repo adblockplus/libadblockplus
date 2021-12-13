@@ -155,8 +155,8 @@ namespace AdblockPlus
     // passed to v8::Function::Call but the latter does not expect a const pointer.
     JsValue Call(std::vector<v8::Local<v8::Value>>& args, v8::Local<v8::Object> thisObj) const;
 
-    IV8IsolateProviderPtr isolate;
-    v8::Global<v8::Context>* jsContext;
-    v8::Global<v8::Value> value;
+    IV8IsolateProviderPtr isolate_;
+    v8::Global<v8::Context>* jsContext_;
+    v8::Global<v8::Value> value_;
   };
 }
