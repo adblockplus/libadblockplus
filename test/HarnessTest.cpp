@@ -301,11 +301,11 @@ protected:
     for (auto& it : stats)
     {
       const std::string& name = it.first;
-      CallStats& stats = it.second;
+      CallStats& cbStats = it.second;
       std::cout << std::left << std::setw(20) << name << " ; " << std::right << std::setw(10)
-                << stats.Median() << " ; " << std::setw(10) << stats.StdDeviation() << " ; "
-                << std::setw(10) << stats.StdError() << " ; " << std::setw(10)
-                << stats.measurements.size() << std::endl;
+                << cbStats.Median() << " ; " << std::setw(10) << cbStats.StdDeviation() << " ; "
+                << std::setw(10) << cbStats.StdError() << " ; " << std::setw(10)
+                << cbStats.measurements.size() << std::endl;
     }
   }
 };

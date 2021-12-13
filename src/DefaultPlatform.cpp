@@ -62,7 +62,7 @@ JsEngine& DefaultPlatform::GetJsEngine()
 
 void DefaultPlatform::SetUp(const AppInfo& appInfo, std::unique_ptr<IV8IsolateProvider> isolate)
 {
-  std::lock_guard<std::mutex> lock(modulesMutex);
+  std::lock_guard<std::mutex> lock(modulesMutex_);
   if (jsEngine)
     return;
   JsEngine::Interfaces interfaces{*timer, *fileSystem, *webRequest, *logSystem, *resourceReader};
@@ -75,11 +75,11 @@ void DefaultPlatform::CreateFilterEngineAsync(
 {
   std::shared_ptr<std::promise<std::unique_ptr<IFilterEngine>>> filterEnginePromise;
   {
-    std::lock_guard<std::mutex> lock(modulesMutex);
-    if (filterEngine.valid())
+    std::lock_guard<std::mutex> lock(modulesMutex_);
+    if (filterEngine_.valid())
       return;
     filterEnginePromise = std::make_shared<std::promise<std::unique_ptr<IFilterEngine>>>();
-    filterEngine = filterEnginePromise->get_future();
+    filterEngine_ = filterEnginePromise->get_future();
   }
 
   GetJsEngine(); // ensures that JsEngine is instantiated
@@ -98,7 +98,7 @@ void DefaultPlatform::CreateFilterEngineAsync(
 IFilterEngine& DefaultPlatform::GetFilterEngine()
 {
   CreateFilterEngineAsync();
-  return *filterEngine.get().get();
+  return *filterEngine_.get().get();
 }
 
 ITimer& DefaultPlatform::GetTimer() const
@@ -130,15 +130,15 @@ std::function<void(const std::string&)> DefaultPlatform::GetEvaluateCallback()
 {
   // GetEvaluateCallback() method assumes that jsEngine is already created
   return [this](const std::string& filename) {
-    std::lock_guard<std::mutex> lock(evaluatedJsSourcesMutex);
-    if (evaluatedJsSources.find(filename) != evaluatedJsSources.end())
+    std::lock_guard<std::mutex> lock(evaluatedJsSourcesMutex_);
+    if (evaluatedJsSources_.find(filename) != evaluatedJsSources_.end())
       return; // NO-OP, file was already evaluated
 
     for (int i = 0; !jsSources[i].empty(); i += 2)
       if (jsSources[i] == filename)
       {
         jsEngine->Evaluate(jsSources[i + 1], jsSources[i]);
-        evaluatedJsSources.insert(filename);
+        evaluatedJsSources_.insert(filename);
         return;
       }
 

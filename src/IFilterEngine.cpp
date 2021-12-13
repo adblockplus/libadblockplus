@@ -68,10 +68,10 @@ IFilterEngine::ContentType IFilterEngine::StringToContentType(const std::string&
 {
   std::string contentTypeUpper = contentType;
   std::transform(contentType.begin(), contentType.end(), contentTypeUpper.begin(), ::toupper);
-  for (const auto& contentType : contentTypes)
+  for (const auto& cType : contentTypes)
   {
-    if (contentType.second == contentTypeUpper)
-      return contentType.first;
+    if (cType.second == contentTypeUpper)
+      return cType.first;
   }
   throw std::invalid_argument("Cannot convert argument to ContentType");
 }
