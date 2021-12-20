@@ -200,7 +200,7 @@ instance based on information about your application.
     platform->SetUp(appInfo);
 
 Depending on your application and platform, you possibly will need to supply your own
-implementations for subsytems dealing with logging, network, files, etc. For this, modify
+implementations for subsystems dealing with logging, network, files, etc. For this, modify
 [`PlatformFactory::CreationParameters`](https://gitlab.com/eyeo/adblockplus/libadblockplus/blob/master/include/AdblockPlus/PlatformFactory.h#L33)
 fields. In this case it is important to remember that if your implementation uses a
 multi-threaded model, `Platform` instance should be destroyed only after all threads
