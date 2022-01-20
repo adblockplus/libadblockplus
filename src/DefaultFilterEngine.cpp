@@ -524,11 +524,15 @@ void DefaultFilterEngine::Observer::OnFilterEvent(FilterEvent event, const Filte
 }
 
 std::string AdblockPlus::DefaultFilterEngine::GetSnippetScript(const std::string& documentUrl,
-                                                               const std::string& librarySource)
+                                                               const std::string& isolatedSource,
+                                                               const std::string& injectedSource,
+                                                               const std::vector<std::string>& injectedList)
 {
   JsValueList params;
   params.push_back(jsEngine.NewValue(documentUrl));
-  params.push_back(jsEngine.NewValue(librarySource));
+  params.push_back(jsEngine.NewValue(isolatedSource));
+  params.push_back(jsEngine.NewValue(injectedSource));
+  params.push_back(jsEngine.NewArray(injectedList));
 
   JsValue func = jsEngine.Evaluate("API.getSnippetsScript");
   return func.Call(params).AsString();

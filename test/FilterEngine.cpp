@@ -242,18 +242,20 @@ namespace
 TEST_F(FilterEngineTest, FilterCreation)
 {
   auto& filterEngine = GetFilterEngine();
-  auto filter1 = filterEngine.GetFilter("foo");
+  auto filter1 = filterEngine.GetFilter("foobar");
   ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_BLOCKING, filter1.GetType());
-  auto filter2 = filterEngine.GetFilter("@@foo");
+  auto filter2 = filterEngine.GetFilter("@@foobar");
   ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_EXCEPTION, filter2.GetType());
   auto filter3 = filterEngine.GetFilter("example.com##foo");
   ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_ELEMHIDE, filter3.GetType());
   auto filter4 = filterEngine.GetFilter("example.com#@#foo");
   ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_ELEMHIDE_EXCEPTION, filter4.GetType());
-  auto filter5 = filterEngine.GetFilter("  foo  ");
-  ASSERT_EQ(filter1, filter5);
-  auto filter6 = filterEngine.GetFilter("example.com#?#foo");
-  ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_ELEMHIDE_EMULATION, filter6.GetType());
+  auto filter5 = filterEngine.GetFilter("example.com#?#foo");
+  ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_ELEMHIDE_EMULATION, filter5.GetType());
+  auto filter6 = filterEngine.GetFilter("foo");
+  ASSERT_EQ(AdblockPlus::Filter::Type::TYPE_INVALID, filter6.GetType());
+  auto filter7 = filterEngine.GetFilter("  foo  ");
+  ASSERT_EQ(filter6, filter7);
 }
 
 TEST_F(FilterEngineTest, AddRemoveFilters)
@@ -1044,8 +1046,12 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheet)
   std::string sheet = filterEngine.GetElementHidingStyleSheet("http://example.org");
 
   EXPECT_EQ(
-      "#testcase-eh-id {display: none !important;}\n#testcase-eh-id, .testcase-eh-class, "
-      ".testcase-container > .testcase-eh-descendant, foo, testneg {display: none !important;}\n",
+      "#testcase-eh-id {display: none !important;}\n"
+      "#testcase-eh-id {display: none !important;}\n"
+      ".testcase-eh-class {display: none !important;}\n"
+      ".testcase-container > .testcase-eh-descendant {display: none !important;}\n"
+      "foo {display: none !important;}\n"
+      "testneg {display: none !important;}\n",
       sheet);
 }
 
@@ -1094,10 +1100,17 @@ TEST_F(FilterEngineTest, ElementHidingStyleSheetDup)
   std::string sheetDup = filterEngine.GetElementHidingStyleSheet("http://example.org");
 
   // dups
-  EXPECT_EQ("#dup, #dup, #dup {display: none !important;}\n", sheetDup);
+  EXPECT_EQ(
+      "#dup {display: none !important;}\n"
+      "#dup {display: none !important;}\n"
+      "#dup {display: none !important;}\n",
+      sheetDup);
 
   std::string sheetBar = filterEngine.GetElementHidingStyleSheet("http://bar.example.org");
-  EXPECT_EQ("#dup, #dup {display: none !important;}\n", sheetBar);
+  EXPECT_EQ(
+      "#dup {display: none !important;}\n"
+      "#dup {display: none !important;}\n",
+      sheetBar);
 }
 
 TEST_F(FilterEngineTest, ElementHidingStyleSheetDiff)
@@ -2187,7 +2200,7 @@ TEST_F(FilterEngineConfigurableTest, AADisabledAtFirstAndThenEnabled)
 TEST_F(FilterEngineTest, GetSnippetScriptEmpty)
 {
   auto& filterEngine = GetFilterEngine();
-  auto script = filterEngine.GetSnippetScript("https://test.com/path", "");
+  auto script = filterEngine.GetSnippetScript("https://test.com/path", "", "", {});
   EXPECT_EQ("", script);
 }
 
@@ -2195,43 +2208,87 @@ TEST_F(FilterEngineTest, GetSnippetScriptBasic)
 {
   auto& filterEngine = GetFilterEngine();
   filterEngine.AddFilter(filterEngine.GetFilter("test.com#$#log Hello"));
-  auto script = filterEngine.GetSnippetScript("https://test.com/path", "'use strict';");
+  auto script = filterEngine.GetSnippetScript("https://test.com/path", "(isolated)", "(injected)", {"(list)"});
+
   EXPECT_EQ(
       R"raw(
     "use strict";
+    (() => 
     {
-      let libraries = ["'use strict';"];
-
       let scripts = [[["log","Hello"]]];
 
+      let isolatedLib = "(isolated)";
       let imports = Object.create(null);
-      for (let library of libraries)
-      {
-        let loadLibrary = new Function("exports", "environment", library);
-        loadLibrary(imports, {});
-      }
+      let injectedSnippetsCount = 0;
+      let loadLibrary = new Function("exports", "environment", isolatedLib);
+      loadLibrary(imports, {});
+      const isolatedSnippets = imports.snippets;
+
+      let injectedLib = "(injected)";
+      let injectedSnippetsList = ["(list)"];
+      let executable = "(() => {";
+      executable += "let environment = {};";
+      executable += injectedLib;
 
       let {hasOwnProperty} = Object.prototype;
-
-      if (hasOwnProperty.call(imports, "prepareInjection"))
-        imports.prepareInjection();
-
       for (let script of scripts)
       {
         for (let [name, ...args] of script)
         {
-          if (hasOwnProperty.call(imports, name))
+          if (hasOwnProperty.call(isolatedSnippets, name))
           {
-            let value = imports[name];
+            let value = isolatedSnippets[name];
             if (typeof value == "function")
               value(...args);
+          }
+          if (injectedSnippetsList.includes(name))
+          {
+            executable += stringifyFunctionCall(name, ...args);
+            injectedSnippetsCount++;
           }
         }
       }
 
-      if (hasOwnProperty.call(imports, "commitInjection"))
-        imports.commitInjection();
-    }
+      executable += "})();";
+
+      if (injectedSnippetsCount > 0)
+        injectSnippetsInMainContext(executable);
+
+      function stringifyFunctionCall(func, ...params)
+      {
+        // Call JSON.stringify on the arguments to avoid any arbitrary code
+        // execution.
+        const f = "snippets['" + func + "']";
+        const parameters = params.map(JSON.stringify).join(",");
+        return f + "(" + parameters + ");";
+      }
+
+      function injectSnippetsInMainContext(exec)
+      {
+        // injecting phase
+        let script = document.createElement("script");
+        script.type = "application/javascript";
+        script.async = false;
+
+        // Firefox 58 only bypasses site CSPs when assigning to 'src',
+        // while Chrome 67 and Microsoft Edge (tested on 44.17763.1.0)
+        // only bypass site CSPs when using 'textContent'.
+        if (typeof netscape != "undefined" && typeof browser != "undefined")
+        {
+          let url = URL.createObjectURL(new Blob([executable]));
+          script.src = url;
+          document.documentElement.appendChild(script);
+          URL.revokeObjectURL(url);
+        }
+        else
+        {
+          script.textContent = executable;
+          document.documentElement.appendChild(script);
+        }
+
+        document.documentElement.removeChild(script);
+      }
+    })();
   )raw",
       script);
 }
