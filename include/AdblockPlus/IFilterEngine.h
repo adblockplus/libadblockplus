@@ -355,7 +355,9 @@ namespace AdblockPlus
      * lib/content/snippet.js
      */
     virtual std::string GetSnippetScript(const std::string& documentUrl,
-                                         const std::string& librarySource) = 0;
+                                         const std::string& isolatedSource,
+                                         const std::string& injectedSource,
+                                         const std::vector<std::string>& injectedList) = 0;
 
     /**
      * Retrieves the `ContentType` for the supplied string.
