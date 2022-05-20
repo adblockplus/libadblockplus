@@ -25,34 +25,30 @@ For more details see below.
 Building
 --------
 
-### Supported target platforms and prerequisites
+### Supported platforms and prerequisites
+
+Win32, MacOS, Linux and Android are supported target platforms.
+
+The only officially supported development platform is Linux. If you plan
+to build libadblockplus on any other operating system, we recommend using
+a Docker container.
 
 General:
-* You need a C++14 compatible compiler to build libadblockplus. Below there is
-the list of tested tools.
-
-Win32:
-* At least v141 Visual C++ toolset (available in Microsoft Visual Studio 2017).
+* You need a C++14 compatible compiler to build libadblockplus.
 
 Linux:
-* clang 5.0
-We use libc++ instead of the libstdc++ that gcc uses, since by default v8 build
-with libc++. Make sure you have the right development package installed for
-libc++: `libc++-dev` and `libc++abi-dev` on Debian/Ubuntu,
-`libcxx-devel` and `libcxxabi-devel` on RedHat/Fedora.
-
-Mac:
-* Apple LLVM 9.0.0 for OS X/macOS (Xcode should be installed and its
-  developer tools should be "selected").
+* We use Clang and libc++ instead of the libstdc++ that gcc uses, 
+since by default v8 builds with libc++. Make sure you have the right
+development package installed for libc++: `libc++-dev` and 
+`libc++abi-dev` on Debian/Ubuntu, `libcxx-devel` and `libcxxabi-devel`
+on RedHat/Fedora.
 
 Android:
-* The host system should be Linux or OS X (for Windows 10 [see below](#build-for-android-on-windows))
 * android-ndk-r16b, here are the links for downloading
   [OS X](https://dl.google.com/android/repository/android-ndk-r20b-darwin-x86_64.zip),
   [Linux 64](https://dl.google.com/android/repository/android-ndk-r20b-linux-x86_64.zip).
 * g++ multilib
 
-If you have a compilation issue with another compiler please [create an issue](https://issues.adblockplus.org/).
 
 ### Unix
 
@@ -106,30 +102,6 @@ To run specific tests, you can specify a filter:
 
     make test FILTER=*.Matches
 
-### Windows
-
-* Prepare V8. Let's say V8 is prepared in `build/v8`. There should be V8
-headers in `build/v8/include` and binaries in
-`build/v8/win-%PLATFORM%.%CONFIGURATION%`, e.g ensure that there is
-`v8_monolith.lib` available as `build/v8/win-x64.release/v8_monolith.lib`.
-
-* Set GYP variable `v8_dir` pointing to the prepared V8, `<path to build/v8>`.
-E.g. `set "GYP_DEFINES=v8_dir=e:/v8-6.7"` and execute `createsolution.bat` to
-generate project files, this will create `build\ia32\libadblockplus.sln`
-(solution for the 32 bit build) and `build\x64\libadblockplus.sln` (solution
-for the 64 bit build).
-
-* Open `build\ia32\libadblockplus.sln` or `build\x64\libadblockplus.sln` in
-Visual Studio and build the solution there. Alternatively you can use the
-`msbuild` command line tool, e.g. run `msbuild /m build\ia32\libadblockplus.sln`
-from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
-Due to linking errors with precompiled V8 binary we have disabled iterator
-checking by setting `_ITERATOR_DEBUG_LEVEL=0` in libadblockplus.gypi.
-
-Tested on Microsoft Visual Studio 2017 Community Edition.
-
-For more details see CI configuration for appveyor.
-
 ### Building for Android on *nix
 
 Configure V8 as for Unix and set ANDROID_NDK_ROOT environment variable to your
@@ -150,20 +122,6 @@ To build for *arm* or *arm64* arch run:
 or
 
     make TARGET_OS=android ABP_TARGET_ARCH=arm64
-
-### Build for Android on Windows
-
-Build for Android can be performed in Windows 10 with WSL2 or with docker.
-Here we give instructions for WSL 2, feel free to add docker instructions.
-
-* Please, check [how to install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
-* After installing,
-    * open PowerShell (or cmd)
-    * navigate to libadblockplus root
-    * run (once) the provision script: `wsl sudo ./build-scripts/provision.sh`.
-        * run it **only once** in order to prepare environment, no need to run it every time
-    * run build script `wsl ./build-scripts/build-android.sh`
-You might also run it from inside the WSL2, then do not prefix your commands with `wsl`.
 
 Usage
 -----
